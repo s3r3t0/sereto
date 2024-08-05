@@ -1,0 +1,6 @@
+{
+    "isort.args": [
+        "-l 119"
+    ],
+    "python.analysis.typeCheckingMode": "strict",
+}

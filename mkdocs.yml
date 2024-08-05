@@ -1,0 +1,89 @@
+site_name: Security Reporting Tool
+
+theme:
+  name: material
+  logo: assets/sereto_logo_line.svg
+
+  # TODO
+  # - https://squidfunk.github.io/mkdocs-material/setup/changing-the-logo-and-icons/
+  # - https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/
+  # - https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/
+
+  palette:
+
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_source: false
+  - search
+
+nav:
+  - index.md
+  - Getting Started:
+    - installation.md
+    - settings.md
+  - usage.md
+  - templates.md
+  - Reference:
+    # - Reference: reference/reference.md
+    - CLI:
+      - reference/cli/cli.md
+      - reference/cli/commands.md
+      - reference/cli/console.md
+      - reference/cli/date.md
+      - reference/cli/person.md
+      - reference/cli/target.md
+      - reference/cli/utils.md
+    - Models:
+      - reference/models/base.md
+      - reference/models/config.md
+      - reference/models/date.md
+      - reference/models/finding.md
+      - reference/models/person.md
+      - reference/models/report.md
+      - reference/models/settings.md
+      - reference/models/target.md
+    - Utils:
+      - reference/utils/utils.md
+      - reference/utils/cleanup.md
+      - reference/utils/convert.md
+      - reference/utils/enums.md
+      - reference/utils/exceptions.md
+    - reference/config.md
+    - reference/finding.md
+    - reference/jinja.md
+    - reference/pdf.md
+    - reference/plot.md
+    - reference/report.md
+    - reference/risks.md
+    - reference/settings.md
+    - reference/target.md

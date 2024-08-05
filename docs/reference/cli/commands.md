@@ -1,0 +1,1 @@
+::: sereto.cli.commands
