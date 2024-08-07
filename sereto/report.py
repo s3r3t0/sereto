@@ -92,7 +92,7 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
             copytree(item, dst_item, dirs_exist_ok=overwrite)
 
 
-def _is_ignored(relative_path: str, sereto_ignore: list[str]):
+def _is_ignored(relative_path: str, sereto_ignore: list[str]) -> bool:
     """Check if a file path matches any of the ignore patterns.
 
     Args:
