@@ -48,6 +48,7 @@ plugins:
 
 nav:
   - index.md
+  - concepts.md
   - Getting Started:
     - installation.md
     - settings.md
