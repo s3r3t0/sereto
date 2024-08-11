@@ -94,25 +94,24 @@ def show_config(
     match output_format:
         case OutputFormat.table:
             Console().print(f"\n\n[blue]{cfg.id} - {cfg.name}\n", justify="center")
-            for report_version in report.config.versions() if all else [version]:
-                show_targets_config(
-                    report=report,
-                    output_format=OutputFormat.table,
-                    all=all,
-                    version=report_version,
-                )
-                show_dates_config(
-                    report=report,
-                    output_format=OutputFormat.table,
-                    all=all,
-                    version=report_version,
-                )
-                show_people_config(
-                    report=report,
-                    output_format=OutputFormat.table,
-                    all=all,
-                    version=report_version,
-                )
+            show_targets_config(
+                report=report,
+                output_format=OutputFormat.table,
+                all=all,
+                version=version,
+            )
+            show_dates_config(
+                report=report,
+                output_format=OutputFormat.table,
+                all=all,
+                version=version,
+            )
+            show_people_config(
+                report=report,
+                output_format=OutputFormat.table,
+                all=all,
+                version=version,
+            )
         case OutputFormat.json:
             Console().print_json(cfg.model_dump_json())
 
