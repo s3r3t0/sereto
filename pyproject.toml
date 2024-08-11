@@ -52,6 +52,7 @@ dependencies = [
   "click",
   "jinja2",
   "matplotlib",
+  "pandocfilters",
   "pathspec",
   "pydantic_settings",
   "pydantic>=2.6",
