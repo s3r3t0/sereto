@@ -212,10 +212,10 @@ class ReportVersion(RootModel[VersionVPrefixPydanticAnnotation]):
         return ReportVersion.model_construct(root=Version.parse(v[1:], optional_minor_and_patch=True))
 
     def next_major_version(self) -> "ReportVersion":
-        return ReportVersion(f"v{self.root.major + 1}.{self.root.minor}")
+        return ReportVersion(f"v{self.root.major + 1}.{self.root.minor}")  # type: ignore[arg-type]
 
     def next_minor_version(self) -> "ReportVersion":
-        return ReportVersion(f"v{self.root.major}.{self.root.minor + 1}")
+        return ReportVersion(f"v{self.root.major}.{self.root.minor + 1}")  # type: ignore[arg-type]
 
     @property
     def path_suffix(self) -> str:
