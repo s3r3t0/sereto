@@ -84,7 +84,7 @@ class ReportIncludeGroup(SeretoBaseModel):
 
 class Finding(SeretoBaseModel):
     name: str
-    path_name: Annotated[str, Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,28}[a-zA-Z0-9]$")]
+    path_name: Annotated[str, Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,48}[a-zA-Z0-9]$")]
     risks: dict[ReportVersion, Risk]
     vars: dict[str, Any] = {}
     format: FileFormat = FileFormat.md
