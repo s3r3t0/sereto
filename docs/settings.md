@@ -1,4 +1,4 @@
-# Configuration
+# Settings
 
 ## Minimal settings
 

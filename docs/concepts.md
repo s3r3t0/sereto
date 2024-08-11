@@ -14,6 +14,22 @@ Later, we realized that composing the *entire* report in TeX was excessive. Cert
 
 We have implemented a **hybrid** approach where the template with the overall structure of the report is composed in TeX (this is usually done *once* and does not need much work afterwards). The *findings*, on the other hand, are written in *Markdown*, allowing anyone, including *new* team members unfamiliar with TeX, to easily create reports on their own. This hybrid approach saves time and effort, while keeping the reports visually appealing.
 
+## Templating - Jinja2
+
+SeReTo uses the *Jinja2* templating engine to allow for the dynamic generation of the reports content. This engine is widely used in the Python community and is known for its flexibility and ease of use.
+
+The environment for *TeX* uses the following delimiters:
+
+- `((( ... )))` for variables
+- `((* ... *))` for control structures
+- `((= ... =))` for comments
+
+The environment for *Markdown* uses the default delimiters:
+
+- `{{ ... }}` for variables
+- `{% ... %}` for control structures
+- `{# ... #}` for comments
+
 ## Report Structure
 
 ```text
