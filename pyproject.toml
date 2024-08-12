@@ -67,10 +67,10 @@ dependencies = [
 ]
 
 [project.urls]
-Changelog = "https://github.com/tstdin/SeReTo/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/s3r3t0/sereto/blob/main/CHANGELOG.md"
 # Documentation = "TODO"
-Homepage = "https://github.com/tstdin/SeReTo"
-Source = "https://github.com/tstdin/SeReTo"
+Homepage = "https://github.com/s3r3t0/sereto"
+Source = "https://github.com/s3r3t0/sereto"
 
 [project.scripts]
 sereto = "sereto.cli.cli:cli"
