@@ -102,7 +102,11 @@ class Config(BaseConfig):
 
         # For v1.0, we need to convert Config to BaseConfig (excluding extra fields)
         if self.report_version == version:  # v1.0
-            return BaseConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
+            cfg = BaseConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
+            # copy values of the excluded fields
+            for t1, t2 in zip(self.targets, cfg.targets):
+                t2.path = t1.path
+            return cfg
 
         # Otherwise, we need to find the matching update section
         if len(res := [cfg for cfg in self.updates if cfg.report_version == version]) != 1:
