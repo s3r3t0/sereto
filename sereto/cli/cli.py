@@ -36,6 +36,7 @@ from sereto.report import (
     report_create_missing,
     report_pdf,
 )
+from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 
 
@@ -611,6 +612,19 @@ def pdf_sow(
     render_sow_j2(report=report, settings=settings, version=version)
     render_sow_pdf(report=report, settings=settings, version=version, recipe=sow_recipe)
     render_sow_cleanup(report=report, settings=settings, version=version)
+
+
+# -------------
+# sereto retest
+# -------------
+
+
+@cli.command(name="retest")
+@handle_exceptions
+@load_settings
+@load_report
+def retest(report: Report, settings: Settings) -> None:
+    add_retest(report=report, settings=settings)
 
 
 # ---------------

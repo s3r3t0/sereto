@@ -104,7 +104,7 @@ class Config(BaseConfig):
         if self.report_version == version:  # v1.0
             cfg = BaseConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
             # copy values of the excluded fields
-            for t1, t2 in zip(self.targets, cfg.targets):
+            for t1, t2 in zip(self.targets, cfg.targets, strict=True):
                 t2.path = t1.path
             return cfg
 
