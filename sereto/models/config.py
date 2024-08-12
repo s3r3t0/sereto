@@ -82,7 +82,7 @@ class Config(BaseConfig):
         """Get the last report version."""
         return self.versions()[-1]
 
-    def at_version(self, version: str | ReportVersion | None) -> "Config | BaseConfig":
+    def at_version(self, version: str | ReportVersion | None) -> BaseConfig:
         """Return the configuration at a specific version.
 
         Args:
@@ -99,6 +99,12 @@ class Config(BaseConfig):
             return self
         if isinstance(version, str):
             version = ReportVersion.from_str(version)
-        if len(res := [cfg for cfg in [self] + self.updates if cfg.report_version == version]) != 1:
+
+        # For v1.0, we need to convert Config to BaseConfig (excluding extra fields)
+        if self.report_version == version:  # v1.0
+            return BaseConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
+
+        # Otherwise, we need to find the matching update section
+        if len(res := [cfg for cfg in self.updates if cfg.report_version == version]) != 1:
             raise SeretoValueError(f"version '{version}' not found")
         return res[0]
