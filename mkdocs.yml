@@ -46,6 +46,9 @@ plugins:
             show_source: false
   - search
 
+markdown_extensions:
+  - attr_list
+
 nav:
   - index.md
   - concepts.md
