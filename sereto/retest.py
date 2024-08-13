@@ -4,6 +4,7 @@ from copy import deepcopy
 from pydantic import validate_call
 
 from sereto.config import write_config
+from sereto.models.finding import FindingsConfig
 from sereto.models.report import Report
 from sereto.models.settings import Settings
 
@@ -31,4 +32,11 @@ def add_retest(report: Report, settings: Settings) -> None:
         shutil.copy(src=target.path / f"scope{old_suffix}.tex.j2", dst=target.path / f"scope{new_suffix}.tex.j2")
         shutil.copy(src=target.path / f"target{old_suffix}.tex.j2", dst=target.path / f"target{new_suffix}.tex.j2")
 
-        # TODO: Findings
+        fc = FindingsConfig.from_yaml_file(filepath=target.path / "findings.yaml")
+
+        for finding in fc.included_findings():
+            finding_dir = target.path / "findings" / finding.path_name
+            shutil.copy(
+                src=finding_dir / f"{finding.path_name}{old_suffix}.{finding.format.value}.j2",
+                dst=finding_dir / f"{finding.path_name}{new_suffix}.{finding.format.value}.j2",
+            )
