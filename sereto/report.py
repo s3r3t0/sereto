@@ -116,7 +116,7 @@ def create_source_archive(report: Report, settings: Settings) -> None:
         report: Report's representation.
         settings: Global settings.
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     archive_path = report_path / "source.tgz"
 
     if not (seretoignore_path := report_path / ".seretoignore").is_file():
@@ -151,7 +151,7 @@ def delete_source_archive(report: Report, settings: Settings) -> None:
         report: Report's representation.
         settings: Global settings.
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     archive_path = report_path / "source.tgz"
 
     if archive_path.is_file():
@@ -166,7 +166,7 @@ def embed_source_archive(report: Report, settings: Settings) -> None:
         report: Report's representation.
         settings: Global settings.
     """
-    report_path = Path(report.get_path(dir_subtree=settings.reports_path))
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     archive_path = report_path / "source.tgz"
     report_pdf_path = report_path / "report.pdf"
 
@@ -247,7 +247,7 @@ def render_report_j2(
             first recipe with a matching format is used.
     """
     cfg = report.config.at_version(version=version)
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
 
     for target in cfg.targets:
         # render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)

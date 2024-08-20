@@ -35,7 +35,7 @@ def render_report_cleanup(report: Report, settings: Settings, version: ReportVer
     Returns:
         None
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     report_tex_path = report_path / "report.tex"
     report_tex_path.unlink()
 
@@ -53,7 +53,7 @@ def render_target_cleanup(target: Target, report: Report, settings: Settings, ve
     Returns:
         None
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     target_tex_path = report_path / f"{target.uname}.tex"
     target_tex_path.unlink()
 
@@ -74,6 +74,6 @@ def render_finding_group_cleanup(
     Returns:
         None
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     finding_group_tex_path = report_path / f"{target.uname}_{finding_group.uname}.tex"
     finding_group_tex_path.unlink()

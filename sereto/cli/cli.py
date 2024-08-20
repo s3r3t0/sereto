@@ -721,7 +721,7 @@ def templates_skel_copy(report: Report, settings: Settings) -> None:
     """
     copy_skel(
         templates=settings.templates_path,
-        dst=report.get_path(dir_subtree=settings.reports_path),
+        dst=Report.get_path(dir_subtree=settings.reports_path),
         overwrite=True,
     )
 

@@ -49,7 +49,7 @@ def render_report_pdf(report: Report, settings: Settings, version: ReportVersion
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     report_tex_path = report_path / "report.tex"
 
     if recipe is None:
@@ -105,7 +105,7 @@ def render_target_pdf(
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     target_tex_path = report_path / f"{target.uname}.tex"
     replacements = {"%TARGET_DIR%": str(report_path / target.uname)}
 
@@ -141,7 +141,7 @@ def render_finding_group_pdf(
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
     finding_group_tex_path = report_path / f"{target.uname}_{finding_group.uname}.tex"
     replacements = {"%FINDINGS_DIR%": str(report_path / target.uname / "findings")}
 
