@@ -492,15 +492,22 @@ def open_folder(settings: Settings) -> None:
 
 @open.command(name="report")
 @handle_exceptions
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
 @load_settings
-def open_report(settings: Settings) -> None:
+@load_report
+def open_report(report: Report, settings: Settings, version: ReportVersion | None) -> None:
     """
     Open the report document in the default PDF viewer.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
     """
-    report_path = Report.get_path(dir_subtree=settings.reports_path) / "report.pdf"
+    if version is None:
+        version = report.config.last_version()
+
+    cfg = report.config.at_version(version=version)
+    report_path = Report.get_path(dir_subtree=settings.reports_path) / f"report{cfg.report_version.path_suffix}.pdf"
+
     if not report_path.is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
 
@@ -509,14 +516,21 @@ def open_report(settings: Settings) -> None:
 
 @open.command(name="sow")
 @handle_exceptions
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
 @load_settings
-def open_sow(settings: Settings) -> None:
+@load_report
+def open_sow(report: Report, settings: Settings, version: ReportVersion | None) -> None:
     """Open the Statement of Work (SoW) document in the default PDF viewer.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
     """
-    sow_path = Report.get_path(dir_subtree=settings.reports_path) / "sow.pdf"
+    if version is None:
+        version = report.config.last_version()
+
+    cfg = report.config.at_version(version=version)
+    sow_path = Report.get_path(dir_subtree=settings.reports_path) / f"sow{cfg.report_version.path_suffix}.pdf"
+
     if not sow_path.is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
 

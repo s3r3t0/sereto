@@ -17,8 +17,9 @@ def render_sow_cleanup(report: Report, settings: Settings, version: ReportVersio
     Returns:
         None
     """
-    report_path = report.get_path(dir_subtree=settings.reports_path)
-    sow_tex_path = report_path / "sow.tex"
+    cfg = report.config.at_version(version=version)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    sow_tex_path = report_path / f"sow{cfg.report_version.path_suffix}.tex"
     sow_tex_path.unlink()
 
 

@@ -260,7 +260,7 @@ def render_report_j2(
                 finding_group=finding_group, target=target, report=report, settings=settings, version=version
             )
 
-    report_j2_path = report_path / "report.tex.j2"
+    report_j2_path = report_path / f"report{cfg.report_version.path_suffix}.tex.j2"
     if not report_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{report_j2_path}'")
 
@@ -281,9 +281,9 @@ def render_report_j2(
 @validate_call
 def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) -> None:
     cfg = report.config.at_version(version=version)
-    report_path = report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path(dir_subtree=settings.reports_path)
 
-    sow_j2_path = report_path / "sow.tex.j2"
+    sow_j2_path = report_path / f"sow{cfg.report_version.path_suffix}.tex.j2"
     if not sow_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{sow_j2_path}'")
 
