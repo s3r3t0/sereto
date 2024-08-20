@@ -101,6 +101,12 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 
+[tool.pytest.ini_options]
+addopts = [
+  "--import-mode=importlib",
+]
+pythonpath = "."
+
 [tool.ruff]
 line-length = 119
 
