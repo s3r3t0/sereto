@@ -505,8 +505,7 @@ def open_report(report: Report, settings: Settings, version: ReportVersion | Non
     if version is None:
         version = report.config.last_version()
 
-    cfg = report.config.at_version(version=version)
-    report_path = Report.get_path(dir_subtree=settings.reports_path) / f"report{cfg.report_version.path_suffix}.pdf"
+    report_path = Report.get_path(dir_subtree=settings.reports_path) / f"report{version.path_suffix}.pdf"
 
     if not report_path.is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
@@ -528,8 +527,7 @@ def open_sow(report: Report, settings: Settings, version: ReportVersion | None) 
     if version is None:
         version = report.config.last_version()
 
-    cfg = report.config.at_version(version=version)
-    sow_path = Report.get_path(dir_subtree=settings.reports_path) / f"sow{cfg.report_version.path_suffix}.pdf"
+    sow_path = Report.get_path(dir_subtree=settings.reports_path) / f"sow{version.path_suffix}.pdf"
 
     if not sow_path.is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")

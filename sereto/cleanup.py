@@ -17,9 +17,8 @@ def render_sow_cleanup(report: Report, settings: Settings, version: ReportVersio
     Returns:
         None
     """
-    cfg = report.config.at_version(version=version)
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    sow_tex_path = report_path / f"sow{cfg.report_version.path_suffix}.tex"
+    sow_tex_path = report_path / f"sow{version.path_suffix}.tex"
     sow_tex_path.unlink()
 
 
@@ -36,11 +35,11 @@ def render_report_cleanup(report: Report, settings: Settings, version: ReportVer
         None
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    report_tex_path = report_path / "report.tex"
+    report_tex_path = report_path / f"report{version.path_suffix}.tex"
     report_tex_path.unlink()
 
 
-def render_target_cleanup(target: Target, report: Report, settings: Settings, version: ReportVersion) -> None:
+def render_target_cleanup(target: Target, report: Report, settings: Settings) -> None:
     """
     Cleans up the rendered target by deleting the corresponding .tex file.
 
@@ -59,7 +58,7 @@ def render_target_cleanup(target: Target, report: Report, settings: Settings, ve
 
 
 def render_finding_group_cleanup(
-    finding_group: FindingGroup, target: Target, report: Report, settings: Settings, version: ReportVersion
+    finding_group: FindingGroup, target: Target, report: Report, settings: Settings
 ) -> None:
     """
     Renders the cleanup for a finding group in the specified report.

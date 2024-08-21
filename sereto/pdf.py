@@ -50,7 +50,7 @@ def render_report_pdf(report: Report, settings: Settings, version: ReportVersion
             recipe (index 0) is used.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    report_tex_path = report_path / "report.tex"
+    report_tex_path = report_path / f"report{version.path_suffix}.tex"
 
     if recipe is None:
         render_recipe = settings.render.report_recipes[0]
@@ -75,9 +75,8 @@ def render_sow_pdf(report: Report, settings: Settings, version: ReportVersion, r
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    cfg = report.config.at_version(version=version)
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    sow_tex_path = report_path / f"sow{cfg.report_version.path_suffix}.tex"
+    sow_tex_path = report_path / f"sow{version.path_suffix}.tex"
 
     if recipe is None:
         render_recipe = settings.render.sow_recipes[0]

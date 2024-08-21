@@ -159,7 +159,7 @@ def delete_source_archive(report: Report, settings: Settings) -> None:
         archive_path.unlink()
 
 
-def embed_source_archive(report: Report, settings: Settings) -> None:
+def embed_source_archive(report: Report, settings: Settings, version: ReportVersion) -> None:
     """Embed the source archive in the report PDF.
 
     Args:
@@ -168,7 +168,7 @@ def embed_source_archive(report: Report, settings: Settings) -> None:
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
     archive_path = report_path / "source.tgz"
-    report_pdf_path = report_path / "report.pdf"
+    report_pdf_path = report_path / f"report{version.path_suffix}.pdf"
 
     reader = PdfReader(report_pdf_path, strict=True)
     writer = PdfWriter()
@@ -260,7 +260,7 @@ def render_report_j2(
                 finding_group=finding_group, target=target, report=report, settings=settings, version=version
             )
 
-    report_j2_path = report_path / f"report{cfg.report_version.path_suffix}.tex.j2"
+    report_j2_path = report_path / f"report{version.path_suffix}.tex.j2"
     if not report_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{report_j2_path}'")
 
@@ -283,7 +283,7 @@ def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) ->
     cfg = report.config.at_version(version=version)
     report_path = Report.get_path(dir_subtree=settings.reports_path)
 
-    sow_j2_path = report_path / f"sow{cfg.report_version.path_suffix}.tex.j2"
+    sow_j2_path = report_path / f"sow{version.path_suffix}.tex.j2"
     if not sow_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{sow_j2_path}'")
 
@@ -364,7 +364,7 @@ def report_pdf(
 
     render_report_pdf(report=report, settings=settings, version=version, recipe=report_recipe)
     create_source_archive(report=report, settings=settings)
-    embed_source_archive(report=report, settings=settings)
+    embed_source_archive(report=report, settings=settings, version=version)
     delete_source_archive(report=report, settings=settings)
 
 
@@ -377,7 +377,7 @@ def report_cleanup(
     cfg = report.config.at_version(version=version)
 
     for target in cfg.targets:
-        render_target_cleanup(target=target, report=report, settings=settings, version=version)
+        render_target_cleanup(target=target, report=report, settings=settings)
 
         for finding_group in target.findings_config.finding_groups:
             render_finding_group_cleanup(
@@ -385,7 +385,6 @@ def report_cleanup(
                 target=target,
                 report=report,
                 settings=settings,
-                version=version,
             )
 
     render_report_cleanup(report=report, settings=settings, version=version)
