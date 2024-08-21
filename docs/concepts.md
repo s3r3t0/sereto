@@ -34,6 +34,7 @@ The environment for *Markdown* uses the default delimiters:
 
 ```text
 ├── .build_artifacts
+├── base_document.tex.j2
 ├── config.json
 ├── finding.tex.j2
 ├── glossary.tex
@@ -63,6 +64,12 @@ The environment for *Markdown* uses the default delimiters:
 ### `.build_artifacts`
 
 Directory for temporary build artifacts (especially from TeX).
+
+### `base_document.tex.j2`
+
+Base template for TeX, which all other templates extend. This file defines the overall structure of the report (but not the content). `\begin{document}` and `\end{document}` are part of this file and therefore should not be used elsewhere.
+
+A TeX file that uses Jinja2 templating.
 
 ### `config.json`
 
