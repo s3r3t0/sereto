@@ -48,10 +48,24 @@ plugins:
 
 markdown_extensions:
   - attr_list
+  - toc:
+      permalink: true
+  - abbr
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 nav:
   - index.md
-  - concepts.md
+  - Concepts:
+    - concepts/idea.md
+    - concepts/report_structure.md
+    - concepts/settings.md
   - Getting Started:
     - installation.md
     - settings.md

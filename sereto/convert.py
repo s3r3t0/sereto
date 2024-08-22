@@ -22,7 +22,7 @@ def convert_file_to_tex(
 
     Args:
         finding: The finding object representing the file to be converted.
-        render: The render object containing converters and tools for the conversion.
+        render: The render object containing convert_recipes and tools for the conversion.
         templates: The path to the templates directory.
         version: The report version object.
         recipe: The name of the recipe to use for conversion. Defaults to None.
@@ -39,14 +39,14 @@ def convert_file_to_tex(
 
     if finding.format == FileFormat.tex:
         return
-    converters = [c for c in render.converters if c.input_format == finding.format]
-    if len(converters) == 0:
+    convert_recipes = [c for c in render.convert_recipes if c.input_format == finding.format]
+    if len(convert_recipes) == 0:
         raise SeretoValueError(f"no converter for {finding.format.value!r} format")
 
     if recipe is None:  # user did not provide recipe's name -> use the first
-        run_recipe = converters[0]
+        run_recipe = convert_recipes[0]
     else:
-        if len(res := [c for c in converters if c.name == recipe]) != 1:
+        if len(res := [c for c in convert_recipes if c.name == recipe]) != 1:
             raise SeretoValueError(f"no converter found with name {recipe!r}")
         run_recipe = res[0]
 

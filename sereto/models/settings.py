@@ -19,11 +19,26 @@ from sereto.utils import replace_strings
 
 
 class RenderRecipe(SeretoBaseModel):
+    """Recipe for rendering and converting files using `RenderTool`s.
+
+    Attributes:
+        name: name of the recipe
+        tools: list of `RenderTool` names to run
+    """
+
     name: str
     tools: list[str] = Field(..., min_length=1)
 
 
 class ConvertRecipe(RenderRecipe):
+    """Recipe for converting between file formats using `RenderTool`s.
+
+    Attributes:
+        name: name of the recipe
+        input_format: input file format
+        tools: list of `RenderTool` names to run
+    """
+
     input_format: FileFormat
 
     @field_validator("input_format", mode="before")
@@ -39,6 +54,14 @@ class ConvertRecipe(RenderRecipe):
 
 
 class RenderTool(SeretoBaseModel):
+    """Commands used in recipes.
+
+    Attributes:
+        name: name of the tool
+        command: command to run
+        args: list of arguments to pass to the command
+    """
+
     name: str
     command: str
     args: list[str]
@@ -57,7 +80,7 @@ class Render(SeretoBaseModel):
     finding_recipes: list[RenderRecipe] = Field(..., min_length=1)
     sow_recipes: list[RenderRecipe] = Field(..., min_length=1)
     target_recipes: list[RenderRecipe] = Field(..., min_length=1)
-    converters: list[ConvertRecipe] = Field(..., min_length=1)
+    convert_recipes: list[ConvertRecipe] = Field(..., min_length=1)
     tools: list[RenderTool] = Field(..., min_length=1)
 
     @model_validator(mode="after")
@@ -76,7 +99,7 @@ DEFAULT_RENDER_CONFIG = Render(
     finding_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"])],
     sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"])],
     target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"])],
-    converters=[
+    convert_recipes=[
         ConvertRecipe(name="convert-md", input_format=FileFormat.md, tools=["pandoc-md"]),
     ],
     tools=[
