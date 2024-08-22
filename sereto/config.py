@@ -129,10 +129,9 @@ def add_dates_config(report: Report, settings: Settings) -> None:
         report: Report's representation.
         settings: Global settings.
     """
-    Console().line()
+    cfg = report.config
+    dates: list[Date] = cfg.dates if len(cfg.updates) == 0 else cfg.updates[-1].dates
 
-    last_version = report.config.last_version()
-    dates = report.config.at_version(version=last_version).dates
     date_type: DateType = load_enum(enum=DateType, prompt="Type")
     new_date = prompt_user_for_date(date_type=date_type)
     dates.append(Date(type=date_type, date=new_date))
@@ -231,16 +230,14 @@ def add_people_config(report: Report, settings: Settings) -> None:
         report: Report's representation.
         settings: Global settings.
     """
-    Console().line()
+    cfg = report.config
+    people: list[Person] = cfg.people if len(cfg.updates) == 0 else cfg.updates[-1].people
 
-    last_version = report.config.last_version()
-    people = report.config.at_version(version=last_version).people
     person_type: PersonType = load_enum(enum=PersonType, prompt="Type")
     new_person = prompt_user_for_person(person_type=person_type)
     people.append(new_person)
 
     write_config(config=report.config, settings=settings)
-    # is_config_valid(reports_path=settings.reports_path, print=True)
 
 
 @validate_call

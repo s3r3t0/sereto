@@ -32,7 +32,7 @@ def add_retest(report: Report, settings: Settings) -> None:
     for target in last_cfg.targets:
         assert target.path is not None
 
-        copy_target_files = ["approach", "findings_summary", "scope", "target"]
+        copy_target_files = ["approach", "scope", "target"]
 
         for file in copy_target_files:
             shutil.copy(src=target.path / f"{file}{old_suffix}.tex.j2", dst=target.path / f"{file}{new_suffix}.tex.j2")
