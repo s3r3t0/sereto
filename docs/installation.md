@@ -9,65 +9,76 @@
 
 ### [`pipx`](https://pipx.pypa.io/stable/installation/)
 
-- Ubuntu 23.04 or above:
-```
-sudo apt update
-sudo apt install pipx
-pipx ensurepath
-sudo pipx ensurepath --global # optional to allow pipx actions in global scope. See "Global installation" section below.
-```
+> You might skip this step if you know what you are doing and prefer other methods of installation for Python packages.
 
-- Fedora:
-```
-sudo dnf install pipx
-pipx ensurepath
-sudo pipx ensurepath --global # optional to allow pipx actions in global scope. See "Global installation" section below.
-```
+=== "Ubuntu 23.04 or above"
+    ```sh
+    sudo apt update
+    sudo apt install pipx
+    pipx ensurepath
+    sudo pipx ensurepath --global  # optional to allow pipx actions in global scope.
+    ```
 
-- Using `pip` on other distributions:
-```
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-sudo pipx ensurepath --global # optional to allow pipx actions in global scope. See "Global installation" section below.
-```
+=== "Fedora"
+    ```sh
+    sudo dnf install pipx
+    pipx ensurepath
+    sudo pipx ensurepath --global # optional to allow pipx actions in global scope.
+    ```
+
+=== "Pip"
+    ```sh
+    python3 -m pip install --user pipx
+    python3 -m pipx ensurepath
+    sudo pipx ensurepath --global # optional to allow pipx actions in global scope.
+    ```
 
 ### TeX Live
 
-- Ubuntu:
-```
-sudo apt install texlive-full
-```
+=== "Ubuntu"
+    ```sh
+    sudo apt install texlive-full
+    ```
 
-- Fedora:
-```
-sudo dnf install texlive-scheme-full
-```
+=== "Fedora"
+    ```sh
+    sudo dnf install texlive-scheme-full
+    ```
 
 ### Pandoc
 
 > Pandoc is used as a default command for transformation of markdown files.
 
-- Ubuntu:
-```
-sudo apt install pandoc
-```
+=== "Ubuntu"
+    ```sh
+    sudo apt install pandoc
+    ```
 
-- Fedora:
-```
-sudo dnf install pandoc
-```
+=== "Fedora"
+    ```sh
+    sudo dnf install pandoc
+    ```
 
 ## Install SeReTo
-```
-pipx install .
-```
+
+=== "PyPI"
+    ```sh
+    pipx install sereto
+    ```
+
+=== "GitHub"
+    ```sh
+    git clone https://github.com/s3r3t0/sereto.git
+    cd sereto
+    pipx install .
+    ```
 
 ## Docker (development)
 
 Alternatively you can use SeReTo in a Docker container. <!-- The image is available on [Docker Hub](TODO URL). -->
 You will need to mount the directories with reports and templates to the container.
 
-```
+```sh
 docker build . -t sereto
 docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto
 ```
