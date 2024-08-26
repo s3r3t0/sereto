@@ -122,9 +122,11 @@ def create_source_archive(report: Report, settings: Settings) -> None:
     if not (seretoignore_path := report_path / ".seretoignore").is_file():
         Console().log(f"no '.seretoignore' file found: '{seretoignore_path}'")
         ignore_lines = []
+    elif seretoignore_path.stat().st_size > 10_000_000:
+        raise SeretoValueError("File '.seretoignore' exceeds threshold of 10MB")
     else:
         with seretoignore_path.open("r") as seretoignore:
-            ignore_lines = seretoignore.readlines()  # TODO: prevent potential DOS attack
+            ignore_lines = seretoignore.readlines()
 
     Console().log(f"creating source archive: '{archive_path}'")
 
