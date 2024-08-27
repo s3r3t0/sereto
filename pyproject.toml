@@ -48,21 +48,27 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "click",
-  "jinja2",
-  "matplotlib",
-  "pandocfilters",
-  "pathspec",
-  "pydantic_settings",
-  "pydantic>=2.8",
+  "click~=8.1.7",
+  "jinja2~=3.1.4",
+  "matplotlib~=3.9.2",
+  "pandocfilters~=1.5.1",
+  "pathspec>=0.12.1",
+  "pydantic-settings~=2.4.0",
+  "pydantic~=2.8.2",
   "pydantic[email]",
-  "pypdf",
-  "python-frontmatter",
-  "rich",
-  "ruamel.yaml",
-  "semver",
-  "toml",
-  "Unidecode",
+  "pypdf~=4.3.1",
+  "python-frontmatter~=1.1.0",
+  "rich~=13.8.0",
+  "ruamel.yaml>=0.18.6",
+  "semver~=3.0.2",
+  "toml>=0.10.2",
+  "Unidecode~=1.3.8",
+]
+
+[project.optional-dependencies]
+docs = [
+  "mkdocs-material",
+  "mkdocstrings[python]",
 ]
 
 [project.urls]

@@ -7,8 +7,7 @@
 Install dependencies:
 
 ```sh
-pip install mkdocs-material
-pip install "mkdocstrings[python]"
+pip install "sereto[docs]"
 ```
 
 Start local client:
