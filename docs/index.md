@@ -1,7 +1,7 @@
 # Home
 
-![SeReTo logo](assets/sereto_logo_dark.svg#only-light){: style="height:300px;"}
-![SeReTo logo](assets/sereto_logo_light.svg#only-dark){: style="height:300px;"}
+![SeReTo logo](assets/logo/sereto_block_black.svg#only-light){: style="height:300px;"}
+![SeReTo logo](assets/logo/sereto_block_white.svg#only-dark){: style="height:300px;"}
 
 In a *penetration test*, the **reporting** phase is considered one of the most crucial aspects. It serves as the *final deliverable*, yet it is often met with *disdain*. This phase is *time-consuming* and lacks excitement, making it less appealing.
 

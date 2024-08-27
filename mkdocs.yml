@@ -2,10 +2,9 @@ site_name: Security Reporting Tool
 
 theme:
   name: material
-  logo: assets/sereto_logo_line.svg
+  logo: assets/logo/sereto_line_white.svg
 
   # TODO
-  # - https://squidfunk.github.io/mkdocs-material/setup/changing-the-logo-and-icons/
   # - https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/
   # - https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/
 
