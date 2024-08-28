@@ -20,7 +20,7 @@ from sereto.config import (
     show_targets_config,
 )
 from sereto.enums import FileFormat, OutputFormat
-from sereto.exceptions import SeretoPathError
+from sereto.exceptions import SeretoPathError, SeretoRuntimeError
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.report import Report
 from sereto.models.settings import Settings
@@ -720,6 +720,40 @@ def templates_skel_copy(report: Report, settings: Settings) -> None:
     copy_skel(
         templates=settings.templates_path,
         dst=Report.get_path(dir_subtree=settings.reports_path),
+        overwrite=True,
+    )
+
+
+@templates.group(cls=AliasedGroup)
+def target_skel() -> None:
+    """Target template skeleton files."""
+
+
+@target_skel.command(name="copy")
+@handle_exceptions
+@click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
+@load_settings
+@load_report
+def templates_target_skel_copy(report: Report, settings: Settings, target: str | None) -> None:
+    """Update the target's templates from the skeleton directory.
+
+    This function copies all files from the templates skeleton directory to the target's directory, overwriting any
+    existing files.
+    \f
+
+    Args:
+        report: The report object.
+        settings: The settings object containing the tool's global configuration.
+        target: The target for which the templates are being copied.
+    """
+    selected_target = report.select_target(settings=settings, selector=target)
+
+    if selected_target.path is None:
+        raise SeretoRuntimeError("target path is not set")
+
+    copy_skel(
+        templates=settings.templates_path / "categories" / selected_target.category,
+        dst=selected_target.path,
         overwrite=True,
     )
 

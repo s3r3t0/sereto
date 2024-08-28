@@ -58,9 +58,12 @@ class Report(SeretoBaseModel):
     def select_target(
         self,
         settings: Settings,
-        version: ReportVersion,
+        version: ReportVersion | None = None,
         selector: int | str | None = None,
     ) -> Target:
+        if version is None:
+            version = self.config.last_version()
+
         cfg = self.config.at_version(version)
 
         # only single target present

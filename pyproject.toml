@@ -23,7 +23,7 @@ keywords = [
   "tex",
 ]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Framework :: Pydantic :: 2",
   "Framework :: Pydantic",

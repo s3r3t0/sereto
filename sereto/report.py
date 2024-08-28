@@ -64,7 +64,7 @@ def get_all_reports_dict(settings: Settings) -> dict[str, Report]:
 
 @validate_call
 def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
-    """Copies the contents of a `skel` directory to a destination directory.
+    """Copy the content of a templates `skel` directory to a destination directory.
 
     A `skel` directory is a directory that contains a set of files and directories that can be used as a template
     for creating new projects. This function copies the contents of the `skel` directory located at
@@ -81,14 +81,17 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
         SeretoPathError: If the destination directory already exists and `overwrite` is `False`.
     """
     skel_path: Path = templates / "skel"
+    Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
 
     for item in skel_path.iterdir():
         dst_item: Path = dst / (item.relative_to(skel_path))
         if not overwrite and dst_item.exists():
             raise SeretoPathError("Destination already exists")
         if item.is_file():
+            Console().log(f" - copy file: '{item.relative_to(skel_path)}'")
             copy2(item, dst_item, follow_symlinks=False)
         if item.is_dir():
+            Console().log(f" - copy dir: '{item.relative_to(skel_path)}'")
             copytree(item, dst_item, dirs_exist_ok=overwrite)
 
 

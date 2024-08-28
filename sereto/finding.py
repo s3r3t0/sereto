@@ -25,8 +25,7 @@ def add_finding(
     format: str,
     name: str,
 ) -> None:
-    last_version = report.config.last_version()
-    target = report.select_target(settings=settings, version=last_version, selector=target_selector)
+    target = report.select_target(settings=settings, selector=target_selector)
 
     # read template
     template_path = settings.templates_path / "categories" / target.category / "findings" / f"{name}.{format}.j2"
@@ -39,7 +38,7 @@ def add_finding(
     assert target.path is not None
     finding_dir = target.path / "findings" / name
     finding_dir.mkdir(exist_ok=True)
-    dst_path = finding_dir / f"{name}{last_version.path_suffix}.{format}.j2"
+    dst_path = finding_dir / f"{name}{report.config.last_version().path_suffix}.{format}.j2"
 
     if dst_path.is_file() and not Confirm.ask(
         f'[yellow]Destination "{dst_path}" exists. Overwrite?',
