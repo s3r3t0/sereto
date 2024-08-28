@@ -1,6 +1,7 @@
 # Security Reporting Tool
 
-> Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/it-hub/)
+<img src="docs/assets/logo/sereto_block_black.svg" alt="SeReTo logo" height="300"/>
+
 
 ## Documentation
 
@@ -15,6 +16,7 @@ Start local client:
 ```sh
 mkdocs serve
 ```
+
 
 ## Development
 
@@ -31,3 +33,5 @@ Format code:
 ```sh
 tox -e format
 ```
+
+> Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/it-hub/)
