@@ -182,7 +182,7 @@ def render_finding_group_j2(
         finding_group=finding_group, target=target, settings=settings, version=version, convert_recipe=convert_recipe
     )
 
-    finding_group_j2_path = report_path / "finding.tex.j2"
+    finding_group_j2_path = report_path / "finding_standalone_wrapper.tex.j2"
     if not finding_group_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{finding_group_j2_path}'")
 

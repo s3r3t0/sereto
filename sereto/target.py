@@ -116,7 +116,7 @@ def render_target_j2(
 
     render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)
 
-    target_j2_path = report_path / "target.tex.j2"
+    target_j2_path = report_path / "target_standalone_wrapper.tex.j2"
     if not target_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{target_j2_path}'")
 

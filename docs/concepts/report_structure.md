@@ -4,7 +4,7 @@
 ├── .build_artifacts
 ├── base_document.tex.j2
 ├── config.json
-├── finding.tex.j2
+├── finding_standalone_wrapper.tex.j2
 ├── glossary.tex
 ├── pictures
 │   └── logo.pdf
@@ -26,7 +26,7 @@
 │   ├── screenshots
 │   ├── target_dast_web1.pdf
 │   └── target.tex.j2
-└── target.tex.j2
+└── target_standalone_wrapper.tex.j2
 ```
 
 ## `.build_artifacts`
@@ -43,7 +43,7 @@ A TeX file that uses Jinja2 templating.
 
 Configuration file for the project.
 
-## `finding.tex.j2`
+## `finding_standalone_wrapper.tex.j2`
 
 Template for a partial report containing a single finding. This file internally includes the finding-specific content.
 
@@ -151,7 +151,7 @@ Template for the report content of a specific target. This file internally inclu
 
 A TeX file that uses Jinja2 templating.
 
-## `target_tex.j2`
+## `target_standalone_wrapper.tex.j2`
 
 Template for a partial report containing a single target. This file internally includes the `target_<name>/target.tex.j2` which contains the target-specific content.
 
