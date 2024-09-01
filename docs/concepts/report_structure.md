@@ -6,6 +6,7 @@
 ├── config.json
 ├── finding_standalone_wrapper.tex.j2
 ├── glossary.tex
+├── macros.tex.j2
 ├── pictures
 │   └── logo.pdf
 ├── report.pdf
@@ -56,6 +57,10 @@ Definition of acronyms used in the report. We are using the `glossaries` package
 ```tex
 \newacronym{rce}{RCE}{Remote Code Execution}
 ```
+
+## `macros.tex.j2`
+
+Custom [Jinja2 macros](https://jinja.palletsprojects.com/en/latest/templates/#macros) which simplify the writing of more complex constructs.
 
 ## `pictures`
 

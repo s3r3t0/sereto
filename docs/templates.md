@@ -19,6 +19,7 @@
     ├── base_document.tex.j2
     ├── finding_standalone_wrapper.tex.j2
     ├── glossary.tex
+    ├── macros.tex.j2
     ├── outputs
     ├── pictures
     ├── report.tex.j2
