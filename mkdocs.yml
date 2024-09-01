@@ -63,6 +63,7 @@ nav:
   - index.md
   - Concepts:
     - concepts/idea.md
+    - concepts/project_files.md
     - concepts/report_structure.md
     - concepts/sow_structure.md
     - concepts/settings.md
