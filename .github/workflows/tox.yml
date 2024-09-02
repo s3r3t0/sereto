@@ -1,4 +1,4 @@
-name: tox
+name: Tox
 on:
   push:
   pull_request:
