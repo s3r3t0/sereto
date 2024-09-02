@@ -327,7 +327,8 @@ def add_targets_config(report: Report, settings: Settings) -> None:
     """Add target to the configuration for a report.
 
     Args:
-        reports_path: Directory where the report is located.
+        report: Report's representation.
+        settings: Global settings.
     """
     cfg = report.config
     targets: list[Target] = cfg.targets if len(cfg.updates) == 0 else cfg.updates[-1].targets

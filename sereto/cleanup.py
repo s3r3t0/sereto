@@ -47,7 +47,6 @@ def render_target_cleanup(target: Target, report: Report, settings: Settings) ->
         target: The target to be cleaned up.
         report: The report containing the target.
         settings: The settings for the cleanup process.
-        version: The version of the report.
 
     Returns:
         None
@@ -68,7 +67,6 @@ def render_finding_group_cleanup(
         target: The target associated with the finding group.
         report: The report to render the cleanup in.
         settings: The settings for rendering the report.
-        version: The version of the report.
 
     Returns:
         None

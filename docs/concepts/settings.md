@@ -1,6 +1,6 @@
 # Settings
 
-[`Settings`](/reference/models/settings/#sereto.models.settings.Settings) provide a way to customize SeReTo according to your needs.
+[`Settings`](../reference/models/settings.md#sereto.models.settings.Settings) provide a way to customize SeReTo according to your needs.
 
 The **location** where the configuration file is stored is determined by using [`click.get_app_dir`](https://click.palletsprojects.com/en/latest/api/#click.get_app_dir) function, to provide the most appropriate location for the specific operating system. For example, on *Linux*, the configuration file is stored in `~/.config/sereto/settings.json` and on *Windows*, it is likely stored in `C:\Users\<username>\AppData\Local\sereto\settings.json`.
 
@@ -22,7 +22,7 @@ The `render` field consists of the following:
 
 ### `report_recipes`
 
-List of [`RenderRecipe`](/reference/models/settings/#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *report*.
+List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *report*.
 
 Example:
 
@@ -48,7 +48,7 @@ Example:
 
 ### `finding_recipes`
 
-List of [`RenderRecipe`](/reference/models/settings/#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *finding*.
+List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *finding*.
 
 In addition to the standard variables defined below in the [`tools`](#tools) section, the following variables are available:
 
@@ -78,7 +78,7 @@ Example:
 
 ### `sow_recipes`
 
-List of [`RenderRecipe`](/reference/models/settings/#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *statement-of-work*.
+List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *statement-of-work*.
 
 Example:
 
@@ -104,7 +104,7 @@ Example:
 
 ### `target_recipes`
 
-List of [`RenderRecipe`](/reference/models/settings/#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *target*.
+List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *target*.
 
 In addition to the standard variables defined below in the [`tools`](#tools) section, the following variables are available:
 
@@ -134,7 +134,7 @@ Example:
 
 ### `convert_recipes`
 
-List of [`ConvertRecipe`](/reference/models/settings/#sereto.models.settings.ConvertRecipe)s, which define the tools used to convert between different formats.
+List of [`ConvertRecipe`](../reference/models/settings.md#sereto.models.settings.ConvertRecipe)s, which define the tools used to convert between different formats.
 
 Example:
 
@@ -162,7 +162,7 @@ Example:
 
 ### `tools`
 
-List of [`RenderTool`](/reference/models/settings/#sereto.models.settings.RenderTool)s, which are the commands with their parameters. Tools are referenced in recipes by their name.
+List of [`RenderTool`](../reference/models/settings.md#sereto.models.settings.RenderTool)s, which are the commands with their parameters. Tools are referenced in recipes by their name.
 
 The following variables are always available and will be automatically substituted for their value before running the command:
 

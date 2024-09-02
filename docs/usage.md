@@ -1,7 +1,7 @@
 
 # Usage
 
-SeReTo is a command line tool. After you have [set it up](/installation), you can use it from your terminal.
+SeReTo is a command line tool. After you have [set it up](installation.md), you can use it from your terminal.
 
 ## Getting Help
 
