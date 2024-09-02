@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 
+## 0.0.2, 0.0.3
+
+We registered a dummy package to PyPI to test the publishing. Therefore a version increment was necessary.
+
 ## 0.0.1
 
 Initial version
