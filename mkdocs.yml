@@ -1,5 +1,6 @@
 site_name: Security Reporting Tool
 repo_url: https://github.com/s3r3t0/sereto
+site_url: https://sereto.s4n.cz
 
 theme:
   name: material

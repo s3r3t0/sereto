@@ -73,7 +73,7 @@ docs = [
 
 [project.urls]
 Changelog = "https://github.com/s3r3t0/sereto/blob/main/CHANGELOG.md"
-# Documentation = "TODO"
+Documentation = "https://sereto.s4n.cz"
 Homepage = "https://github.com/s3r3t0/sereto"
 Source = "https://github.com/s3r3t0/sereto"
 
