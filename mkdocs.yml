@@ -5,9 +5,8 @@ site_url: https://sereto.s4n.cz
 theme:
   name: material
   logo: assets/logo/sereto_line_white.svg
-
-  # TODO
-  # - https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/
+  font:
+    code: monospace
 
   palette:
 

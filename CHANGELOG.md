@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 0.0.4
+
+- Update image in README.md to absolute URL. This is necessary for the PyPI to render the image correctly.
+- Add pipeline for building
+- Update docs
 
 ## 0.0.2, 0.0.3
 
