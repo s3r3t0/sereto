@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Define a security policy in SECURITY.md file.
+- Docs: Add security considerations to the documentation.
 
 ### Changed
 
-- Docker: Update Dockerfile to use low privilege user for running the application.
+- Docker: Update Dockerfile to use low privileged user for running the application.
 - README: Getting started section, mainly pointing to the documentation.
 
 ## [0.0.5] - 2024-09-04

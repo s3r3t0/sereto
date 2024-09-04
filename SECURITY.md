@@ -5,7 +5,7 @@ Before reporting a security issue, please review our security policy.
 ## Checklist
 
 - [ ] The security issue has not been previously reported.
-- [ ] The security issue is not a duplicate of an existing report.
+- [ ] The security issue is not documented in the [security considerations](https://sereto.s4n.cz/getting_started/security_considerations/).
 - [ ] The security issue is not caused by misconfiguration or misuse of the software.
 
 ## Reporting a Vulnerability
