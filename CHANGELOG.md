@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Define a security policy in SECURITY.md file.
+
 ## [0.0.5] - 2024-09-04
 
 ### Changed
