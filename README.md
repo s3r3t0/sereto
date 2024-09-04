@@ -10,5 +10,13 @@
   <img alt="SeReTo logo" src="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_black.svg" height="300">
 </picture>
 
+## Getting Started
+
+```bash
+pipx install sereto
+```
+
+For more information, please visit the [documentation](https://sereto.s4n.cz/installation/).
+
 
 > Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/it-hub/)
