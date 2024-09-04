@@ -1,37 +1,14 @@
 # Security Reporting Tool
 
-<img src="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_black.svg" alt="SeReTo logo" height="300"/>
+<!-- Badges -->
+[![Documentation](https://img.shields.io/badge/Documentation-SeReTo-blue)](https://sereto.s4n.cz/)
 
 
-## Documentation
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_white.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_black.svg">
+  <img alt="SeReTo logo" src="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_black.svg" height="300">
+</picture>
 
-Install dependencies:
-
-```sh
-pip install "sereto[docs]"
-```
-
-Start local client:
-
-```sh
-mkdocs serve
-```
-
-
-## Development
-
-### Tox
-
-Run tests and linters:
-
-```sh
-tox
-```
-
-Format code:
-
-```sh
-tox -e format
-```
 
 > Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/it-hub/)

@@ -106,3 +106,7 @@ nav:
     - reference/risks.md
     - reference/settings.md
     - reference/target.md
+  - Development:
+    - development/documentation.md
+    - development/tests.md
+    - development/code.md
