@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 - README: Fix link to the installation section in the documentation.
+
+### Fixed
+
+- CI/CD: Add CNAME file to hopefully stop overwriting the custom domain in the GitHub Pages deployment.
 
 ## [0.0.6] - 2024-09-04
 
