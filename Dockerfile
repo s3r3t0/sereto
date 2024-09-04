@@ -8,15 +8,23 @@ USER root
 
 COPY . /usr/src/sereto
 
-RUN apt-get -y update && \
+# Install sereto and its dependencies, create user "sereto"
+RUN useradd -m sereto && \
+    apt-get -y update && \
     apt-get install -y pandoc python3-pip pipx vim && \
-    pipx install /usr/src/sereto/ && \
+    pipx install --global /usr/src/sereto/ && \
     apt-get clean && \
-    rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/* && \
-    mkdir -p /root/.config/sereto && \
-    echo '{"reports_path": "/reports", "templates_path": "/templates"}' > /root/.config/sereto/settings.json
+    rm -rf /var/cache/apt/* && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/* && \
+    rm -rf /usr/src/sereto && \
+    mkdir -p /home/sereto/.config/sereto && \
+    echo '{"reports_path": "/reports", "templates_path": "/templates"}' > /home/sereto/.config/sereto/settings.json && \
+    chown -R sereto:sereto /home/sereto/.config
 
-# Expose pipx location to the PATH
-ENV PATH="/root/.local/bin:${PATH}"
+# Switch to sereto user
+USER sereto
+WORKDIR /home/sereto
 
+# Default command
 CMD ["/bin/bash"]
