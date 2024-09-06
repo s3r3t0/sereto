@@ -756,6 +756,3 @@ def templates_target_skel_copy(report: Report, settings: Settings, target: str |
         dst=selected_target.path,
         overwrite=True,
     )
-
-
-# TODO add tests (https://click.palletsprojects.com/en/8.1.x/testing/)
