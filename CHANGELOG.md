@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Tests: Add tests for the `sereto new` command.
+- README: Add PyPI badge.
+
 ### Changed
 
 - README: Fix link to the installation section in the documentation.

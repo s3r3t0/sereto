@@ -2,7 +2,7 @@
 
 <!-- Badges -->
 [![Documentation](https://img.shields.io/badge/Documentation-SeReTo-blue)](https://sereto.s4n.cz/)
-
+[![PyPI](https://img.shields.io/pypi/v/sereto?label=PyPI)](https://pypi.org/project/sereto/)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/s3r3t0/sereto/main/docs/assets/logo/sereto_block_white.svg">
