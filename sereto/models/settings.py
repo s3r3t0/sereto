@@ -1,6 +1,6 @@
 from pathlib import Path
 from subprocess import run
-from typing import Annotated, Any
+from typing import Any
 
 from click import get_app_dir
 from pydantic import (
@@ -15,6 +15,7 @@ from sereto.cli.console import Console
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
+from sereto.types import TypeCategories
 from sereto.utils import replace_strings
 
 
@@ -162,7 +163,7 @@ class Settings(SeretoBaseSettings):
     reports_path: DirectoryPath
     templates_path: DirectoryPath
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
-    categories: set[Annotated[str, Field(pattern=r"^[a-z][a-z_-]{0,18}[a-z]$")]] = Field(default=DEFAULT_CATEGORIES)
+    categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
 
     @staticmethod
     def get_path() -> Path:

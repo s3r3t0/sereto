@@ -1,0 +1,3 @@
+# CLI
+
+::: sereto.cli.cli

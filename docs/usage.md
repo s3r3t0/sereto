@@ -1,32 +1,38 @@
 
 # Usage
 
-SeReTo is a command line tool. After you have [set it up](getting_started/installation.md), you can use it from your terminal.
+SeReTo provides a *command line interface (CLI)* to help you create and manage your reports. After you have [set it up](getting_started/installation.md), you can continue with the following steps.
 
 ## Getting Help
 
-Any time you are unsure about anything, or cannot remember a command structure, you can always check the command line help:
+Any time you are unsure about anything, or cannot remember a command structure, you can always check the command's help:
 
-```
+```sh
 sereto --help
 ```
 
 You can also use help in the nested commands. For example, if you would like to know, what you can do with the dates in your report's configuration, you can run:
 
-```
+```sh
 sereto config dates --help
 ```
 
 ## Create Report
 
-SeReTo allows you to create a new report using the `new` command (in this example we use TEST as the report identifier).
+To create a new report using SeReTo, you can use the `new` command. The command takes a unique identifier for the report as a positional argument. For example, to create a report with the identifier `TEST`, you would run the following command:
 
-```
+```sh
 sereto new TEST
 ```
 
-You will be asked questions about the report, such as the name. Fill these in.
+During the creation process, you will be prompted with questions about the report, such as its name. Please provide the necessary information when prompted.
 
+Please note that the report identifier should meet the following requirements:
+
+- It can only contain letters (`a-zA-Z`), numbers (`0-9`), underscore (`_`), dash (`-`), and dot (`.`).
+- It should be between 1 and 20 characters long.
+
+For more information on the `new` command, you can refer to the [SeReTo CLI documentation](reference/cli/cli.md#sereto.cli.cli.new).
 
 ![](assets/sereto-new.gif)
 
@@ -35,7 +41,7 @@ You will be asked questions about the report, such as the name. Fill these in.
 
 You can see the list of all reports (including our newly created one) using the following command, which will show you the ID and name of the report, as well as the location of the report's file structure:
 
-```
+```sh
 sereto ls
 ```
 
@@ -56,7 +62,7 @@ Now you can change the report's configuration. SeReTo requires you to set up the
 
 Run the following command:
 
-```
+```sh
 sereto config dates add
 ```
 
@@ -77,7 +83,7 @@ Run this command multiple times for each type of date you would like to set.
 
 Run the following command:
 
-```
+```sh
 sereto config targets add
 ```
 
@@ -92,7 +98,7 @@ Run this command multiple times for each target.
 
 Run the following command:
 
-```
+```sh
 sereto config people add
 ```
 
@@ -107,12 +113,12 @@ Find the directory of your target in your report's directory. The name of the ta
 
 In the top of the findings.yaml file you can find an example of how to include a finding. Top level findings are called **Group Findings**. Each Group Finding has its name, in the following example the name is *Misconfigured HTTP Headers*. Each Group Finding also has one or more **Nested Findings**. In the following example these are *HSTS Header Not Set* (which has the ID "hsts_not_set") and *Weakly Configured CSP Header* ("weak_csp").
 
-```
+```yaml
 report_include:
-  - name: "Misconfigured HTTP Headers"
-    findings:
- - "hsts_not_set"
- - "weak_csp"
+- name: "Misconfigured HTTP Headers"
+  findings:
+  - "hsts_not_set"
+  - "weak_csp"
 ```
 
 List all the Group Findings you would like to include in your report under the *report_include* directive. You can copy the identifiers of Nested Findings from the second section of findings.yaml (under "All discovered findings from the templates").

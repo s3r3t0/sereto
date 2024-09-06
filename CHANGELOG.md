@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tests: Add tests for the `sereto new` command.
 - README: Add PyPI badge.
+- Docs: Add section about `sereto.cli.cli`.
 
 ### Changed
 
 - README: Fix link to the installation section in the documentation.
+- Docs: Updated the *Usage* section, especially part "Create Report".
+- Define annotated types in separate file.
 
 ### Fixed
 

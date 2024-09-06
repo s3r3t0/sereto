@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Any
 
 import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, ValidationError, field_validator, model_validator
@@ -12,6 +12,7 @@ from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.version import ReportVersion
+from sereto.types import TypePathName
 from sereto.utils import YAML
 
 
@@ -84,7 +85,7 @@ class ReportIncludeGroup(SeretoBaseModel):
 
 class Finding(SeretoBaseModel):
     name: str
-    path_name: Annotated[str, Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,98}[a-zA-Z0-9]$")]
+    path_name: TypePathName
     risks: dict[ReportVersion, Risk]
     vars: dict[str, Any] = {}
     format: FileFormat = FileFormat.md

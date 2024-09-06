@@ -38,6 +38,7 @@ from sereto.report import (
 )
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
+from sereto.types import TypeReportId
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -53,12 +54,14 @@ def cli() -> None:
 @handle_exceptions
 @click.argument("report_id")
 @load_settings
-def new(settings: Settings, report_id: str) -> None:
+def new(settings: Settings, report_id: TypeReportId) -> None:
     """Create a new report.
 
     \b
     Example:
-        $ sereto new PT01234
+        ```sh
+        sereto new PT01234
+        ```
     \f
 
     Args:

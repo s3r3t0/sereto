@@ -76,6 +76,7 @@ nav:
   - Reference:
     # - Reference: reference/reference.md
     - CLI:
+      - reference/cli/cli.md
       - reference/cli/commands.md
       - reference/cli/console.md
       - reference/cli/date.md

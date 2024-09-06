@@ -4,11 +4,11 @@ from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
 from shutil import copy2, copytree
-from typing import Annotated, TypeVar
+from typing import TypeVar
 
 from click import get_current_context
 from pathspec.gitignore import GitIgnoreSpec
-from pydantic import Field, validate_call
+from pydantic import validate_call
 from pypdf import PdfReader, PdfWriter
 from rich.prompt import Prompt
 from typing_extensions import ParamSpec
@@ -25,6 +25,7 @@ from sereto.models.version import ReportVersion, SeretoVersion
 from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_target_pdf
 from sereto.plot import risks_plot
 from sereto.target import create_findings_config, get_risks, render_target_j2  # render_target_findings_j2
+from sereto.types import TypeReportId
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -194,7 +195,7 @@ def embed_source_archive(report: Report, settings: Settings, version: ReportVers
 @validate_call
 def new_report(
     settings: Settings,
-    report_id: Annotated[str, Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,18}[a-zA-Z0-9]$")],
+    report_id: TypeReportId,
 ) -> None:
     """Generates a new report with the specified ID.
 
