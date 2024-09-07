@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tests: Add tests for the `sereto new` command.
 - README: Add PyPI badge.
-- Docs: Add section about `sereto.cli.cli`.
+- Docs: Add section about `sereto.cli.cli`, and `sereto.types` to references.
 
 ### Changed
 
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- CI/CD: Add CNAME file to hopefully stop overwriting the custom domain in the GitHub Pages deployment.
+- CI/CD: Add CNAME file to stop overwriting the custom domain in the GitHub Pages deployment.
 
 ## [0.0.6] - 2024-09-04
 

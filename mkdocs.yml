@@ -42,7 +42,7 @@ plugins:
         python:
           options:
             show_root_heading: true
-            show_source: false
+            docstring_style: google
   - search
 
 markdown_extensions:
@@ -108,6 +108,7 @@ nav:
     - reference/risks.md
     - reference/settings.md
     - reference/target.md
+    - reference/types.md
   - Development:
     - development/documentation.md
     - development/tests.md
