@@ -18,7 +18,7 @@ TypePathName = Annotated[str, Field(pattern=r"^[a-zA-Z0-9._-]{1,100}$")]
 The value should meet the following requirements:
 
 - It can only contain letters (`a-zA-Z`), numbers (`0-9`), underscore (`_`), dash (`-`), and dot (`.`).
-- It should be between 1 and 20 characters long.
+- It should be between 1 and 100 characters long.
 """
 
 
