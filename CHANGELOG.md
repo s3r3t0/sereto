@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CI/CD: Build and push Docker image to Docker Hub.
+
+### Changed
+
+- Include notes from CHANGELOG.md into GH release notes.
+
 ## [0.0.7] - 2024-09-07
 
 ### Added
