@@ -73,12 +73,17 @@
     pipx install .
     ```
 
-## Docker (development)
+## Docker
 
-Alternatively you can use SeReTo in a Docker container. <!-- The image is available on [Docker Hub](TODO URL). -->
-You will need to mount the directories with reports and templates to the container.
+Alternatively you can use SeReTo in a Docker container. You will need to mount the directories with reports and templates to the container.
 
-```sh
-docker build . -t sereto
-docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto
-```
+=== "DockerHub"
+    ```sh
+    docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto/sereto
+    ```
+
+=== "Build"
+    ```sh
+    docker build . -t sereto
+    docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto
+    ```

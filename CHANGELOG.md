@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 
 - Extract only relevant part of the changelog into GH release.
+- Docs: Update installation instructions related to Docker and DockerHub.
 
 ## [0.0.9] - 2024-09-08
 
