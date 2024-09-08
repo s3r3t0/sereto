@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- CI/CD: Try to fix Docker pipeline.
+
 ## [0.0.8] - 2024-09-08
 
 ### Added
