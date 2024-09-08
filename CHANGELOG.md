@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - CI/CD: Try to fix Docker pipeline.
+- CI/CD: Add checkout action to make the CHANGELOG.md file available.
 
 ## [0.0.8] - 2024-09-08
 
