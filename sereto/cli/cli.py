@@ -1,6 +1,7 @@
 import importlib.metadata
 
 import click
+import keyring
 
 from sereto.cleanup import render_sow_cleanup
 from sereto.cli.commands import sereto_ls, sereto_repl
@@ -673,6 +674,34 @@ def settings_edit() -> None:
     if not (path := Settings.get_path()).is_file():
         load_settings_function()
     click.edit(filename=str(path))
+
+
+@settings.group(cls=AliasedGroup)
+def password() -> None:
+    """Manage password for the encryption of attached archives."""
+
+
+@password.command(name="get")
+@handle_exceptions
+def settings_password_get() -> None:
+    """
+    Get the password for the encryption of attached archives.
+
+    This will print the password from the system's keyring.
+    """
+    click.echo(keyring.get_password("sereto_encrypt_attached_archive", ""))
+
+
+@password.command(name="set")
+@handle_exceptions
+@click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
+def settings_password_set(password: str) -> None:
+    """
+    Set the password for the encryption of attached archives.
+
+    This will store the password in the system's keyring.
+    """
+    keyring.set_password("sereto_encrypt_attached_archive", "", password)
 
 
 @settings.command(name="show")
