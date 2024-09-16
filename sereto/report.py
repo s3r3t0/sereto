@@ -15,6 +15,7 @@ from typing_extensions import ParamSpec
 
 from sereto.cleanup import render_finding_group_cleanup, render_report_cleanup, render_target_cleanup
 from sereto.cli.console import Console
+from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.finding import render_finding_group_j2
 from sereto.jinja import render_j2
@@ -149,6 +150,8 @@ def create_source_archive(report: Report, settings: Settings) -> None:
             Console().log(f"+ adding item: '{relative_path}'")
             tar.add(item, arcname=str(relative_path))
 
+    encrypt_file(archive_path)
+
 
 def delete_source_archive(report: Report, settings: Settings) -> None:
     """Delete the source archive.
@@ -158,11 +161,11 @@ def delete_source_archive(report: Report, settings: Settings) -> None:
         settings: Global settings.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    archive_path = report_path / "source.tgz"
 
-    if archive_path.is_file():
-        Console().log(f"deleting source archive: '{archive_path}'")
-        archive_path.unlink()
+    for archive_path in [report_path / "source.tgz", report_path / "source.sereto"]:
+        if archive_path.is_file():
+            archive_path.unlink()
+            Console().log(f"deleted source archive: '{archive_path}'")
 
 
 def embed_source_archive(report: Report, settings: Settings, version: ReportVersion) -> None:
@@ -173,7 +176,8 @@ def embed_source_archive(report: Report, settings: Settings, version: ReportVers
         settings: Global settings.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    archive_path = report_path / "source.tgz"
+    encrypted_archive_path = report_path / "source.sereto"
+    archive_path = encrypted_archive_path if encrypted_archive_path.is_file() else report_path / "source.tgz"
     report_pdf_path = report_path / f"report{version.path_suffix}.pdf"
 
     reader = PdfReader(report_pdf_path, strict=True)
@@ -185,7 +189,7 @@ def embed_source_archive(report: Report, settings: Settings, version: ReportVers
 
     # Embed the source archive
     with archive_path.open("rb") as f:
-        writer.add_attachment("source.tgz", f.read())
+        writer.add_attachment(filename=archive_path.name, data=f.read())
 
     # Write the output PDF
     with report_pdf_path.open("wb") as output_pdf:
