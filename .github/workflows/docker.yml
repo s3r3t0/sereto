@@ -20,4 +20,6 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
-        tags: sereto/sereto:latest
+        tags: |
+          sereto/sereto:latest
+          sereto/sereto:${{ github.ref_name }}

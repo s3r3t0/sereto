@@ -19,7 +19,7 @@ RUN useradd -m sereto && \
     rm -rf /tmp/* && \
     rm -rf /usr/src/sereto && \
     mkdir -p /home/sereto/.config/sereto && \
-    echo '{"reports_path": "/reports", "templates_path": "/templates"}' > /home/sereto/.config/sereto/settings.json && \
+    echo '{\n  "reports_path": "/reports",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json && \
     chown -R sereto:sereto /home/sereto/.config
 
 # Switch to sereto user

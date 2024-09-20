@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Docker: use version as tag, format default settings.json
+- Strip 'v' prefix from ref_name when creating GH release
+
 ## [0.0.10] - 2024-09-20
 
 ### Changed
