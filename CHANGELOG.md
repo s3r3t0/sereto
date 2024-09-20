@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Docker: use version as tag, format default settings.json
-- Strip 'v' prefix from ref_name when creating GH release
+- CI/CD: Fix invalid `${{ github.ref_name#v }}` syntax
 
 ## [0.0.10] - 2024-09-20
 

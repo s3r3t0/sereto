@@ -71,12 +71,17 @@ jobs:
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
+    - name: Prepare numeric version (1.2.3)
+      run: |
+        NUMERIC_VERSION=${{ github.ref_name }}
+        NUMERIC_VERSION="${NUMERIC_VERSION#v}" # Remove leading 'v'
+        echo "NUMERIC_VERSION=${NUMERIC_VERSION}" >> $GITHUB_ENV # Set it as an environment variable for later steps
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        CHANGELOG=$(sed -n '/^## \[${{ github.ref_name#v }}\]/,/^## /p' CHANGELOG.md | sed '1d;$d;')
-        gh release create '${{ github.ref_name }}' \
+        CHANGELOG=$(sed -n "/^## \[$NUMERIC_VERSION\]/,/^## /p" CHANGELOG.md | sed '1d;$d;')
+        gh release create "$NUMERIC_VERSION' \
         --repo '${{ github.repository }}' \
         --notes "$CHANGELOG"
     - name: Upload artifact signatures to GitHub Release
