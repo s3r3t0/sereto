@@ -75,7 +75,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        CHANGELOG=$(sed -n '/^## \[${{ github.ref_name }}\]/,/^## /p' CHANGELOG.md | sed '1d;$d;')
+        CHANGELOG=$(sed -n '/^## \[${{ github.ref_name#v }}\]/,/^## /p' CHANGELOG.md | sed '1d;$d;')
         gh release create '${{ github.ref_name }}' \
         --repo '${{ github.repository }}' \
         --notes "$CHANGELOG"
