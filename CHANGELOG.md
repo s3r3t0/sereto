@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
+## [0.0.10] - 2024-09-20
 
+### Changed
+
+- Implement REPL (Read-Eval-Print-Loop) for the CLI.
 - Extract only relevant part of the changelog into GH release.
 - Docs: Update installation instructions related to Docker and DockerHub.
 - Adjust Dependabot to use `versioning-strategy: "increase"`.
@@ -87,7 +90,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.9...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.10...HEAD
+[0.0.10]: https://github.com/s3r3t0/sereto/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/s3r3t0/sereto/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/s3r3t0/sereto/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/s3r3t0/sereto/compare/v0.0.6...v0.0.7
