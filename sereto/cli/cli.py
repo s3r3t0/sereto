@@ -3,7 +3,7 @@ import importlib.metadata
 import click
 
 from sereto.cleanup import render_sow_cleanup
-from sereto.cli.commands import sereto_ls
+from sereto.cli.commands import sereto_ls, sereto_repl
 from sereto.cli.console import Console
 from sereto.cli.utils import AliasedGroup, handle_exceptions
 from sereto.config import (
@@ -81,6 +81,12 @@ def ls(settings: Settings) -> None:
         settings: The settings object containing the tool's global configuration.
     """
     sereto_ls(settings=settings)
+
+
+@cli.command()
+def repl() -> None:
+    """Start an interactive shell (REPL) for SeReTo."""
+    sereto_repl(cli)
 
 
 # -------------
