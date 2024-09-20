@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.11] - 2024-09-20
+
+### Added
+
+- Encrypt the attached source archive
+
 ### Changed
 
 - Docker: use version as tag, format default settings.json
@@ -95,7 +101,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.10...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.11...HEAD
+[0.0.11]: https://github.com/s3r3t0/sereto/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/s3r3t0/sereto/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/s3r3t0/sereto/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/s3r3t0/sereto/compare/v0.0.7...v0.0.8
