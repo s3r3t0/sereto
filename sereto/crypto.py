@@ -78,7 +78,7 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
         Console().log("[yellow]Unsupported file format for encryption (not a .tgz or .tar.gz)\nSkipping encryption...")
         return
 
-    password = keyring.get_password("sereto_encrypt_attached_archive", "")
+    password = keyring.get_password("sereto", "encrypt_attached_archive")
 
     if not password:
         Console().log("[yellow]No password found for archive encryption\nSkipping encryption...")
@@ -144,7 +144,7 @@ def decrypt_file(file: Path, keep_file: bool = False) -> None:
     if file.suffix != ".sereto":
         raise SeretoValueError("Unsupported file format for decryption (not a .sereto)")
 
-    password = keyring.get_password("sereto_encrypt_attached_archive", "")
+    password = keyring.get_password("sereto", "encrypt_attached_archive")
 
     if not password:
         raise SeretoValueError("No password found for archive decryption")

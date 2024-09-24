@@ -689,7 +689,7 @@ def settings_password_get() -> None:
 
     This will print the password from the system's keyring.
     """
-    click.echo(keyring.get_password("sereto_encrypt_attached_archive", ""))
+    click.echo(keyring.get_password("sereto", "encrypt_attached_archive"))
 
 
 @password.command(name="set")
@@ -701,7 +701,7 @@ def settings_password_set(password: str) -> None:
 
     This will store the password in the system's keyring.
     """
-    keyring.set_password("sereto_encrypt_attached_archive", "", password)
+    keyring.set_password("sereto", "encrypt_attached_archive", password)
 
 
 @settings.command(name="show")
