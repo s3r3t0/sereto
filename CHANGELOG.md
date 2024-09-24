@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Keyring: change the location, as the username should not be empty.
+- Bump version of keyring and pypdf
+
 ## [0.0.11] - 2024-09-20
 
 ### Added
