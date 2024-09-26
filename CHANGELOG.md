@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add a new command `sereto decrypt` to extract the project sources from `source.sereto` file.
+- Add a new command `sereto unpack` to extract the project sources from a report's PDF file.
+
 ### Changed
 
 - Keyring: change the location, as the username should not be empty.

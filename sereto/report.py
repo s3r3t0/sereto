@@ -4,6 +4,7 @@ from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
 from shutil import copy2, copytree
+from tempfile import gettempdir
 from typing import TypeVar
 
 from click import get_current_context
@@ -27,6 +28,7 @@ from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_targe
 from sereto.plot import risks_plot
 from sereto.target import create_findings_config, get_risks, render_target_j2  # render_target_findings_j2
 from sereto.types import TypeReportId
+from sereto.utils import evaluate_size_threshold
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -66,7 +68,8 @@ def get_all_reports_dict(settings: Settings) -> dict[str, Report]:
 
 @validate_call
 def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
-    """Copy the content of a templates `skel` directory to a destination directory.
+    """
+    Copy the content of a templates `skel` directory to a destination directory.
 
     A `skel` directory is a directory that contains a set of files and directories that can be used as a template
     for creating new projects. This function copies the contents of the `skel` directory located at
@@ -97,28 +100,29 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
             copytree(item, dst_item, dirs_exist_ok=overwrite)
 
 
-def _is_ignored(relative_path: str, sereto_ignore: list[str]) -> bool:
-    """Check if a file path matches any of the ignore patterns.
+def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
+    """
+    Check if a file path matches any of the ignore patterns.
 
     Args:
-        file_path: The file path to check.
-        sereto_ignore: List of ignore patterns.
+        relative_path: The file path to check.
+        patterns: List of ignore patterns.
 
     Returns:
         True if the file is ignored, False otherwise.
     """
-    spec = GitIgnoreSpec.from_lines(sereto_ignore)
+    spec = GitIgnoreSpec.from_lines(patterns)
     return spec.match_file(relative_path)
 
 
-def create_source_archive(report: Report, settings: Settings) -> None:
-    """Create a source archive for the report.
+def create_source_archive(settings: Settings) -> None:
+    """
+    Create a source archive for the report.
 
     This function creates a source archive for the report by copying all the files not matching any
     ignore pattern in the report directory to a compressed archive file.
 
     Args:
-        report: Report's representation.
         settings: Global settings.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
@@ -127,8 +131,8 @@ def create_source_archive(report: Report, settings: Settings) -> None:
     if not (seretoignore_path := report_path / ".seretoignore").is_file():
         Console().log(f"no '.seretoignore' file found: '{seretoignore_path}'")
         ignore_lines = []
-    elif seretoignore_path.stat().st_size > 10_000_000:
-        raise SeretoValueError("File '.seretoignore' exceeds threshold of 10MB")
+    elif not evaluate_size_threshold(file=seretoignore_path, max_bytes=10_485_760, interactive=True):
+        raise SeretoValueError("File '.seretoignore' size not within thresholds")
     else:
         with seretoignore_path.open("r") as seretoignore:
             ignore_lines = seretoignore.readlines()
@@ -148,13 +152,14 @@ def create_source_archive(report: Report, settings: Settings) -> None:
                 continue
 
             Console().log(f"+ adding item: '{relative_path}'")
-            tar.add(item, arcname=str(relative_path))
+            tar.add(item, arcname=str(item.relative_to(report_path.parent)))
 
     encrypt_file(archive_path)
 
 
-def delete_source_archive(report: Report, settings: Settings) -> None:
-    """Delete the source archive.
+def delete_source_archive(settings: Settings) -> None:
+    """
+    Delete the source archive.
 
     Args:
         report: Report's representation.
@@ -168,8 +173,9 @@ def delete_source_archive(report: Report, settings: Settings) -> None:
             Console().log(f"deleted source archive: '{archive_path}'")
 
 
-def embed_source_archive(report: Report, settings: Settings, version: ReportVersion) -> None:
-    """Embed the source archive in the report PDF.
+def embed_source_archive(settings: Settings, version: ReportVersion) -> None:
+    """
+    Embed the source archive in the report PDF.
 
     Args:
         report: Report's representation.
@@ -201,7 +207,8 @@ def new_report(
     settings: Settings,
     report_id: TypeReportId,
 ) -> None:
-    """Generates a new report with the specified ID.
+    """
+    Generates a new report with the specified ID.
 
     Args:
         settings: Global settings.
@@ -245,7 +252,8 @@ def render_report_j2(
     version: ReportVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    """Renders Jinja templates into TeX files.
+    """
+    Renders Jinja templates into TeX files.
 
     This function processes Jinja templates for report, approach and scope in each target, and all relevant findings.
 
@@ -312,7 +320,8 @@ def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) ->
 
 @validate_call
 def report_create_missing(report: Report, settings: Settings, version: ReportVersion) -> None:
-    """Creates missing target directories from config.
+    """
+    Creates missing target directories from config.
 
     This function creates any missing target directories and populates them with content of the "skel" directory from
     templates.
@@ -373,9 +382,9 @@ def report_pdf(
             )
 
     render_report_pdf(report=report, settings=settings, version=version, recipe=report_recipe)
-    create_source_archive(report=report, settings=settings)
-    embed_source_archive(report=report, settings=settings, version=version)
-    delete_source_archive(report=report, settings=settings)
+    create_source_archive(settings=settings)
+    embed_source_archive(settings=settings, version=version)
+    delete_source_archive(settings=settings)
 
 
 @validate_call
@@ -398,3 +407,46 @@ def report_cleanup(
             )
 
     render_report_cleanup(report=report, settings=settings, version=version)
+
+
+@validate_call
+def extract_attachment_from(pdf: Path, name: str) -> Path:
+    """
+    Extracts an attachment from a given PDF file and writes it to a temporary file.
+
+    Args:
+        pdf: The path to the PDF file from which to extract the attachment.
+        name: The name of the attachment to extract.
+
+    Returns:
+        The path to the temporary file containing the extracted attachment.
+
+    Raises:
+        SeretoValueError: If no or multiple attachments with the same name are found in the PDF.
+    """
+    if not pdf.is_file():
+        raise SeretoPathError(f"file not found: '{pdf}'")
+
+    # Read the PDF file
+    reader = PdfReader(pdf, strict=True)
+
+    # Check if the attachment is present
+    if name not in reader.attachments:
+        Console().log(f"no '{name}' attachment found in '{pdf}'")
+        Console().log(f"[blue]Manually inspect the file to make sure the attachment '{name}' is present")
+        raise SeretoValueError(f"no '{name}' attachment found in '{pdf}'")
+
+    # PDF attachment names are not unique; check if there is only one attachment with the expected name
+    if len(reader.attachments[name]) != 1:
+        Console().log(f"[yellow]only single '{name}' attachment should be present")
+        Console().log("[blue]Manually extract the correct file and use `sereto decrypt` command instead")
+        raise SeretoValueError(f"multiple '{name}' attachments found")
+
+    # Extract the attachment's content
+    content: bytes = reader.attachments[name][0]
+
+    # Write the content to a temporary file
+    output_file = Path(gettempdir()) / name
+    output_file.write_bytes(content)
+
+    return output_file

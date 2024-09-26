@@ -6,12 +6,12 @@ import keyring
 from argon2.low_level import Type as Argon2Type
 from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from humanize import naturalsize
 from pydantic import validate_call
 
 from sereto.cli.console import Console
-from sereto.exceptions import SeretoValueError
+from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
+from sereto.utils import evaluate_size_threshold
 
 __all__ = [
     "encrypt_file",
@@ -84,17 +84,8 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
         Console().log("[yellow]No password found for archive encryption\nSkipping encryption...")
         return
 
-    if (file_size := file.stat().st_size) == 0:
-        Console().log("[yellow]The attached archive with sources is empty\nSkipping encryption...")
-        return
-
-    if file_size > 1_073_741_824:
-        click.confirm(
-            f"The attached archive with sources has {naturalsize(file_size, binary=True)}, which exceeds threshold of "
-            "1 GiB. Do you want to continue?",
-            default=False,
-            abort=True,
-        )
+    if not evaluate_size_threshold(file=file, max_bytes=1_073_741_824, interactive=True):
+        raise SeretoValueError("Archive size exceeds the threshold. Cannot continue")
 
     Console().log("[green]Found password for archive encryption. Encrypting archive")
 
@@ -124,25 +115,43 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
 
 
 @validate_call
-def decrypt_file(file: Path, keep_file: bool = False) -> None:
+def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool = True) -> Path:
     """
     Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, parses the
     header (contains nonce and seed), and decrypts the file content. The decrypted data is then saved with a .tgz
-    suffix and the original file is deleted (use `keep_file=True` to overwrite deletion).
+    suffix and the original file is deleted (use `keep_original=True` to overwrite deletion).
 
     Args:
         file: The path to the encrypted .sereto file.
-        keep_file: If True, the original encrypted file is kept. Defaults to False.
+        output_dir: The directory to save the decrypted file. Defaults to the same directory as the encrypted file.
+        keep_original: If True, the original encrypted file is kept. Defaults to False.
 
     Raises:
         click.Abort: If the file size exceeds 1 GiB and the user chooses not to continue.
         SeretoValueError: If the file is corrupted or not encrypted with SeReTo.
+
+    Returns:
+        Path to the decrypted file.
     """
+    if not file.is_file():
+        raise SeretoPathError(f"File '{file}' does not exist")
+
+    if output_dir is None:
+        output_dir = file.parent
+
+    output_file = output_dir / file.with_suffix(".tgz").name
 
     if file.suffix != ".sereto":
         raise SeretoValueError("Unsupported file format for decryption (not a .sereto)")
+
+    if output_file.is_file():
+        Console().log(f"[yellow]Temporary file '{output_file}' exists")
+        if not click.confirm("Do you want to overwrite it?", default=False):
+            raise SeretoPathError(f"Temporary file '{output_file}' exists. Cannot continue")
+
+        output_file.unlink()
 
     password = keyring.get_password("sereto", "encrypt_attached_archive")
 
@@ -151,19 +160,8 @@ def decrypt_file(file: Path, keep_file: bool = False) -> None:
 
     Console().log("[green]Found password for archive decryption. Decrypting archive")
 
-    if (file_size := file.stat().st_size) <= 64:
-        Console().log(
-            f"[yellow]The attached archive with sources is empty or corrupted ({file_size} B)\nSkipping decryption"
-        )
-        return
-
-    if file_size > 1_073_741_824:
-        click.confirm(
-            f"The encrypted archive has {naturalsize(file_size, binary=True)}, which exceeds threshold of 1 GiB. "
-            "Do you want to continue?",
-            default=False,
-            abort=True,
-        )
+    if not evaluate_size_threshold(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True):
+        raise SeretoValueError("Archive size not within thresholds. Cannot continue")
 
     data = file.read_bytes()
 
@@ -182,9 +180,11 @@ def decrypt_file(file: Path, keep_file: bool = False) -> None:
     decrypted_data = AESGCM(key).decrypt(nonce=nonce, data=encrypted_data, associated_data=None)
 
     # Write the decrypted data back to the file
-    file.with_suffix(".tgz").write_bytes(decrypted_data)
+    output_file.write_bytes(decrypted_data)
 
-    if not keep_file:
+    if not keep_original:
         file.unlink()
 
     Console().log("[green]Archive successfully decrypted")
+
+    return output_file

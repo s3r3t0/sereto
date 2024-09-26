@@ -1,4 +1,5 @@
 import importlib.metadata
+from pathlib import Path
 
 import click
 import keyring
@@ -20,6 +21,7 @@ from sereto.config import (
     show_people_config,
     show_targets_config,
 )
+from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError
 from sereto.finding import add_finding, show_findings, update_findings
@@ -29,6 +31,7 @@ from sereto.models.version import ReportVersion
 from sereto.pdf import render_sow_pdf
 from sereto.report import (
     copy_skel,
+    extract_attachment_from,
     load_report,
     new_report,
     render_report_j2,
@@ -40,6 +43,7 @@ from sereto.report import (
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.types import TypeReportId
+from sereto.utils import untar_sources
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -88,6 +92,27 @@ def ls(settings: Settings) -> None:
 def repl() -> None:
     """Start an interactive shell (REPL) for SeReTo."""
     sereto_repl(cli)
+
+
+@cli.command()
+@handle_exceptions
+@click.option("-f", "--file", required=True, help="Path to the source.sereto file.", type=Path)
+@load_settings
+def decrypt(settings: Settings, file: Path) -> None:
+    """Extract the SeReTo project from the encrypted archive."""
+    source_tgz = decrypt_file(file=file, output_dir=settings.reports_path, keep_original=True)
+    untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
+
+
+@cli.command()
+@handle_exceptions
+@click.option("-f", "--file", required=True, help="Path to the PDF file.", type=Path)
+@load_settings
+def unpack(settings: Settings, file: Path) -> None:
+    """Unpack the SeReTo project from the report's PDF."""
+    attachment = extract_attachment_from(pdf=file, name="source.sereto")
+    source_tgz = decrypt_file(file=attachment, output_dir=settings.reports_path, keep_original=False)
+    untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 
 # -------------
