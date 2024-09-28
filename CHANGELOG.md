@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improve REPL and use it as the default command for Docker image.
+
 ## [0.0.12] - 2024-09-27
 
 ### Added

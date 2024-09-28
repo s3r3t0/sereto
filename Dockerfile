@@ -27,4 +27,4 @@ USER sereto
 WORKDIR /home/sereto
 
 # Default command
-CMD ["/bin/bash"]
+CMD ["/usr/local/bin/sereto", "repl"]

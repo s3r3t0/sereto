@@ -10,6 +10,7 @@ import click
 import jinja2
 import pydantic
 from pydantic import validate_call
+from rich.markup import escape
 from rich.prompt import Prompt
 
 from sereto.cli.aliases import cli_aliases
@@ -129,7 +130,7 @@ def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
             return func(*args, **kwargs)
         except Exception as e:
             if isinstance(e, SeretoException):
-                Console().print(f"[red]Error: {e}")
+                Console().print(f"[red]Error:[/red] {escape(str(e))}")
             if os.environ.get("DEBUG", False):
                 Console().print_exception(show_locals=True, suppress=[click, jinja2, pydantic, pathlib])
             else:
