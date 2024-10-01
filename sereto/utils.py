@@ -8,7 +8,7 @@ import ruamel.yaml
 from humanize import naturalsize
 from pydantic import validate_call
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 
 YAML = ruamel.yaml.YAML()
@@ -24,8 +24,7 @@ def replace_strings(text: list[str], replacements: dict[str, str]) -> list[str]:
 
 @validate_call
 def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str | list[str]:
-    """
-    One-pass string replacement with values from dictionary.
+    """One-pass string replacement with values from dictionary.
 
     Args:
         text: The input text.
@@ -49,8 +48,7 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
 
 @validate_call
 def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> None:
-    """
-    Extracts sources from a given tarball file.
+    """Extracts sources from a given tarball file.
 
     Args:
         file: The path to the .tgz file.
@@ -66,8 +64,7 @@ def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> N
 
 @validate_call
 def evaluate_size_threshold(file: Path, max_bytes: int, min_bytes: int = 0, interactive: bool = False) -> bool:
-    """
-    Evaluates if the file size is within the specified range.
+    """Evaluates if the file size is within the specified range.
 
     Args:
         file: The path to the file.

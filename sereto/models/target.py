@@ -73,6 +73,7 @@ class TargetDast(Target):
 
 class TargetSast(Target):
     """Model representing the details of the 'sast' category.
+
     Attributes:
         code_origin: where we obtained the code - Version Control System or archive (ZIP/TAR/...)
         code_origin_name: origin details - e.g. "Gitlab" or "project_source.zip"

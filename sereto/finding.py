@@ -4,7 +4,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.convert import convert_file_to_tex
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.jinja import render_j2

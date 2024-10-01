@@ -17,8 +17,7 @@ def convert_file_to_tex(
     version: ReportVersion,
     recipe: str | None = None,
 ) -> None:
-    """
-    Convert a file to TeX format using the specified finding, render, templates, version, and recipe.
+    """Convert a file to TeX format using the specified finding, render, templates, version, and recipe.
 
     Args:
         finding: The finding object representing the file to be converted.

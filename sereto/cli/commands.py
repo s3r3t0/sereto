@@ -8,7 +8,7 @@ from rich import box
 from rich.markup import escape
 from rich.table import Table
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.report import Report
@@ -21,8 +21,7 @@ __all__ = ["sereto_ls", "sereto_repl"]
 
 @validate_call
 def sereto_ls(settings: Settings) -> None:
-    """
-    List all reports in the user's reports directory.
+    """List all reports in the user's reports directory.
 
     Args:
         settings: The Settings object.
@@ -43,8 +42,7 @@ def sereto_ls(settings: Settings) -> None:
 
 
 class WorkingDir(SeretoBaseModel):
-    """
-    Helper class for REPL implementing the `cd` command.
+    """Helper class for REPL implementing the `cd` command.
 
     Attributes:
         old_cwd: The previous working directory.
@@ -52,23 +50,22 @@ class WorkingDir(SeretoBaseModel):
 
     old_cwd: Path = Field(default=Path.cwd())
 
-    def change(self, new: Path) -> None:
-        """
-        Change the current working directory to the new location.
+    def change(self, dst: Path, /) -> None:
+        """Change the current working directory to the new location.
 
         Also saves the previous location for future reference.
 
         Args:
-            new: The new working directory
+            dst: The new working directory
 
         Raises:
-            SeretoPathError: If the new location does not exist.
+            SeretoPathError: If the provided path is not an existing directory.
         """
-        if not new.is_dir():
-            raise SeretoPathError(f"Directory '{new}' does not exist.")
+        if not dst.is_dir():
+            raise SeretoPathError(f"Directory '{dst}' does not exist.")
 
         cwd = Path.cwd()
-        os.chdir(new)
+        os.chdir(dst)
         self.old_cwd = cwd
 
     def go_back(self) -> None:
@@ -93,8 +90,7 @@ def _load_repl_history() -> None:
 
 
 def _get_repl_prompt(settings: Settings) -> str:
-    """
-    Get the prompt for the Read-Eval-Print Loop (REPL).
+    """Get the prompt for the Read-Eval-Print Loop (REPL).
 
     Args:
         settings: The Settings object.
@@ -116,9 +112,8 @@ def _get_repl_prompt(settings: Settings) -> str:
 
 
 @validate_call
-def _change_dir_repl(settings: Settings, cmd: str, wd: WorkingDir) -> None:
-    """
-    Change the current working directory in the Read-Eval-Print Loop (REPL).
+def _change_repl_dir(settings: Settings, cmd: str, wd: WorkingDir) -> None:
+    """Change the current working directory in the Read-Eval-Print Loop (REPL).
 
     Args:
         settings: The Settings object.
@@ -157,8 +152,7 @@ def _change_dir_repl(settings: Settings, cmd: str, wd: WorkingDir) -> None:
 
 
 def sereto_repl(cli: Group, settings: Settings) -> None:
-    """
-    Start an interactive Read-Eval-Print Loop (REPL) session.
+    """Start an interactive Read-Eval-Print Loop (REPL) session.
 
     Args:
         cli: The main CLI group.
@@ -189,7 +183,7 @@ def sereto_repl(cli: Group, settings: Settings) -> None:
                 case "help" | "h" | "?":
                     cli.main(prog_name="sereto", args="--help", standalone_mode=False)
                 case s if s.startswith("cd "):
-                    _change_dir_repl(settings=settings, cmd=cmd, wd=wd)
+                    _change_repl_dir(settings=settings, cmd=cmd, wd=wd)
                     prompt = _get_repl_prompt(settings=settings)
                 case s if len(s) > 0:
                     cli.main(prog_name="sereto", args=cmd.split(), standalone_mode=False)

@@ -7,11 +7,10 @@ from rich import box
 from rich.prompt import Confirm
 from rich.table import Table
 
-from sereto.cli.console import Console
 from sereto.cli.date import prompt_user_for_date
 from sereto.cli.person import prompt_user_for_person
 from sereto.cli.target import prompt_user_for_target
-from sereto.cli.utils import load_enum
+from sereto.cli.utils import Console, load_enum
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoValueError
 from sereto.models.config import Config

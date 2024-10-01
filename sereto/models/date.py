@@ -17,7 +17,7 @@ class SeretoDate(RootModel[date]):
     The `%d-%b-%Y` format string specifies the format of the date string as follows:
      - `%d`: Day of the month as a zero-padded decimal number (e.g. 01, 02, ..., 31).
      - `%b`: Month abbreviation in the current locale's abbreviated name (e.g. Jan, Feb, ..., Dec).
-     - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ..., 9999).
+     - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ...).
     """
 
     @field_validator("root", mode="before")

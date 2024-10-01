@@ -11,7 +11,7 @@ from pydantic import (
     validate_call,
 )
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings

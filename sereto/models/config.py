@@ -1,7 +1,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-from pydantic import model_validator, validate_call
+from pydantic import Field, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -12,7 +12,16 @@ from sereto.models.version import ReportVersion, SeretoVersion
 
 
 class BaseConfig(SeretoBaseModel):
-    """Base class for model representing the config."""
+    """Model with core attributes for a specific version of the report configuration.
+
+    Attributes:
+        id: The ID of the report.
+        name: The name of the report.
+        report_version: The version of the report.
+        targets: List of targets.
+        dates: List of dates.
+        people: List of people.
+    """
 
     id: str
     name: str
@@ -30,15 +39,15 @@ class BaseConfig(SeretoBaseModel):
 
 
 class Config(BaseConfig):
-    """Model representing a config.
+    """Model representing the full report configuration.
 
     Attributes:
-        sereto_version (SeretoVersion): Version of SeReTo which produced the config.
-        updates (list[BaseConfig]): List of updates.
+        sereto_version: Version of SeReTo which produced the config.
+        updates: List of updates.
     """
 
     sereto_version: SeretoVersion
-    updates: list[BaseConfig] = []
+    updates: list[BaseConfig] = Field(default=[])
 
     @model_validator(mode="after")
     def config_validator(self) -> "Config":
@@ -63,34 +72,54 @@ class Config(BaseConfig):
 
     @classmethod
     def from_file(cls, filepath: Path) -> "Config":
+        """Load the configuration from a file.
+
+        Args:
+            filepath: The path to the configuration file.
+
+        Returns:
+            The configuration object.
+
+        Raises:
+            SeretoPathError: If the file is not found or permission is denied.
+            SeretoValueError: If the configuration is invalid.
+        """
         try:
             return cls.model_validate_json(filepath.read_bytes())
         except FileNotFoundError:
-            raise SeretoPathError(f'file not found at "{filepath}"') from None
+            raise SeretoPathError(f"file not found at '{filepath}'") from None
         except PermissionError:
-            raise SeretoPathError(f'permission denied for "{filepath}"') from None
+            raise SeretoPathError(f"permission denied for '{filepath}'") from None
         except ValueError as e:
             raise SeretoValueError("invalid config") from e
 
     @validate_call
     def versions(self) -> list[ReportVersion]:
-        """Get a list of report versions."""
+        """Get a sorted list of report versions in ascending order.
+
+        Returns:
+            A list of report versions.
+        """
         return [self.report_version] + [update.report_version for update in self.updates]
 
     @validate_call
     def last_version(self) -> ReportVersion:
-        """Get the last report version."""
+        """Get the last report version present in the configuration.
+
+        Returns:
+            The last report version.
+        """
         return self.versions()[-1]
 
     def at_version(self, version: str | ReportVersion | None) -> BaseConfig:
         """Return the configuration at a specific version.
 
         Args:
-            version: A version of the report configuration to return. If None is provided, return the
-                whole config with all the updates sections.
+            version: A version of the report configuration to return. If None is provided, return the whole config with
+                all the updates sections.
 
         Returns:
-            A new Config object representing the configuration for the report at the specified version.
+            Configuration for the report at the specified version.
 
         Raises:
             SeretoValueError: If the specified version is unknown.
@@ -111,4 +140,5 @@ class Config(BaseConfig):
         # Otherwise, we need to find the matching update section
         if len(res := [cfg for cfg in self.updates if cfg.report_version == version]) != 1:
             raise SeretoValueError(f"version '{version}' not found")
+
         return res[0]

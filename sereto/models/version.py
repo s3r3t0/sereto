@@ -106,8 +106,7 @@ class VersionVPrefix(Version):
 
     @classmethod
     def parse(cls, v: str) -> "Version":  # type: ignore[override]
-        """
-        Parse version string to a Version instance.
+        """Parse version string to a Version instance.
 
         Args:
             v: version string with "v" prefix

@@ -14,8 +14,7 @@ __all__ = [
 
 
 TypeReportId = Annotated[str, Field(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]
-"""
-Type for report ID.
+"""Type for report ID.
 
 The value should meet the following requirements:
 
@@ -25,8 +24,7 @@ The value should meet the following requirements:
 
 
 TypePathName = Annotated[str, Field(pattern=r"^[a-zA-Z0-9._-]{1,100}$", strict=True)]
-"""
-Type for path name.
+"""Type for path name.
 
 The value should meet the following requirements:
 
@@ -36,8 +34,7 @@ The value should meet the following requirements:
 
 
 TypeCategories = set[Annotated[str, Field(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]]
-"""
-Type for categories names.
+"""Type for categories names.
 
 The values should meet the following requirements:
 
@@ -50,8 +47,7 @@ Example:
 
 
 TypePassword = Annotated[str, Field(min_length=8, max_length=100, strict=True)]
-"""
-Type for password.
+"""Type for password.
 
 The value should meet the following requirements:
 
@@ -66,16 +62,14 @@ def zero_bytes(value: bytes) -> bytes:
 
 
 TypeNonce12B = Annotated[bytes, AfterValidator(zero_bytes), Field(min_length=12, max_length=12)]
-"""
-Type for a 12 byte long nonce.
+"""Type for a 12 byte long nonce.
 
 The value must contain at least one non-zero byte. This check is in place to prevent unintentional errors.
 """
 
 
 TypeSalt16B = Annotated[bytes, AfterValidator(zero_bytes), Field(min_length=16, max_length=16)]
-"""
-Type for a 16 byte long salt.
+"""Type for a 16 byte long salt.
 
 The value must contain at least one non-zero byte. This check is in place to prevent unintentional errors.
 """

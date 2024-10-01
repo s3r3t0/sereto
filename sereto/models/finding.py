@@ -7,7 +7,7 @@ import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, ValidationError, field_validator, model_validator
 from unidecode import unidecode
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.models.base import SeretoBaseModel

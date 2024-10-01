@@ -1,13 +1,21 @@
 import click
 from rich.prompt import Prompt
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
 from sereto.models.settings import Settings
 from sereto.models.target import Target, TargetDast, TargetSast
 
 
 def prompt_user_for_target(settings: Settings) -> Target:
+    """Interactively prompt for a target's details.
+
+    Args:
+        settings: The Settings object.
+
+    Returns:
+        The target as provided by the user.
+    """
     Console().line()
     category = Prompt.ask("Category", choices=list(settings.categories), console=Console())
     name = Prompt.ask("Name", console=Console())

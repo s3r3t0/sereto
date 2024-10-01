@@ -8,7 +8,7 @@ from pydantic import ValidationError, validate_call
 from rich.prompt import Confirm, Prompt
 from typing_extensions import ParamSpec
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.models.settings import Settings
 
 P = ParamSpec("P")

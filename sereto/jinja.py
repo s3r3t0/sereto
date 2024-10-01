@@ -49,7 +49,8 @@ def tex_escape_filter(text: Any, default: str = "n/a") -> str:
 
 
 def yesno_filter(value: str | None, arg: str = "yes,no,maybe") -> str:
-    """
+    """Tex filter for converting boolean values to strings.
+
     Given a string mapping values for true, false, and (optionally) None,
     return one of those strings according to the value:
     ==========  ======================  ==================================

@@ -15,7 +15,7 @@ from rich.prompt import Prompt
 from typing_extensions import ParamSpec
 
 from sereto.cleanup import render_finding_group_cleanup, render_report_cleanup, render_target_cleanup
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.finding import render_finding_group_j2
@@ -68,8 +68,7 @@ def get_all_reports_dict(settings: Settings) -> dict[str, Report]:
 
 @validate_call
 def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
-    """
-    Copy the content of a templates `skel` directory to a destination directory.
+    """Copy the content of a templates `skel` directory to a destination directory.
 
     A `skel` directory is a directory that contains a set of files and directories that can be used as a template
     for creating new projects. This function copies the contents of the `skel` directory located at
@@ -101,8 +100,7 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
 
 
 def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
-    """
-    Check if a file path matches any of the ignore patterns.
+    """Check if a file path matches any of the ignore patterns.
 
     Args:
         relative_path: The file path to check.
@@ -116,8 +114,7 @@ def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
 
 
 def create_source_archive(settings: Settings) -> None:
-    """
-    Create a source archive for the report.
+    """Create a source archive for the report.
 
     This function creates a source archive for the report by copying all the files not matching any
     ignore pattern in the report directory to a compressed archive file.
@@ -158,8 +155,7 @@ def create_source_archive(settings: Settings) -> None:
 
 
 def delete_source_archive(settings: Settings) -> None:
-    """
-    Delete the source archive.
+    """Delete the source archive.
 
     Args:
         report: Report's representation.
@@ -174,8 +170,7 @@ def delete_source_archive(settings: Settings) -> None:
 
 
 def embed_source_archive(settings: Settings, version: ReportVersion) -> None:
-    """
-    Embed the source archive in the report PDF.
+    """Embed the source archive in the report PDF.
 
     Args:
         report: Report's representation.
@@ -207,8 +202,7 @@ def new_report(
     settings: Settings,
     report_id: TypeReportId,
 ) -> None:
-    """
-    Generates a new report with the specified ID.
+    """Generates a new report with the specified ID.
 
     Args:
         settings: Global settings.
@@ -252,8 +246,7 @@ def render_report_j2(
     version: ReportVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    """
-    Renders Jinja templates into TeX files.
+    """Renders Jinja templates into TeX files.
 
     This function processes Jinja templates for report, approach and scope in each target, and all relevant findings.
 
@@ -320,8 +313,7 @@ def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) ->
 
 @validate_call
 def report_create_missing(report: Report, settings: Settings, version: ReportVersion) -> None:
-    """
-    Creates missing target directories from config.
+    """Creates missing target directories from config.
 
     This function creates any missing target directories and populates them with content of the "skel" directory from
     templates.
@@ -411,8 +403,7 @@ def report_cleanup(
 
 @validate_call
 def extract_attachment_from(pdf: Path, name: str) -> Path:
-    """
-    Extracts an attachment from a given PDF file and writes it to a temporary file.
+    """Extracts an attachment from a given PDF file and writes it to a temporary file.
 
     Args:
         pdf: The path to the PDF file from which to extract the attachment.

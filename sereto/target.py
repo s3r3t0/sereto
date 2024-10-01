@@ -5,7 +5,7 @@ import frontmatter  # type: ignore[import-untyped]
 from pydantic import ValidationError, validate_call
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.convert import convert_file_to_tex
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.finding import render_finding_j2

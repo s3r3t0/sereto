@@ -6,8 +6,7 @@ import keyring
 
 from sereto.cleanup import render_sow_cleanup
 from sereto.cli.commands import sereto_ls, sereto_repl
-from sereto.cli.console import Console
-from sereto.cli.utils import AliasedGroup, handle_exceptions
+from sereto.cli.utils import AliasedGroup, Console
 from sereto.config import (
     add_dates_config,
     add_people_config,
@@ -23,7 +22,7 @@ from sereto.config import (
 )
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
-from sereto.exceptions import SeretoPathError, SeretoRuntimeError
+from sereto.exceptions import SeretoPathError, SeretoRuntimeError, handle_exceptions
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.report import Report
 from sereto.models.settings import Settings
@@ -490,8 +489,7 @@ def finding_show(report: Report, settings: Settings, version: ReportVersion | No
 @load_settings
 @load_report
 def finding_update(report: Report, settings: Settings) -> None:
-    """
-    Update available findings from templates.
+    """Update available findings from templates.
 
     Only new findings will be added to the findings.yaml file. Existing findings will not be modified.
     \f
@@ -517,8 +515,7 @@ def open() -> None:
 @handle_exceptions
 @load_settings
 def open_folder(settings: Settings) -> None:
-    """
-    Open the folder containing the current report.\f
+    """Open the folder containing the current report.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
@@ -532,8 +529,7 @@ def open_folder(settings: Settings) -> None:
 @load_settings
 @load_report
 def open_report(report: Report, settings: Settings, version: ReportVersion | None) -> None:
-    """
-    Open the report document in the default PDF viewer.\f
+    """Open the report document in the default PDF viewer.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
@@ -578,8 +574,7 @@ def open_sow(report: Report, settings: Settings, version: ReportVersion | None) 
 
 @cli.group(cls=AliasedGroup)
 def pdf() -> None:
-    """
-    Render PDF documents.
+    """Render PDF documents.
 
     This group of commands allows you to render a PDF report or Statement of Work.
     """
@@ -603,8 +598,7 @@ def pdf_report(
     convert_recipe: str | None,
     version: ReportVersion | None,
 ) -> None:
-    """
-    Generate a PDF report by following build recipes.\f
+    """Generate a PDF report by following build recipes.\f
 
     Args:
         report: The report object.
@@ -643,8 +637,7 @@ def pdf_sow(
     sow_recipe: str | None,
     version: ReportVersion | None,
 ) -> None:
-    """
-    Generate a PDF Statement of Work (SoW) for a given report.\f
+    """Generate a PDF Statement of Work (SoW) for a given report.\f
 
     Args:
         report: The report object.
@@ -682,8 +675,7 @@ def retest(report: Report, settings: Settings) -> None:
 
 @cli.group(cls=AliasedGroup)
 def settings() -> None:
-    """
-    Manage global settings.
+    """Manage global settings.
 
     This group of commands allows you to display and edit the global settings.
     """
@@ -710,8 +702,7 @@ def password() -> None:
 @password.command(name="get")
 @handle_exceptions
 def settings_password_get() -> None:
-    """
-    Get the password for the encryption of attached archives.
+    """Get the password for the encryption of attached archives.
 
     This will print the password from the system's keyring.
     """
@@ -722,8 +713,7 @@ def settings_password_get() -> None:
 @handle_exceptions
 @click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
 def settings_password_set(password: str) -> None:
-    """
-    Set the password for the encryption of attached archives.
+    """Set the password for the encryption of attached archives.
 
     This will store the password in the system's keyring.
     """
@@ -734,8 +724,7 @@ def settings_password_set(password: str) -> None:
 @handle_exceptions
 @load_settings
 def settings_show(settings: Settings) -> None:
-    """
-    Display the current settings.
+    """Display the current settings.
 
     This function prints the current settings of the tool, including both the set values and the default values for any
     unset settings.
@@ -754,8 +743,7 @@ def settings_show(settings: Settings) -> None:
 
 @cli.group(cls=AliasedGroup)
 def templates() -> None:
-    """
-    Operations with templates.
+    """Operations with templates.
 
     This group of commands allows you to copy report's skeleton from templates.
     """

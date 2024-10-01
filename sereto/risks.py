@@ -18,8 +18,7 @@ class Risk(SeretoBaseModel):
 
 
 class Risks(SeretoBaseModel):
-    """
-    A class representing the full spectre of risk severity levels.
+    """A class representing the full spectre of risk severity levels.
 
     This class contains Risk objects representing different severity levels of risks.
     It provides methods to retrieve the names, counters, and colors of the risks,
@@ -40,8 +39,7 @@ class Risks(SeretoBaseModel):
     info: Risk = Risk(name="informational", cnt=0, color="#3366ff")
 
     def names(self) -> tuple[str, str, str, str, str]:
-        """
-        Return a tuple of the names for each severity.
+        """Return a tuple of the names for each severity.
 
         The risk names are sorted from the most severe ones to the least severe.
 
@@ -67,8 +65,7 @@ class Risks(SeretoBaseModel):
         return (self.critical.cnt, self.high.cnt, self.medium.cnt, self.low.cnt, self.info.cnt)
 
     def colors(self) -> tuple[str, str, str, str, str]:
-        """
-        Return a tuple of the colors for each severity level.
+        """Return a tuple of the colors for each severity level.
 
         The risk colors are sorted by severity, from the most severe ones to the least severe.
 

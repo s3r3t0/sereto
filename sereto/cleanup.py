@@ -6,8 +6,7 @@ from sereto.models.version import ReportVersion
 
 
 def render_sow_cleanup(report: Report, settings: Settings, version: ReportVersion) -> None:
-    """
-    Removes the 'sow.tex' file associated with the given report.
+    """Removes the 'sow.tex' file associated with the given report.
 
     Args:
         report: The report object.
@@ -23,8 +22,7 @@ def render_sow_cleanup(report: Report, settings: Settings, version: ReportVersio
 
 
 def render_report_cleanup(report: Report, settings: Settings, version: ReportVersion) -> None:
-    """
-    Removes the report.tex file associated with the given report.
+    """Removes the report.tex file associated with the given report.
 
     Args:
         report: The report object.
@@ -40,8 +38,7 @@ def render_report_cleanup(report: Report, settings: Settings, version: ReportVer
 
 
 def render_target_cleanup(target: Target, report: Report, settings: Settings) -> None:
-    """
-    Cleans up the rendered target by deleting the corresponding .tex file.
+    """Cleans up the rendered target by deleting the corresponding .tex file.
 
     Args:
         target: The target to be cleaned up.
@@ -59,8 +56,7 @@ def render_target_cleanup(target: Target, report: Report, settings: Settings) ->
 def render_finding_group_cleanup(
     finding_group: FindingGroup, target: Target, report: Report, settings: Settings
 ) -> None:
-    """
-    Renders the cleanup for a finding group in the specified report.
+    """Renders the cleanup for a finding group in the specified report.
 
     Args:
         finding_group: The finding group to render the cleanup for.

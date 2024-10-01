@@ -8,7 +8,7 @@ from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pydantic import validate_call
 
-from sereto.cli.console import Console
+from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
 from sereto.utils import evaluate_size_threshold
@@ -27,8 +27,7 @@ def derive_key_argon2(
     time_cost: int = 4,
     parallelism: int = 8,
 ) -> tuple[bytes, TypeSalt16B]:
-    """
-    Derive a key using Argon2id from a password.
+    """Derive a key using Argon2id from a password.
 
     Args:
         password: Password to derive the key from.
@@ -60,8 +59,7 @@ def derive_key_argon2(
 
 @validate_call
 def encrypt_file(file: Path, keep_file: bool = False) -> None:
-    """
-    Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.
+    """Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, and encrypts
     the file content. The encrypted data is then saved with a specific header and the original file is deleted (use
@@ -116,8 +114,7 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
 
 @validate_call
 def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool = True) -> Path:
-    """
-    Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.
+    """Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, parses the
     header (contains nonce and seed), and decrypts the file content. The decrypted data is then saved with a .tgz
