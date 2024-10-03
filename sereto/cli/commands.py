@@ -1,6 +1,7 @@
 import os
 import readline
 from pathlib import Path
+from types import TracebackType
 
 from click import Group, get_app_dir
 from pydantic import Field, TypeAdapter, ValidationError, validate_call
@@ -22,6 +23,8 @@ __all__ = ["sereto_ls", "sereto_repl"]
 @validate_call
 def sereto_ls(settings: Settings) -> None:
     """List all reports in the user's reports directory.
+
+    Print a table with the details to the console.
 
     Args:
         settings: The Settings object.
@@ -73,20 +76,34 @@ class WorkingDir(SeretoBaseModel):
         self.change(self.old_cwd)
 
 
-def _get_history_file_path() -> Path:
-    """Get the path to the history file for the REPL."""
-    return Path(get_app_dir(app_name="sereto")) / ".sereto_history"
+class REPLHistory(SeretoBaseModel):
+    """Context manager to handle the command history in the REPL.
 
+    Attributes:
+        history_file_path: The path to the history file.
+    """
 
-def _save_repl_history() -> None:
-    """Save the command history to a file for future sessions."""
-    readline.write_history_file(_get_history_file_path())
+    history_file_path: Path = Field(default=Path(get_app_dir(app_name="sereto")) / ".sereto_history")
 
+    def __enter__(self) -> "REPLHistory":
+        """Load the command history from the previous sessions."""
+        # Enable auto-saving of the history
+        readline.set_auto_history(True)
 
-def _load_repl_history() -> None:
-    """Load the command history from the previous sessions."""
-    if Path(hf := _get_history_file_path()).is_file():
-        readline.read_history_file(hf)
+        # Enable tab completion
+        readline.parse_and_bind("tab: complete")
+
+        # Load the history from the file
+        if self.history_file_path.is_file():
+            readline.read_history_file(self.history_file_path)
+
+        return self
+
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
+    ) -> None:
+        """Save the command history to a file for future sessions."""
+        readline.write_history_file(self.history_file_path)
 
 
 def _get_repl_prompt(settings: Settings) -> str:
@@ -159,44 +176,35 @@ def sereto_repl(cli: Group, settings: Settings) -> None:
     """
     Console().log("Starting interactive mode. Type 'exit' to quit and 'cd ID' to change active project.")
 
-    # Enable command history using readline
-    readline.parse_and_bind("tab: complete")
-    readline.set_auto_history(True)
-
-    # Load command history from previous sessions
-    _load_repl_history()
-
     prompt = _get_repl_prompt(settings=settings)
     wd = WorkingDir()
 
-    while True:
-        try:
-            # TODO navigating the history (up/down keys) breaks the rich's prompt, no colors for now
-            # cmd = Console().input(prompt).strip()
+    with REPLHistory():
+        while True:
+            try:
+                # TODO navigating the history (up/down keys) breaks the rich's prompt, no colors for now
+                # cmd = Console().input(prompt).strip()
 
-            # Get user input
-            cmd = input(prompt).strip()
+                # Get user input
+                cmd = input(prompt).strip()
 
-            match cmd:
-                case "exit" | "quit":
-                    break
-                case "help" | "h" | "?":
-                    cli.main(prog_name="sereto", args="--help", standalone_mode=False)
-                case s if s.startswith("cd "):
-                    _change_repl_dir(settings=settings, cmd=cmd, wd=wd)
-                    prompt = _get_repl_prompt(settings=settings)
-                case s if len(s) > 0:
-                    cli.main(prog_name="sereto", args=cmd.split(), standalone_mode=False)
-                case _:
-                    continue
-        except (KeyboardInterrupt, EOFError):
-            # Allow graceful exit with Ctrl+C or Ctrl+D
-            Console().log("Exiting interactive mode.")
-            break
-        except SystemExit:
-            pass  # Click raises SystemExit on success
-        except Exception as e:
-            Console().log(f"[red]Error:[/red] {escape(str(e))}")
-
-    # Save command history for future sessions
-    _save_repl_history()
+                match cmd:
+                    case "exit" | "quit":
+                        break
+                    case "help" | "h" | "?":
+                        cli.main(prog_name="sereto", args="--help", standalone_mode=False)
+                    case s if s.startswith("cd "):
+                        _change_repl_dir(settings=settings, cmd=cmd, wd=wd)
+                        prompt = _get_repl_prompt(settings=settings)
+                    case s if len(s) > 0:
+                        cli.main(prog_name="sereto", args=cmd.split(), standalone_mode=False)
+                    case _:
+                        continue
+            except (KeyboardInterrupt, EOFError):
+                # Allow graceful exit with Ctrl+C or Ctrl+D
+                Console().log("Exiting interactive mode.")
+                break
+            except SystemExit:
+                pass  # Click raises SystemExit on success
+            except Exception as e:
+                Console().log(f"[red]Error:[/red] {escape(str(e))}")
