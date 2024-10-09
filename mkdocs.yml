@@ -44,6 +44,7 @@ plugins:
             show_root_heading: true
             docstring_style: google
   - search
+  - privacy
 
 markdown_extensions:
   - attr_list

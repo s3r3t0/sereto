@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve REPL and use it as the default command for Docker image.
 - Code cleanup: docstrings; move `Console` class to `sereto.cli.utils` module and `handle_exceptions` decorator to `sereto.exceptions`.
+- Docs: enable privacy plugin.
 
 ### Removed
 
