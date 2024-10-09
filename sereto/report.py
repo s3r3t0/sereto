@@ -158,7 +158,6 @@ def delete_source_archive(settings: Settings) -> None:
     """Delete the source archive.
 
     Args:
-        report: Report's representation.
         settings: Global settings.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
@@ -173,8 +172,8 @@ def embed_source_archive(settings: Settings, version: ReportVersion) -> None:
     """Embed the source archive in the report PDF.
 
     Args:
-        report: Report's representation.
         settings: Global settings.
+        version: The version of the report.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
     encrypted_archive_path = report_path / "source.sereto"
