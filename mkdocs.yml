@@ -5,6 +5,7 @@ site_url: https://sereto.s4n.cz
 theme:
   name: material
   logo: assets/logo/sereto_line_white.svg
+  custom_dir: docs_overrides
   font:
     code: monospace
 
