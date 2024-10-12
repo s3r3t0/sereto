@@ -50,6 +50,8 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
 def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> None:
     """Extracts sources from a given tarball file.
 
+    Expects the tarball file to be Gzip-compressed.
+
     Args:
         file: The path to the .tgz file.
         output_dir: The directory where the sources will be extracted.
@@ -63,8 +65,10 @@ def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> N
 
 
 @validate_call
-def evaluate_size_threshold(file: Path, max_bytes: int, min_bytes: int = 0, interactive: bool = False) -> bool:
+def assert_file_size_within_range(file: Path, max_bytes: int, min_bytes: int = 0, interactive: bool = False) -> None:
     """Evaluates if the file size is within the specified range.
+
+    If `interactive` is True, the user is first prompted whether to continue if the file size is not within the range.
 
     Args:
         file: The path to the file.
@@ -73,13 +77,11 @@ def evaluate_size_threshold(file: Path, max_bytes: int, min_bytes: int = 0, inte
         interactive: If True, the user is prompted whether to continue if the file size is not within the range.
             Defaults to False.
 
-    Returns:
-        True if the file size is within the specified range, otherwise False.
-
     Raises:
         SeretoPathError: If the file does not exist.
         SeretoValueError: If the file size is not within the specified range.
     """
+    # Check the input values
     if not file.is_file():
         raise SeretoPathError(f"File '{file}' does not exist")
 
@@ -91,15 +93,18 @@ def evaluate_size_threshold(file: Path, max_bytes: int, min_bytes: int = 0, inte
 
     # Check if the file size is within the specified range
     if min_bytes <= size <= max_bytes:
-        return True
+        return
+
+    # File size is not within the range
 
     Console().log(
-        f"[yellow]File '{file}' size is {naturalsize(size, binary=True)}, which is not within the range "
+        f"[yellow]File '{file}' size is {naturalsize(size, binary=True)}, which is not within the allowed range "
         f"{naturalsize(min_bytes, binary=True)} - {naturalsize(max_bytes, binary=True)}"
     )
 
     # In interactive mode, user can choose to continue
     if interactive and click.confirm("Do you want to continue?", default=False):
-        return True
+        return
 
+    # Otherwise, raise an error
     raise SeretoValueError(f"File '{file}' size is not within the range {min_bytes} - {max_bytes} B")

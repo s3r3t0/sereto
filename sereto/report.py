@@ -28,7 +28,7 @@ from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_targe
 from sereto.plot import risks_plot
 from sereto.target import create_findings_config, get_risks, render_target_j2  # render_target_findings_j2
 from sereto.types import TypeReportId
-from sereto.utils import evaluate_size_threshold
+from sereto.utils import assert_file_size_within_range
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -125,17 +125,19 @@ def create_source_archive(settings: Settings) -> None:
     report_path = Report.get_path(dir_subtree=settings.reports_path)
     archive_path = report_path / "source.tgz"
 
-    if not (seretoignore_path := report_path / ".seretoignore").is_file():
-        Console().log(f"no '.seretoignore' file found: '{seretoignore_path}'")
-        ignore_lines = []
-    elif not evaluate_size_threshold(file=seretoignore_path, max_bytes=10_485_760, interactive=True):
-        raise SeretoValueError("File '.seretoignore' size not within thresholds")
-    else:
+    # Read the ignore patterns from the '.seretoignore' file
+    if (seretoignore_path := report_path / ".seretoignore").is_file():
+        assert_file_size_within_range(file=seretoignore_path, max_bytes=10_485_760, interactive=True)
+
         with seretoignore_path.open("r") as seretoignore:
             ignore_lines = seretoignore.readlines()
+    else:
+        Console().log(f"no '.seretoignore' file found: '{seretoignore_path}'")
+        ignore_lines = []
 
     Console().log(f"creating source archive: '{archive_path}'")
 
+    # Create the source archive
     with tarfile.open(archive_path, "w:gz") as tar:
         for item in report_path.rglob("*"):
             relative_path = item.relative_to(report_path)

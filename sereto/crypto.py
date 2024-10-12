@@ -11,7 +11,7 @@ from pydantic import validate_call
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
-from sereto.utils import evaluate_size_threshold
+from sereto.utils import assert_file_size_within_range
 
 __all__ = [
     "encrypt_file",
@@ -82,8 +82,7 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
         Console().log("[yellow]No password found for archive encryption\nSkipping encryption...")
         return
 
-    if not evaluate_size_threshold(file=file, max_bytes=1_073_741_824, interactive=True):
-        raise SeretoValueError("Archive size exceeds the threshold. Cannot continue")
+    assert_file_size_within_range(file=file, max_bytes=1_073_741_824, interactive=True)
 
     Console().log("[green]Found password for archive encryption. Encrypting archive")
 
@@ -157,8 +156,7 @@ def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool
 
     Console().log("[green]Found password for archive decryption. Decrypting archive")
 
-    if not evaluate_size_threshold(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True):
-        raise SeretoValueError("Archive size not within thresholds. Cannot continue")
+    assert_file_size_within_range(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True)
 
     data = file.read_bytes()
 
