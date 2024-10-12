@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.container import BarContainer
 from pydantic import validate_call
 
-from sereto.risks import Risks
+from sereto.models.risks import Risks
 
 
 def _label_plot(ax: Axes, rect: BarContainer) -> None:

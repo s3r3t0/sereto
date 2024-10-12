@@ -12,10 +12,10 @@ from sereto.finding import render_finding_j2
 from sereto.jinja import render_j2
 from sereto.models.finding import TemplateMetadata
 from sereto.models.report import Report
+from sereto.models.risks import Risks
 from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion
-from sereto.risks import Risks
 from sereto.utils import YAML
 
 
