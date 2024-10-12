@@ -30,7 +30,6 @@ from sereto.models.version import ReportVersion
 from sereto.pdf import render_sow_pdf
 from sereto.report import (
     copy_skel,
-    extract_attachment_from,
     load_report,
     new_report,
     render_report_j2,
@@ -41,6 +40,7 @@ from sereto.report import (
 )
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
+from sereto.source_archive import extract_attachment_from
 from sereto.types import TypeReportId
 from sereto.utils import untar_sources
 
