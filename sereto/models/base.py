@@ -7,9 +7,9 @@ from pydantic_settings import (
 
 
 class SeretoBaseModel(BaseModel):
-    """Pydantic BaseModel with custom configuration.
+    """Pydantic BaseModel with custom strict configuration.
 
-    This class is a subclass of pydantic's BaseModel. It is used to define custom configuration for pydantic models.
+    This class is a subclass of pydantic's BaseModel. It is used to define custom configuration for Pydantic models.
     """
 
     model_config = ConfigDict(extra="forbid", strict=True, validate_assignment=True)
