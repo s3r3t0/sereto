@@ -52,7 +52,7 @@ def add_finding(
 
 @validate_call
 def show_findings(config: Config, version: ReportVersion) -> None:
-    Console().log(f"showing findings for version {version}")
+    Console().log(f"Showing findings for version {version}")
     cfg = config.at_version(version=version)
 
     for target in cfg.targets:
@@ -108,7 +108,7 @@ def update_findings(report: Report, settings: Settings) -> None:
                 finding["vars"].yaml_add_eol_comment(comment, var.name)
 
             findings["findings"].append(finding)
-            Console().log(f"discovered new finding: '{name}'")
+            Console().log(f"Discovered new finding: '{name}'")
 
         with findings_path.open(mode="w", encoding="utf-8") as f:
             YAML.dump(findings, f)
@@ -140,7 +140,7 @@ def render_finding_j2(
         for chunk in text_generator:
             f.write(chunk)
 
-        Console().log(f"rendered Jinja finding: {finding_j2_path.with_suffix('').relative_to(target.path.parent)}")
+        Console().log(f"Rendered Jinja finding: {finding_j2_path.with_suffix('').relative_to(target.path.parent)}")
 
 
 @validate_call
@@ -205,4 +205,4 @@ def render_finding_group_j2(
     with finding_group_tex_path.open("w", encoding="utf-8") as f:
         for chunk in finding_group_generator:
             f.write(chunk)
-        Console().log(f"rendered Jinja template: {finding_group_tex_path.relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(report_path)}")

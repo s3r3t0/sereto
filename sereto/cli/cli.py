@@ -40,7 +40,7 @@ from sereto.report import (
 )
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
-from sereto.source_archive import extract_attachment_from
+from sereto.source_archive import extract_source_archive
 from sereto.types import TypeReportId
 from sereto.utils import untar_sources
 
@@ -100,7 +100,7 @@ def repl(settings: Settings) -> None:
 @load_settings
 def decrypt(settings: Settings, file: Path) -> None:
     """Extract the SeReTo project from the encrypted archive."""
-    source_tgz = decrypt_file(file=file, output_dir=settings.reports_path, keep_original=True)
+    source_tgz = decrypt_file(file=file, keep_original=True)
     untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 
@@ -110,8 +110,8 @@ def decrypt(settings: Settings, file: Path) -> None:
 @load_settings
 def unpack(settings: Settings, file: Path) -> None:
     """Unpack the SeReTo project from the report's PDF."""
-    attachment = extract_attachment_from(pdf=file, name="source.sereto")
-    source_tgz = decrypt_file(file=attachment, output_dir=settings.reports_path, keep_original=False)
+    attachment = extract_source_archive(pdf=file, name="source.sereto")
+    source_tgz = decrypt_file(file=attachment, keep_original=False)
     untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 
@@ -611,7 +611,7 @@ def pdf_report(
     if version is None:
         version = report.config.last_version()
 
-    Console().log(f"rendering report version: '{version}'")
+    Console().log(f"Rendering report version: '{version}'")
     report_create_missing(report=report, settings=settings, version=version)
     render_report_j2(report=report, settings=settings, version=version, convert_recipe=convert_recipe)
     report_pdf(
@@ -648,7 +648,7 @@ def pdf_sow(
     if version is None:
         version = report.config.last_version()
 
-    Console().log(f"rendering SoW version: '{version}'")
+    Console().log(f"Rendering SoW version: '{version}'")
     report_create_missing(report=report, settings=settings, version=version)
     render_sow_j2(report=report, settings=settings, version=version)
     render_sow_pdf(report=report, settings=settings, version=version, recipe=sow_recipe)

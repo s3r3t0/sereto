@@ -37,21 +37,24 @@ def _render_pdf(
 
 
 @validate_call
-def render_report_pdf(report: Report, settings: Settings, version: ReportVersion, recipe: str | None = None) -> None:
+def render_report_pdf(settings: Settings, version: ReportVersion, recipe: str | None = None) -> Path:
     """Render the report to PDF format according to the recipe.
 
     Prerequisite is having the report in TeX format.
 
     Args:
-        report: Report's representation.
         settings: Global settings.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
+
+    Returns:
+        Path to the rendered PDF file.
     """
     report_path = Report.get_path(dir_subtree=settings.reports_path)
     report_tex_path = report_path / f"report{version.path_suffix}.tex"
 
+    # Get the recipe to render the report
     if recipe is None:
         render_recipe = settings.render.report_recipes[0]
     else:
@@ -59,7 +62,11 @@ def render_report_pdf(report: Report, settings: Settings, version: ReportVersion
             raise SeretoValueError(f"no report recipe found with name {recipe!r}")
         render_recipe = res[0]
 
+    # Render the report to PDF
     _render_pdf(tex_path=report_tex_path, render_recipe=render_recipe, settings=settings)
+
+    # Return the path to the rendered PDF
+    return report_tex_path.with_suffix(".pdf")
 
 
 @validate_call

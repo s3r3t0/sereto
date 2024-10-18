@@ -114,7 +114,7 @@ class Finding(SeretoBaseModel):
     def metadata(self, templates_path: Path, category: str) -> TemplateMetadata | None:
         template = self.template_path(templates_path=templates_path, category=category)
         if not template.is_file():
-            Console().log(f"finding template not found at '{template}'")
+            Console().log(f"Finding template not found at '{template}'")
             return None
 
         metadata, _ = frontmatter.parse(template.read_text())
@@ -125,7 +125,7 @@ class Finding(SeretoBaseModel):
 
     def assert_required_vars(self, templates_path: Path, category: str) -> None:
         if (metadata := self.metadata(templates_path=templates_path, category=category)) is None:
-            Console().log(f"no metadata for finding {self.path_name!r}")
+            Console().log(f"No metadata for finding {self.path_name!r}")
             return
 
         for var in metadata.variables:

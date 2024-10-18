@@ -59,9 +59,11 @@ def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> N
     """
     with tarfile.open(file, "r:gz") as tar:
         tar.extractall(path=output_dir)
+        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir}'")
 
     if not keep_original:
         file.unlink()
+        Console().log(f"[red]-[/red] Deleted tarball: '{file}'")
 
 
 @validate_call

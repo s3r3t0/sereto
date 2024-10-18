@@ -133,7 +133,7 @@ def render_target_j2(
     with target_tex_path.open("w", encoding="utf-8") as f:
         for chunk in target_generator:
             f.write(chunk)
-        Console().log(f"rendered Jinja template: {target_tex_path.relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(report_path)}")
 
 
 @validate_call

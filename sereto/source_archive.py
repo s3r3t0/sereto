@@ -1,6 +1,6 @@
 import tarfile
 from pathlib import Path
-from tempfile import gettempdir
+from tempfile import NamedTemporaryFile
 
 from pathspec.gitignore import GitIgnoreSpec
 from pydantic import validate_call
@@ -8,10 +8,9 @@ from pypdf import PdfReader, PdfWriter
 
 from sereto.cli.utils import Console
 from sereto.crypto import encrypt_file
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.models.report import Report
 from sereto.models.settings import Settings
-from sereto.models.version import ReportVersion
 from sereto.utils import assert_file_size_within_range
 
 
@@ -31,17 +30,21 @@ def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
 
 
 @validate_call
-def create_source_archive(settings: Settings) -> None:
+def create_source_archive(settings: Settings) -> Path:
     """Create a source archive for the report.
 
-    This function creates a source archive for the report by copying all the files not matching any
-    ignore pattern in the report directory to a compressed archive file.
+    This function creates a source archive for the report by copying all the files not matching any ignore pattern in
+    the report directory to a compressed archive file. The archive is encrypted if the password is set in the system's
+    keyring.
 
     Args:
         settings: Global settings.
+
+    Returns:
+        The path to the created source archive.
     """
+    # Get the report path (depends on the current working directory)
     report_path = Report.get_path(dir_subtree=settings.reports_path)
-    archive_path = report_path / "source.tgz"
 
     # Read the ignore patterns from the '.seretoignore' file
     if (seretoignore_path := report_path / ".seretoignore").is_file():
@@ -50,59 +53,54 @@ def create_source_archive(settings: Settings) -> None:
         with seretoignore_path.open("r") as seretoignore:
             ignore_lines = seretoignore.readlines()
     else:
-        Console().log(f"no '.seretoignore' file found: '{seretoignore_path}'")
+        Console().log(f"File '{seretoignore_path}' does not exist'")
         ignore_lines = []
 
-    Console().log(f"creating source archive: '{archive_path}'")
+    # Create a temporary file to store the source archive
+    with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:
+        archive_path = Path(tmp.name)
 
-    # Create the source archive
-    with tarfile.open(archive_path, "w:gz") as tar:
-        for item in report_path.rglob("*"):
-            relative_path = item.relative_to(report_path)
+        Console().log(f"Creating source archive: '{archive_path}'")
 
-            if not item.is_file() or item.is_symlink():
-                Console().log(f"- skipping directory or symlink: '{relative_path}'")
-                continue
+        # Create the source archive
+        with tarfile.open(archive_path, "w:gz") as tar:
+            for item in report_path.rglob("*"):
+                relative_path = item.relative_to(report_path)
 
-            if _is_ignored(str(relative_path), ignore_lines):
-                Console().log(f"- skipping item: '{relative_path}'")
-                continue
+                if not item.is_file() or item.is_symlink():
+                    Console().log(f"[yellow]-[/yellow] Skipping directory or symlink: '{relative_path}'")
+                    continue
 
-            Console().log(f"+ adding item: '{relative_path}'")
-            tar.add(item, arcname=str(item.relative_to(report_path.parent)))
+                if _is_ignored(str(relative_path), ignore_lines):
+                    Console().log(f"[yellow]-[/yellow] Skipping item: '{relative_path}'")
+                    continue
 
-    encrypt_file(archive_path)
+                Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
+                tar.add(item, arcname=str(item.relative_to(report_path.parent)))
 
-
-@validate_call
-def delete_source_archive(settings: Settings) -> None:
-    """Delete the source archive.
-
-    Args:
-        settings: Global settings.
-    """
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
-
-    for archive_path in [report_path / "source.tgz", report_path / "source.sereto"]:
-        if archive_path.is_file():
-            archive_path.unlink()
-            Console().log(f"deleted source archive: '{archive_path}'")
+    try:
+        return encrypt_file(archive_path)
+    except SeretoEncryptionError:
+        return archive_path
 
 
 @validate_call
-def embed_source_archive(settings: Settings, version: ReportVersion) -> None:
+def embed_source_archive(archive: Path, report: Path, keep_original: bool = True) -> None:
     """Embed the source archive in the report PDF.
 
     Args:
-        settings: Global settings.
-        version: The version of the report.
+        archive: The path to the source archive.
+        report: The path to the report PDF.
+        keep_original: If True, the original source archive is kept. Defaults to True.
     """
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
-    encrypted_archive_path = report_path / "source.sereto"
-    archive_path = encrypted_archive_path if encrypted_archive_path.is_file() else report_path / "source.tgz"
-    report_pdf_path = report_path / f"report{version.path_suffix}.pdf"
+    # Check if the provided files exist
+    if not archive.is_file():
+        raise SeretoPathError(f"file not found: '{archive}'")
+    if not report.is_file():
+        raise SeretoPathError(f"file not found: '{report}'")
 
-    reader = PdfReader(report_pdf_path, strict=True)
+    # Initialize PDF reader and writer
+    reader = PdfReader(report, strict=True)
     writer = PdfWriter()
 
     # Copy all pages from the reader to the writer
@@ -110,16 +108,21 @@ def embed_source_archive(settings: Settings, version: ReportVersion) -> None:
         writer.add_page(page)
 
     # Embed the source archive
-    with archive_path.open("rb") as f:
-        writer.add_attachment(filename=archive_path.name, data=f.read())
+    writer.add_attachment(filename=f"source{archive.suffix}", data=archive.read_bytes())
 
     # Write the output PDF
-    with report_pdf_path.open("wb") as output_pdf:
+    with report.open("wb") as output_pdf:
         writer.write(output_pdf)
+        Console().log(f"[green]+[/green] Embedded source archive into '{report}'")
+
+    # Delete the source archive if `keep_original=False`
+    if not keep_original:
+        archive.unlink()
+        Console().log(f"[red]-[/red] Deleted source archive: '{archive}'")
 
 
 @validate_call
-def extract_attachment_from(pdf: Path, name: str) -> Path:
+def extract_source_archive(pdf: Path, name: str) -> Path:
     """Extracts an attachment from a given PDF file and writes it to a temporary file.
 
     Args:
@@ -140,13 +143,13 @@ def extract_attachment_from(pdf: Path, name: str) -> Path:
 
     # Check if the attachment is present
     if name not in reader.attachments:
-        Console().log(f"no '{name}' attachment found in '{pdf}'")
+        Console().log(f"No '{name}' attachment found in '{pdf}'")
         Console().log(f"[blue]Manually inspect the file to make sure the attachment '{name}' is present")
         raise SeretoValueError(f"no '{name}' attachment found in '{pdf}'")
 
     # PDF attachment names are not unique; check if there is only one attachment with the expected name
     if len(reader.attachments[name]) != 1:
-        Console().log(f"[yellow]only single '{name}' attachment should be present")
+        Console().log(f"[yellow]Only single '{name}' attachment should be present")
         Console().log("[blue]Manually extract the correct file and use `sereto decrypt` command instead")
         raise SeretoValueError(f"multiple '{name}' attachments found")
 
@@ -154,7 +157,10 @@ def extract_attachment_from(pdf: Path, name: str) -> Path:
     content: bytes = reader.attachments[name][0]
 
     # Write the content to a temporary file
-    output_file = Path(gettempdir()) / name
-    output_file.write_bytes(content)
+    with NamedTemporaryFile(suffix=Path(name).suffix if "." in name else None, delete=False) as tmp:
+        output_file = Path(tmp.name)
+        output_file.write_bytes(content)
+
+    Console().log(f"[green]+[/green] Extracted attachment '{name}' from '{pdf}' to '{output_file}'")
 
     return output_file

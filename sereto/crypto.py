@@ -1,15 +1,15 @@
 import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
-import click
 import keyring
 from argon2.low_level import Type as Argon2Type
 from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from pydantic import validate_call
+from pydantic import TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.utils import Console
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
 from sereto.utils import assert_file_size_within_range
 
@@ -58,33 +58,42 @@ def derive_key_argon2(
 
 
 @validate_call
-def encrypt_file(file: Path, keep_file: bool = False) -> None:
+def encrypt_file(file: Path, keep_original: bool = False) -> Path:
     """Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, and encrypts
     the file content. The encrypted data is then saved with a specific header and the original file is deleted (use
-    `keep_file=True` to overwrite deletion).
+    `keep_original=True` to overwrite deletion).
 
     Args:
         file: The path to the file to be encrypted.
-        keep_file: If True, the original encrypted file is kept. Defaults to False.
+        keep_original: If True, the original encrypted file is kept. Defaults to False.
+
+    Returns:
+        Path to the encrypted file with suffix `.sereto`.
 
     Raises:
-        click.Abort: If the file size exceeds 1 GiB and the user chooses not to continue.
+        SeretoEncryptionError: If the password is not found in the system keyring.
+        SeretoPathError: If the provided file does not exist.
+        SeretoValueError: If the file size exceeds 1 GiB and the user chooses not to continue.
     """
-    if file.suffix not in [".tgz", ".tar.gz"]:
-        Console().log("[yellow]Unsupported file format for encryption (not a .tgz or .tar.gz)\nSkipping encryption...")
-        return
+    if not file.is_file():
+        raise SeretoPathError(f"file '{file}' does not exist")
 
+    # Retrieve the password from the system keyring
     password = keyring.get_password("sereto", "encrypt_attached_archive")
 
-    if not password:
-        Console().log("[yellow]No password found for archive encryption\nSkipping encryption...")
-        return
+    # Validate the password
+    try:
+        ta: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
+        password = ta.validate_python(password)
+    except ValidationError as e:
+        Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
+        raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
 
     assert_file_size_within_range(file=file, max_bytes=1_073_741_824, interactive=True)
 
-    Console().log("[green]Found password for archive encryption. Encrypting archive")
+    Console().log(":locked: Found password for archive encryption.\nEncrypting archive...")
 
     data = file.read_bytes()
 
@@ -103,16 +112,21 @@ def encrypt_file(file: Path, keep_file: bool = False) -> None:
     header = header.ljust(64, b"\x00")
 
     # Write the encrypted data into a new file
-    file.with_suffix(".sereto").write_bytes(header + encrypted_data)
+    with NamedTemporaryFile(suffix=".sereto", delete=False) as tmp:
+        (encrypted_path := Path(tmp.name)).write_bytes(header + encrypted_data)
 
-    if not keep_file:
+    # Delete the original file if `keep_file=False`
+    if not keep_original:
         file.unlink()
 
     Console().log("[green]Archive successfully encrypted")
 
+    # Return the path to the encrypted file
+    return encrypted_path
+
 
 @validate_call
-def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool = True) -> Path:
+def decrypt_file(file: Path, keep_original: bool = True) -> Path:
     """Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, parses the
@@ -121,7 +135,6 @@ def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool
 
     Args:
         file: The path to the encrypted .sereto file.
-        output_dir: The directory to save the decrypted file. Defaults to the same directory as the encrypted file.
         keep_original: If True, the original encrypted file is kept. Defaults to False.
 
     Raises:
@@ -134,27 +147,15 @@ def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool
     if not file.is_file():
         raise SeretoPathError(f"File '{file}' does not exist")
 
-    if output_dir is None:
-        output_dir = file.parent
-
-    output_file = output_dir / file.with_suffix(".tgz").name
-
     if file.suffix != ".sereto":
         raise SeretoValueError("Unsupported file format for decryption (not a .sereto)")
-
-    if output_file.is_file():
-        Console().log(f"[yellow]Temporary file '{output_file}' exists")
-        if not click.confirm("Do you want to overwrite it?", default=False):
-            raise SeretoPathError(f"Temporary file '{output_file}' exists. Cannot continue")
-
-        output_file.unlink()
 
     password = keyring.get_password("sereto", "encrypt_attached_archive")
 
     if not password:
         raise SeretoValueError("No password found for archive decryption")
 
-    Console().log("[green]Found password for archive decryption. Decrypting archive")
+    Console().log(":locked: Found password for archive decryption.\nDecrypting archive...")
 
     assert_file_size_within_range(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True)
 
@@ -174,12 +175,14 @@ def decrypt_file(file: Path, output_dir: Path | None = None, keep_original: bool
     # Decrypt the data
     decrypted_data = AESGCM(key).decrypt(nonce=nonce, data=encrypted_data, associated_data=None)
 
-    # Write the decrypted data back to the file
-    output_file.write_bytes(decrypted_data)
+    # Write the decrypted data
+    with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:
+        (output := Path(tmp.name)).write_bytes(decrypted_data)
+
+    Console().log(f"[green]+[/green] Decrypted archive to '{output}'")
 
     if not keep_original:
         file.unlink()
+        Console().log(f"[red]-[/red] Deleted encrypted archive: '{file}'")
 
-    Console().log("[green]Archive successfully decrypted")
-
-    return output_file
+    return output

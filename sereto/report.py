@@ -21,7 +21,7 @@ from sereto.models.settings import Settings
 from sereto.models.version import ReportVersion, SeretoVersion
 from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_target_pdf
 from sereto.plot import risks_plot
-from sereto.source_archive import create_source_archive, delete_source_archive, embed_source_archive
+from sereto.source_archive import create_source_archive, embed_source_archive
 from sereto.target import create_findings_config, get_risks, render_target_j2  # render_target_findings_j2
 from sereto.types import TypeReportId
 
@@ -87,10 +87,10 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
         if not overwrite and dst_item.exists():
             raise SeretoPathError("Destination already exists")
         if item.is_file():
-            Console().log(f" - copy file: '{item.relative_to(skel_path)}'")
+            Console().log(f" [green]+[/green] copy file: '{item.relative_to(skel_path)}'")
             copy2(item, dst_item, follow_symlinks=False)
         if item.is_dir():
-            Console().log(f" - copy dir: '{item.relative_to(skel_path)}'")
+            Console().log(f" [green]+[/green] copy dir: '{item.relative_to(skel_path)}'")
             copytree(item, dst_item, dirs_exist_ok=overwrite)
 
 
@@ -183,7 +183,7 @@ def render_report_j2(
     with report_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
         for chunk in report_generator:
             f.write(chunk)
-        Console().log(f"rendered Jinja template: {report_j2_path.with_suffix('').relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(report_path)}")
 
 
 @validate_call
@@ -205,7 +205,7 @@ def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) ->
         )
         for chunk in sow_generator:
             f.write(chunk)
-        Console().log(f"rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(report_path)}")
 
 
 @validate_call
@@ -227,13 +227,13 @@ def report_create_missing(report: Report, settings: Settings, version: ReportVer
         category_templates = settings.templates_path / "categories" / target.category
 
         if not target.path.is_dir():
-            Console().log(f"target directory not found, creating: '{target.path}'")
+            Console().log(f"Target directory not found, creating: '{target.path}'")
             target.path.mkdir()
             if (category_templates / "skel").is_dir():
-                Console().log(f"""populating new target directory from: '{category_templates / "skel"}'""")
+                Console().log(f"""Populating new target directory from: '{category_templates / "skel"}'""")
                 copy_skel(templates=category_templates, dst=target.path)
             else:
-                Console().log(f"no 'skel' directory found: {category_templates}'")
+                Console().log(f"No 'skel' directory found: '{category_templates}'")
 
             create_findings_config(target=target, report=report, templates=category_templates / "findings")
 
@@ -270,10 +270,9 @@ def report_pdf(
                 recipe=finding_recipe,
             )
 
-    render_report_pdf(report=report, settings=settings, version=version, recipe=report_recipe)
-    create_source_archive(settings=settings)
-    embed_source_archive(settings=settings, version=version)
-    delete_source_archive(settings=settings)
+    report_path = render_report_pdf(settings=settings, version=version, recipe=report_recipe)
+    archive_path = create_source_archive(settings=settings)
+    embed_source_archive(archive=archive_path, report=report_path, keep_original=False)
 
 
 @validate_call

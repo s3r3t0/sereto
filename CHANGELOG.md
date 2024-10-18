@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Code refactoring and cleanup.
+- Code refactoring and cleanup, mainly around source archive handling.
+- Validate password retrieved from system keyring against `TypePassword` type.
+
+### Fixed
+
+- `sereto unpack` can now properly handle extracting encrypted or unencrypted archives.
 
 ## [0.0.13] - 2024-10-09
 

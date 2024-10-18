@@ -17,6 +17,10 @@ class SeretoException(Exception):
     """There was an ambiguous exception."""
 
 
+class SeretoEncryptionError(SeretoException):
+    """Encryption error."""
+
+
 class SeretoPathError(SeretoException):
     """Path error."""
 
