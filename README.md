@@ -19,4 +19,4 @@ pipx install sereto
 For more information, please visit the [documentation](https://sereto.s4n.cz/getting_started/installation/).
 
 
-> Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/it-hub/)
+> Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/nn-digital-hub/)

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleanup: Remove artefacts of `sereto.cli.console`
 - Use `TypeAdapter` instead of `RootModel` in config module.
 - Type hints: start using Self
+- README: rebranding IT Hub -> Digital Hub
 
 ## [0.0.14] - 2024-10-18
 
