@@ -2,7 +2,7 @@ import importlib.metadata
 import shutil
 
 import click
-from pydantic import RootModel, validate_call
+from pydantic import TypeAdapter, validate_call
 from rich import box
 from rich.prompt import Confirm
 from rich.table import Table
@@ -156,9 +156,6 @@ def delete_dates_config(report: Report, settings: Settings, index: int) -> None:
     write_config(config=cfg, settings=settings)
 
 
-DatesList = RootModel[list[Date]]
-
-
 @validate_call
 def show_dates_config(
     report: Report,
@@ -205,15 +202,17 @@ def show_dates_config(
                             )
                 Console().print(table, justify="center")
         case OutputFormat.json:
+            DateList: TypeAdapter[list[Date]] = TypeAdapter(list[Date])
+            DateAll: TypeAdapter[dict[str, list[Date]]] = TypeAdapter(dict[str, list[Date]])
+
             if all:
-                all_dates = RootModel(dict[str, DatesList]).model_validate(
+                all_dates = DateAll.validate_python(
                     {str(ver): report.config.at_version(version=ver).dates for ver in report.config.versions()}
                 )
-                Console().print_json(all_dates.model_dump_json())
+                Console().print_json(DateAll.dump_json(all_dates).decode("utf-8"))
             else:
-                Console().print_json(
-                    DatesList.model_validate(report.config.at_version(version).dates).model_dump_json()
-                )
+                dates = DateList.validate_python(report.config.at_version(version).dates)
+                Console().print_json(DateList.dump_json(dates).decode("utf-8"))
 
 
 # --------------------
@@ -255,9 +254,6 @@ def delete_people_config(report: Report, settings: Settings, index: int) -> None
         raise SeretoValueError("invalid index, not in allowed range")
     del people[index]
     write_config(config=cfg, settings=settings)
-
-
-PersonList = RootModel[list[Person]]
 
 
 @validate_call
@@ -305,15 +301,17 @@ def show_people_config(
                     )
                 Console().print(table, justify="center")
         case OutputFormat.json:
+            PersonList: TypeAdapter[list[Person]] = TypeAdapter(list[Person])
+            PersonAll: TypeAdapter[dict[str, list[Person]]] = TypeAdapter(dict[str, list[Person]])
+
             if all:
-                all_people = RootModel(dict[str, PersonList]).model_validate(
+                all_people = PersonAll.validate_python(
                     {str(ver): report.config.at_version(version=ver).people for ver in report.config.versions()}
                 )
-                Console().print_json(all_people.model_dump_json())
+                Console().print_json(PersonAll.dump_json(all_people).decode("utf-8"))
             else:
-                Console().print_json(
-                    PersonList.model_validate(report.config.at_version(version).people).model_dump_json()
-                )
+                people = PersonList.validate_python(report.config.at_version(version).people)
+                Console().print_json(PersonList.dump_json(people).decode("utf-8"))
 
 
 # # ---------------------
@@ -367,9 +365,6 @@ def delete_targets_config(report: Report, settings: Settings, index: int) -> Non
         shutil.rmtree(target_path)
 
 
-TargetList = RootModel[list[Target]]
-
-
 @validate_call
 def show_targets_config(
     report: Report,
@@ -405,12 +400,14 @@ def show_targets_config(
                     table.add_row(str(ix), target.category, target.name)
                 Console().print(table, justify="center")
         case OutputFormat.json:
+            TargetList: TypeAdapter[list[Target]] = TypeAdapter(list[Target])
+            TargetAll: TypeAdapter[dict[str, list[Target]]] = TypeAdapter(dict[str, list[Target]])
+
             if all:
-                all_targets = RootModel(dict[str, TargetList]).model_validate(
+                all_targets = TargetAll.validate_python(
                     {str(ver): report.config.at_version(version=ver).targets for ver in report.config.versions()}
                 )
-                Console().print_json(all_targets.model_dump_json())
+                Console().print_json(TargetAll.dump_json(all_targets).decode("utf-8"))
             else:
-                Console().print_json(
-                    TargetList.model_validate(report.config.at_version(version).targets).model_dump_json()
-                )
+                targets = TargetList.validate_python(report.config.at_version(version).targets)
+                Console().print_json(TargetList.dump_json(targets).decode("utf-8"))
