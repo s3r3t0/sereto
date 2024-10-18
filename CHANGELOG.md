@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Code refactoring and cleanup, mainly around source archive handling.
 - Validate password retrieved from system keyring against `TypePassword` type.
+- Clarify fn usage: `Report.get_path` -> `Report.get_path_from_cwd`.
 
 ### Fixed
 

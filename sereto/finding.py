@@ -176,7 +176,7 @@ def render_finding_group_j2(
     convert_recipe: str | None = None,
 ) -> None:
     cfg = report.config.at_version(version=version)
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     render_finding_group_findings_j2(
         finding_group=finding_group, target=target, settings=settings, version=version, convert_recipe=convert_recipe

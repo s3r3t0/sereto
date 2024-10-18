@@ -43,8 +43,7 @@ def create_source_archive(settings: Settings) -> Path:
     Returns:
         The path to the created source archive.
     """
-    # Get the report path (depends on the current working directory)
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     # Read the ignore patterns from the '.seretoignore' file
     if (seretoignore_path := report_path / ".seretoignore").is_file():

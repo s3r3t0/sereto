@@ -155,7 +155,7 @@ def render_report_j2(
             first recipe with a matching format is used.
     """
     cfg = report.config.at_version(version=version)
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     for target in cfg.targets:
         # render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)
@@ -189,7 +189,7 @@ def render_report_j2(
 @validate_call
 def render_sow_j2(report: Report, settings: Settings, version: ReportVersion) -> None:
     cfg = report.config.at_version(version=version)
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     sow_j2_path = report_path / f"sow{version.path_suffix}.tex.j2"
     if not sow_j2_path.is_file():
@@ -284,14 +284,13 @@ def report_cleanup(
     cfg = report.config.at_version(version=version)
 
     for target in cfg.targets:
-        render_target_cleanup(target=target, report=report, settings=settings)
+        render_target_cleanup(target=target, settings=settings)
 
         for finding_group in target.findings_config.finding_groups:
             render_finding_group_cleanup(
                 finding_group=finding_group,
                 target=target,
-                report=report,
                 settings=settings,
             )
 
-    render_report_cleanup(report=report, settings=settings, version=version)
+    render_report_cleanup(settings=settings, version=version)

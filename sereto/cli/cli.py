@@ -520,7 +520,7 @@ def open_folder(settings: Settings) -> None:
     Args:
         settings: The settings object containing the tool's global configuration.
     """
-    click.launch(str(Report.get_path(settings.reports_path)))
+    click.launch(str(Report.get_path_from_cwd(settings.reports_path)))
 
 
 @open.command(name="report")
@@ -537,7 +537,7 @@ def open_report(report: Report, settings: Settings, version: ReportVersion | Non
     if version is None:
         version = report.config.last_version()
 
-    report_path = Report.get_path(dir_subtree=settings.reports_path) / f"report{version.path_suffix}.pdf"
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path) / f"report{version.path_suffix}.pdf"
 
     if not report_path.is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
@@ -559,7 +559,7 @@ def open_sow(report: Report, settings: Settings, version: ReportVersion | None) 
     if version is None:
         version = report.config.last_version()
 
-    sow_path = Report.get_path(dir_subtree=settings.reports_path) / f"sow{version.path_suffix}.pdf"
+    sow_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path) / f"sow{version.path_suffix}.pdf"
 
     if not sow_path.is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
@@ -652,7 +652,7 @@ def pdf_sow(
     report_create_missing(report=report, settings=settings, version=version)
     render_sow_j2(report=report, settings=settings, version=version)
     render_sow_pdf(report=report, settings=settings, version=version, recipe=sow_recipe)
-    render_sow_cleanup(report=report, settings=settings, version=version)
+    render_sow_cleanup(settings=settings, version=version)
 
 
 # -------------
@@ -757,8 +757,7 @@ def skel() -> None:
 @skel.command(name="copy")
 @handle_exceptions
 @load_settings
-@load_report
-def templates_skel_copy(report: Report, settings: Settings) -> None:
+def templates_skel_copy(settings: Settings) -> None:
     """Update the report's templates from the skeleton directory.
 
     This function copies all files from the templates skeleton directory to the report's directory, overwriting any
@@ -771,7 +770,7 @@ def templates_skel_copy(report: Report, settings: Settings) -> None:
     """
     copy_skel(
         templates=settings.templates_path,
-        dst=Report.get_path(dir_subtree=settings.reports_path),
+        dst=Report.get_path_from_cwd(dir_subtree=settings.reports_path),
         overwrite=True,
     )
 

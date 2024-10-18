@@ -13,7 +13,7 @@ from sereto.utils import YAML
 @validate_call
 def add_retest(report: Report, settings: Settings) -> None:
     last_cfg = report.config.at_version(version=report.config.last_version())
-    report_path = Report.get_path(dir_subtree=settings.reports_path)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     # Copy last version's config to the updates section
     retest_cfg = deepcopy(last_cfg)

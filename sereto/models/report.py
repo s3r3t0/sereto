@@ -15,12 +15,30 @@ class Report(SeretoBaseModel):
 
     @staticmethod
     @validate_call
-    def get_path(dir_subtree: Path = Path("/")) -> Path:
+    def get_path_from_cwd(dir_subtree: Path = Path("/")) -> Path:
+        """Get the path to the report directory.
+
+        Start from the current working directory and go up the directory tree until the report directory is found or
+        we would leave `dir_subtree`.
+
+        Args:
+            dir_subtree: The directory to stop the search at.
+
+        Raises:
+            SeretoPathError: If the current working directory is not inside the report's (sub)directory.
+
+        Returns:
+            The path to the report directory.
+        """
+        # start from the current working directory and go up the directory tree
         for dir in [Path.cwd()] + list(Path.cwd().parents):
+            # if the current directory is inside the subtree
             if dir.is_relative_to(dir_subtree):
+                # if the current directory is a report directory
                 if Report.is_report_dir(dir):
                     return dir
             else:
+                # stop the search before leaving the subtree
                 break
 
         raise SeretoPathError("not inside report's (sub)directory")
@@ -28,7 +46,7 @@ class Report(SeretoBaseModel):
     @staticmethod
     @validate_call
     def get_config_path(dir_subtree: Path = Path("/")) -> Path:
-        return Report.get_path(dir_subtree=dir_subtree) / "config.json"
+        return Report.get_path_from_cwd(dir_subtree=dir_subtree) / "config.json"
 
     @staticmethod
     @validate_call
@@ -48,7 +66,7 @@ class Report(SeretoBaseModel):
     @validate_call
     def load_runtime_vars(self, settings: Settings) -> None:
         """Get the config enriched with additional parameters like paths and findings."""
-        report_path = self.get_path(dir_subtree=settings.reports_path)
+        report_path = self.get_path_from_cwd(dir_subtree=settings.reports_path)
 
         for cfg in [self.config] + self.config.updates:
             for target in cfg.targets:
