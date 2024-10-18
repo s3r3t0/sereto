@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import NonNegativeInt
 
 from sereto.models.base import SeretoBaseModel
@@ -81,7 +83,7 @@ class Risks(SeretoBaseModel):
         medium: NonNegativeInt,
         low: NonNegativeInt,
         info: NonNegativeInt,
-    ) -> "Risks":
+    ) -> Self:
         """Set the count of each Risk object in the Risks object.
 
         Args:

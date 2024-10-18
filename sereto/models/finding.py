@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, ValidationError, field_validator, model_validator
@@ -154,7 +154,7 @@ class FindingsConfig(SeretoBaseModel):
     findings: list[Finding]
 
     @model_validator(mode="after")
-    def default_risks(self) -> "FindingsConfig":
+    def default_risks(self) -> Self:
         for finding_group in self.finding_groups:
             all_versions = set([r for f in finding_group.findings for r in f.risks])
             for version in all_versions:
@@ -164,7 +164,7 @@ class FindingsConfig(SeretoBaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_findings_config(self) -> "FindingsConfig":
+    def validate_findings_config(self) -> Self:
         all_path_names = [f.path_name for f in self.findings]
         all_included_findings = [f for ri in self.report_include for f in ri.findings]
 
@@ -191,7 +191,7 @@ class FindingsConfig(SeretoBaseModel):
         return self
 
     @classmethod
-    def from_yaml_file(cls, filepath: Path) -> "FindingsConfig":
+    def from_yaml_file(cls, filepath: Path) -> Self:
         try:
             return cls.model_validate(YAML.load(filepath))
         except FileNotFoundError:

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
+from typing import Self
 
 from pydantic import Field, model_validator, validate_call
 
@@ -31,7 +32,7 @@ class BaseConfig(SeretoBaseModel):
     people: list[Person] = []
 
     @model_validator(mode="after")
-    def unique_names(self) -> "BaseConfig":
+    def unique_names(self) -> Self:
         unames = [target.uname for target in self.targets]
         if len(unames) != len(set(unames)):
             raise ValueError("duplicate target uname")
@@ -50,7 +51,7 @@ class Config(BaseConfig):
     updates: list[BaseConfig] = Field(default=[])
 
     @model_validator(mode="after")
-    def config_validator(self) -> "Config":
+    def config_validator(self) -> Self:
         # if self.id is None or self.name is None:
         #     raise ValueError("'id' and 'name' variables cannot be None")
 
@@ -71,7 +72,7 @@ class Config(BaseConfig):
         return self
 
     @classmethod
-    def from_file(cls, filepath: Path) -> "Config":
+    def from_file(cls, filepath: Path) -> Self:
         """Load the configuration from a file.
 
         Args:

@@ -1,6 +1,6 @@
 from pathlib import Path
 from subprocess import run
-from typing import Any
+from typing import Any, Self
 
 from click import get_app_dir
 from pydantic import (
@@ -85,7 +85,7 @@ class Render(SeretoBaseModel):
     tools: list[RenderTool] = Field(..., min_length=1)
 
     @model_validator(mode="after")
-    def render_validator(self) -> "Render":
+    def render_validator(self) -> Self:
         for recipe in self.report_recipes + self.finding_recipes + self.sow_recipes:
             if not all(tool in [t.name for t in self.tools] for tool in recipe.tools):
                 raise ValueError(f"unknown tools in recipe {recipe.name!r}")
@@ -170,7 +170,7 @@ class Settings(SeretoBaseSettings):
         return Path(get_app_dir(app_name="sereto")) / "settings.json"
 
     @classmethod
-    def from_file(cls, filepath: Path) -> "Settings":
+    def from_file(cls, filepath: Path) -> Self:
         try:
             return cls.model_validate_json(filepath.read_bytes())
         except FileNotFoundError:

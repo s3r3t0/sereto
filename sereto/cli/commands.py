@@ -2,6 +2,7 @@ import os
 import readline
 from pathlib import Path
 from types import TracebackType
+from typing import Self
 
 from click import Group, get_app_dir
 from pydantic import Field, TypeAdapter, ValidationError, validate_call
@@ -85,7 +86,7 @@ class REPLHistory(SeretoBaseModel):
 
     history_file_path: Path = Field(default=Path(get_app_dir(app_name="sereto")) / ".sereto_history")
 
-    def __enter__(self) -> "REPLHistory":
+    def __enter__(self) -> Self:
         """Load the command history from the previous sessions."""
         # Enable auto-saving of the history
         readline.set_auto_history(True)
