@@ -80,6 +80,7 @@ nav:
     - CLI:
       - reference/cli/cli.md
       - reference/cli/commands.md
+      - reference/cli/console.md
       - reference/cli/date.md
       - reference/cli/person.md
       - reference/cli/target.md
@@ -91,25 +92,28 @@ nav:
       - reference/models/finding.md
       - reference/models/person.md
       - reference/models/report.md
+      - reference/models/risks.md
       - reference/models/settings.md
       - reference/models/target.md
       - reference/models/version.md
-    - Utils:
-      - reference/utils/utils.md
-      - reference/utils/cleanup.md
-      - reference/utils/convert.md
-      - reference/utils/enums.md
-      - reference/utils/exceptions.md
+    - reference/cleanup.md
     - reference/config.md
+    - reference/convert.md
+    - reference/crypto.md
+    - reference/enums.md
+    - reference/exceptions.md
     - reference/finding.md
     - reference/jinja.md
     - reference/pdf.md
     - reference/plot.md
     - reference/report.md
-    - reference/risks.md
+    - reference/retest.md
     - reference/settings.md
+    - reference/singleton.md
+    - reference/source_archive.md
     - reference/target.md
     - reference/types.md
+    - reference/utils.md
   - Development:
     - development/documentation.md
     - development/tests.md

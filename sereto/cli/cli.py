@@ -765,7 +765,6 @@ def templates_skel_copy(settings: Settings) -> None:
     \f
 
     Args:
-        report: The report object.
         settings: The settings object containing the tool's global configuration.
     """
     copy_skel(
