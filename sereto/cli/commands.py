@@ -52,7 +52,7 @@ class WorkingDir(SeretoBaseModel):
         old_cwd: The previous working directory.
     """
 
-    old_cwd: Path = Field(default=Path.cwd())
+    old_cwd: Path = Field(default_factory=Path.cwd)
 
     def change(self, dst: Path, /) -> None:
         """Change the current working directory to the new location.

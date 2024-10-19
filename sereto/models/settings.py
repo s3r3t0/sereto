@@ -1,7 +1,8 @@
 import subprocess
 from pathlib import Path
-from typing import Any, Self
+from typing import Annotated, Any, Self
 
+from annotated_types import MinLen
 from click import get_app_dir
 from pydantic import (
     DirectoryPath,
@@ -29,7 +30,7 @@ class RenderRecipe(SeretoBaseModel):
     """
 
     name: str
-    tools: list[str] = Field(..., min_length=1)
+    tools: Annotated[list[str], MinLen(1)]
 
 
 class ConvertRecipe(RenderRecipe):
@@ -78,12 +79,12 @@ class RenderTool(SeretoBaseModel):
 
 
 class Render(SeretoBaseModel):
-    report_recipes: list[RenderRecipe] = Field(..., min_length=1)
-    finding_recipes: list[RenderRecipe] = Field(..., min_length=1)
-    sow_recipes: list[RenderRecipe] = Field(..., min_length=1)
-    target_recipes: list[RenderRecipe] = Field(..., min_length=1)
-    convert_recipes: list[ConvertRecipe] = Field(..., min_length=1)
-    tools: list[RenderTool] = Field(..., min_length=1)
+    report_recipes: Annotated[list[RenderRecipe], MinLen(1)]
+    finding_recipes: Annotated[list[RenderRecipe], MinLen(1)]
+    sow_recipes: Annotated[list[RenderRecipe], MinLen(1)]
+    target_recipes: Annotated[list[RenderRecipe], MinLen(1)]
+    convert_recipes: Annotated[list[ConvertRecipe], MinLen(1)]
+    tools: Annotated[list[RenderTool], MinLen(1)]
 
     @model_validator(mode="after")
     def render_validator(self) -> Self:

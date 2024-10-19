@@ -48,6 +48,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "annotated-types~=0.7.0",
   "argon2-cffi~=23.1.0",
   "click~=8.1.7",
   "cryptography~=43.0.1",
