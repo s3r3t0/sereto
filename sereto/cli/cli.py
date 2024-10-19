@@ -651,7 +651,7 @@ def pdf_sow(
     Console().log(f"Rendering SoW version: '{version}'")
     report_create_missing(report=report, settings=settings, version=version)
     render_sow_j2(report=report, settings=settings, version=version)
-    render_sow_pdf(report=report, settings=settings, version=version, recipe=sow_recipe)
+    render_sow_pdf(settings=settings, version=version, recipe=sow_recipe)
     render_sow_cleanup(settings=settings, version=version)
 
 

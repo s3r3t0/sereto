@@ -258,13 +258,12 @@ def report_pdf(
     cfg = report.config.at_version(version=version)
 
     for target in cfg.targets:
-        render_target_pdf(target=target, report=report, settings=settings, version=version, recipe=target_recipe)
+        render_target_pdf(target=target, settings=settings, version=version, recipe=target_recipe)
 
         for finding_group in target.findings_config.finding_groups:
             render_finding_group_pdf(
                 finding_group=finding_group,
                 target=target,
-                report=report,
                 settings=settings,
                 version=version,
                 recipe=finding_recipe,

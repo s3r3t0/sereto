@@ -1,11 +1,12 @@
+import subprocess
 from pathlib import Path
-from subprocess import run
 from typing import Any, Self
 
 from click import get_app_dir
 from pydantic import (
     DirectoryPath,
     Field,
+    ValidationError,
     field_validator,
     model_validator,
     validate_call,
@@ -73,7 +74,7 @@ class RenderTool(SeretoBaseModel):
         if replacements is not None:
             command = replace_strings(text=command, replacements=replacements)
         Console().log(f"Running command: {' '.join(command)}")
-        run(command, cwd=cwd)
+        subprocess.run(command, cwd=cwd)
 
 
 class Render(SeretoBaseModel):
@@ -158,6 +159,10 @@ class Settings(SeretoBaseSettings):
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
             possible in all positions except the first and last one)
+
+    Raises:
+        SeretoPathError: If the file is not found or permission is denied.
+        SeretoValueError: If the JSON file is invalid.
     """
 
     reports_path: DirectoryPath
@@ -177,5 +182,5 @@ class Settings(SeretoBaseSettings):
             raise SeretoPathError(f'file not found at "{filepath}"') from None
         except PermissionError:
             raise SeretoPathError(f'permission denied for "{filepath}"') from None
-        except ValueError as e:
-            raise SeretoValueError("invalid settings") from e
+        except ValidationError as e:
+            raise SeretoValueError(f"invalid settings\n\n{e}") from e

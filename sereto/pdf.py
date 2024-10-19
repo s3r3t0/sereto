@@ -70,13 +70,12 @@ def render_report_pdf(settings: Settings, version: ReportVersion, recipe: str | 
 
 
 @validate_call
-def render_sow_pdf(report: Report, settings: Settings, version: ReportVersion, recipe: str | None = None) -> None:
+def render_sow_pdf(settings: Settings, version: ReportVersion, recipe: str | None = None) -> None:
     """Render the SoW to PDF format according to the recipe.
 
     Prerequisite is having the SoW in TeX format.
 
     Args:
-        report: Report's representation.
         settings: Global settings.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
@@ -96,16 +95,13 @@ def render_sow_pdf(report: Report, settings: Settings, version: ReportVersion, r
 
 
 @validate_call
-def render_target_pdf(
-    target: Target, report: Report, settings: Settings, version: ReportVersion, recipe: str | None = None
-) -> None:
+def render_target_pdf(target: Target, settings: Settings, version: ReportVersion, recipe: str | None = None) -> None:
     """Render the target to PDF format according to the recipe.
 
     Prerequisite is having the target in TeX format.
 
     Args:
         target: Target's representation.
-        report: Report's representation.
         settings: Global settings.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
@@ -129,7 +125,6 @@ def render_target_pdf(
 def render_finding_group_pdf(
     finding_group: FindingGroup,
     target: Target,
-    report: Report,
     settings: Settings,
     version: ReportVersion,
     recipe: str | None = None,
@@ -141,7 +136,6 @@ def render_finding_group_pdf(
     Args:
         finding_group: Finding group with all the sub-findings.
         target: Target's representation.
-        report: Report's representation.
         settings: Global settings.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first

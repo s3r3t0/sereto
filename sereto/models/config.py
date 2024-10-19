@@ -2,7 +2,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Self
 
-from pydantic import Field, model_validator, validate_call
+from pydantic import Field, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -91,8 +91,8 @@ class Config(BaseConfig):
             raise SeretoPathError(f"file not found at '{filepath}'") from None
         except PermissionError:
             raise SeretoPathError(f"permission denied for '{filepath}'") from None
-        except ValueError as e:
-            raise SeretoValueError("invalid config") from e
+        except ValidationError as e:
+            raise SeretoValueError(f"invalid config\n\n{e}") from e
 
     @validate_call
     def versions(self) -> list[ReportVersion]:
