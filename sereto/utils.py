@@ -1,12 +1,11 @@
 import re
 import tarfile
-from pathlib import Path
 from typing import overload
 
 import click
 import ruamel.yaml
 from humanize import naturalsize
-from pydantic import validate_call
+from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -47,7 +46,7 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
 
 
 @validate_call
-def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> None:
+def untar_sources(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> None:
     """Extracts sources from a given tarball file.
 
     Expects the tarball file to be Gzip-compressed.
@@ -67,7 +66,9 @@ def untar_sources(file: Path, output_dir: Path, keep_original: bool = True) -> N
 
 
 @validate_call
-def assert_file_size_within_range(file: Path, max_bytes: int, min_bytes: int = 0, interactive: bool = False) -> None:
+def assert_file_size_within_range(
+    file: FilePath, max_bytes: int, min_bytes: int = 0, interactive: bool = False
+) -> None:
     """Evaluates if the file size is within the specified range.
 
     If `interactive` is True, the user is first prompted whether to continue if the file size is not within the range.

@@ -6,11 +6,10 @@ from shutil import copy2, copytree
 from typing import TypeVar
 
 from click import get_current_context
-from pydantic import validate_call
+from pydantic import DirectoryPath, validate_call
 from rich.prompt import Prompt
 from typing_extensions import ParamSpec
 
-from sereto.cleanup import render_finding_group_cleanup, render_report_cleanup, render_target_cleanup
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.finding import render_finding_group_j2
@@ -41,28 +40,31 @@ def load_report(f: Callable[..., R]) -> Callable[..., R]:
     return wrapper
 
 
-def load_report_function(settings: Settings, report_path: Path | None = None) -> Report:
+@validate_call
+def load_report_function(settings: Settings, report_path: DirectoryPath | None = None) -> Report:
     config_path = (
         Report.get_config_path(dir_subtree=settings.reports_path)
         if report_path is None
         else report_path / "config.json"
     )
-    config = Config.from_file(filepath=config_path)
+    config = Config.load_from(file=config_path)
     return Report(config=config)
 
 
+@validate_call
 def get_all_reports(settings: Settings) -> list[Report]:
     report_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Report.is_report_dir(d)]
     return [load_report_function(settings=settings, report_path=d) for d in report_paths]
 
 
+@validate_call
 def get_all_reports_dict(settings: Settings) -> dict[str, Report]:
     report_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Report.is_report_dir(d)]
     return {(report := load_report_function(settings=settings, report_path=d)).config.id: report for d in report_paths}
 
 
 @validate_call
-def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
+def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = False) -> None:
     """Copy the content of a templates `skel` directory to a destination directory.
 
     A `skel` directory is a directory that contains a set of files and directories that can be used as a template
@@ -95,10 +97,7 @@ def copy_skel(templates: Path, dst: Path, overwrite: bool = False) -> None:
 
 
 @validate_call
-def new_report(
-    settings: Settings,
-    report_id: TypeReportId,
-) -> None:
+def new_report(settings: Settings, report_id: TypeReportId) -> None:
     """Generates a new report with the specified ID.
 
     Args:
@@ -281,15 +280,12 @@ def report_cleanup(
     version: ReportVersion,
 ) -> None:
     cfg = report.config.at_version(version=version)
+    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
 
     for target in cfg.targets:
-        render_target_cleanup(target=target, settings=settings)
+        (report_path / f"{target.uname}.tex").unlink()
 
         for finding_group in target.findings_config.finding_groups:
-            render_finding_group_cleanup(
-                finding_group=finding_group,
-                target=target,
-                settings=settings,
-            )
+            (report_path / f"{target.uname}_{finding_group.uname}.tex").unlink()
 
-    render_report_cleanup(settings=settings, version=version)
+    (report_path / f"report{version.path_suffix}.tex").unlink()

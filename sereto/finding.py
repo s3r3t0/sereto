@@ -61,7 +61,7 @@ def show_findings(config: Config, version: ReportVersion) -> None:
         if target.path is None:
             raise SeretoValueError(f"target path not set for {target.uname!r}")
 
-        fc = FindingsConfig.from_yaml_file(filepath=target.path / "findings.yaml")
+        fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
 
         for finding_group in fc.finding_groups:
             table.add_row(finding_group.name, target.category, finding_group.risks[version])
@@ -77,7 +77,7 @@ def update_findings(report: Report, settings: Settings) -> None:
 
         findings_path = target.path / "findings.yaml"
         findings = YAML.load(findings_path)
-        fc = FindingsConfig.from_yaml_file(filepath=findings_path)
+        fc = FindingsConfig.from_yaml(file=findings_path)
         category_templates = settings.templates_path / "categories" / target.category / "findings"
 
         for file in category_templates.glob(pattern="*.j2"):
@@ -155,7 +155,7 @@ def render_finding_group_findings_j2(
 
     for finding in finding_group.findings:
         if version in finding.risks:
-            finding.assert_required_vars(templates_path=settings.templates_path, category=target.category)
+            finding.assert_required_vars(templates=settings.templates_path, category=target.category)
             render_finding_j2(finding=finding, target=target, version=version)
             convert_file_to_tex(
                 finding=finding,

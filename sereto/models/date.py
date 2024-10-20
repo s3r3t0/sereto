@@ -11,7 +11,6 @@ from sereto.models.base import SeretoBaseModel
 
 @total_ordering
 class SeretoDate(RootModel[date]):
-    root: date
     """Date representation for Pydantic with format `%d-%b-%Y`.
 
     The `%d-%b-%Y` format string specifies the format of the date string as follows:
@@ -19,6 +18,8 @@ class SeretoDate(RootModel[date]):
      - `%b`: Month abbreviation in the current locale's abbreviated name (e.g. Jan, Feb, ..., Dec).
      - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ...).
     """
+
+    root: date
 
     @field_validator("root", mode="before")
     @classmethod

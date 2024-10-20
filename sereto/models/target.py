@@ -43,7 +43,7 @@ class Target(SeretoBaseModel, extra="allow"):
         if self.path is None:
             raise SeretoPathError("target path not configured")
 
-        fc = FindingsConfig.from_yaml_file(filepath=self.path / "findings.yaml")
+        fc = FindingsConfig.from_yaml(file=self.path / "findings.yaml")
 
         for finding in fc.findings:
             finding.path = self.path / "findings" / finding.path_name

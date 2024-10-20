@@ -1,9 +1,9 @@
 from collections.abc import Iterator, Sequence
 from collections.abc import Sequence as abc_Sequence
-from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, is_undefined
+from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.exceptions import SeretoValueError
 from sereto.utils import replace_strings
@@ -78,7 +78,8 @@ def yesno_filter(value: str | None, arg: str = "yes,no,maybe") -> str:
     return no
 
 
-def get_generic_jinja_env(templates: Path | Sequence[Path]) -> Environment:
+@validate_call
+def get_generic_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Environment:
     """Creates a generic Jinja2 environment object.
 
     Args:
@@ -92,7 +93,8 @@ def get_generic_jinja_env(templates: Path | Sequence[Path]) -> Environment:
     return env
 
 
-def get_tex_jinja_env(templates: Path | Sequence[Path]) -> Environment:
+@validate_call
+def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Environment:
     """Creates a Jinja2 environment object for rendering TeX templates.
 
     Args:
@@ -121,7 +123,10 @@ def get_tex_jinja_env(templates: Path | Sequence[Path]) -> Environment:
     return env
 
 
-def render_j2(templates: Path | Sequence[Path], file: Path, vars: dict[str, Any]) -> Iterator[str]:
+@validate_call
+def render_j2(
+    templates: DirectoryPath | Sequence[DirectoryPath], file: FilePath, vars: dict[str, Any]
+) -> Iterator[str]:
     """Renders a Jinja2 template.
 
     Args:

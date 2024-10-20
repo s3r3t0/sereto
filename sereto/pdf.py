@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import validate_call
+from pydantic import FilePath, validate_call
 
 from sereto.exceptions import SeretoValueError
 from sereto.models.finding import FindingGroup
@@ -12,7 +12,7 @@ from sereto.models.version import ReportVersion
 
 @validate_call
 def _render_pdf(
-    tex_path: Path,
+    tex_path: FilePath,
     render_recipe: RenderRecipe,
     settings: Settings,
     replacements: dict[str, str] | None = None,
@@ -70,7 +70,9 @@ def render_report_pdf(settings: Settings, version: ReportVersion, recipe: str | 
 
 
 @validate_call
-def render_sow_pdf(settings: Settings, version: ReportVersion, recipe: str | None = None) -> None:
+def render_sow_pdf(
+    settings: Settings, version: ReportVersion, recipe: str | None = None, keep_original: bool = True
+) -> None:
     """Render the SoW to PDF format according to the recipe.
 
     Prerequisite is having the SoW in TeX format.
@@ -80,6 +82,8 @@ def render_sow_pdf(settings: Settings, version: ReportVersion, recipe: str | Non
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
+        keep_original: If True, the original TeX file will be kept after rendering. Otherwise, it will be removed.
+            Defaults to True.
     """
     report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
     sow_tex_path = report_path / f"sow{version.path_suffix}.tex"
@@ -92,6 +96,9 @@ def render_sow_pdf(settings: Settings, version: ReportVersion, recipe: str | Non
         render_recipe = res[0]
 
     _render_pdf(tex_path=sow_tex_path, render_recipe=render_recipe, settings=settings)
+
+    if not keep_original:
+        sow_tex_path.unlink()
 
 
 @validate_call

@@ -49,7 +49,7 @@ def _ask_for_dirpath(prompt: str) -> Path:
 
 def load_settings_function() -> Settings:
     if (path := Settings.get_path()).is_file():
-        return Settings.from_file(path)
+        return Settings.load_from(path)
     else:
         Console().print("[cyan]It seems like this is the first time you're running the tool. Let's set it up!\n")
 

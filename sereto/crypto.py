@@ -6,7 +6,7 @@ import keyring
 from argon2.low_level import Type as Argon2Type
 from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from pydantic import TypeAdapter, ValidationError, validate_call
+from pydantic import FilePath, TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
@@ -58,7 +58,7 @@ def derive_key_argon2(
 
 
 @validate_call
-def encrypt_file(file: Path, keep_original: bool = False) -> Path:
+def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
     """Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, and encrypts
@@ -126,7 +126,7 @@ def encrypt_file(file: Path, keep_original: bool = False) -> Path:
 
 
 @validate_call
-def decrypt_file(file: Path, keep_original: bool = True) -> Path:
+def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     """Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.
 
     This function retrieves a password from the system keyring, derives an encryption key using Argon2, parses the

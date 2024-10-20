@@ -95,7 +95,6 @@ nav:
       - reference/models/settings.md
       - reference/models/target.md
       - reference/models/version.md
-    - reference/cleanup.md
     - reference/config.md
     - reference/convert.md
     - reference/crypto.md

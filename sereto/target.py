@@ -1,8 +1,7 @@
-from pathlib import Path
 from textwrap import dedent
 
 import frontmatter  # type: ignore[import-untyped]
-from pydantic import ValidationError, validate_call
+from pydantic import DirectoryPath, ValidationError, validate_call
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
@@ -30,7 +29,7 @@ def render_target_findings_j2(
 
     for finding in target.findings_config.included_findings():
         if version in finding.risks:
-            finding.assert_required_vars(templates_path=settings.templates_path, category=target.category)
+            finding.assert_required_vars(templates=settings.templates_path, category=target.category)
             render_finding_j2(finding=finding, target=target, version=version)
             convert_file_to_tex(
                 finding=finding,
@@ -41,7 +40,8 @@ def render_target_findings_j2(
             )
 
 
-def create_findings_config(target: Target, report: Report, templates: Path) -> None:
+@validate_call
+def create_findings_config(target: Target, report: Report, templates: DirectoryPath) -> None:
     findings = YAML.load(
         dedent(
             """

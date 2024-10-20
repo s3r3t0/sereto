@@ -9,10 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Cleanup: Remove artefacts of `sereto.cli.console`
 - Use `TypeAdapter` instead of `RootModel` in config module.
 - Type hints: start using Self
 - README: rebranding IT Hub -> Digital Hub
+- Improve error message for `Config` and `Settings` validation
+- Prefer annotated types over `Field`
+- Use more `DirectoryPath` and `FilePath` instead of plain `Path`
+- Apply args validation for more function (`@validate_call`)
+- Rename: `Config.from_file` -> `Config.load_from`
+- Rename: `Settings.from_file` -> `Settings.load_from`
+- Rename: `FindingsConfig.from_yaml_file` -> `FindingsConfig.from_yaml`
+
+### Removed
+
+- Remove artefacts of `sereto.cli.console`
+- Remove module 'cleanup'
 
 ## [0.0.14] - 2024-10-18
 

@@ -39,7 +39,7 @@ def add_retest(report: Report, settings: Settings) -> None:
 
         findings_path = target.path / "findings.yaml"
         findings = YAML.load(findings_path)
-        fc = FindingsConfig.from_yaml_file(filepath=target.path / "findings.yaml")
+        fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
 
         # Create new version of each included finding
         for finding in fc.included_findings():

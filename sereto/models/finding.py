@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
-from pydantic import Field, ValidationError, field_validator, model_validator
+from pydantic import DirectoryPath, Field, FilePath, ValidationError, field_validator, model_validator, validate_call
 from unidecode import unidecode
 
 from sereto.cli.utils import Console
@@ -108,11 +108,13 @@ class Finding(SeretoBaseModel):
         """Get list of all report versions in which this finding is present."""
         return [k for k in self.risks]
 
-    def template_path(self, templates_path: Path, category: str) -> Path:
-        return templates_path / "categories" / category / f"{self.path_name}.{self.format.value}.j2"
+    @validate_call
+    def template_path(self, templates: DirectoryPath, category: str) -> Path:
+        return templates / "categories" / category / f"{self.path_name}.{self.format.value}.j2"
 
-    def metadata(self, templates_path: Path, category: str) -> TemplateMetadata | None:
-        template = self.template_path(templates_path=templates_path, category=category)
+    @validate_call
+    def metadata(self, templates: DirectoryPath, category: str) -> TemplateMetadata | None:
+        template = self.template_path(templates=templates, category=category)
         if not template.is_file():
             Console().log(f"Finding template not found at '{template}'")
             return None
@@ -123,8 +125,9 @@ class Finding(SeretoBaseModel):
         except ValidationError as ex:
             raise SeretoValueError(f"invalid template metadata in '{template}'") from ex
 
-    def assert_required_vars(self, templates_path: Path, category: str) -> None:
-        if (metadata := self.metadata(templates_path=templates_path, category=category)) is None:
+    @validate_call
+    def assert_required_vars(self, templates: DirectoryPath, category: str) -> None:
+        if (metadata := self.metadata(templates=templates, category=category)) is None:
             Console().log(f"No metadata for finding {self.path_name!r}")
             return
 
@@ -191,13 +194,13 @@ class FindingsConfig(SeretoBaseModel):
         return self
 
     @classmethod
-    def from_yaml_file(cls, filepath: Path) -> Self:
+    def from_yaml(cls, file: FilePath) -> Self:
         try:
-            return cls.model_validate(YAML.load(filepath))
+            return cls.model_validate(YAML.load(file))
         except FileNotFoundError:
-            raise SeretoPathError(f'file not found at "{filepath}"') from None
+            raise SeretoPathError(f"file not found at '{file}'") from None
         except PermissionError:
-            raise SeretoPathError(f'permission denied for "{filepath}"') from None
+            raise SeretoPathError(f"permission denied for '{file}'") from None
         except ValueError as e:
             raise SeretoValueError("invalid findings.yaml") from e
 
@@ -207,6 +210,7 @@ class FindingsConfig(SeretoBaseModel):
             for finding_path in ri.findings:
                 yield [f for f in self.findings if f.path_name == finding_path][0]
 
+    @validate_call
     def get_finding(self, path_name: str) -> Finding:
         """Retrieve specific Finding instance by its 'path_name' attribute."""
         matches = [f for f in self.findings if f.path_name == path_name]

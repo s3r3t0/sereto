@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import validate_call
+from pydantic import DirectoryPath, validate_call
 
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoValueError
@@ -13,7 +13,7 @@ from sereto.models.version import ReportVersion
 def convert_file_to_tex(
     finding: Finding,
     render: Render,
-    templates: Path,
+    templates: DirectoryPath,
     version: ReportVersion,
     recipe: str | None = None,
 ) -> None:

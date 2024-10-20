@@ -84,7 +84,7 @@ class REPLHistory(SeretoBaseModel):
         history_file_path: The path to the history file.
     """
 
-    history_file_path: Path = Field(default=Path(get_app_dir(app_name="sereto")) / ".sereto_history")
+    history_file: Path = Field(default=Path(get_app_dir(app_name="sereto")) / ".sereto_history")
 
     def __enter__(self) -> Self:
         """Load the command history from the previous sessions."""
@@ -95,8 +95,8 @@ class REPLHistory(SeretoBaseModel):
         readline.parse_and_bind("tab: complete")
 
         # Load the history from the file
-        if self.history_file_path.is_file():
-            readline.read_history_file(self.history_file_path)
+        if self.history_file.is_file():
+            readline.read_history_file(self.history_file)
 
         return self
 
@@ -104,7 +104,7 @@ class REPLHistory(SeretoBaseModel):
         self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
     ) -> None:
         """Save the command history to a file for future sessions."""
-        readline.write_history_file(self.history_file_path)
+        readline.write_history_file(self.history_file)
 
 
 def _get_repl_prompt(settings: Settings) -> str:

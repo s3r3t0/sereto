@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import validate_call
+from pydantic import DirectoryPath, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -15,7 +15,7 @@ class Report(SeretoBaseModel):
 
     @staticmethod
     @validate_call
-    def get_path_from_cwd(dir_subtree: Path = Path("/")) -> Path:
+    def get_path_from_cwd(dir_subtree: DirectoryPath = Path("/")) -> Path:
         """Get the path to the report directory.
 
         Start from the current working directory and go up the directory tree until the report directory is found or
@@ -45,12 +45,12 @@ class Report(SeretoBaseModel):
 
     @staticmethod
     @validate_call
-    def get_config_path(dir_subtree: Path = Path("/")) -> Path:
+    def get_config_path(dir_subtree: DirectoryPath = Path("/")) -> Path:
         return Report.get_path_from_cwd(dir_subtree=dir_subtree) / "config.json"
 
     @staticmethod
     @validate_call
-    def is_report_dir(path: Path) -> bool:
+    def is_report_dir(path: DirectoryPath) -> bool:
         """Check if the provided path is a root directory of a report.
 
         A report directory contains at least `.sereto` and `config.json` files.

@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from pathspec.gitignore import GitIgnoreSpec
-from pydantic import validate_call
+from pydantic import FilePath, validate_call
 from pypdf import PdfReader, PdfWriter
 
 from sereto.cli.utils import Console
@@ -84,7 +84,7 @@ def create_source_archive(settings: Settings) -> Path:
 
 
 @validate_call
-def embed_source_archive(archive: Path, report: Path, keep_original: bool = True) -> None:
+def embed_source_archive(archive: FilePath, report: FilePath, keep_original: bool = True) -> None:
     """Embed the source archive in the report PDF.
 
     Args:
@@ -121,7 +121,7 @@ def embed_source_archive(archive: Path, report: Path, keep_original: bool = True
 
 
 @validate_call
-def extract_source_archive(pdf: Path, name: str) -> Path:
+def extract_source_archive(pdf: FilePath, name: str) -> Path:
     """Extracts an attachment from a given PDF file and writes it to a temporary file.
 
     Args:

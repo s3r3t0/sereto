@@ -7,6 +7,7 @@ from click import get_app_dir
 from pydantic import (
     DirectoryPath,
     Field,
+    FilePath,
     ValidationError,
     field_validator,
     model_validator,
@@ -70,7 +71,7 @@ class RenderTool(SeretoBaseModel):
     args: list[str]
 
     @validate_call
-    def run(self, cwd: Path, replacements: dict[str, str] | None = None) -> None:
+    def run(self, cwd: DirectoryPath, replacements: dict[str, str] | None = None) -> None:
         command = [self.command] + self.args
         if replacements is not None:
             command = replace_strings(text=command, replacements=replacements)
@@ -176,12 +177,12 @@ class Settings(SeretoBaseSettings):
         return Path(get_app_dir(app_name="sereto")) / "settings.json"
 
     @classmethod
-    def from_file(cls, filepath: Path) -> Self:
+    def load_from(cls, file: FilePath) -> Self:
         try:
-            return cls.model_validate_json(filepath.read_bytes())
+            return cls.model_validate_json(file.read_bytes())
         except FileNotFoundError:
-            raise SeretoPathError(f'file not found at "{filepath}"') from None
+            raise SeretoPathError(f"file not found at '{file}'") from None
         except PermissionError:
-            raise SeretoPathError(f'permission denied for "{filepath}"') from None
+            raise SeretoPathError(f"permission denied for '{file}'") from None
         except ValidationError as e:
             raise SeretoValueError(f"invalid settings\n\n{e}") from e

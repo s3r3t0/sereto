@@ -1,8 +1,7 @@
 from copy import deepcopy
-from pathlib import Path
 from typing import Self
 
-from pydantic import Field, ValidationError, model_validator, validate_call
+from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -72,11 +71,11 @@ class Config(BaseConfig):
         return self
 
     @classmethod
-    def from_file(cls, filepath: Path) -> Self:
+    def load_from(cls, file: FilePath) -> Self:
         """Load the configuration from a file.
 
         Args:
-            filepath: The path to the configuration file.
+            file: The path to the configuration file.
 
         Returns:
             The configuration object.
@@ -86,11 +85,11 @@ class Config(BaseConfig):
             SeretoValueError: If the configuration is invalid.
         """
         try:
-            return cls.model_validate_json(filepath.read_bytes())
+            return cls.model_validate_json(file.read_bytes())
         except FileNotFoundError:
-            raise SeretoPathError(f"file not found at '{filepath}'") from None
+            raise SeretoPathError(f"file not found at '{file}'") from None
         except PermissionError:
-            raise SeretoPathError(f"permission denied for '{filepath}'") from None
+            raise SeretoPathError(f"permission denied for '{file}'") from None
         except ValidationError as e:
             raise SeretoValueError(f"invalid config\n\n{e}") from e
 
