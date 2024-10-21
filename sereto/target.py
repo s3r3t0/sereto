@@ -10,7 +10,7 @@ from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.finding import render_finding_j2
 from sereto.jinja import render_j2
 from sereto.models.finding import TemplateMetadata
-from sereto.models.report import Report
+from sereto.models.project import Project
 from sereto.models.risks import Risks
 from sereto.models.settings import Settings
 from sereto.models.target import Target
@@ -41,7 +41,7 @@ def render_target_findings_j2(
 
 
 @validate_call
-def create_findings_config(target: Target, report: Report, templates: DirectoryPath) -> None:
+def create_findings_config(target: Target, project: Project, templates: DirectoryPath) -> None:
     findings = YAML.load(
         dedent(
             """
@@ -85,7 +85,7 @@ def create_findings_config(target: Target, report: Report, templates: DirectoryP
             {
                 "name": template_metadata.name,
                 "path_name": file.with_suffix("").stem,
-                "risks": CommentedMap({str(report.config.last_version()): template_metadata.risk}),
+                "risks": CommentedMap({str(project.config.last_version()): template_metadata.risk}),
                 "vars": CommentedMap(),
             }
         )
@@ -106,34 +106,33 @@ def create_findings_config(target: Target, report: Report, templates: DirectoryP
 @validate_call
 def render_target_j2(
     target: Target,
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    cfg = report.config.at_version(version=version)
-    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
+    cfg = project.config.at_version(version=version)
+    project_path = project.get_path_from_dir()
 
-    render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)
+    render_target_findings_j2(target=target, settings=project.settings, version=version, convert_recipe=convert_recipe)
 
-    target_j2_path = report_path / "target_standalone_wrapper.tex.j2"
+    target_j2_path = project_path / "target_standalone_wrapper.tex.j2"
     if not target_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{target_j2_path}'")
 
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
     target_generator = render_j2(
-        templates=report_path,
+        templates=project_path,
         file=target_j2_path,
-        vars={"target": target, "version": version, "report_path": report_path, **cfg_dict},
+        vars={"target": target, "version": version, "report_path": project_path, **cfg_dict},
     )
 
-    target_tex_path = report_path / f"{target.uname}.tex"
+    target_tex_path = project_path / f"{target.uname}.tex"
 
     with target_tex_path.open("w", encoding="utf-8") as f:
         for chunk in target_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(project_path)}")
 
 
 @validate_call

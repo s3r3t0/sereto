@@ -13,10 +13,9 @@ from rich.table import Table
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.report import Report
+from sereto.models.project import Project
 from sereto.models.settings import Settings
-from sereto.report import load_report_function
-from sereto.types import TypeReportId
+from sereto.types import TypeProjectId
 
 __all__ = ["sereto_ls", "sereto_repl"]
 
@@ -30,13 +29,12 @@ def sereto_ls(settings: Settings) -> None:
     Args:
         settings: The Settings object.
     """
-    report_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Report.is_report_dir(d)]
+    project_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_report_dir(d)]
     table = Table("ID", "Name", "Location", title="Reports", box=box.MINIMAL)
 
-    for dir in report_paths:
+    for dir in project_paths:
         try:
-            report = load_report_function(settings=settings, report_path=dir)
-            report_name: str = report.config.name
+            report_name: str = Project.load_from(dir).config.name
         except (RuntimeError, SeretoValueError):
             report_name = "n/a"
 
@@ -107,26 +105,23 @@ class REPLHistory(SeretoBaseModel):
         readline.write_history_file(self.history_file)
 
 
-def _get_repl_prompt(settings: Settings) -> str:
+def _get_repl_prompt() -> str:
     """Get the prompt for the Read-Eval-Print Loop (REPL).
-
-    Args:
-        settings: The Settings object.
 
     Returns:
         The prompt string.
     """
     # Determine if the current working directory is a report directory
-    report_id: TypeReportId | None = None
+    project_id: TypeProjectId | None = None
     cwd = Path.cwd()
-    if Report.is_report_dir(cwd):
+    if Project.is_report_dir(cwd):
         # Load the report to get the ID (this can be different from the directory name)
-        report = load_report_function(settings=settings, report_path=cwd)
-        report_id = report.config.at_version(report.config.last_version()).id
+        project = Project.load_from()
+        project_id = project.config.at_version(project.config.last_version()).id
 
     # Define the prompt
     base_prompt = "sereto > "
-    return f"({report_id}) {base_prompt}" if report_id else base_prompt
+    return f"({project_id}) {base_prompt}" if project_id else base_prompt
 
 
 @validate_call
@@ -154,7 +149,7 @@ def _change_repl_dir(settings: Settings, cmd: str, wd: WorkingDir) -> None:
 
     # Extract the report ID from the user input
     try:
-        ta: TypeAdapter[TypeReportId] = TypeAdapter(TypeReportId)  # hack for mypy
+        ta: TypeAdapter[TypeProjectId] = TypeAdapter(TypeProjectId)  # hack for mypy
         report_id = ta.validate_python(user_input)
     except ValidationError as e:
         raise SeretoValueError(f"Invalid report ID. {e.errors()[0]['msg']}") from e
@@ -162,7 +157,7 @@ def _change_repl_dir(settings: Settings, cmd: str, wd: WorkingDir) -> None:
     # Check if the report's location exists
     # TODO: Should we iterate over all reports and read the config to get the correct path?
     report_path = settings.reports_path / report_id
-    if not Report.is_report_dir(report_path):
+    if not Project.is_report_dir(report_path):
         raise SeretoPathError(f"Report '{report_id}' does not exist. Use 'ls' to list reports.")
 
     # Change the current working directory to the new location
@@ -177,7 +172,7 @@ def sereto_repl(cli: Group, settings: Settings) -> None:
     """
     Console().log("Starting interactive mode. Type 'exit' to quit and 'cd ID' to change active project.")
 
-    prompt = _get_repl_prompt(settings=settings)
+    prompt = _get_repl_prompt()
     wd = WorkingDir()
 
     with REPLHistory():
@@ -196,7 +191,7 @@ def sereto_repl(cli: Group, settings: Settings) -> None:
                         cli.main(prog_name="sereto", args="--help", standalone_mode=False)
                     case s if s.startswith("cd "):
                         _change_repl_dir(settings=settings, cmd=cmd, wd=wd)
-                        prompt = _get_repl_prompt(settings=settings)
+                        prompt = _get_repl_prompt()
                     case s if len(s) > 0:
                         cli.main(prog_name="sereto", args=cmd.split(), standalone_mode=False)
                     case _:

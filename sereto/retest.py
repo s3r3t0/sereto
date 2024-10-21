@@ -4,24 +4,22 @@ from copy import deepcopy
 from pydantic import validate_call
 
 from sereto.models.finding import FindingsConfig
-from sereto.models.report import Report
-from sereto.models.settings import Settings
+from sereto.models.project import Project
 from sereto.utils import YAML
 
 
 @validate_call
-def add_retest(report: Report, settings: Settings) -> None:
-    last_cfg = report.config.at_version(version=report.config.last_version())
-    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
+def add_retest(project: Project) -> None:
+    last_cfg = project.config.at_version(version=project.config.last_version())
+    project_path = project.get_path_from_dir()
 
     # Copy last version's config to the updates section
     retest_cfg = deepcopy(last_cfg)
     retest_cfg.report_version = last_cfg.report_version.next_major_version()
-    report.config.updates.append(retest_cfg)
+    project.config.updates.append(retest_cfg)
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    report.config.dump_json(file=config)
+    project.config.dump_json(file=project.get_config_path())
 
     old_suffix = last_cfg.report_version.path_suffix
     new_suffix = retest_cfg.report_version.path_suffix
@@ -29,7 +27,7 @@ def add_retest(report: Report, settings: Settings) -> None:
     # Copy files from previous version
     copy_report_files = ["report", "sow"]
     for file in copy_report_files:
-        shutil.copy(src=report_path / f"{file}{old_suffix}.tex.j2", dst=report_path / f"{file}{new_suffix}.tex.j2")
+        shutil.copy(src=project_path / f"{file}{old_suffix}.tex.j2", dst=project_path / f"{file}{new_suffix}.tex.j2")
 
     for target in last_cfg.targets:
         assert target.path is not None

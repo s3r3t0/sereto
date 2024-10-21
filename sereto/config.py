@@ -16,7 +16,7 @@ from sereto.exceptions import SeretoValueError
 from sereto.models.config import Config
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.report import Report
+from sereto.models.project import Project, get_config_path
 from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion, SeretoVersion
@@ -35,7 +35,7 @@ def edit_config(settings: Settings) -> None:
         settings: Global settings.
     """
     sereto_ver = importlib.metadata.version("sereto")
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    config = get_config_path(dir_subtree=settings.reports_path)
 
     # If the config file does not exist, create it with default values
     if not config.is_file():
@@ -52,7 +52,7 @@ def edit_config(settings: Settings) -> None:
 
 @validate_call
 def show_config(
-    report: Report,
+    project: Project,
     output_format: OutputFormat,
     all: bool = False,
     version: ReportVersion | None = None,
@@ -60,33 +60,33 @@ def show_config(
     """Display the configuration for a report.
 
     Args:
-        report: Report's representation.
+        project: Report's project representation.
         output_format: Format of the output.
         all: Whether to show values from all versions or just the last one.
         version: Show config at specific version, e.g. 'v1.0'.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
-    cfg = report.config if all else report.config.at_version(version)
+    cfg = project.config if all else project.config.at_version(version)
 
     match output_format:
         case OutputFormat.table:
             Console().print(f"\n\n[blue]{cfg.id} - {cfg.name}\n", justify="center")
             show_targets_config(
-                report=report,
+                project=project,
                 output_format=OutputFormat.table,
                 all=all,
                 version=version,
             )
             show_dates_config(
-                report=report,
+                project=project,
                 output_format=OutputFormat.table,
                 all=all,
                 version=version,
             )
             show_people_config(
-                report=report,
+                project=project,
                 output_format=OutputFormat.table,
                 all=all,
                 version=version,
@@ -101,14 +101,13 @@ def show_config(
 
 
 @validate_call
-def add_dates_config(report: Report, settings: Settings) -> None:
+def add_dates_config(project: Project) -> None:
     """Add date to the configuration for a report.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
     """
-    cfg = report.config
+    cfg = project.config
     dates: list[Date] = cfg.dates if len(cfg.updates) == 0 else cfg.updates[-1].dates
 
     # Add a new date
@@ -117,20 +116,18 @@ def add_dates_config(report: Report, settings: Settings) -> None:
     dates.append(Date(type=date_type, date=new_date))
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
 
 @validate_call
-def delete_dates_config(report: Report, settings: Settings, index: int) -> None:
+def delete_dates_config(project: Project, index: int) -> None:
     """Delete date from the configuration by its index.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
         index: Index to item which should be deleted. First item is 1.
     """
-    cfg = report.config
+    cfg = project.config
     dates: list[Date] = cfg.dates if len(cfg.updates) == 0 else cfg.updates[-1].dates
     index -= 1
     if not 0 <= index <= len(dates) - 1:
@@ -138,13 +135,12 @@ def delete_dates_config(report: Report, settings: Settings, index: int) -> None:
     del dates[index]
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
 
 @validate_call
 def show_dates_config(
-    report: Report,
+    project: Project,
     output_format: OutputFormat,
     all: bool,
     version: ReportVersion | None,
@@ -154,17 +150,17 @@ def show_dates_config(
     By default, if neither of `version` and `all` arguments are used, dates from the latest version are displayed.
 
     Args:
-        report: Report's representation.
+        project: Report's project representation.
         output_format: Select format of the output.
         all: Show dates from all versions.
         version: Show dates from specific version.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
     match output_format:
         case OutputFormat.table:
-            for report_version in report.config.versions() if all else [version]:
+            for report_version in project.config.versions() if all else [version]:
                 Console().line()
                 table = Table(
                     "%",
@@ -175,7 +171,7 @@ def show_dates_config(
                     box=box.MINIMAL,
                 )
 
-                for ix, date in enumerate(report.config.at_version(version=report_version).dates, start=1):
+                for ix, date in enumerate(project.config.at_version(version=report_version).dates, start=1):
                     match date.date:
                         case SeretoDate():
                             table.add_row(str(ix), date.type.value, str(date.date), "[yellow]n/a")
@@ -193,11 +189,11 @@ def show_dates_config(
 
             if all:
                 all_dates = DateAll.validate_python(
-                    {str(ver): report.config.at_version(version=ver).dates for ver in report.config.versions()}
+                    {str(ver): project.config.at_version(version=ver).dates for ver in project.config.versions()}
                 )
                 Console().print_json(DateAll.dump_json(all_dates).decode("utf-8"))
             else:
-                dates = DateList.validate_python(report.config.at_version(version).dates)
+                dates = DateList.validate_python(project.config.at_version(version).dates)
                 Console().print_json(DateList.dump_json(dates).decode("utf-8"))
 
 
@@ -207,14 +203,13 @@ def show_dates_config(
 
 
 @validate_call
-def add_people_config(report: Report, settings: Settings) -> None:
+def add_people_config(project: Project) -> None:
     """Add person to the configuration for a report.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
     """
-    cfg = report.config
+    cfg = project.config
     people: list[Person] = cfg.people if len(cfg.updates) == 0 else cfg.updates[-1].people
 
     # Add a new person
@@ -223,20 +218,18 @@ def add_people_config(report: Report, settings: Settings) -> None:
     people.append(new_person)
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
 
 @validate_call
-def delete_people_config(report: Report, settings: Settings, index: int) -> None:
+def delete_people_config(project: Project, index: int) -> None:
     """Delete person from the configuration by its index.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
         index: Index to item which should be deleted. First item is 1.
     """
-    cfg = report.config
+    cfg = project.config
     people: list[Person] = cfg.people if len(cfg.updates) == 0 else cfg.updates[-1].people
     index -= 1
     if not 0 <= index <= len(people) - 1:
@@ -244,13 +237,12 @@ def delete_people_config(report: Report, settings: Settings, index: int) -> None
     del people[index]
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
 
 @validate_call
 def show_people_config(
-    report: Report,
+    project: Project,
     output_format: OutputFormat,
     all: bool,
     version: ReportVersion | None,
@@ -260,17 +252,17 @@ def show_people_config(
     By default, if neither of `version` and `all` arguments are used, people from the latest version are displayed.
 
     Args:
-        report: Report's representation.
+        project: Report's project representation.
         output_format: Select format of the output.
         all: Show people from all versions.
         version: Show people from specific version.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
     match output_format:
         case OutputFormat.table:
-            for report_version in report.config.versions() if all else [version]:
+            for report_version in project.config.versions() if all else [version]:
                 Console().line()
                 table = Table(
                     "%",
@@ -282,7 +274,7 @@ def show_people_config(
                     title=f"People {report_version}",
                     box=box.MINIMAL,
                 )
-                for ix, person in enumerate(report.config.at_version(version=report_version).people, start=1):
+                for ix, person in enumerate(project.config.at_version(version=report_version).people, start=1):
                     table.add_row(
                         str(ix),
                         person.type,
@@ -298,11 +290,11 @@ def show_people_config(
 
             if all:
                 all_people = PersonAll.validate_python(
-                    {str(ver): report.config.at_version(version=ver).people for ver in report.config.versions()}
+                    {str(ver): project.config.at_version(version=ver).people for ver in project.config.versions()}
                 )
                 Console().print_json(PersonAll.dump_json(all_people).decode("utf-8"))
             else:
-                people = PersonList.validate_python(report.config.at_version(version).people)
+                people = PersonList.validate_python(project.config.at_version(version).people)
                 Console().print_json(PersonList.dump_json(people).decode("utf-8"))
 
 
@@ -312,38 +304,35 @@ def show_people_config(
 
 
 @validate_call
-def add_targets_config(report: Report, settings: Settings) -> None:
+def add_targets_config(project: Project) -> None:
     """Add target to the configuration for a report.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
     """
-    cfg = report.config
+    cfg = project.config
     targets: list[Target] = cfg.targets if len(cfg.updates) == 0 else cfg.updates[-1].targets
 
     # Add a new target
-    targets.append(prompt_user_for_target(settings=settings))
+    targets.append(prompt_user_for_target(settings=project.settings))
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
     # Post-process the new target
-    report.load_runtime_vars(settings=settings)
-    report_create_missing(report=report, settings=settings, version=cfg.last_version())
+    project.load_runtime_vars()
+    report_create_missing(project=project, version=cfg.last_version())
 
 
 @validate_call
-def delete_targets_config(report: Report, settings: Settings, index: int) -> None:
+def delete_targets_config(project: Project, index: int) -> None:
     """Delete target from the configuration by its index.
 
     Args:
-        report: Report's representation.
-        settings: Global settings.
+        project: Report's project representation.
         index: Index to item which should be deleted. First item is 1.
     """
-    cfg = report.config
+    cfg = project.config
     targets: list[Target] = cfg.targets if len(cfg.updates) == 0 else cfg.updates[-1].targets
     index -= 1
     if not 0 <= index <= len(targets) - 1:
@@ -351,8 +340,7 @@ def delete_targets_config(report: Report, settings: Settings, index: int) -> Non
     del targets[index]
 
     # Write the configuration
-    config = Report.get_config_path(dir_subtree=settings.reports_path)
-    cfg.dump_json(file=config)
+    cfg.dump_json(file=project.get_config_path())
 
     # Delete the target from the filesystem
     target_path = targets[index].path
@@ -370,7 +358,7 @@ def delete_targets_config(report: Report, settings: Settings, index: int) -> Non
 
 @validate_call
 def show_targets_config(
-    report: Report,
+    project: Project,
     output_format: OutputFormat,
     all: bool,
     version: ReportVersion | None,
@@ -380,17 +368,17 @@ def show_targets_config(
     By default, if neither of `version` and `all` arguments are used, targets from the latest version are displayed.
 
     Args:
-        report: Report's representation.
+        project: Report's project representation.
         output_format: Select format of the output.
         all: Show targets from all versions.
         version: Show targets from the specified report's version.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
     match output_format:
         case OutputFormat.table:
-            for report_version in report.config.versions() if all else [version]:
+            for report_version in project.config.versions() if all else [version]:
                 Console().line()
                 table = Table(
                     "%",
@@ -399,7 +387,7 @@ def show_targets_config(
                     title=f"Targets {report_version}",
                     box=box.MINIMAL,
                 )
-                for ix, target in enumerate(report.config.at_version(version=report_version).targets, start=1):
+                for ix, target in enumerate(project.config.at_version(version=report_version).targets, start=1):
                     table.add_row(str(ix), target.category, target.name)
                 Console().print(table, justify="center")
         case OutputFormat.json:
@@ -408,9 +396,9 @@ def show_targets_config(
 
             if all:
                 all_targets = TargetAll.validate_python(
-                    {str(ver): report.config.at_version(version=ver).targets for ver in report.config.versions()}
+                    {str(ver): project.config.at_version(version=ver).targets for ver in project.config.versions()}
                 )
                 Console().print_json(TargetAll.dump_json(all_targets).decode("utf-8"))
             else:
-                targets = TargetList.validate_python(report.config.at_version(version).targets)
+                targets = TargetList.validate_python(project.config.at_version(version).targets)
                 Console().print_json(TargetList.dump_json(targets).decode("utf-8"))

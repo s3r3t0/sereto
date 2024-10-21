@@ -9,8 +9,7 @@ from pypdf import PdfReader, PdfWriter
 from sereto.cli.utils import Console
 from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
-from sereto.models.report import Report
-from sereto.models.settings import Settings
+from sereto.models.project import Project
 from sereto.utils import assert_file_size_within_range
 
 
@@ -30,7 +29,7 @@ def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
 
 
 @validate_call
-def create_source_archive(settings: Settings) -> Path:
+def create_source_archive(project: Project) -> Path:
     """Create a source archive for the report.
 
     This function creates a source archive for the report by copying all the files not matching any ignore pattern in
@@ -38,15 +37,15 @@ def create_source_archive(settings: Settings) -> Path:
     keyring.
 
     Args:
-        settings: Global settings.
+        project: Report's project representation.
 
     Returns:
         The path to the created source archive.
     """
-    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
+    project_path = project.get_path_from_dir()
 
     # Read the ignore patterns from the '.seretoignore' file
-    if (seretoignore_path := report_path / ".seretoignore").is_file():
+    if (seretoignore_path := project_path / ".seretoignore").is_file():
         assert_file_size_within_range(file=seretoignore_path, max_bytes=10_485_760, interactive=True)
 
         with seretoignore_path.open("r") as seretoignore:
@@ -63,8 +62,8 @@ def create_source_archive(settings: Settings) -> Path:
 
         # Create the source archive
         with tarfile.open(archive_path, "w:gz") as tar:
-            for item in report_path.rglob("*"):
-                relative_path = item.relative_to(report_path)
+            for item in project_path.rglob("*"):
+                relative_path = item.relative_to(project_path)
 
                 if not item.is_file() or item.is_symlink():
                     Console().log(f"[yellow]-[/yellow] Skipping directory or symlink: '{relative_path}'")
@@ -75,7 +74,7 @@ def create_source_archive(settings: Settings) -> Path:
                     continue
 
                 Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
-                tar.add(item, arcname=str(item.relative_to(report_path.parent)))
+                tar.add(item, arcname=str(item.relative_to(project_path.parent)))
 
     try:
         return encrypt_file(archive_path)

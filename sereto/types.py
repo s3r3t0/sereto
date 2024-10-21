@@ -5,7 +5,7 @@ from pydantic import Strict, StringConstraints
 from pydantic.functional_validators import AfterValidator
 
 __all__ = [
-    "TypeReportId",
+    "TypeProjectId",
     "TypePathName",
     "TypeCategories",
     "TypePassword",
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-TypeReportId = Annotated[str, StringConstraints(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]
+TypeProjectId = Annotated[str, StringConstraints(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]
 """Type for report ID.
 
 The value should meet the following requirements:

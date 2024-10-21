@@ -10,7 +10,7 @@ from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueEr
 from sereto.jinja import render_j2
 from sereto.models.config import Config
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
-from sereto.models.report import Report
+from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion
@@ -19,16 +19,17 @@ from sereto.utils import YAML
 
 @validate_call
 def add_finding(
-    report: Report,
-    settings: Settings,
+    project: Project,
     target_selector: str | None,
     format: str,
     name: str,
 ) -> None:
-    target = report.select_target(settings=settings, selector=target_selector)
+    target = project.select_target(selector=target_selector)
 
     # read template
-    template_path = settings.templates_path / "categories" / target.category / "findings" / f"{name}.{format}.j2"
+    template_path = (
+        project.settings.templates_path / "categories" / target.category / "findings" / f"{name}.{format}.j2"
+    )
     if not template_path.is_file():
         raise SeretoPathError(f"template not found '{template_path}'")
 
@@ -38,7 +39,7 @@ def add_finding(
     assert target.path is not None
     finding_dir = target.path / "findings" / name
     finding_dir.mkdir(exist_ok=True)
-    dst_path = finding_dir / f"{name}{report.config.last_version().path_suffix}.{format}.j2"
+    dst_path = finding_dir / f"{name}{project.config.last_version().path_suffix}.{format}.j2"
 
     if dst_path.is_file() and not Confirm.ask(
         f'[yellow]Destination "{dst_path}" exists. Overwrite?',
@@ -70,15 +71,15 @@ def show_findings(config: Config, version: ReportVersion) -> None:
 
 
 @validate_call
-def update_findings(report: Report, settings: Settings) -> None:
-    for target in report.config.targets:
+def update_findings(project: Project) -> None:
+    for target in project.config.targets:
         if target.path is None:
             raise SeretoValueError(f"target path not set for {target.uname!r}")
 
         findings_path = target.path / "findings.yaml"
         findings = YAML.load(findings_path)
         fc = FindingsConfig.from_yaml(file=findings_path)
-        category_templates = settings.templates_path / "categories" / target.category / "findings"
+        category_templates = project.settings.templates_path / "categories" / target.category / "findings"
 
         for file in category_templates.glob(pattern="*.j2"):
             metadata, _ = frontmatter.parse(file.read_text())
@@ -97,7 +98,7 @@ def update_findings(report: Report, settings: Settings) -> None:
                 {
                     "name": template_metadata.name,
                     "path_name": file.with_suffix("").stem,
-                    "risks": CommentedMap({str(report.config.last_version()): template_metadata.risk}),
+                    "risks": CommentedMap({str(project.config.last_version()): template_metadata.risk}),
                     "vars": CommentedMap(),
                 }
             )
@@ -170,39 +171,42 @@ def render_finding_group_findings_j2(
 def render_finding_group_j2(
     finding_group: FindingGroup,
     target: Target,
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    cfg = report.config.at_version(version=version)
-    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path)
+    cfg = project.config.at_version(version=version)
+    project_path = project.get_path_from_dir()
 
     render_finding_group_findings_j2(
-        finding_group=finding_group, target=target, settings=settings, version=version, convert_recipe=convert_recipe
+        finding_group=finding_group,
+        target=target,
+        settings=project.settings,
+        version=version,
+        convert_recipe=convert_recipe,
     )
 
-    finding_group_j2_path = report_path / "finding_standalone_wrapper.tex.j2"
+    finding_group_j2_path = project_path / "finding_standalone_wrapper.tex.j2"
     if not finding_group_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{finding_group_j2_path}'")
 
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
     finding_group_generator = render_j2(
-        templates=report_path,
+        templates=project_path,
         file=finding_group_j2_path,
         vars={
             "finding_group": finding_group,
             "target": target,
             "version": version,
-            "report_path": report_path,
+            "report_path": project_path,
             **cfg_dict,
         },
     )
 
-    finding_group_tex_path = report_path / f"{target.uname}_{finding_group.uname}.tex"
+    finding_group_tex_path = project_path / f"{target.uname}_{finding_group.uname}.tex"
 
     with finding_group_tex_path.open("w", encoding="utf-8") as f:
         for chunk in finding_group_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(report_path)}")
+        Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(project_path)}")

@@ -23,13 +23,13 @@ from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, handle_exceptions
 from sereto.finding import add_finding, show_findings, update_findings
-from sereto.models.report import Report
+from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ReportVersion
 from sereto.pdf import render_sow_pdf
+from sereto.project import load_project
 from sereto.report import (
     copy_skel,
-    load_report,
     new_report,
     render_report_j2,
     render_sow_j2,
@@ -40,7 +40,7 @@ from sereto.report import (
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.source_archive import extract_source_archive
-from sereto.types import TypeReportId
+from sereto.types import TypeProjectId
 from sereto.utils import untar_sources
 
 
@@ -57,7 +57,7 @@ def cli() -> None:
 @handle_exceptions
 @click.argument("report_id")
 @load_settings
-def new(settings: Settings, report_id: TypeReportId) -> None:
+def new(settings: Settings, report_id: TypeProjectId) -> None:
     """Create a new report.
 
     \b
@@ -157,11 +157,9 @@ def config_edit(settings: Settings) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_settings
-@load_report
+@load_project
 def config_show(
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion | None,
     all: bool,
     output_format: OutputFormat,
@@ -169,13 +167,12 @@ def config_show(
     """Show the reports's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         version: The specific version of the configuration to show.
         all: Flag to show all versions of the configuration.
         output_format: The output format for displaying the configuration.
     """
-    show_config(report=report, output_format=output_format, all=all, version=version)
+    show_config(project=project, output_format=output_format, all=all, version=version)
 
 
 # -------------------
@@ -193,32 +190,28 @@ def config_dates() -> None:
 
 @config_dates.command(name="add")
 @handle_exceptions
-@load_settings
-@load_report
-def config_dates_add(report: Report, settings: Settings) -> None:
+@load_project
+def config_dates_add(project: Project) -> None:
     """Add date to the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
     """
-    add_dates_config(report=report, settings=settings)
+    add_dates_config(project=project)
 
 
 @config_dates.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Date index to be deleted.")
-@load_settings
-@load_report
-def config_dates_delete(report: Report, settings: Settings, index: int) -> None:
+@load_project
+def config_dates_delete(project: Project, index: int) -> None:
     """Delete date from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         index: The index of the date to be deleted. You can obtain the index by running `sereto config dates show`.
     """
-    delete_dates_config(report=report, settings=settings, index=index)
+    delete_dates_config(project=project, index=index)
 
 
 @config_dates.command(name="show")
@@ -239,11 +232,9 @@ def config_dates_delete(report: Report, settings: Settings, index: int) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_settings
-@load_report
+@load_project
 def config_dates_show(
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion | None,
     all: bool,
     output_format: OutputFormat,
@@ -251,13 +242,12 @@ def config_dates_show(
     """Show dates from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         version: The specific version of the configuration to show dates from.
         all: Flag to show dates from all versions of the configuration.
         output_format: The output format for displaying the dates.
     """
-    show_dates_config(report=report, output_format=output_format, all=all, version=version)
+    show_dates_config(project=project, output_format=output_format, all=all, version=version)
 
 
 # --------------------
@@ -276,32 +266,28 @@ def config_people() -> None:
 
 @config_people.command(name="add")
 @handle_exceptions
-@load_settings
-@load_report
-def config_people_add(report: Report, settings: Settings) -> None:
+@load_project
+def config_people_add(project: Project) -> None:
     """Add person to the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
     """
-    add_people_config(report=report, settings=settings)
+    add_people_config(project=project)
 
 
 @config_people.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Person index to be deleted.")
-@load_settings
-@load_report
-def config_people_delete(report: Report, settings: Settings, index: int) -> None:
+@load_project
+def config_people_delete(project: Project, index: int) -> None:
     """Delete person from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         index: The index of the person to be deleted. You can obtain the index by running `sereto config people show`.
     """
-    delete_people_config(report=report, settings=settings, index=index)
+    delete_people_config(project=project, index=index)
 
 
 @config_people.command(name="show")
@@ -322,11 +308,9 @@ def config_people_delete(report: Report, settings: Settings, index: int) -> None
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_settings
-@load_report
+@load_project
 def config_people_show(
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion | None,
     all: bool,
     output_format: OutputFormat,
@@ -334,13 +318,12 @@ def config_people_show(
     """Show people from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         version: The specific version of the configuration to show people from.
         all: Flag to show people from all versions of the configuration.
         output_format: The output format for displaying the people.
     """
-    show_people_config(report=report, output_format=output_format, all=all, version=version)
+    show_people_config(project=project, output_format=output_format, all=all, version=version)
 
 
 # ---------------------
@@ -358,32 +341,28 @@ def config_targets() -> None:
 
 @config_targets.command(name="add")
 @handle_exceptions
-@load_settings
-@load_report
-def config_targets_add(report: Report, settings: Settings) -> None:
+@load_project
+def config_targets_add(project: Project) -> None:
     """Add targets to the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
     """
-    add_targets_config(report=report, settings=settings)
+    add_targets_config(project=project)
 
 
 @config_targets.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Target index to be deleted.")
-@load_settings
-@load_report
-def config_targets_delete(report: Report, settings: Settings, index: int) -> None:
+@load_project
+def config_targets_delete(project: Project, index: int) -> None:
     """Delete target from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
     """
-    delete_targets_config(report=report, settings=settings, index=index)
+    delete_targets_config(project=project, index=index)
 
 
 @config_targets.command(name="show")
@@ -404,11 +383,9 @@ def config_targets_delete(report: Report, settings: Settings, index: int) -> Non
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_settings
-@load_report
+@load_project
 def config_targets_show(
-    report: Report,
-    settings: Settings,
+    project: Project,
     version: ReportVersion | None,
     all: bool,
     output_format: OutputFormat,
@@ -416,13 +393,12 @@ def config_targets_show(
     """Show targets from the report's configuration.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         version: The specific version of the configuration to show targets from.
         all: Flag to show targets from all versions of the configuration.
         output_format: The output format for displaying the targets.
     """
-    show_targets_config(report=report, output_format=output_format, all=all, version=version)
+    show_targets_config(project=project, output_format=output_format, all=all, version=version)
 
 
 # ---------------
@@ -449,21 +425,18 @@ def findings() -> None:
     help="Template file format.",
 )
 @click.argument("name")
-@load_settings
-@load_report
-def finding_add(report: Report, settings: Settings, target: str | None, format: str, name: str) -> None:
+@load_project
+def finding_add(project: Project, target: str | None, format: str, name: str) -> None:
     """Add finding from template.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         target: The target for which the finding is being added.
         format: The file format of the template.
         name: The name of the finding.
     """
     add_finding(
-        report=report,
-        settings=settings,
+        project=project,
         target_selector=target,
         format=format,
         name=name,
@@ -474,30 +447,27 @@ def finding_add(report: Report, settings: Settings, target: str | None, format: 
 @handle_exceptions
 # @click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_settings
-@load_report
-def finding_show(report: Report, settings: Settings, version: ReportVersion | None) -> None:
+@load_project
+def finding_show(project: Project, version: ReportVersion | None) -> None:
     """Show findings."""
     if version is None:
-        version = report.config.last_version()
-    show_findings(config=report.config, version=version)
+        version = project.config.last_version()
+    show_findings(config=project.config, version=version)
 
 
 @findings.command(name="update")
 @handle_exceptions
-@load_settings
-@load_report
-def finding_update(report: Report, settings: Settings) -> None:
+@load_project
+def finding_update(project: Project) -> None:
     """Update available findings from templates.
 
     Only new findings will be added to the findings.yaml file. Existing findings will not be modified.
     \f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
     """
-    update_findings(report=report, settings=settings)
+    update_findings(project=project)
 
 
 # -----------
@@ -512,53 +482,53 @@ def open() -> None:
 
 @open.command(name="folder")
 @handle_exceptions
-@load_settings
-def open_folder(settings: Settings) -> None:
+@load_project
+def open_folder(project: Project) -> None:
     """Open the folder containing the current report.\f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        project: project: Report's project representation.
     """
-    click.launch(str(Report.get_path_from_cwd(settings.reports_path)))
+    click.launch(str(project.get_path_from_dir()))
 
 
 @open.command(name="report")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_settings
-@load_report
-def open_report(report: Report, settings: Settings, version: ReportVersion | None) -> None:
+@load_project
+def open_report(project: Project, version: ReportVersion | None) -> None:
     """Open the report document in the default PDF viewer.\f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        project: project: Report's project representation.
+        version: The version of the report that is opened. If None, the last version is used.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
-    report_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path) / f"report{version.path_suffix}.pdf"
+    project_path = project.get_path_from_dir() / f"report{version.path_suffix}.pdf"
 
-    if not report_path.is_file():
-        raise SeretoPathError(f"File not found '{report_path}'")
+    if not project_path.is_file():
+        raise SeretoPathError(f"File not found '{project_path}'")
 
-    click.launch(str(report_path))
+    click.launch(str(project_path))
 
 
 @open.command(name="sow")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_settings
-@load_report
-def open_sow(report: Report, settings: Settings, version: ReportVersion | None) -> None:
+@load_project
+def open_sow(project: Project, version: ReportVersion | None) -> None:
     """Open the Statement of Work (SoW) document in the default PDF viewer.\f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        project: project: Report's project representation.
+        version: The version of the SoW that is opened. If None, the last version is used.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
-    sow_path = Report.get_path_from_cwd(dir_subtree=settings.reports_path) / f"sow{version.path_suffix}.pdf"
+    sow_path = project.get_path_from_dir() / f"sow{version.path_suffix}.pdf"
 
     if not sow_path.is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
@@ -586,11 +556,9 @@ def pdf() -> None:
 @click.option("-t", "--target-recipe", help="Build TeX target recipe")
 @click.option("-f", "--finding-recipe", help="Build TeX finding recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_settings
-@load_report
+@load_project
 def pdf_report(
-    report: Report,
-    settings: Settings,
+    project: Project,
     report_recipe: str | None,
     target_recipe: str | None,
     finding_recipe: str | None,
@@ -600,57 +568,52 @@ def pdf_report(
     """Generate a PDF report by following build recipes.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         report_recipe: The recipe used for generating the report. If None, the default recipe is used.
         target_recipe: The recipe used for generating targets. If None, the default recipe is used.
         convert_recipe: The convert recipe used for file format transformations. If None, the default recipe is used.
         version: The version of the report that is generated. If None, the last version is used.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
     Console().log(f"Rendering report version: '{version}'")
-    report_create_missing(report=report, settings=settings, version=version)
-    render_report_j2(report=report, settings=settings, version=version, convert_recipe=convert_recipe)
+    report_create_missing(project=project, version=version)
+    render_report_j2(project=project, version=version, convert_recipe=convert_recipe)
     report_pdf(
-        report=report,
-        settings=settings,
+        project=project,
         version=version,
         report_recipe=report_recipe,
         target_recipe=target_recipe,
         finding_recipe=finding_recipe,
     )
-    report_cleanup(report=report, settings=settings, version=version)
+    report_cleanup(project=project, version=version)
 
 
 @pdf.command(name="sow")
 @handle_exceptions
 @click.option("-r", "--sow-recipe", help="Build TeX recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_settings
-@load_report
+@load_project
 def pdf_sow(
-    report: Report,
-    settings: Settings,
+    project: Project,
     sow_recipe: str | None,
     version: ReportVersion | None,
 ) -> None:
     """Generate a PDF Statement of Work (SoW) for a given report.\f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         sow_recipe: The recipe used for generating the SoW. If None, the default recipe is used.
         version: The version of the report for which the SoW is generated. If None, the last version is used.
     """
     if version is None:
-        version = report.config.last_version()
+        version = project.config.last_version()
 
     Console().log(f"Rendering SoW version: '{version}'")
-    report_create_missing(report=report, settings=settings, version=version)
-    render_sow_j2(report=report, settings=settings, version=version)
-    render_sow_pdf(settings=settings, version=version, recipe=sow_recipe, keep_original=False)
+    report_create_missing(project=project, version=version)
+    render_sow_j2(project=project, version=version)
+    render_sow_pdf(project=project, version=version, recipe=sow_recipe, keep_original=False)
 
 
 # -------------
@@ -660,10 +623,9 @@ def pdf_sow(
 
 @cli.command(name="retest")
 @handle_exceptions
-@load_settings
-@load_report
-def retest(report: Report, settings: Settings) -> None:
-    add_retest(report=report, settings=settings)
+@load_project
+def retest(project: Project) -> None:
+    add_retest(project=project)
 
 
 # ---------------
@@ -754,8 +716,8 @@ def skel() -> None:
 
 @skel.command(name="copy")
 @handle_exceptions
-@load_settings
-def templates_skel_copy(settings: Settings) -> None:
+@load_project
+def templates_skel_copy(project: Project) -> None:
     """Update the report's templates from the skeleton directory.
 
     This function copies all files from the templates skeleton directory to the report's directory, overwriting any
@@ -763,11 +725,11 @@ def templates_skel_copy(settings: Settings) -> None:
     \f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
     """
     copy_skel(
-        templates=settings.templates_path,
-        dst=Report.get_path_from_cwd(dir_subtree=settings.reports_path),
+        templates=project.settings.templates_path,
+        dst=project.get_path_from_dir(),
         overwrite=True,
     )
 
@@ -780,9 +742,8 @@ def target_skel() -> None:
 @target_skel.command(name="copy")
 @handle_exceptions
 @click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
-@load_settings
-@load_report
-def templates_target_skel_copy(report: Report, settings: Settings, target: str | None) -> None:
+@load_project
+def templates_target_skel_copy(project: Project, target: str | None) -> None:
     """Update the target's templates from the skeleton directory.
 
     This function copies all files from the templates skeleton directory to the target's directory, overwriting any
@@ -790,17 +751,16 @@ def templates_target_skel_copy(report: Report, settings: Settings, target: str |
     \f
 
     Args:
-        report: The report object.
-        settings: The settings object containing the tool's global configuration.
+        project: Report's project representation.
         target: The target for which the templates are being copied.
     """
-    selected_target = report.select_target(settings=settings, selector=target)
+    selected_target = project.select_target(selector=target)
 
     if selected_target.path is None:
         raise SeretoRuntimeError("target path is not set")
 
     copy_skel(
-        templates=settings.templates_path / "categories" / selected_target.category,
+        templates=project.settings.templates_path / "categories" / selected_target.category,
         dst=selected_target.path,
         overwrite=True,
     )

@@ -90,7 +90,7 @@ nav:
       - reference/models/date.md
       - reference/models/finding.md
       - reference/models/person.md
-      - reference/models/report.md
+      - reference/models/project.md
       - reference/models/risks.md
       - reference/models/settings.md
       - reference/models/target.md
@@ -104,6 +104,7 @@ nav:
     - reference/jinja.md
     - reference/pdf.md
     - reference/plot.md
+    - reference/project.md
     - reference/report.md
     - reference/retest.md
     - reference/settings.md
