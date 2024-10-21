@@ -1,11 +1,10 @@
 import re
-import tarfile
 from typing import overload
 
 import click
 import ruamel.yaml
 from humanize import naturalsize
-from pydantic import DirectoryPath, FilePath, validate_call
+from pydantic import FilePath, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -43,26 +42,6 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
         return pattern.sub(lambda match: replacements[match.group(0)], text)
     else:
         return [pattern.sub(lambda match: replacements[match.group(0)], item) for item in text]
-
-
-@validate_call
-def untar_sources(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> None:
-    """Extracts sources from a given tarball file.
-
-    Expects the tarball file to be Gzip-compressed.
-
-    Args:
-        file: The path to the .tgz file.
-        output_dir: The directory where the sources will be extracted.
-        keep_original: If True, the original tarball file is kept. Defaults to True.
-    """
-    with tarfile.open(file, "r:gz") as tar:
-        tar.extractall(path=output_dir)
-        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir}'")
-
-    if not keep_original:
-        file.unlink()
-        Console().log(f"[red]-[/red] Deleted tarball: '{file}'")
 
 
 @validate_call

@@ -5,8 +5,7 @@ import click
 import keyring
 
 from sereto.cli.commands import sereto_ls, sereto_repl
-from sereto.cli.utils import AliasedGroup, Console
-from sereto.config import (
+from sereto.cli.config import (
     add_dates_config,
     add_people_config,
     add_targets_config,
@@ -19,6 +18,7 @@ from sereto.config import (
     show_people_config,
     show_targets_config,
 )
+from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, handle_exceptions
@@ -39,9 +39,8 @@ from sereto.report import (
 )
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
-from sereto.source_archive import extract_source_archive
+from sereto.source_archive import extract_source_archive, retrieve_source_archive
 from sereto.types import TypeProjectId
-from sereto.utils import untar_sources
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -100,7 +99,7 @@ def repl(settings: Settings) -> None:
 def decrypt(settings: Settings, file: Path) -> None:
     """Extract the SeReTo project from the encrypted archive."""
     source_tgz = decrypt_file(file=file, keep_original=True)
-    untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 
 @cli.command()
@@ -109,9 +108,9 @@ def decrypt(settings: Settings, file: Path) -> None:
 @load_settings
 def unpack(settings: Settings, file: Path) -> None:
     """Unpack the SeReTo project from the report's PDF."""
-    attachment = extract_source_archive(pdf=file, name="source.sereto")
+    attachment = retrieve_source_archive(pdf=file, name="source.sereto")
     source_tgz = decrypt_file(file=attachment, keep_original=False)
-    untar_sources(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 
 # -------------

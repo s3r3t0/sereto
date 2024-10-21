@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TypeVar
 
 from click import get_current_context
-from pydantic import ValidationError, validate_call
+from pydantic import validate_call
 from rich.prompt import Confirm, Prompt
 from typing_extensions import ParamSpec
 
@@ -81,24 +81,3 @@ def write_settings(settings: Settings) -> None:
     with settings_path.open("w", encoding="utf-8") as f:
         f.write(settings.model_dump_json(indent=2, exclude_defaults=True))
         f.write("\n")
-
-
-@validate_call
-def is_settings_valid(print: bool = False) -> bool:
-    """Check if the settings are valid.
-
-    Args:
-        print: Whether to print the validation status. Defaults to False.
-
-    Returns:
-        True if the settings are valid, False otherwise.
-    """
-    try:
-        Settings.model_validate_json(Settings.get_path().read_bytes())
-        if print:
-            Console().log("[green]Settings are valid")
-        return True
-    except ValidationError:
-        if print:
-            Console().log("[red]Settings are invalid")
-        return False

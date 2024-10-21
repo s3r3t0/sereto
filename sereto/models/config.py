@@ -147,12 +147,11 @@ class Config(BaseConfig):
         return self.versions()[-1]
 
     @validate_call
-    def at_version(self, version: str | ReportVersion | None) -> BaseConfig:
+    def at_version(self, version: str | ReportVersion) -> BaseConfig:
         """Return the configuration at a specific version.
 
         Args:
-            version: A version of the report configuration to return. If None is provided, return the whole config with
-                all the updates sections.
+            version: Selects which version of the configuration should be returned.
 
         Returns:
             Configuration for the report at the specified version.

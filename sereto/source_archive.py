@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from pathspec.gitignore import GitIgnoreSpec
-from pydantic import FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, validate_call
 from pypdf import PdfReader, PdfWriter
 
 from sereto.cli.utils import Console
@@ -118,7 +118,7 @@ def embed_source_archive(archive: FilePath, report: FilePath, keep_original: boo
 
 
 @validate_call
-def extract_source_archive(pdf: FilePath, name: str) -> Path:
+def retrieve_source_archive(pdf: FilePath, name: str) -> Path:
     """Extracts an attachment from a given PDF file and writes it to a temporary file.
 
     Args:
@@ -160,3 +160,23 @@ def extract_source_archive(pdf: FilePath, name: str) -> Path:
     Console().log(f"[green]+[/green] Extracted attachment '{name}' from '{pdf}' to '{output_file}'")
 
     return output_file
+
+
+@validate_call
+def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> None:
+    """Extracts sources from a given tarball file.
+
+    Expects the tarball file to be Gzip-compressed.
+
+    Args:
+        file: The path to the .tgz file.
+        output_dir: The directory where the sources will be extracted.
+        keep_original: If True, the original tarball file is kept. Defaults to True.
+    """
+    with tarfile.open(file, "r:gz") as tar:
+        tar.extractall(path=output_dir)
+        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir}'")
+
+    if not keep_original:
+        file.unlink()
+        Console().log(f"[red]-[/red] Deleted tarball: '{file}'")
