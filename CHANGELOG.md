@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.15] - 2024-10-21
+
 ### Changed
 
 - Use `TypeAdapter` instead of `RootModel` in config module.
@@ -16,14 +18,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prefer annotated types over `Field`
 - Use more `DirectoryPath` and `FilePath` instead of plain `Path`
 - Apply args validation for more function (`@validate_call`)
-- Rename: `Config.from_file` -> `Config.load_from`
-- Rename: `Settings.from_file` -> `Settings.load_from`
-- Rename: `FindingsConfig.from_yaml_file` -> `FindingsConfig.from_yaml`
+- Refactor: `Config.from_file` -> `Config.load_from`
+- Refactor: `Settings.from_file` -> `Settings.load_from`
+- Refactor: `FindingsConfig.from_yaml_file` -> `FindingsConfig.from_yaml`
+- Refactor: fn `write_conifg` -> `Config.dump_json`
+- Refactor class `Report` to `Project`, which now contains also `settings` and `path` attributes
+- Refactor: `Project.load_runtime_vars` -> `Config.update_paths`
+- Refactor: `Project.is_report_dir` -> `Project.is_project_dir`
+- Refactor: fn `extract_source_archive` -> `retrieve_source_archive`
+- Refactor: fn `untar_sources` -> `extract_source_archive`
+- Move `config` module into `cli`, as it contains only CLI related functions
+- Reflect changes in the documentation
 
 ### Removed
 
 - Remove artefacts of `sereto.cli.console`
-- Remove module 'cleanup'
+- Remove module `cleanup`
+- Remove unused functions `get_all_projects`, `get_all_projects_dict`, and `is_settings_valid`
 
 ## [0.0.14] - 2024-10-18
 
@@ -156,8 +167,9 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.14...HEAD
-[0.0.13]: https://github.com/s3r3t0/sereto/compare/v0.0.13...v0.0.14
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.15...HEAD
+[0.0.15]: https://github.com/s3r3t0/sereto/compare/v0.0.14...v0.0.15
+[0.0.14]: https://github.com/s3r3t0/sereto/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/s3r3t0/sereto/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/s3r3t0/sereto/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/s3r3t0/sereto/compare/v0.0.10...v0.0.11
