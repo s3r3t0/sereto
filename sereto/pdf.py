@@ -51,8 +51,7 @@ def render_report_pdf(project: Project, version: ReportVersion, recipe: str | No
     Returns:
         Path to the rendered PDF file.
     """
-    project_path = project.get_path_from_dir()
-    report_tex_path = project_path / f"report{version.path_suffix}.tex"
+    report_tex_path = project.path / f"report{version.path_suffix}.tex"
 
     # Get the recipe to render the report
     if recipe is None:
@@ -85,8 +84,7 @@ def render_sow_pdf(
         keep_original: If True, the original TeX file will be kept after rendering. Otherwise, it will be removed.
             Defaults to True.
     """
-    project_path = project.get_path_from_dir()
-    sow_tex_path = project_path / f"sow{version.path_suffix}.tex"
+    sow_tex_path = project.path / f"sow{version.path_suffix}.tex"
 
     if recipe is None:
         render_recipe = project.settings.render.sow_recipes[0]
@@ -114,9 +112,8 @@ def render_target_pdf(project: Project, target: Target, version: ReportVersion, 
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    project_path = project.get_path_from_dir()
-    target_tex_path = project_path / f"{target.uname}.tex"
-    replacements = {"%TARGET_DIR%": str(project_path / target.uname)}
+    target_tex_path = project.path / f"{target.uname}.tex"
+    replacements = {"%TARGET_DIR%": str(project.path / target.uname)}
 
     if recipe is None:
         render_recipe = project.settings.render.target_recipes[0]
@@ -150,9 +147,8 @@ def render_finding_group_pdf(
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
     """
-    project_path = project.get_path_from_dir()
-    finding_group_tex_path = project_path / f"{target.uname}_{finding_group.uname}.tex"
-    replacements = {"%FINDINGS_DIR%": str(project_path / target.uname / "findings")}
+    finding_group_tex_path = project.path / f"{target.uname}_{finding_group.uname}.tex"
+    replacements = {"%FINDINGS_DIR%": str(project.path / target.uname / "findings")}
 
     if recipe is None:
         render_recipe = project.settings.render.finding_recipes[0]

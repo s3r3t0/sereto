@@ -176,7 +176,6 @@ def render_finding_group_j2(
     convert_recipe: str | None = None,
 ) -> None:
     cfg = project.config.at_version(version=version)
-    project_path = project.get_path_from_dir()
 
     render_finding_group_findings_j2(
         finding_group=finding_group,
@@ -186,27 +185,27 @@ def render_finding_group_j2(
         convert_recipe=convert_recipe,
     )
 
-    finding_group_j2_path = project_path / "finding_standalone_wrapper.tex.j2"
+    finding_group_j2_path = project.path / "finding_standalone_wrapper.tex.j2"
     if not finding_group_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{finding_group_j2_path}'")
 
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
     finding_group_generator = render_j2(
-        templates=project_path,
+        templates=project.path,
         file=finding_group_j2_path,
         vars={
             "finding_group": finding_group,
             "target": target,
             "version": version,
-            "report_path": project_path,
+            "report_path": project.path,
             **cfg_dict,
         },
     )
 
-    finding_group_tex_path = project_path / f"{target.uname}_{finding_group.uname}.tex"
+    finding_group_tex_path = project.path / f"{target.uname}_{finding_group.uname}.tex"
 
     with finding_group_tex_path.open("w", encoding="utf-8") as f:
         for chunk in finding_group_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(project_path)}")
+        Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(project.path)}")

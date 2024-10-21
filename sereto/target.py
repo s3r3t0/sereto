@@ -111,28 +111,27 @@ def render_target_j2(
     convert_recipe: str | None = None,
 ) -> None:
     cfg = project.config.at_version(version=version)
-    project_path = project.get_path_from_dir()
 
     render_target_findings_j2(target=target, settings=project.settings, version=version, convert_recipe=convert_recipe)
 
-    target_j2_path = project_path / "target_standalone_wrapper.tex.j2"
+    target_j2_path = project.path / "target_standalone_wrapper.tex.j2"
     if not target_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{target_j2_path}'")
 
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
     target_generator = render_j2(
-        templates=project_path,
+        templates=project.path,
         file=target_j2_path,
-        vars={"target": target, "version": version, "report_path": project_path, **cfg_dict},
+        vars={"target": target, "version": version, "report_path": project.path, **cfg_dict},
     )
 
-    target_tex_path = project_path / f"{target.uname}.tex"
+    target_tex_path = project.path / f"{target.uname}.tex"
 
     with target_tex_path.open("w", encoding="utf-8") as f:
         for chunk in target_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(project_path)}")
+        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(project.path)}")
 
 
 @validate_call

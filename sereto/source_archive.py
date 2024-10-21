@@ -42,10 +42,8 @@ def create_source_archive(project: Project) -> Path:
     Returns:
         The path to the created source archive.
     """
-    project_path = project.get_path_from_dir()
-
     # Read the ignore patterns from the '.seretoignore' file
-    if (seretoignore_path := project_path / ".seretoignore").is_file():
+    if (seretoignore_path := project.path / ".seretoignore").is_file():
         assert_file_size_within_range(file=seretoignore_path, max_bytes=10_485_760, interactive=True)
 
         with seretoignore_path.open("r") as seretoignore:
@@ -62,8 +60,8 @@ def create_source_archive(project: Project) -> Path:
 
         # Create the source archive
         with tarfile.open(archive_path, "w:gz") as tar:
-            for item in project_path.rglob("*"):
-                relative_path = item.relative_to(project_path)
+            for item in project.path.rglob("*"):
+                relative_path = item.relative_to(project.path)
 
                 if not item.is_file() or item.is_symlink():
                     Console().log(f"[yellow]-[/yellow] Skipping directory or symlink: '{relative_path}'")
@@ -74,7 +72,7 @@ def create_source_archive(project: Project) -> Path:
                     continue
 
                 Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
-                tar.add(item, arcname=str(item.relative_to(project_path.parent)))
+                tar.add(item, arcname=str(item.relative_to(project.path.parent)))
 
     try:
         return encrypt_file(archive_path)

@@ -19,8 +19,6 @@ def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: Dir
     Start the search from the 'dir' directory and go up the directory tree until the report directory is
     found or 'dir_subtree' is reached.
 
-    If you have an instance of the `Project` class, you should use the `get_path_from_dir` method instead.
-
     Args:
         dir: The directory to start the search from. Defaults to the current working directory.
         dir_subtree: The directory to stop the search at. Defaults to the root directory.
@@ -64,26 +62,7 @@ def get_config_path(dir_subtree: DirectoryPath = Path("/")) -> Path:
 class Project(SeretoBaseModel):
     config: Config
     settings: Settings
-
-    @validate_call
-    def get_path_from_dir(self, dir: DirectoryPath | None = None) -> Path:
-        """Get the path to the report directory.
-
-        Start from the 'dir' directory and go up the directory tree until the report directory is found or
-        we would leave 'dir_subtree'.
-
-        Args:
-            dir: The directory to start the search from. Defaults to the current working directory.
-
-        Raises:
-            SeretoPathError: If the current working directory is not inside the report's (sub)directory.
-
-        Returns:
-            The path to the report directory.
-        """
-        return get_project_path_from_dir(
-            dir=dir if dir is not None else Path.cwd(), dir_subtree=self.settings.reports_path
-        )
+    path: DirectoryPath
 
     @staticmethod
     def load_from(path: DirectoryPath | None = None) -> "Project":
@@ -100,7 +79,10 @@ class Project(SeretoBaseModel):
             dir=path if path is not None else Path.cwd(), dir_subtree=settings.reports_path
         )
         config = Config.load_from(file=project_path / "config.json")
-        return Project(config=config, settings=load_settings_function()).load_runtime_vars()
+        project = Project(config=config, settings=load_settings_function(), path=project_path)
+        project.load_runtime_vars()
+
+        return project
 
     @validate_call
     def get_config_path(self) -> Path:
@@ -109,7 +91,7 @@ class Project(SeretoBaseModel):
         Returns:
             The path to the report configuration file.
         """
-        return get_config_path(dir_subtree=self.settings.reports_path)
+        return self.path / "config.json"
 
     @staticmethod
     @validate_call
@@ -129,11 +111,9 @@ class Project(SeretoBaseModel):
     @validate_call
     def load_runtime_vars(self) -> Self:
         """Get the config enriched with additional parameters like paths and findings."""
-        project_path = self.get_path_from_dir()
-
         for cfg in [self.config] + self.config.updates:
             for target in cfg.targets:
-                target.path = project_path / target.uname
+                target.path = self.path / target.uname
 
         return self
 

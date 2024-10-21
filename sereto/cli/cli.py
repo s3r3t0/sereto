@@ -489,7 +489,7 @@ def open_folder(project: Project) -> None:
     Args:
         project: project: Report's project representation.
     """
-    click.launch(str(project.get_path_from_dir()))
+    click.launch(str(project.path))
 
 
 @open.command(name="report")
@@ -506,12 +506,12 @@ def open_report(project: Project, version: ReportVersion | None) -> None:
     if version is None:
         version = project.config.last_version()
 
-    project_path = project.get_path_from_dir() / f"report{version.path_suffix}.pdf"
+    report_path = project.path / f"report{version.path_suffix}.pdf"
 
-    if not project_path.is_file():
-        raise SeretoPathError(f"File not found '{project_path}'")
+    if not report_path.is_file():
+        raise SeretoPathError(f"File not found '{report_path}'")
 
-    click.launch(str(project_path))
+    click.launch(str(report_path))
 
 
 @open.command(name="sow")
@@ -528,7 +528,7 @@ def open_sow(project: Project, version: ReportVersion | None) -> None:
     if version is None:
         version = project.config.last_version()
 
-    sow_path = project.get_path_from_dir() / f"sow{version.path_suffix}.pdf"
+    sow_path = project.path / f"sow{version.path_suffix}.pdf"
 
     if not sow_path.is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
@@ -727,11 +727,7 @@ def templates_skel_copy(project: Project) -> None:
     Args:
         project: Report's project representation.
     """
-    copy_skel(
-        templates=project.settings.templates_path,
-        dst=project.get_path_from_dir(),
-        overwrite=True,
-    )
+    copy_skel(templates=project.settings.templates_path, dst=project.path, overwrite=True)
 
 
 @templates.group(cls=AliasedGroup)

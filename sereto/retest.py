@@ -11,7 +11,6 @@ from sereto.utils import YAML
 @validate_call
 def add_retest(project: Project) -> None:
     last_cfg = project.config.at_version(version=project.config.last_version())
-    project_path = project.get_path_from_dir()
 
     # Copy last version's config to the updates section
     retest_cfg = deepcopy(last_cfg)
@@ -27,7 +26,7 @@ def add_retest(project: Project) -> None:
     # Copy files from previous version
     copy_report_files = ["report", "sow"]
     for file in copy_report_files:
-        shutil.copy(src=project_path / f"{file}{old_suffix}.tex.j2", dst=project_path / f"{file}{new_suffix}.tex.j2")
+        shutil.copy(src=project.path / f"{file}{old_suffix}.tex.j2", dst=project.path / f"{file}{new_suffix}.tex.j2")
 
     for target in last_cfg.targets:
         assert target.path is not None

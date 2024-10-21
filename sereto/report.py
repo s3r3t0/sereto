@@ -120,7 +120,6 @@ def render_report_j2(
             first recipe with a matching format is used.
     """
     cfg = project.config.at_version(version=version)
-    project_path = project.get_path_from_dir()
 
     for target in cfg.targets:
         # render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)
@@ -129,30 +128,29 @@ def render_report_j2(
         for finding_group in target.findings_config.finding_groups:
             render_finding_group_j2(finding_group=finding_group, target=target, project=project, version=version)
 
-    report_j2_path = project_path / f"report{version.path_suffix}.tex.j2"
+    report_j2_path = project.path / f"report{version.path_suffix}.tex.j2"
     if not report_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{report_j2_path}'")
 
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
     report_generator = render_j2(
-        templates=project_path,
+        templates=project.path,
         file=report_j2_path,
-        vars={"version": version, "report_path": project_path, **cfg_dict},
+        vars={"version": version, "report_path": project.path, **cfg_dict},
     )
 
     with report_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
         for chunk in report_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(project_path)}")
+        Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(project.path)}")
 
 
 @validate_call
 def render_sow_j2(project: Project, version: ReportVersion) -> None:
     cfg = project.config.at_version(version=version)
-    project_path = project.get_path_from_dir()
 
-    sow_j2_path = project_path / f"sow{version.path_suffix}.tex.j2"
+    sow_j2_path = project.path / f"sow{version.path_suffix}.tex.j2"
     if not sow_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{sow_j2_path}'")
 
@@ -160,13 +158,13 @@ def render_sow_j2(project: Project, version: ReportVersion) -> None:
         # make shallow dict - values remain objects on which we can call their methods in Jinja
         cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
         sow_generator = render_j2(
-            templates=project_path,
+            templates=project.path,
             file=sow_j2_path,
-            vars={"version": version, "report_path": project_path, **cfg_dict},
+            vars={"version": version, "report_path": project.path, **cfg_dict},
         )
         for chunk in sow_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project_path)}")
+        Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project.path)}")
 
 
 @validate_call
@@ -239,12 +237,11 @@ def report_cleanup(
     version: ReportVersion,
 ) -> None:
     cfg = project.config.at_version(version=version)
-    project_path = project.get_path_from_dir()
 
     for target in cfg.targets:
-        (project_path / f"{target.uname}.tex").unlink()
+        (project.path / f"{target.uname}.tex").unlink()
 
         for finding_group in target.findings_config.finding_groups:
-            (project_path / f"{target.uname}_{finding_group.uname}.tex").unlink()
+            (project.path / f"{target.uname}_{finding_group.uname}.tex").unlink()
 
-    (project_path / f"report{version.path_suffix}.tex").unlink()
+    (project.path / f"report{version.path_suffix}.tex").unlink()
