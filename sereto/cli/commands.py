@@ -29,7 +29,7 @@ def sereto_ls(settings: Settings) -> None:
     Args:
         settings: The Settings object.
     """
-    project_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_report_dir(d)]
+    project_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
     table = Table("ID", "Name", "Location", title="Reports", box=box.MINIMAL)
 
     for dir in project_paths:
@@ -114,7 +114,7 @@ def _get_repl_prompt() -> str:
     # Determine if the current working directory is a report directory
     project_id: TypeProjectId | None = None
     cwd = Path.cwd()
-    if Project.is_report_dir(cwd):
+    if Project.is_project_dir(cwd):
         # Load the report to get the ID (this can be different from the directory name)
         project = Project.load_from()
         project_id = project.config.at_version(project.config.last_version()).id
@@ -157,7 +157,7 @@ def _change_repl_dir(settings: Settings, cmd: str, wd: WorkingDir) -> None:
     # Check if the report's location exists
     # TODO: Should we iterate over all reports and read the config to get the correct path?
     report_path = settings.reports_path / report_id
-    if not Project.is_report_dir(report_path):
+    if not Project.is_project_dir(report_path):
         raise SeretoPathError(f"Report '{report_id}' does not exist. Use 'ls' to list reports.")
 
     # Change the current working directory to the new location

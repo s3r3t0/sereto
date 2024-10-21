@@ -22,12 +22,12 @@ from sereto.types import TypeProjectId
 
 @validate_call
 def get_all_projects(settings: Settings) -> list[Project]:
-    return [Project.load_from(d) for d in settings.reports_path.iterdir() if Project.is_report_dir(d)]
+    return [Project.load_from(d) for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
 
 
 @validate_call
 def get_all_projects_dict(settings: Settings) -> dict[str, Project]:
-    candidates: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_report_dir(d)]
+    candidates: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
     return {(project := Project.load_from(d)).config.id: project for d in candidates}
 
 

@@ -36,7 +36,7 @@ def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: Dir
         # if the current directory is inside the subtree
         if d.is_relative_to(dir_subtree):
             # if the current directory is a report directory
-            if Project.is_report_dir(d):
+            if Project.is_project_dir(d):
                 return d
         else:
             # stop the search before leaving the subtree
@@ -91,7 +91,7 @@ class Project(SeretoBaseModel):
 
     @staticmethod
     @validate_call
-    def is_report_dir(path: DirectoryPath) -> bool:
+    def is_project_dir(path: DirectoryPath) -> bool:
         """Check if the provided path is a root directory of a report.
 
         A report directory contains at least `.sereto` and `config.json` files.
