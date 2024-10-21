@@ -21,17 +21,6 @@ from sereto.types import TypeProjectId
 
 
 @validate_call
-def get_all_projects(settings: Settings) -> list[Project]:
-    return [Project.load_from(d) for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
-
-
-@validate_call
-def get_all_projects_dict(settings: Settings) -> dict[str, Project]:
-    candidates: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
-    return {(project := Project.load_from(d)).config.id: project for d in candidates}
-
-
-@validate_call
 def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = False) -> None:
     """Copy the content of a templates `skel` directory to a destination directory.
 
