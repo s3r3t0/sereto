@@ -3,7 +3,6 @@ from copy import deepcopy
 
 from pydantic import validate_call
 
-from sereto.config import write_config
 from sereto.models.finding import FindingsConfig
 from sereto.models.report import Report
 from sereto.models.settings import Settings
@@ -19,7 +18,10 @@ def add_retest(report: Report, settings: Settings) -> None:
     retest_cfg = deepcopy(last_cfg)
     retest_cfg.report_version = last_cfg.report_version.next_major_version()
     report.config.updates.append(retest_cfg)
-    write_config(config=report.config, settings=settings)
+
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    report.config.dump_json(file=config)
 
     old_suffix = last_cfg.report_version.path_suffix
     new_suffix = retest_cfg.report_version.path_suffix

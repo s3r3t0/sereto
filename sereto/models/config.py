@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Self
 
-from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
+from pydantic import Field, FilePath, NewPath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -31,7 +31,7 @@ class BaseConfig(SeretoBaseModel):
     people: list[Person] = []
 
     @model_validator(mode="after")
-    def unique_names(self) -> Self:
+    def unique_target_names(self) -> Self:
         unames = [target.uname for target in self.targets]
         if len(unames) != len(set(unames)):
             raise ValueError("duplicate target uname")
@@ -42,6 +42,12 @@ class Config(BaseConfig):
     """Model representing the full report configuration.
 
     Attributes:
+        id: The ID of the report.
+        name: The name of the report.
+        report_version: The version of the report.
+        targets: List of targets.
+        dates: List of dates.
+        people: List of people.
         sereto_version: Version of SeReTo which produced the config.
         updates: List of updates.
     """
@@ -71,8 +77,9 @@ class Config(BaseConfig):
         return self
 
     @classmethod
+    @validate_call
     def load_from(cls, file: FilePath) -> Self:
-        """Load the configuration from a file.
+        """Load the configuration from a JSON file.
 
         Args:
             file: The path to the configuration file.
@@ -94,6 +101,15 @@ class Config(BaseConfig):
             raise SeretoValueError(f"invalid config\n\n{e}") from e
 
     @validate_call
+    def dump_json(self, file: FilePath | NewPath) -> None:
+        """Write report configuration to a JSON file.
+
+        Args:
+            file: The path to the configuration file.
+        """
+        file.write_text(self.model_dump_json(indent=2) + "\n")
+
+    @validate_call
     def versions(self) -> list[ReportVersion]:
         """Get a sorted list of report versions in ascending order.
 
@@ -111,6 +127,7 @@ class Config(BaseConfig):
         """
         return self.versions()[-1]
 
+    @validate_call
     def at_version(self, version: str | ReportVersion | None) -> BaseConfig:
         """Return the configuration at a specific version.
 

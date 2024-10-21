@@ -22,25 +22,6 @@ from sereto.models.target import Target
 from sereto.models.version import ReportVersion, SeretoVersion
 from sereto.report import report_create_missing
 
-
-@validate_call
-def write_config(config: Config, settings: Settings) -> None:
-    """Write report configuration to a file.
-
-    Args:
-        config: Report's configuration.
-        settings: Global settings.
-
-    Raises:
-        SeretoPathError: If the report directory cannot be found.
-    """
-    config_path = Report.get_config_path(dir_subtree=settings.reports_path)
-
-    with config_path.open("w", encoding="utf-8") as f:
-        f.write(config.model_dump_json(indent=2))
-        f.write("\n")
-
-
 # -------------
 # sereto config
 # -------------
@@ -54,20 +35,19 @@ def edit_config(settings: Settings) -> None:
         settings: Global settings.
     """
     sereto_ver = importlib.metadata.version("sereto")
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
 
-    if not (path := Report.get_config_path(dir_subtree=settings.reports_path)).is_file():
-        write_config(
-            config=Config(
-                sereto_version=SeretoVersion.from_str(sereto_ver),
-                id="",
-                name="",
-                report_version=ReportVersion.from_str("v1.0"),
-            ),
-            settings=settings,
-        )
+    # If the config file does not exist, create it with default values
+    if not config.is_file():
+        Config(
+            sereto_version=SeretoVersion.from_str(sereto_ver),
+            id="",
+            name="",
+            report_version=ReportVersion.from_str("v1.0"),
+        ).dump_json(file=config)
 
-    click.edit(filename=str(path))
-    # is_config_valid(reports_path=settings.reports_path, print=True)
+    # Open the config file in the default editor
+    click.edit(filename=str(config))
 
 
 @validate_call
@@ -131,11 +111,14 @@ def add_dates_config(report: Report, settings: Settings) -> None:
     cfg = report.config
     dates: list[Date] = cfg.dates if len(cfg.updates) == 0 else cfg.updates[-1].dates
 
+    # Add a new date
     date_type: DateType = load_enum(enum=DateType, prompt="Type")
     new_date = prompt_user_for_date(date_type=date_type)
     dates.append(Date(type=date_type, date=new_date))
 
-    write_config(config=report.config, settings=settings)
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
 
 
 @validate_call
@@ -153,7 +136,10 @@ def delete_dates_config(report: Report, settings: Settings, index: int) -> None:
     if not 0 <= index <= len(dates) - 1:
         raise SeretoValueError("invalid index, not in allowed range")
     del dates[index]
-    write_config(config=cfg, settings=settings)
+
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
 
 
 @validate_call
@@ -231,11 +217,14 @@ def add_people_config(report: Report, settings: Settings) -> None:
     cfg = report.config
     people: list[Person] = cfg.people if len(cfg.updates) == 0 else cfg.updates[-1].people
 
+    # Add a new person
     person_type: PersonType = load_enum(enum=PersonType, prompt="Type")
     new_person = prompt_user_for_person(person_type=person_type)
     people.append(new_person)
 
-    write_config(config=report.config, settings=settings)
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
 
 
 @validate_call
@@ -253,7 +242,10 @@ def delete_people_config(report: Report, settings: Settings, index: int) -> None
     if not 0 <= index <= len(people) - 1:
         raise SeretoValueError("invalid index, not in allowed range")
     del people[index]
-    write_config(config=cfg, settings=settings)
+
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
 
 
 @validate_call
@@ -314,9 +306,9 @@ def show_people_config(
                 Console().print_json(PersonList.dump_json(people).decode("utf-8"))
 
 
-# # ---------------------
-# # sereto config targets
-# # ---------------------
+# ---------------------
+# sereto config targets
+# ---------------------
 
 
 @validate_call
@@ -329,8 +321,15 @@ def add_targets_config(report: Report, settings: Settings) -> None:
     """
     cfg = report.config
     targets: list[Target] = cfg.targets if len(cfg.updates) == 0 else cfg.updates[-1].targets
+
+    # Add a new target
     targets.append(prompt_user_for_target(settings=settings))
-    write_config(config=cfg, settings=settings)
+
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
+
+    # Post-process the new target
     report.load_runtime_vars(settings=settings)
     report_create_missing(report=report, settings=settings, version=cfg.last_version())
 
@@ -349,10 +348,14 @@ def delete_targets_config(report: Report, settings: Settings, index: int) -> Non
     index -= 1
     if not 0 <= index <= len(targets) - 1:
         raise SeretoValueError("invalid index, not in allowed range")
-    target_path = targets[index].path
     del targets[index]
-    write_config(config=cfg, settings=settings)
 
+    # Write the configuration
+    config = Report.get_config_path(dir_subtree=settings.reports_path)
+    cfg.dump_json(file=config)
+
+    # Delete the target from the filesystem
+    target_path = targets[index].path
     if (
         target_path is not None
         and target_path.is_dir()
