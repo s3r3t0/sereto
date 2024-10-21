@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import NamedTuple
 
 import keyring
 from argon2.low_level import Type as Argon2Type
@@ -19,6 +20,13 @@ __all__ = [
 ]
 
 
+class DerivedKeyResult(NamedTuple):
+    """Result of the Argon2 key derivation function."""
+
+    key: bytes
+    salt: TypeSalt16B
+
+
 @validate_call
 def derive_key_argon2(
     password: TypePassword,
@@ -26,7 +34,7 @@ def derive_key_argon2(
     memory_cost: int = 1_048_576,
     time_cost: int = 4,
     parallelism: int = 8,
-) -> tuple[bytes, TypeSalt16B]:
+) -> DerivedKeyResult:
     """Derive a key using Argon2id from a password.
 
     Args:
@@ -54,7 +62,7 @@ def derive_key_argon2(
         type=Argon2Type.ID,  # Argon2id variant (mix of Argon2i and Argon2d)
     )
 
-    return key, salt
+    return DerivedKeyResult(key=key, salt=salt)
 
 
 @validate_call
@@ -98,17 +106,17 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
     data = file.read_bytes()
 
     # Derive the key using Argon2id
-    key, salt = derive_key_argon2(password=password)
+    derived = derive_key_argon2(password=password)
 
     # Generate a 12-byte random nonce - IV for AES
     # - NIST recommends a 96-bit IV length for best performance - https://csrc.nist.gov/pubs/sp/800/38/d/final
     nonce: TypeNonce12B = os.urandom(12)
 
     # Encrypt the data
-    encrypted_data = AESGCM(key).encrypt(nonce=nonce, data=data, associated_data=None)
+    encrypted_data = AESGCM(derived.key).encrypt(nonce=nonce, data=data, associated_data=None)
 
     # Prepare the header (64 bytes long)
-    header = b"SeReTo" + nonce + salt
+    header = b"SeReTo" + nonce + derived.salt
     header = header.ljust(64, b"\x00")
 
     # Write the encrypted data into a new file
@@ -170,10 +178,10 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     encrypted_data = data[64:]
 
     # Derive the key using Argon2id
-    key, _ = derive_key_argon2(password=password, salt=salt)
+    derived = derive_key_argon2(password=password, salt=salt)
 
     # Decrypt the data
-    decrypted_data = AESGCM(key).decrypt(nonce=nonce, data=encrypted_data, associated_data=None)
+    decrypted_data = AESGCM(derived.key).decrypt(nonce=nonce, data=encrypted_data, associated_data=None)
 
     # Write the decrypted data
     with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:
