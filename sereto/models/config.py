@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Self
 
-from pydantic import Field, FilePath, NewPath, ValidationError, model_validator, validate_call
+from pydantic import DirectoryPath, Field, FilePath, NewPath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -108,6 +108,25 @@ class Config(BaseConfig):
             file: The path to the configuration file.
         """
         file.write_text(self.model_dump_json(indent=2) + "\n")
+
+    @validate_call
+    def update_paths(self, project_path: DirectoryPath) -> Self:
+        """Update the full paths of the individual config components.
+
+        When the configuration is loaded, it has no knowledge of the project path. This method updates the paths in the
+        individual config components.
+
+        Args:
+            project_path: The path to the project directory.
+
+        Returns:
+            The configuration with updated paths.
+        """
+        for cfg in [self] + self.updates:
+            for target in cfg.targets:
+                target.path = project_path / target.uname
+
+        return self
 
     @validate_call
     def versions(self) -> list[ReportVersion]:

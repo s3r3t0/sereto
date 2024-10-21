@@ -320,7 +320,7 @@ def add_targets_config(project: Project) -> None:
     cfg.dump_json(file=project.get_config_path())
 
     # Post-process the new target
-    project.load_runtime_vars()
+    project.config.update_paths(project.path)
     report_create_missing(project=project, version=cfg.last_version())
 
 

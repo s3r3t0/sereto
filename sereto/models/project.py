@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Self
 
 from pydantic import DirectoryPath, validate_call
 
@@ -78,11 +77,8 @@ class Project(SeretoBaseModel):
         project_path = get_project_path_from_dir(
             dir=path if path is not None else Path.cwd(), dir_subtree=settings.reports_path
         )
-        config = Config.load_from(file=project_path / "config.json")
-        project = Project(config=config, settings=load_settings_function(), path=project_path)
-        project.load_runtime_vars()
-
-        return project
+        config = Config.load_from(file=project_path / "config.json").update_paths(project_path=project_path)
+        return Project(config=config, settings=load_settings_function(), path=project_path)
 
     @validate_call
     def get_config_path(self) -> Path:
@@ -107,15 +103,6 @@ class Project(SeretoBaseModel):
             True if the path is a report directory, False otherwise.
         """
         return (path / ".sereto").is_file() and (path / "config.json").is_file()
-
-    @validate_call
-    def load_runtime_vars(self) -> Self:
-        """Get the config enriched with additional parameters like paths and findings."""
-        for cfg in [self.config] + self.config.updates:
-            for target in cfg.targets:
-                target.path = self.path / target.uname
-
-        return self
 
     @validate_call
     def select_target(
