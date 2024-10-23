@@ -8,6 +8,7 @@ from typing import ParamSpec, TypeVar
 import click
 import jinja2
 import pydantic
+import pypdf
 from rich.markup import escape
 
 from sereto.cli.utils import Console
@@ -56,7 +57,7 @@ def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
             if isinstance(e, SeretoException):
                 Console().print(f"[red]Error:[/red] {escape(str(e))}")
             if os.environ.get("DEBUG", False):
-                Console().print_exception(show_locals=True, suppress=[click, jinja2, pydantic, pathlib])
+                Console().print_exception(show_locals=True, suppress=[click, jinja2, pathlib, pydantic, pypdf])
             else:
                 Console().print("\n[yellow]Set environment variable [blue]DEBUG=1[/blue] for more details.")
             sys.exit(1)

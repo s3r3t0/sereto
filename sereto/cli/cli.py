@@ -1,4 +1,5 @@
 import importlib.metadata
+from contextlib import suppress
 from pathlib import Path
 
 import click
@@ -21,7 +22,7 @@ from sereto.cli.config import (
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
-from sereto.exceptions import SeretoPathError, SeretoRuntimeError, handle_exceptions
+from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
@@ -108,8 +109,16 @@ def decrypt(settings: Settings, file: Path) -> None:
 @load_settings
 def unpack(settings: Settings, file: Path) -> None:
     """Unpack the SeReTo project from the report's PDF."""
-    attachment = retrieve_source_archive(pdf=file, name="source.sereto")
-    source_tgz = decrypt_file(file=attachment, keep_original=False)
+    attachment: Path | None = None
+
+    with suppress(SeretoValueError):
+        attachment = retrieve_source_archive(pdf=file, name="source.sereto")
+
+    if attachment is not None:
+        source_tgz = decrypt_file(file=attachment, keep_original=False)
+    else:
+        source_tgz = retrieve_source_archive(pdf=file, name="source.tgz")
+
     extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
 
 

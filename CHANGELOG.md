@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `sereto ls` failing when there is a file in the report directory (too strict argument check in `Project.is_project_dir` function).
+- Fix unpacking unencrypted source archive.
 
 ## [0.0.15] - 2024-10-21
 
