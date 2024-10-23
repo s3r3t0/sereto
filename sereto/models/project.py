@@ -91,7 +91,7 @@ class Project(SeretoBaseModel):
 
     @staticmethod
     @validate_call
-    def is_project_dir(path: DirectoryPath) -> bool:
+    def is_project_dir(path: Path) -> bool:
         """Check if the provided path is a root directory of a report.
 
         A report directory contains at least `.sereto` and `config.json` files.
@@ -102,7 +102,7 @@ class Project(SeretoBaseModel):
         Returns:
             True if the path is a report directory, False otherwise.
         """
-        return (path / ".sereto").is_file() and (path / "config.json").is_file()
+        return path.is_dir() and path.exists() and (path / ".sereto").is_file() and (path / "config.json").is_file()
 
     @validate_call
     def select_target(
