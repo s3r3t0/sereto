@@ -7,7 +7,7 @@ import keyring
 from argon2.low_level import Type as Argon2Type
 from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from pydantic import FilePath, TypeAdapter, ValidationError, validate_call
+from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
@@ -23,7 +23,7 @@ __all__ = [
 class DerivedKeyResult(NamedTuple):
     """Result of the Argon2 key derivation function."""
 
-    key: bytes
+    key: SecretBytes
     salt: TypeSalt16B
 
 
@@ -49,17 +49,21 @@ def derive_key_argon2(
     """
     # Generate a salt if not provided (16 bytes)
     if salt is None:
-        salt = os.urandom(16)
+        ta_salt: TypeAdapter[TypeSalt16B] = TypeAdapter(TypeSalt16B)  # hack for mypy
+        salt = ta_salt.validate_python(os.urandom(16))
 
     # Derive a key using Argon2id
-    key = argon2_hash_secret_raw(
-        secret=password.encode(encoding="utf-8"),
-        salt=salt,
-        time_cost=time_cost,
-        memory_cost=memory_cost,
-        parallelism=parallelism,
-        hash_len=32,  # Desired key length in bytes (32 bytes = 256 bits for AES-256)
-        type=Argon2Type.ID,  # Argon2id variant (mix of Argon2i and Argon2d)
+    ta_key: TypeAdapter[SecretBytes] = TypeAdapter(SecretBytes)  # hack for mypy
+    key = ta_key.validate_python(
+        argon2_hash_secret_raw(
+            secret=password.get_secret_value().encode(encoding="utf-8"),
+            salt=salt.get_secret_value(),
+            time_cost=time_cost,
+            memory_cost=memory_cost,
+            parallelism=parallelism,
+            hash_len=32,  # Desired key length in bytes (32 bytes = 256 bits for AES-256)
+            type=Argon2Type.ID,  # Argon2id variant (mix of Argon2i and Argon2d)
+        )
     )
 
     return DerivedKeyResult(key=key, salt=salt)
@@ -89,12 +93,9 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
         raise SeretoPathError(f"file '{file}' does not exist")
 
     # Retrieve the password from the system keyring
-    password = keyring.get_password("sereto", "encrypt_attached_archive")
-
-    # Validate the password
     try:
-        ta: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
-        password = ta.validate_python(password)
+        ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
+        password = ta_password.validate_python(keyring.get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
         Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
@@ -103,6 +104,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
 
     Console().log(":locked: Found password for archive encryption.\nEncrypting archive...")
 
+    # Read the file content
     data = file.read_bytes()
 
     # Derive the key using Argon2id
@@ -110,13 +112,16 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
 
     # Generate a 12-byte random nonce - IV for AES
     # - NIST recommends a 96-bit IV length for best performance - https://csrc.nist.gov/pubs/sp/800/38/d/final
-    nonce: TypeNonce12B = os.urandom(12)
+    ta_nonce: TypeAdapter[TypeNonce12B] = TypeAdapter(TypeNonce12B)  # hack for mypy
+    nonce = ta_nonce.validate_python(os.urandom(12))
 
     # Encrypt the data
-    encrypted_data = AESGCM(derived.key).encrypt(nonce=nonce, data=data, associated_data=None)
+    encrypted_data = AESGCM(derived.key.get_secret_value()).encrypt(
+        nonce=nonce.get_secret_value(), data=data, associated_data=None
+    )
 
     # Prepare the header (64 bytes long)
-    header = b"SeReTo" + nonce + derived.salt
+    header = b"SeReTo" + nonce.get_secret_value() + derived.salt.get_secret_value()
     header = header.ljust(64, b"\x00")
 
     # Write the encrypted data into a new file
@@ -158,30 +163,43 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     if file.suffix != ".sereto":
         raise SeretoValueError("Unsupported file format for decryption (not a .sereto)")
 
-    password = keyring.get_password("sereto", "encrypt_attached_archive")
-
-    if not password:
-        raise SeretoValueError("No password found for archive decryption")
+    # Retrieve the password from the system keyring
+    try:
+        ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
+        password = ta_password.validate_python(keyring.get_password("sereto", "encrypt_attached_archive"))
+    except ValidationError as e:
+        Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
+        raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
 
     Console().log(":locked: Found password for archive decryption.\nDecrypting archive...")
 
     assert_file_size_within_range(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True)
 
+    # Read the encrypted archive content
     data = file.read_bytes()
 
-    # Extract the header, nonce, salt, and encrypted data
+    # Extract the header
     if not data[:6] == b"SeReTo":
         raise SeretoValueError("Encrypted file is corrupted or not encrypted with SeReTo")
 
-    nonce: TypeNonce12B = data[6:18]
-    salt: TypeSalt16B = data[18:34]
+    # - nonce
+    ta_nonce: TypeAdapter[TypeNonce12B] = TypeAdapter(TypeNonce12B)  # hack for mypy
+    nonce = ta_nonce.validate_python(data[6:18])
+
+    # - salt
+    ta_salt: TypeAdapter[TypeSalt16B] = TypeAdapter(TypeSalt16B)  # hack for mypy
+    salt = ta_salt.validate_python(data[18:34])
+
+    # - encrypted data
     encrypted_data = data[64:]
 
     # Derive the key using Argon2id
     derived = derive_key_argon2(password=password, salt=salt)
 
     # Decrypt the data
-    decrypted_data = AESGCM(derived.key).decrypt(nonce=nonce, data=encrypted_data, associated_data=None)
+    decrypted_data = AESGCM(derived.key.get_secret_value()).decrypt(
+        nonce=nonce.get_secret_value(), data=encrypted_data, associated_data=None
+    )
 
     # Write the decrypted data
     with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:

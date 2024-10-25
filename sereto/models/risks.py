@@ -40,7 +40,7 @@ class Risks(SeretoBaseModel):
     low: Risk = Risk(name="low", cnt=0, color="#33cc33")
     info: Risk = Risk(name="informational", cnt=0, color="#3366ff")
 
-    def names(self) -> tuple[str, str, str, str, str]:
+    def names(self) -> tuple[str, ...]:
         """Return a tuple of the names for each severity.
 
         The risk names are sorted from the most severe ones to the least severe.
@@ -56,7 +56,7 @@ class Risks(SeretoBaseModel):
             self.info.name,
         )
 
-    def counts(self) -> tuple[int, int, int, int, int]:
+    def counts(self) -> tuple[int, ...]:
         """Return a tuple of the counters for each severity level.
 
         The counters are sorted from the most severe risks to the least severe.
@@ -66,7 +66,7 @@ class Risks(SeretoBaseModel):
         """
         return (self.critical.cnt, self.high.cnt, self.medium.cnt, self.low.cnt, self.info.cnt)
 
-    def colors(self) -> tuple[str, str, str, str, str]:
+    def colors(self) -> tuple[str, ...]:
         """Return a tuple of the colors for each severity level.
 
         The risk colors are sorted by severity, from the most severe ones to the least severe.
