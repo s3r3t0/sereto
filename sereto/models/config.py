@@ -7,7 +7,7 @@ from pydantic import DirectoryPath, Field, FilePath, NewPath, ValidationError, m
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.date import Date
+from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion, SeretoVersion
@@ -38,6 +38,51 @@ class VersionConfig(SeretoBaseModel):
         if len(unames) != len(set(unames)):
             raise ValueError("duplicate target uname")
         return self
+
+    @validate_call
+    def filter_dates(
+        self,
+        type: str | DateType | Iterable[str] | Iterable[DateType] | None = None,
+        start: str | SeretoDate | None = None,
+        end: str | SeretoDate | None = None,
+    ) -> list[Date]:
+        """Filter dates based on specified criteria.
+
+        Args:
+            type: The type of the date. Can be a single type, a list of types, or None.
+
+        Returns:
+            A list of dates matching the criteria.
+        """
+
+        match type:
+            case str():
+                type = [DateType(type)]
+            case Iterable():
+                type = [DateType(t) for t in type]
+            case None:
+                pass
+
+        if isinstance(start, str):
+            start = SeretoDate.from_str(start)
+        if isinstance(end, str):
+            end = SeretoDate.from_str(end)
+
+        return [
+            d
+            for d in self.dates
+            if (type is None or d.type in type)
+            and (
+                start is None
+                or (isinstance(d.date, SeretoDate) and d.date >= start)
+                or (isinstance(d.date, DateRange) and d.date.start >= start)
+            )
+            and (
+                end is None
+                or (isinstance(d.date, SeretoDate) and d.date <= end)
+                or (isinstance(d.date, DateRange) and d.date.end <= end)
+            )
+        ]
 
     @validate_call
     def filter_people(

@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Provide helper methods to `VersionConfig` for writing the templates - `filter_dates`, `filter_people`
+- Docs: start documenting available building blocks for writing the templates
+
 ### Changed
 
 - Use NamedTuple to represent result of key derivation with Argon2
 - Use Pydantic's Secret types when dealing with passwords. This prevents the data from being printed in the logs and tracebacks.
 - Rename `BaseConfig` class to `VersionConfig`
-- Provide helper methods for writing the templates - `VersionConfig.filter_people`
-- Docs: start documenting available building blocks for writing the templates
 
 ### Fixed
 

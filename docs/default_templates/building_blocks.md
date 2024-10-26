@@ -30,8 +30,13 @@ The following methods can be invoked from the `c` object.
 Example usage:
 
 ```py
+c.filter_dates(type="pentest_ongoing", start="01-Jan-2024", end="31-Jan-2024")
 c.filter_people(type="author", email="@foo.bar$")
 ```
+
+::: sereto.models.config.VersionConfig.filter_dates
+    options:
+        heading_level: 3
 
 ::: sereto.models.config.VersionConfig.filter_people
     options:
