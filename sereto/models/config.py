@@ -40,6 +40,32 @@ class VersionConfig(SeretoBaseModel):
         return self
 
     @validate_call
+    def filter_targets(
+        self,
+        category: str | Iterable[str] | None = None,
+        name: str | None = None,
+    ) -> list[Target]:
+        """Filter targets based on specified criteria.
+
+        The regular expressions support the syntax of Python's `re` module.
+
+        Args:
+            category: The category of the target. Can be a single category, a list of categories, or None.
+            name: Regular expression to match the name of the target.
+
+        Returns:
+            A list of targets matching the criteria.
+        """
+        if isinstance(category, str):
+            category = [category]
+
+        return [
+            t
+            for t in self.targets
+            if (category is None or t.category in category) and (name is None or re.search(name, t.name))
+        ]
+
+    @validate_call
     def filter_dates(
         self,
         type: str | DateType | Iterable[str] | Iterable[DateType] | None = None,
@@ -48,13 +74,15 @@ class VersionConfig(SeretoBaseModel):
     ) -> list[Date]:
         """Filter dates based on specified criteria.
 
+        The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps
+        with the specified range.
+
         Args:
             type: The type of the date. Can be a single type, a list of types, or None.
 
         Returns:
             A list of dates matching the criteria.
         """
-
         match type:
             case str():
                 type = [DateType(type)]
@@ -107,7 +135,6 @@ class VersionConfig(SeretoBaseModel):
         Returns:
             A list of people matching the criteria.
         """
-
         match type:
             case str():
                 type = [PersonType(type)]

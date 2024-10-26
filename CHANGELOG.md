@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Provide helper methods to `VersionConfig` for writing the templates - `filter_dates`, `filter_people`
+- Provide helper methods to `VersionConfig` for writing the templates - `filter_targets`, `filter_dates`, and `filter_people`
 - Docs: start documenting available building blocks for writing the templates
 
 ### Changed
