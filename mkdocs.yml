@@ -74,9 +74,10 @@ nav:
     - getting_started/settings.md
     - getting_started/security_considerations.md
   - usage.md
-  - templates.md
+  - Templates:
+    - default_templates/structure.md
+    - default_templates/building_blocks.md
   - Reference:
-    # - Reference: reference/reference.md
     - CLI:
       - reference/cli/cli.md
       - reference/cli/config.md

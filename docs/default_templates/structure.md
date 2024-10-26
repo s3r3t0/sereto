@@ -1,4 +1,4 @@
-# Templates
+# Structure
 
 ```text
 ├── categories
@@ -60,4 +60,4 @@ This directory houses the pandoc filters utilized for processing the markdown fi
 
 This directory serves as a skeleton for new report projects. When creating a new project, the contents of this directory are used to populate it.
 
-For a detailed explanation of each file, please refer to the [project files](concepts/project_files.md) section in the documentation.
+For a detailed explanation of each file, please refer to the [project files](../concepts/project_files.md) section in the documentation.

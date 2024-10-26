@@ -1,3 +1,5 @@
+import re
+from collections.abc import Iterable
 from copy import deepcopy
 from typing import Self
 
@@ -6,12 +8,12 @@ from pydantic import DirectoryPath, Field, FilePath, NewPath, ValidationError, m
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.date import Date
-from sereto.models.person import Person
+from sereto.models.person import Person, PersonType
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion, SeretoVersion
 
 
-class BaseConfig(SeretoBaseModel):
+class VersionConfig(SeretoBaseModel):
     """Model with core attributes for a specific version of the report configuration.
 
     Attributes:
@@ -37,8 +39,50 @@ class BaseConfig(SeretoBaseModel):
             raise ValueError("duplicate target uname")
         return self
 
+    @validate_call
+    def filter_people(
+        self,
+        type: str | PersonType | Iterable[str] | Iterable[PersonType] | None = None,
+        name: str | None = None,
+        business_unit: str | None = None,
+        email: str | None = None,
+        role: str | None = None,
+    ) -> list[Person]:
+        """Filter people based on specified criteria.
 
-class Config(BaseConfig):
+        The regular expressions support the syntax of Python's `re` module.
+
+        Args:
+            type: The type of the person. Can be a single type, a list of types, or None.
+            name: Regular expression to match the name of the person.
+            business_unit: Regular expression to match the business unit of the person.
+            email: Regular expression to match the email of the person.
+            role: Regular expression to match the role of the person.
+
+        Returns:
+            A list of people matching the criteria.
+        """
+
+        match type:
+            case str():
+                type = [PersonType(type)]
+            case Iterable():
+                type = [PersonType(t) for t in type]
+            case None:
+                pass
+
+        return [
+            p
+            for p in self.people
+            if (type is None or p.type in type)
+            and (name is None or re.search(name, p.name))  # type: ignore[arg-type]
+            and (business_unit is None or re.search(business_unit, p.business_unit))  # type: ignore[arg-type]
+            and (email is None or re.search(email, p.email))  # type: ignore[arg-type]
+            and (role is None or re.search(role, p.role))  # type: ignore[arg-type]
+        ]
+
+
+class Config(VersionConfig):
     """Model representing the full report configuration.
 
     Attributes:
@@ -53,14 +97,14 @@ class Config(BaseConfig):
     """
 
     sereto_version: SeretoVersion
-    updates: list[BaseConfig] = Field(default=[])
+    updates: list[VersionConfig] = Field(default=[])
 
     @model_validator(mode="after")
     def config_validator(self) -> Self:
         # if self.id is None or self.name is None:
         #     raise ValueError("'id' and 'name' variables cannot be None")
 
-        previous: BaseConfig = self
+        previous: VersionConfig = self
 
         for update in self.updates:
             # report_version is incremented in subsequent update sections
@@ -147,7 +191,7 @@ class Config(BaseConfig):
         return self.versions()[-1]
 
     @validate_call
-    def at_version(self, version: str | ReportVersion) -> BaseConfig:
+    def at_version(self, version: str | ReportVersion) -> VersionConfig:
         """Return the configuration at a specific version.
 
         Args:
@@ -164,9 +208,9 @@ class Config(BaseConfig):
         if isinstance(version, str):
             version = ReportVersion.from_str(version)
 
-        # For v1.0, we need to convert Config to BaseConfig (excluding extra fields)
-        if self.report_version == version:  # v1.0
-            cfg = BaseConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
+        # For v1.0, we need to convert Config to VersionConfig manually (excluding extra fields)
+        if version == ReportVersion("v1.0"):  # type: ignore[arg-type]
+            cfg = VersionConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
             # copy values of the excluded fields
             for t1, t2 in zip(self.targets, cfg.targets, strict=True):
                 t2.path = t1.path

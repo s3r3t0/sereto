@@ -6,8 +6,7 @@ from pydantic import DirectoryPath, validate_call
 from rich.prompt import Prompt
 
 from sereto.cli.utils import Console
-from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.finding import render_finding_group_j2
+from sereto.exceptions import SeretoPathError
 from sereto.jinja import render_j2
 from sereto.models.config import Config
 from sereto.models.project import Project
@@ -16,7 +15,7 @@ from sereto.models.version import ReportVersion, SeretoVersion
 from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_target_pdf
 from sereto.plot import risks_plot
 from sereto.source_archive import create_source_archive, embed_source_archive
-from sereto.target import create_findings_config, get_risks, render_target_j2  # render_target_findings_j2
+from sereto.target import create_findings_config, get_risks, render_target_j2
 from sereto.types import TypeProjectId
 
 
@@ -67,7 +66,7 @@ def new_report(settings: Settings, report_id: TypeProjectId) -> None:
     Console().log(f"Generating a new report with ID {report_id!r}")
 
     if (new_path := (settings.reports_path / report_id)).exists():
-        raise SeretoValueError("report with specified ID already exists")
+        raise SeretoPathError("report with specified ID already exists")
     else:
         new_path.mkdir()
 
@@ -110,49 +109,59 @@ def render_report_j2(
     """
     cfg = project.config.at_version(version=version)
 
+    # Render dependencies
     for target in cfg.targets:
-        # render_target_findings_j2(target=target, settings=settings, version=version, convert_recipe=convert_recipe)
         render_target_j2(target=target, project=project, version=version, convert_recipe=convert_recipe)
 
-        for finding_group in target.findings_config.finding_groups:
-            render_finding_group_j2(finding_group=finding_group, target=target, project=project, version=version)
-
+    # Find the report template
     report_j2_path = project.path / f"report{version.path_suffix}.tex.j2"
     if not report_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{report_j2_path}'")
 
+    # Prepare the config for Jinja
     # make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
+
+    # Render the Jinja template
     report_generator = render_j2(
         templates=project.path,
         file=report_j2_path,
-        vars={"version": version, "report_path": project.path, **cfg_dict},
+        vars={"c": cfg, "config": project.config, "version": version, "report_path": project.path, **cfg_dict},
     )
 
+    # Write the rendered template to a file
     with report_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
         for chunk in report_generator:
             f.write(chunk)
-        Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(project.path)}")
+
+    Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(project.path)}")
 
 
 @validate_call
 def render_sow_j2(project: Project, version: ReportVersion) -> None:
     cfg = project.config.at_version(version=version)
 
+    # Find the SoW template
     sow_j2_path = project.path / f"sow{version.path_suffix}.tex.j2"
     if not sow_j2_path.is_file():
         raise SeretoPathError(f"template not found: '{sow_j2_path}'")
 
+    # Prepare the config for Jinja
+    # make shallow dict - values remain objects on which we can call their methods in Jinja
+    cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
+
+    # Render the Jinja template
+    sow_generator = render_j2(
+        templates=project.path,
+        file=sow_j2_path,
+        vars={"c": cfg, "config": project.config, "version": version, "report_path": project.path, **cfg_dict},
+    )
+
+    # Write the rendered template to a file
     with sow_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
-        # make shallow dict - values remain objects on which we can call their methods in Jinja
-        cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
-        sow_generator = render_j2(
-            templates=project.path,
-            file=sow_j2_path,
-            vars={"version": version, "report_path": project.path, **cfg_dict},
-        )
         for chunk in sow_generator:
             f.write(chunk)
+
         Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project.path)}")
 
 
