@@ -1,15 +1,17 @@
 import tarfile
+from os.path import commonpath
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from pathspec.gitignore import GitIgnoreSpec
-from pydantic import DirectoryPath, FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, TypeAdapter, ValidationError, validate_call
 from pypdf import PdfReader, PdfWriter
 
 from sereto.cli.utils import Console
 from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.models.project import Project
+from sereto.types import TypeProjectId
 from sereto.utils import assert_file_size_within_range
 
 
@@ -72,7 +74,7 @@ def create_source_archive(project: Project) -> Path:
                     continue
 
                 Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
-                tar.add(item, arcname=str(item.relative_to(project.path.parent)))
+                tar.add(item, arcname=str(Path(project.config.id) / item.relative_to(project.path)))
 
     try:
         return encrypt_file(archive_path)
@@ -164,7 +166,7 @@ def retrieve_source_archive(pdf: FilePath, name: str) -> Path:
 
 @validate_call
 def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> None:
-    """Extracts sources from a given tarball file.
+    """Extracts the project sources from a given tarball file.
 
     Expects the tarball file to be Gzip-compressed.
 
@@ -173,10 +175,46 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
         output_dir: The directory where the sources will be extracted.
         keep_original: If True, the original tarball file is kept. Defaults to True.
     """
-    with tarfile.open(file, "r:gz") as tar:
-        tar.extractall(path=output_dir)
-        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir}'")
+    Console().log("Extracting archive ...")
 
+    with tarfile.open(file, "r:gz") as tar:
+        # Check for empty source archive
+        if len(tar.getmembers()) == 0:
+            Console().log(f"[yellow]![/yellow] Empty source archive: '{file}'")
+            return
+
+        # Get the common directory in the tar archive
+        common_dir = Path(commonpath(tar.getnames()))
+
+        # There should always be a top level directory with the project ID
+        if len(common_dir.parts) == 0:
+            raise SeretoValueError("corrupted source archive (multiple top-level directories found)") from None
+
+        # Validate project ID
+        try:
+            ta_id: TypeAdapter[TypeProjectId] = TypeAdapter(TypeProjectId)  # hack for mypy
+            project_id = ta_id.validate_python(common_dir.parts[0])
+        except ValidationError as e:
+            raise SeretoValueError("corrupted source archive (invalid project ID)") from e
+
+        # Check that this is a valid sereto project
+        try:
+            tar.getmember(f"{project_id}/.sereto")
+            tar.getmember(f"{project_id}/config.json")
+        except KeyError:
+            raise SeretoValueError("corrupted source archive (missing core project files)") from None
+
+        Console().log(f"[blue]i[/blue] Detected project with ID: {project_id}")
+
+        # Make sure the project directory does not already exist
+        if (output_dir / project_id).exists():
+            raise SeretoPathError(f"project directory already exists: '{output_dir / project_id}'")
+
+        # Extract the source archive
+        tar.extractall(path=output_dir, filter="data")
+        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir / project_id}'")
+
+    # Delete the original tarball
     if not keep_original:
         file.unlink()
         Console().log(f"[red]-[/red] Deleted tarball: '{file}'")

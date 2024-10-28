@@ -9,6 +9,7 @@ import click
 import jinja2
 import pydantic
 import pypdf
+from pydantic import ValidationError
 from rich.markup import escape
 
 from sereto.cli.utils import Console
@@ -54,7 +55,7 @@ def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            if isinstance(e, SeretoException):
+            if isinstance(e, SeretoException | ValidationError):
                 Console().print(f"[red]Error:[/red] {escape(str(e))}")
             if os.environ.get("DEBUG", False):
                 Console().print_exception(show_locals=True, suppress=[click, jinja2, pathlib, pydantic, pypdf])

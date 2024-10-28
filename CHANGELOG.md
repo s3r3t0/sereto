@@ -18,11 +18,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use Pydantic's Secret types when dealing with passwords. This prevents the data from being printed in the logs and tracebacks.
 - Rename `BaseConfig` class to `VersionConfig`
 - Implement `__str__` method for `Date` class
+- Make sure the source archive always starts with the directory equal to the project ID, even if the user renamed the directory
+- Handle more edge cases when extracting the source archive
 
 ### Fixed
 
 - Fix `sereto ls` failing when there is a file in the report directory (too strict argument check in `Project.is_project_dir` function).
 - Fix unpacking unencrypted source archive.
+
+### Security
+
+- Use filter [data](https://docs.python.org/3/library/tarfile.html#tarfile.data_filter) when extracting the source archive from tar. This takes care of the following:
+    - Strip leading slashes (`/` and `os.sep`) from filenames.
+    - Refuse to extract files with absolute paths (in case the name is absolute even after stripping slashes, e.g. `C:/foo` on Windows).
+    - Refuse to extract files whose absolute path (after following symlinks) would end up outside the destination.
+    - Clear high mode bits (setuid, setgid, sticky) and group/other write bits (`S_IWGRP` | `S_IWOTH`).
+    - Refuse to extract links (hard or soft) that link to absolute paths, or ones that link outside the destination.
+    - Refuse to extract device files (including pipes).
+    - For regular files, including hard links:
+        - Set the owner read and write permissions (`S_IRUSR` | `S_IWUSR`).
+        - Remove the group & other executable permission (`S_IXGRP` | `S_IXOTH`) if the owner doesn’t have it (`S_IXUSR`).
+    - For other files (directories), set `mode` to `None`, so that extraction methods skip applying permission bits.
+    - Set user and group info (`uid`, `gid`, `uname`, `gname`) to `None`, so that extraction methods skip setting it.
 
 ## [0.0.15] - 2024-10-21
 

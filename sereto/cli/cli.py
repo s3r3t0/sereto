@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 import keyring
+from pydantic import FilePath, validate_call
 
 from sereto.cli.commands import sereto_ls, sereto_repl
 from sereto.cli.config import (
@@ -97,7 +98,8 @@ def repl(settings: Settings) -> None:
 @handle_exceptions
 @click.option("-f", "--file", required=True, help="Path to the source.sereto file.", type=Path)
 @load_settings
-def decrypt(settings: Settings, file: Path) -> None:
+@validate_call
+def decrypt(settings: Settings, file: FilePath) -> None:
     """Extract the SeReTo project from the encrypted archive."""
     source_tgz = decrypt_file(file=file, keep_original=True)
     extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
@@ -107,7 +109,8 @@ def decrypt(settings: Settings, file: Path) -> None:
 @handle_exceptions
 @click.option("-f", "--file", required=True, help="Path to the PDF file.", type=Path)
 @load_settings
-def unpack(settings: Settings, file: Path) -> None:
+@validate_call
+def unpack(settings: Settings, file: FilePath) -> None:
     """Unpack the SeReTo project from the report's PDF."""
     attachment: Path | None = None
 
