@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use NamedTuple to represent result of key derivation with Argon2
 - Use Pydantic's Secret types when dealing with passwords. This prevents the data from being printed in the logs and tracebacks.
 - Rename `BaseConfig` class to `VersionConfig`
+- Implement `__str__` method for `Date` class
 
 ### Fixed
 

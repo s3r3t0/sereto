@@ -107,3 +107,10 @@ class Date(SeretoBaseModel):
         if isinstance(self.date, DateRange) and self.type not in TYPES_WITH_ALLOWED_RANGE:
             raise ValueError(f"type {self.type} does not have allowed date range, only single date")
         return self
+
+    def __str__(self) -> str:
+        match self.date:
+            case SeretoDate():
+                return str(self.date)
+            case DateRange():
+                return f"{self.date.start} to {self.date.end}"
