@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.16] - 2024-10-28
+
 ### Added
 
 - Provide helper methods to `VersionConfig` for writing the templates - `filter_targets`, `filter_dates`, and `filter_people`
@@ -201,7 +203,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.15...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.16...HEAD
+[0.0.16]: https://github.com/s3r3t0/sereto/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/s3r3t0/sereto/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/s3r3t0/sereto/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/s3r3t0/sereto/compare/v0.0.12...v0.0.13
