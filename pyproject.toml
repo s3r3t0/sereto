@@ -61,7 +61,7 @@ dependencies = [
   "pydantic-settings~=2.6.0",
   "pydantic~=2.9.1",
   "pydantic[email]",
-  "pypdf~=5.0.0",
+  "pypdf~=5.1.0",
   "python-frontmatter~=1.1.0",
   "rich~=13.9.2",
   "ruamel.yaml>=0.18.6",
