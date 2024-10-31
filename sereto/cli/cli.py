@@ -88,10 +88,9 @@ def ls(settings: Settings) -> None:
 
 
 @cli.command()
-@load_settings
-def repl(settings: Settings) -> None:
+def repl() -> None:
     """Start an interactive shell (REPL) for SeReTo."""
-    sereto_repl(cli=cli, settings=settings)
+    sereto_repl(cli=cli)
 
 
 @cli.command()
