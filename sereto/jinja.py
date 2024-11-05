@@ -90,6 +90,7 @@ def get_generic_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) ->
     """
     env: Environment = Environment(autoescape=False, loader=FileSystemLoader(templates))
     env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
+    env.add_extension("jinja2.ext.debug")
     return env
 
 
