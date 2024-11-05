@@ -5,39 +5,15 @@ from pydantic import DirectoryPath, ValidationError, validate_call
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
-from sereto.convert import convert_file_to_tex
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.finding import render_finding_group_j2, render_finding_j2
+from sereto.finding import render_finding_group_j2
 from sereto.jinja import render_j2
 from sereto.models.finding import TemplateMetadata
 from sereto.models.project import Project
 from sereto.models.risks import Risks
-from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion
 from sereto.utils import YAML
-
-
-@validate_call
-def render_target_findings_j2(
-    target: Target,
-    settings: Settings,
-    version: ReportVersion,
-    convert_recipe: str | None = None,
-) -> None:
-    assert target.path is not None
-
-    for finding in target.findings_config.included_findings():
-        if version in finding.risks:
-            finding.assert_required_vars(templates=settings.templates_path, category=target.category)
-            render_finding_j2(finding=finding, target=target, version=version)
-            convert_file_to_tex(
-                finding=finding,
-                render=settings.render,
-                templates=settings.templates_path,
-                version=version,
-                recipe=convert_recipe,
-            )
 
 
 @validate_call
@@ -113,10 +89,10 @@ def render_target_j2(
     cfg = project.config.at_version(version=version)
 
     # Render dependencies
-    render_target_findings_j2(target=target, settings=project.settings, version=version, convert_recipe=convert_recipe)
-
     for finding_group in target.findings_config.finding_groups:
-        render_finding_group_j2(finding_group=finding_group, target=target, project=project, version=version)
+        render_finding_group_j2(
+            project=project, target=target, finding_group=finding_group, version=version, convert_recipe=convert_recipe
+        )
 
     target_j2_path = project.path / "target_standalone_wrapper.tex.j2"
     if not target_j2_path.is_file():

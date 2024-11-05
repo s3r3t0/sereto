@@ -11,7 +11,6 @@ from sereto.jinja import render_j2
 from sereto.models.config import Config
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
 from sereto.models.project import Project
-from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ReportVersion
 from sereto.utils import YAML
@@ -145,45 +144,26 @@ def render_finding_j2(
 
 
 @validate_call
-def render_finding_group_findings_j2(
-    finding_group: FindingGroup,
-    target: Target,
-    settings: Settings,
-    version: ReportVersion,
-    convert_recipe: str | None = None,
-) -> None:
-    assert target.path is not None
-
-    for finding in finding_group.findings:
-        if version in finding.risks:
-            finding.assert_required_vars(templates=settings.templates_path, category=target.category)
-            render_finding_j2(finding=finding, target=target, version=version)
-            convert_file_to_tex(
-                finding=finding,
-                render=settings.render,
-                templates=settings.templates_path,
-                version=version,
-                recipe=convert_recipe,
-            )
-
-
-@validate_call
 def render_finding_group_j2(
-    finding_group: FindingGroup,
-    target: Target,
     project: Project,
+    target: Target,
+    finding_group: FindingGroup,
     version: ReportVersion,
     convert_recipe: str | None = None,
 ) -> None:
     cfg = project.config.at_version(version=version)
 
-    render_finding_group_findings_j2(
-        finding_group=finding_group,
-        target=target,
-        settings=project.settings,
-        version=version,
-        convert_recipe=convert_recipe,
-    )
+    for finding in finding_group.findings:
+        if version in finding.risks:
+            finding.assert_required_vars(templates=project.settings.templates_path, category=target.category)
+            render_finding_j2(finding=finding, target=target, version=version)
+            convert_file_to_tex(
+                finding=finding,
+                render=project.settings.render,
+                templates=project.settings.templates_path,
+                version=version,
+                recipe=convert_recipe,
+            )
 
     finding_group_j2_path = project.path / "finding_standalone_wrapper.tex.j2"
     if not finding_group_j2_path.is_file():
