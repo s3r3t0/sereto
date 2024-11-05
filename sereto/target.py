@@ -103,7 +103,14 @@ def render_target_j2(
     target_generator = render_j2(
         templates=project.path,
         file=target_j2_path,
-        vars={"target": target, "version": version, "report_path": project.path, **cfg_dict},
+        vars={
+            "target": target,
+            "c": cfg,
+            "config": project.config,
+            "version": version,
+            "report_path": project.path,
+            **cfg_dict,
+        },
     )
 
     target_tex_path = project.path / f"{target.uname}.tex"

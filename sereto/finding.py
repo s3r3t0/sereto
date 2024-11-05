@@ -177,6 +177,8 @@ def render_finding_group_j2(
         vars={
             "finding_group": finding_group,
             "target": target,
+            "c": cfg,
+            "config": project.config,
             "version": version,
             "report_path": project.path,
             **cfg_dict,
