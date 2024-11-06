@@ -4,7 +4,8 @@ from typing import Literal
 
 import click
 from click import Group, get_app_dir
-from click_repl import repl  # type: ignore[import-untyped]
+from click_repl import exit as click_repl_exit  # type: ignore[import-untyped]
+from click_repl import repl
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.styles import Style
 from pydantic import Field, validate_call
@@ -138,16 +139,35 @@ def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> Non
     wd.change(report_path)
 
 
+@click.command(name="exit")
+def repl_exit() -> None:
+    """Exit from the Read-Eval-Print Loop (REPL)."""
+    click_repl_exit()
+
+
 def sereto_repl(cli: Group) -> None:
     """Start an interactive Read-Eval-Print Loop (REPL) session.
 
     Args:
         cli: The main CLI group.
     """
-    Console().log("Starting interactive mode. Type 'exit' to quit and 'cd ID' to change active project.")
+    Console().log(r"""
+  ____       ____     _____
+ / ___|  ___|  _ \ __|_   _|__
+ \___ \ / _ \ |_) / _ \| |/ _ \
+  ___) |  __/  _ <  __/| | (_) |
+ |____/ \___|_| \_\___||_|\___/
+
+Welcome to [blue]SeReTo Interactive Mode[/blue]!
+-------------------------------------------
+Type 'exit' or press 'Ctrl+D' to quit.
+Use 'cd <ID>' to change the active project.
+Type '-h'/'--help' to see available commands.
+    """)
 
     # Add REPL specific commands
     cli.add_command(repl_cd)
+    cli.add_command(repl_exit)
 
     # Define the prompt style
     prompt_style = Style.from_dict(
