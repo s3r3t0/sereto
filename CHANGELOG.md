@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docs: Markdown building blocks (writing findings and their templates).
+- Jinja2: add debug extension to generic env.
+- REPL: Add `exit` command + `debug` command to toggle debug mode. Show debug mode indicator in the prompt.
+
+### Changed
+
+- Update REPL to use `click-repl`.
+
+### Removed
+
+- Remove redundancy in Jinja2 rendering
+
 ## [0.0.16] - 2024-10-28
 
 ### Added

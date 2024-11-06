@@ -57,7 +57,7 @@ def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
         except Exception as e:
             if isinstance(e, SeretoException | ValidationError):
                 Console().print(f"[red]Error:[/red] {escape(str(e))}")
-            if os.environ.get("DEBUG", False):
+            if os.environ.get("DEBUG", "0") == "1":
                 Console().print_exception(show_locals=True, suppress=[click, jinja2, pathlib, pydantic, pypdf])
             else:
                 Console().print("\n[yellow]Set environment variable [blue]DEBUG=1[/blue] for more details.")

@@ -92,18 +92,22 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
         project = Project.load_from()
         project_id = project.config.at_version(project.config.last_version()).id
 
-    project_id_segment = [
-        ("class:bracket", "("),
-        ("class:project_id", f"{project_id}"),
-        ("class:bracket", ") "),
-    ]
-    sereto_segment = [("class:sereto", "sereto")]
-    gt_segment = [("class:gt", " > ")]
+    final_prompt: list[tuple[str, str]] = []
 
-    if project_id is None:
-        return sereto_segment + gt_segment
-    else:
-        return project_id_segment + sereto_segment + gt_segment
+    if os.environ.get("DEBUG", "0") == "1":
+        final_prompt += [("class:debug", "DEBUG ")]
+
+    if project_id is not None:
+        final_prompt += [
+            ("class:bracket", "("),
+            ("class:project_id", f"{project_id}"),
+            ("class:bracket", ") "),
+        ]
+
+    final_prompt += [("class:sereto", "sereto")]
+    final_prompt += [("class:gt", " > ")]
+
+    return final_prompt
 
 
 @click.command(name="cd")
@@ -145,6 +149,15 @@ def repl_exit() -> None:
     click_repl_exit()
 
 
+@click.command(name="debug")
+def repl_toggle_debug() -> None:
+    """Toggle the debug mode."""
+    if os.environ.get("DEBUG", "0") == "1":
+        del os.environ["DEBUG"]
+    else:
+        os.environ["DEBUG"] = "1"
+
+
 def sereto_repl(cli: Group) -> None:
     """Start an interactive Read-Eval-Print Loop (REPL) session.
 
@@ -168,10 +181,12 @@ Type '-h'/'--help' to see available commands.
     # Add REPL specific commands
     cli.add_command(repl_cd)
     cli.add_command(repl_exit)
+    cli.add_command(repl_toggle_debug)
 
     # Define the prompt style
     prompt_style = Style.from_dict(
         {
+            "debug": "red",
             "sereto": "#02a0f0 bold",
             "bracket": "#8a8a8a",
             "project_id": "#00ff00",
