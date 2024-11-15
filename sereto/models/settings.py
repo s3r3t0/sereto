@@ -123,17 +123,17 @@ DEFAULT_RENDER_CONFIG = Render(
         RenderTool(
             name="latexmk",
             command="latexmk",
-            args=["-xelatex", "--shell-escape", "-auxdir=.build_artifacts", "%DOC%"],
+            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "%DOC%"],
         ),
         RenderTool(
             name="latexmk-target",
             command="latexmk",
-            args=["-xelatex", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%TARGET_DIR%", "%DOC%"],
+            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%TARGET_DIR%", "%DOC%"],
         ),
         RenderTool(
             name="latexmk-finding",
             command="latexmk",
-            args=["-xelatex", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%FINDINGS_DIR%", "%DOC%"],
+            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%FINDINGS_DIR%", "%DOC%"],
         ),
     ],
 )
