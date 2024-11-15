@@ -4,8 +4,9 @@ from pathlib import Path
 from typing import TypeVar
 
 from click import get_current_context
+from prompt_toolkit import prompt
+from prompt_toolkit.shortcuts import yes_no_dialog
 from pydantic import validate_call
-from rich.prompt import Confirm, Prompt
 from typing_extensions import ParamSpec
 
 from sereto.cli.utils import Console
@@ -26,9 +27,9 @@ def load_settings(f: Callable[P, R]) -> Callable[P, R]:
     return wrapper
 
 
-def _ask_for_dirpath(prompt: str) -> Path:
+def _ask_for_dirpath(message: str) -> Path:
     while True:
-        input = Prompt.ask(prompt, console=Console())
+        input = prompt(f"{message}: ")
         path = Path(input).resolve()
 
         if path.exists():
@@ -38,11 +39,7 @@ def _ask_for_dirpath(prompt: str) -> Path:
                 Console().print("the provided path is not a directory")
                 continue
         else:
-            if Confirm.ask(
-                f'[yellow]Directory "{path}" does not exist. Create?',
-                console=Console(),
-                default=True,
-            ):
+            if yes_no_dialog(title="Warning", text=f"Directory '{path}' does not exist. Create?").run():
                 path.mkdir(parents=True)
             return path
 
@@ -53,8 +50,8 @@ def load_settings_function() -> Settings:
     else:
         Console().print("[cyan]It seems like this is the first time you're running the tool. Let's set it up!\n")
 
-        reports_path = _ask_for_dirpath(":open_file_folder: Enter the path to the reports directory")
-        templates_path = _ask_for_dirpath(":open_file_folder: Enter the path to the templates directory")
+        reports_path = _ask_for_dirpath("Enter the path to the reports directory")
+        templates_path = _ask_for_dirpath("Enter the path to the templates directory")
 
         Console().print("\nThank you! The minimal setup is complete.")
         Console().print(

@@ -1,6 +1,6 @@
 import frontmatter  # type: ignore[import-untyped]
+from prompt_toolkit.shortcuts import yes_no_dialog
 from pydantic import ValidationError, validate_call
-from rich.prompt import Confirm
 from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
@@ -22,6 +22,7 @@ def add_finding(
     target_selector: str | None,
     format: str,
     name: str,
+    interactive: bool = False,
 ) -> None:
     target = project.select_target(selector=target_selector)
 
@@ -40,10 +41,10 @@ def add_finding(
     finding_dir.mkdir(exist_ok=True)
     dst_path = finding_dir / f"{name}{project.config.last_version().path_suffix}.{format}.j2"
 
-    if dst_path.is_file() and not Confirm.ask(
-        f'[yellow]Destination "{dst_path}" exists. Overwrite?',
-        console=Console(),
-        default=False,
+    # Destination file exists and we cannot proceed
+    if dst_path.is_file() and (
+        not interactive
+        or not yes_no_dialog(title="Warning", text=f"Destination '{dst_path}' exists. Overwrite?").run()
     ):
         raise SeretoRuntimeError("cannot proceed")
 

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 import keyring
+from prompt_toolkit import prompt
 from pydantic import FilePath, validate_call
 
 from sereto.cli.commands import sereto_ls, sereto_repl
@@ -72,7 +73,9 @@ def new(settings: Settings, report_id: TypeProjectId) -> None:
         settings: The settings object containing the tool's global configuration.
         report_id: The ID of the report to be created.
     """
-    new_report(settings=settings, report_id=report_id)
+    Console().print("[cyan]We will ask you a few questions to set up the new report.\n")
+    name = prompt("Name of the report: ")
+    new_report(settings=settings, id=report_id, name=name)
 
 
 @cli.command()
@@ -372,7 +375,7 @@ def config_targets_delete(project: Project, index: int) -> None:
         project: Report's project representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
     """
-    delete_targets_config(project=project, index=index)
+    delete_targets_config(project=project, index=index, interactive=True)
 
 
 @config_targets.command(name="show")
@@ -450,6 +453,7 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
         target_selector=target,
         format=format,
         name=name,
+        interactive=True,
     )
 
 

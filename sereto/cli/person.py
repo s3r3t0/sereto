@@ -1,5 +1,5 @@
+from prompt_toolkit import prompt
 from pydantic import EmailStr, TypeAdapter, ValidationError, validate_call
-from rich.prompt import Prompt
 
 from sereto.cli.utils import Console
 from sereto.models.person import Person, PersonType
@@ -15,16 +15,22 @@ def prompt_user_for_person(person_type: PersonType) -> Person:
     Returns:
         The person as provided by the user.
     """
-    name: str | None = Prompt.ask("Name", console=Console(), default=None)
-    business_unit: str | None = Prompt.ask("Business unit", console=Console(), default=None)
+    name = prompt("Name: ")
+    business_unit = prompt("Business unit: ")
     while True:
         try:
-            e: str | None = Prompt.ask("Email", console=Console(), default=None)
+            e = prompt("Email: ")
             ta: TypeAdapter[EmailStr] = TypeAdapter(EmailStr)  # hack for mypy
-            email: EmailStr | None = ta.validate_python(e) if e is not None else None
+            email: EmailStr | None = ta.validate_python(e) if len(e) > 0 else None
             break
         except ValidationError:
             Console().print("[red]Please enter valid email address")
-    role: str | None = Prompt.ask("Role", console=Console(), default=None)
+    role = prompt("Role: ")
 
-    return Person(type=person_type, name=name, business_unit=business_unit, email=email, role=role)
+    return Person(
+        type=person_type,
+        name=name if len(name) > 0 else None,
+        business_unit=business_unit if len(business_unit) > 0 else None,
+        email=email,
+        role=role if len(role) > 0 else None,
+    )

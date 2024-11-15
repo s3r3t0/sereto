@@ -2,8 +2,8 @@ from enum import Enum
 from typing import TypeVar
 
 import click
+from prompt_toolkit.shortcuts import radiolist_dialog
 from rich.console import Console as RichConsole
-from rich.prompt import Prompt
 
 from sereto.cli.aliases import cli_aliases
 from sereto.singleton import Singleton
@@ -55,9 +55,14 @@ class AliasedGroup(click.Group):
 EnumType = TypeVar("EnumType", bound=Enum)
 
 
-def load_enum(enum: type[EnumType], prompt: str) -> EnumType:
+def load_enum(enum: type[EnumType], message: str) -> EnumType:
     """Let user select a value from enum."""
-    choice = Prompt.ask(prompt=prompt, choices=[e.value for e in enum])
+    choice = radiolist_dialog(
+        title="Select value",
+        text=message,
+        values=[(e.name, e.value) for e in enum],
+    ).run()
+
     return enum(choice)
 
 

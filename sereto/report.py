@@ -3,7 +3,6 @@ from pathlib import Path
 from shutil import copy2, copytree
 
 from pydantic import DirectoryPath, validate_call
-from rich.prompt import Prompt
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
@@ -53,32 +52,30 @@ def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = Fa
 
 
 @validate_call
-def new_report(settings: Settings, report_id: TypeProjectId) -> None:
+def new_report(settings: Settings, id: TypeProjectId, name: str) -> None:
     """Generates a new report with the specified ID.
 
     Args:
         settings: Global settings.
-        report_id: The ID of the new report. This should be a string that uniquely identifies the report.
+        id: The ID of the new report. This should be a string that uniquely identifies the report.
+        name: The name of the new report.
 
     Raises:
         SeretoValueError: If a report with the specified ID already exists in the `reports` directory.
     """
-    Console().log(f"Generating a new report with ID {report_id!r}")
+    Console().log(f"Generating a new report with ID {id!r}")
 
-    if (new_path := (settings.reports_path / report_id)).exists():
+    if (new_path := (settings.reports_path / id)).exists():
         raise SeretoPathError("report with specified ID already exists")
     else:
         new_path.mkdir()
 
-    Console().print("[cyan]We will ask you a few questions to set up the new report.\n")
-
-    report_name: str = Prompt.ask("Name of the report", console=Console())
     sereto_ver = importlib.metadata.version("sereto")
 
     cfg = Config(
         sereto_version=SeretoVersion.from_str(sereto_ver),
-        id=report_id,
-        name=report_name,
+        id=id,
+        name=name,
         report_version=ReportVersion.from_str("v1.0"),
     )
 

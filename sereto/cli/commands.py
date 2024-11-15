@@ -119,8 +119,7 @@ def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> Non
 
     Args:
         settings: The Settings object.
-        cmd: The user input command.
-        wd: The WorkingDir object.
+        project_id: The ID of the project to switch to. Use '-' to go back to the previous working directory.
 
     Raises:
         SeretoValueError: If the report ID is invalid.

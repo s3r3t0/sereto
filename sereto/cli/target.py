@@ -1,5 +1,6 @@
 import click
-from rich.prompt import Prompt
+from prompt_toolkit import prompt
+from prompt_toolkit.shortcuts import radiolist_dialog
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
@@ -17,8 +18,12 @@ def prompt_user_for_target(settings: Settings) -> Target:
         The target as provided by the user.
     """
     Console().line()
-    category = Prompt.ask("Category", choices=list(settings.categories), console=Console())
-    name = Prompt.ask("Name", console=Console())
+    category = radiolist_dialog(
+        title="New target",
+        text="Category:",
+        values=[(c, c.upper()) for c in list(settings.categories)],
+    ).run()
+    name = prompt("Name: ")
 
     match category:
         case "dast":

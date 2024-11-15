@@ -2,9 +2,9 @@ import importlib.metadata
 import shutil
 
 import click
+from prompt_toolkit.shortcuts import yes_no_dialog
 from pydantic import TypeAdapter, validate_call
 from rich import box
-from rich.prompt import Confirm
 from rich.table import Table
 
 from sereto.cli.date import prompt_user_for_date
@@ -111,7 +111,7 @@ def add_dates_config(project: Project) -> None:
     dates: list[Date] = cfg.dates if len(cfg.updates) == 0 else cfg.updates[-1].dates
 
     # Add a new date
-    date_type: DateType = load_enum(enum=DateType, prompt="Type")
+    date_type: DateType = load_enum(enum=DateType, message="Type:")
     new_date = prompt_user_for_date(date_type=date_type)
     dates.append(Date(type=date_type, date=new_date))
 
@@ -213,7 +213,7 @@ def add_people_config(project: Project) -> None:
     people: list[Person] = cfg.people if len(cfg.updates) == 0 else cfg.updates[-1].people
 
     # Add a new person
-    person_type: PersonType = load_enum(enum=PersonType, prompt="Type")
+    person_type: PersonType = load_enum(enum=PersonType, message="Type:")
     new_person = prompt_user_for_person(person_type=person_type)
     people.append(new_person)
 
@@ -325,33 +325,35 @@ def add_targets_config(project: Project) -> None:
 
 
 @validate_call
-def delete_targets_config(project: Project, index: int) -> None:
+def delete_targets_config(project: Project, index: int, interactive: bool = False) -> None:
     """Delete target from the configuration by its index.
 
     Args:
         project: Report's project representation.
         index: Index to item which should be deleted. First item is 1.
+        interactive: Whether to ask for confirmations.
     """
     cfg = project.config
     targets: list[Target] = cfg.targets if len(cfg.updates) == 0 else cfg.updates[-1].targets
+
+    # Validate the index, convert to 0-based
     index -= 1
     if not 0 <= index <= len(targets) - 1:
         raise SeretoValueError("invalid index, not in allowed range")
-    del targets[index]
 
-    # Write the configuration
+    # Extract the filesystem path before deleting the values
+    target_path = targets[index].path
+
+    # Delete target from the config
+    del targets[index]
     cfg.dump_json(file=project.get_config_path())
 
     # Delete the target from the filesystem
-    target_path = targets[index].path
     if (
         target_path is not None
         and target_path.is_dir()
-        and Confirm.ask(
-            f'[yellow]Delete "{target_path}" from the filesystem?',
-            console=Console(),
-            default=False,
-        )
+        and interactive
+        and yes_no_dialog(title="Confirm", text=f"Delete '{target_path}' from the filesystem?").run()
     ):
         shutil.rmtree(target_path)
 
