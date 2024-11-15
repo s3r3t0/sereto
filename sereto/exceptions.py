@@ -39,6 +39,10 @@ class SeretoValueError(SeretoException, ValueError):
     """Value error."""
 
 
+class SeretoCalledProcessError(SeretoException):
+    """Called process error."""
+
+
 P = ParamSpec("P")
 R = TypeVar("R")
 

@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+from textwrap import dedent
 from typing import Annotated, Any, Self
 
 from annotated_types import MinLen
@@ -13,10 +14,11 @@ from pydantic import (
     model_validator,
     validate_call,
 )
+from rich.markdown import Markdown
 
 from sereto.cli.utils import Console
 from sereto.enums import FileFormat
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.types import TypeCategories
 from sereto.utils import replace_strings
@@ -75,8 +77,21 @@ class RenderTool(SeretoBaseModel):
         command = [self.command] + self.args
         if replacements is not None:
             command = replace_strings(text=command, replacements=replacements)
-        Console().log(f"Running command: {' '.join(command)}")
-        subprocess.run(command, cwd=cwd)
+        Console().log(
+            Markdown(
+                dedent(f"""\
+                    Running command:
+                    ```bash
+                    {' '.join(command)}
+                    ```
+                """)
+            )
+        )
+        try:
+            subprocess.run(command, cwd=cwd, capture_output=True, check=True)
+        except subprocess.CalledProcessError as e:
+            Console().log(Markdown(f"Command failed with error: `{e}`"))
+            raise SeretoCalledProcessError("command execution failed") from e
 
 
 class Render(SeretoBaseModel):
@@ -123,17 +138,40 @@ DEFAULT_RENDER_CONFIG = Render(
         RenderTool(
             name="latexmk",
             command="latexmk",
-            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "%DOC%"],
+            args=[
+                "-xelatex",
+                "-interaction=batchmode",
+                "-halt-on-error",
+                "--shell-escape",
+                "-auxdir=.build_artifacts",
+                "%DOC%",
+            ],
         ),
         RenderTool(
             name="latexmk-target",
             command="latexmk",
-            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%TARGET_DIR%", "%DOC%"],
+            args=[
+                "-xelatex",
+                "-interaction=batchmode",
+                "-halt-on-error",
+                "--shell-escape",
+                "-auxdir=.build_artifacts",
+                "-outdir=%TARGET_DIR%",
+                "%DOC%",
+            ],
         ),
         RenderTool(
             name="latexmk-finding",
             command="latexmk",
-            args=["-xelatex", "-interaction=batchmode", "-halt-on-error", "--shell-escape", "-auxdir=.build_artifacts", "-outdir=%FINDINGS_DIR%", "%DOC%"],
+            args=[
+                "-xelatex",
+                "-interaction=batchmode",
+                "-halt-on-error",
+                "--shell-escape",
+                "-auxdir=.build_artifacts",
+                "-outdir=%FINDINGS_DIR%",
+                "%DOC%",
+            ],
         ),
     ],
 )

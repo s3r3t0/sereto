@@ -159,7 +159,7 @@ def render_sow_j2(project: Project, version: ReportVersion) -> None:
         for chunk in sow_generator:
             f.write(chunk)
 
-        Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project.path)}")
+    Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project.path)}")
 
 
 @validate_call
