@@ -7,7 +7,7 @@ from sereto.models.base import SeretoBaseModel
 from sereto.models.config import Config
 from sereto.models.settings import Settings
 from sereto.models.target import Target
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 from sereto.settings import load_settings_function
 
 
@@ -107,7 +107,7 @@ class Project(SeretoBaseModel):
     @validate_call
     def select_target(
         self,
-        version: ReportVersion | None = None,
+        version: ProjectVersion | None = None,
         selector: int | str | None = None,
     ) -> Target:
         if version is None:

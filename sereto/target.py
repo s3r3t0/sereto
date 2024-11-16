@@ -12,7 +12,7 @@ from sereto.models.finding import TemplateMetadata
 from sereto.models.project import Project
 from sereto.models.risks import Risks
 from sereto.models.target import Target
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 from sereto.utils import YAML
 
 
@@ -83,7 +83,7 @@ def create_findings_config(target: Target, project: Project, templates: Director
 def render_target_j2(
     target: Target,
     project: Project,
-    version: ReportVersion,
+    version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
     cfg = project.config.at_version(version=version)
@@ -122,7 +122,7 @@ def render_target_j2(
 
 
 @validate_call
-def get_risks(target: Target, version: ReportVersion) -> Risks:
+def get_risks(target: Target, version: ProjectVersion) -> Risks:
     fg = target.findings_config.finding_groups
 
     return Risks().set_counts(

@@ -6,7 +6,7 @@ from sereto.enums import FileFormat
 from sereto.exceptions import SeretoValueError
 from sereto.models.finding import Finding
 from sereto.models.settings import Render
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 
 
 @validate_call
@@ -14,7 +14,7 @@ def convert_file_to_tex(
     finding: Finding,
     render: Render,
     templates: DirectoryPath,
-    version: ReportVersion,
+    version: ProjectVersion,
     recipe: str | None = None,
 ) -> None:
     """Convert a file to TeX format using the specified finding, render, templates, version, and recipe.

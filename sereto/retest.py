@@ -10,30 +10,24 @@ from sereto.utils import YAML
 
 @validate_call
 def add_retest(project: Project) -> None:
-    last_cfg = project.config.at_version(version=project.config.last_version())
+    last_version = project.config.last_version()
+    retest_version = last_version.next_major_version()
 
-    # Copy last version's config to the updates section
-    retest_cfg = deepcopy(last_cfg)
-    retest_cfg.report_version = last_cfg.report_version.next_major_version()
-    project.config.updates.append(retest_cfg)
-
-    # Write the configuration
+    # Duplicate last version config
+    project.config.add_config(version=retest_version, config=deepcopy(project.config.last_config()))
     project.config.dump_json(file=project.get_config_path())
 
-    old_suffix = last_cfg.report_version.path_suffix
-    new_suffix = retest_cfg.report_version.path_suffix
+    # Update project files
+    old_suffix = last_version.path_suffix
+    new_suffix = retest_version.path_suffix
 
-    # Copy files from previous version
-    copy_report_files = ["report", "sow"]
-    for file in copy_report_files:
+    for file in ["report", "sow"]:
         shutil.copy(src=project.path / f"{file}{old_suffix}.tex.j2", dst=project.path / f"{file}{new_suffix}.tex.j2")
 
-    for target in last_cfg.targets:
+    for target in project.config.at_version(last_version).targets:
         assert target.path is not None
 
-        copy_target_files = ["approach", "scope", "target"]
-
-        for file in copy_target_files:
+        for file in ["approach", "scope", "target"]:
             shutil.copy(src=target.path / f"{file}{old_suffix}.tex.j2", dst=target.path / f"{file}{new_suffix}.tex.j2")
 
         findings_path = target.path / "findings.yaml"
@@ -55,8 +49,8 @@ def add_retest(project: Project) -> None:
             yaml_finding = yaml_finding[0]
 
             # set risk for the new version same as the last one
-            if str(retest_cfg.report_version) not in yaml_finding["risks"]:  # type: ignore[call-overload]
-                yaml_finding["risks"][str(retest_cfg.report_version)] = finding.risks[last_cfg.report_version].value  # type: ignore[call-overload]
+            if str(retest_version) not in yaml_finding["risks"]:  # type: ignore[call-overload]
+                yaml_finding["risks"][str(retest_version)] = finding.risks[last_version].value  # type: ignore[call-overload]
 
         # Write updated findings.yaml
         with findings_path.open(mode="w", encoding="utf-8") as f:

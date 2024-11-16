@@ -1,7 +1,7 @@
 import pytest
 from semver import Version
 
-from sereto.models.version import ReportVersion, SeretoVersion
+from sereto.models.version import ProjectVersion, SeretoVersion
 
 
 class TestSeretoVersion:
@@ -44,38 +44,38 @@ class TestSeretoVersion:
         assert SeretoVersion(a) != SeretoVersion(b)
 
 
-class TestReportVersion:
+class TestProjectVersion:
     @pytest.mark.parametrize("input", ["v1.0", "v2.0", "v2.1"])
     def test_construct_valid_from_str(self, input):
-        version = ReportVersion(input)
-        version_from_str = ReportVersion.from_str(input)
+        version = ProjectVersion(input)
+        version_from_str = ProjectVersion.from_str(input)
         assert str(version) == str(version_from_str) == input
 
     def test_construct_valid_from_version(self):
-        ReportVersion(Version(2, 1))
+        ProjectVersion(Version(2, 1))
 
     @pytest.mark.parametrize("input", ["1.0.0", "v1.0.0", "v1", None, Version(1, 2, 3)])
     def test_construct_invalid(self, input):
         with pytest.raises((ValueError, TypeError)):
-            ReportVersion(input)
+            ProjectVersion(input)
 
-    @pytest.mark.parametrize("a,b", [(ReportVersion("v1.0"), '"v1.0"'), (ReportVersion("v2.3"), '"v2.3"')])
+    @pytest.mark.parametrize("a,b", [(ProjectVersion("v1.0"), '"v1.0"'), (ProjectVersion("v2.3"), '"v2.3"')])
     def test_serialize(self, a, b):
         assert a.model_dump_json() == b
 
-    @pytest.mark.parametrize("a,b", [(ReportVersion("v1.0"), '"v1.0"'), (ReportVersion("v2.3"), '"v2.3"')])
+    @pytest.mark.parametrize("a,b", [(ProjectVersion("v1.0"), '"v1.0"'), (ProjectVersion("v2.3"), '"v2.3"')])
     def test_deserialize(self, a, b):
-        assert a == ReportVersion.model_validate_json(b)
+        assert a == ProjectVersion.model_validate_json(b)
 
     @pytest.mark.parametrize("a,b", [("v1.0", "v1.1"), ("v1.0", "v2.0"), ("v1.9", "v1.10")])
     def test_lt_gt(self, a, b):
-        assert ReportVersion(a) < ReportVersion(b)
-        assert ReportVersion(b) > ReportVersion(a)
+        assert ProjectVersion(a) < ProjectVersion(b)
+        assert ProjectVersion(b) > ProjectVersion(a)
 
     @pytest.mark.parametrize("a,b", [("v1.0", "v1.0"), ("v2.5", "v2.5")])
     def test_eq(self, a, b):
-        assert ReportVersion(a) == ReportVersion(b)
+        assert ProjectVersion(a) == ProjectVersion(b)
 
     @pytest.mark.parametrize("a,b", [("v1.0", "v1.1"), ("v2.3", "v2.30")])
     def test_not_eq(self, a, b):
-        assert ReportVersion(a) != ReportVersion(b)
+        assert ProjectVersion(a) != ProjectVersion(b)

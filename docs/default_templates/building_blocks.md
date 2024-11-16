@@ -8,7 +8,7 @@ This is so far valid for the `report.tex.j2` and `sow.tex.j2` templates.
 
 - `c`: The [VersionConfig](../reference/models/config.md#sereto.models.config.VersionConfig) object for the current version of the report.
 - `config`: The full [Config](../reference/models/config.md#sereto.models.config.Config) object (most of the time, you should use `c` instead).
-- `version`: The version of the report (alias for `report_version`).
+- `version`: The version of the report.
 - `report_path`: Path object to the report directory.
 
 ### [VersionConfig](../reference/models/config.md#sereto.models.config.VersionConfig) variables
@@ -17,7 +17,6 @@ The attributes of the `c` object are also accessible directly. Primarily, the `c
 
 - `id`: The ID of the report.
 - `name`: The name of the report.
-- `report_version`: The version of the report.
 - `targets`: List of targets.
 - `dates`: List of dates.
 - `people`: List of people.

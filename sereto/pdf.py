@@ -7,7 +7,7 @@ from sereto.models.finding import FindingGroup
 from sereto.models.project import Project
 from sereto.models.settings import RenderRecipe, Settings
 from sereto.models.target import Target
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 
 
 @validate_call
@@ -37,13 +37,13 @@ def _render_pdf(
 
 
 @validate_call
-def render_report_pdf(project: Project, version: ReportVersion, recipe: str | None = None) -> Path:
+def render_report_pdf(project: Project, version: ProjectVersion, recipe: str | None = None) -> Path:
     """Render the report to PDF format according to the recipe.
 
     Prerequisite is having the report in TeX format.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
@@ -70,14 +70,14 @@ def render_report_pdf(project: Project, version: ReportVersion, recipe: str | No
 
 @validate_call
 def render_sow_pdf(
-    project: Project, version: ReportVersion, recipe: str | None = None, keep_original: bool = True
+    project: Project, version: ProjectVersion, recipe: str | None = None, keep_original: bool = True
 ) -> None:
     """Render the SoW to PDF format according to the recipe.
 
     Prerequisite is having the SoW in TeX format.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
             recipe (index 0) is used.
@@ -100,13 +100,13 @@ def render_sow_pdf(
 
 
 @validate_call
-def render_target_pdf(project: Project, target: Target, version: ReportVersion, recipe: str | None = None) -> None:
+def render_target_pdf(project: Project, target: Target, version: ProjectVersion, recipe: str | None = None) -> None:
     """Render the target to PDF format according to the recipe.
 
     Prerequisite is having the target in TeX format.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         target: Target's representation.
         version: The version of the report.
         recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the first
@@ -132,7 +132,7 @@ def render_finding_group_pdf(
     project: Project,
     finding_group: FindingGroup,
     target: Target,
-    version: ReportVersion,
+    version: ProjectVersion,
     recipe: str | None = None,
 ) -> None:
     """Render the finding group to PDF format according to the recipe.
@@ -140,7 +140,7 @@ def render_finding_group_pdf(
     Prerequisite is having the finding group in TeX format.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         finding_group: Finding group with all the sub-findings.
         target: Target's representation.
         version: The version of the report.

@@ -14,7 +14,7 @@ from semver import Version
 
 from sereto.exceptions import SeretoTypeError
 
-__all__ = ["SeretoVersion", "ReportVersion"]
+__all__ = ["SeretoVersion", "ProjectVersion"]
 
 
 class _VersionPydanticAnnotation:
@@ -164,7 +164,7 @@ VersionVPrefixPydanticAnnotation = Annotated[Version, _VersionVPrefixPydanticAnn
 
 
 @total_ordering
-class ReportVersion(RootModel[VersionVPrefixPydanticAnnotation]):
+class ProjectVersion(RootModel[VersionVPrefixPydanticAnnotation]):
     root: VersionVPrefixPydanticAnnotation
 
     @field_validator("root", mode="after")
@@ -195,8 +195,8 @@ class ReportVersion(RootModel[VersionVPrefixPydanticAnnotation]):
         return f"v{self.root.major}.{self.root.minor}"
 
     @classmethod
-    def from_str(cls, v: str) -> "ReportVersion":
-        """Create a ReportVersion instance from a string.
+    def from_str(cls, v: str) -> "ProjectVersion":
+        """Create a ProjectVersion instance from a string.
 
         This method primarily exists to satisfy type checker.
 
@@ -204,17 +204,17 @@ class ReportVersion(RootModel[VersionVPrefixPydanticAnnotation]):
             v: The string representation of the version, e.g. "v2.0".
 
         Returns:
-            A ReportVersion instance constructed from the string representation.
+            A ProjectVersion instance constructed from the string representation.
         """
         if len(v) == 0 or v[0] != "v" or len(v.split(".")) != 2:
             raise ValueError("invalid format: use vMAJOR.MINOR")
-        return ReportVersion.model_construct(root=Version.parse(v[1:], optional_minor_and_patch=True))
+        return ProjectVersion.model_construct(root=Version.parse(v[1:], optional_minor_and_patch=True))
 
-    def next_major_version(self) -> "ReportVersion":
-        return ReportVersion(f"v{self.root.major + 1}.{self.root.minor}")  # type: ignore[arg-type]
+    def next_major_version(self) -> "ProjectVersion":
+        return ProjectVersion(f"v{self.root.major + 1}.{self.root.minor}")  # type: ignore[arg-type]
 
-    def next_minor_version(self) -> "ReportVersion":
-        return ReportVersion(f"v{self.root.major}.{self.root.minor + 1}")  # type: ignore[arg-type]
+    def next_minor_version(self) -> "ProjectVersion":
+        return ProjectVersion(f"v{self.root.major}.{self.root.minor + 1}")  # type: ignore[arg-type]
 
     @property
     def path_suffix(self) -> str:

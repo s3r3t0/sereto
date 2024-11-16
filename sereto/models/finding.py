@@ -11,7 +11,7 @@ from sereto.cli.utils import Console
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 from sereto.types import TypePathName
 from sereto.utils import YAML
 
@@ -51,12 +51,12 @@ class TemplateMetadata(SeretoBaseModel):
 
 class ReportIncludeGroup(SeretoBaseModel):
     name: str
-    risks: dict[ReportVersion, Risk] = {}
+    risks: dict[ProjectVersion, Risk] = {}
     findings: list[str]
 
     @field_validator("risks", mode="before")
     @classmethod
-    def convert_risks(cls, risks: Any) -> dict[ReportVersion, Risk]:
+    def convert_risks(cls, risks: Any) -> dict[ProjectVersion, Risk]:
         if not isinstance(risks, dict):
             raise ValueError("risks must be a dictionary")
 
@@ -70,13 +70,13 @@ class ReportIncludeGroup(SeretoBaseModel):
                     raise ValueError("invalid type for Risk")
 
             match ver:
-                case ReportVersion():
+                case ProjectVersion():
                     continue
                 case str():
                     del risks[ver]
-                    ver = ReportVersion.from_str(ver)
+                    ver = ProjectVersion.from_str(ver)
                 case _:
-                    raise ValueError("invalid type for ReportVersion")
+                    raise ValueError("invalid type for ProjectVersion")
 
             risks[ver] = risk
 
@@ -86,7 +86,7 @@ class ReportIncludeGroup(SeretoBaseModel):
 class Finding(SeretoBaseModel):
     name: str
     path_name: TypePathName
-    risks: dict[ReportVersion, Risk]
+    risks: dict[ProjectVersion, Risk]
     vars: dict[str, Any] = {}
     format: FileFormat = FileFormat.md
     path: Path | None = Field(exclude=True, default=None)
@@ -104,7 +104,7 @@ class Finding(SeretoBaseModel):
                     raise ValueError("unsupported type for Risk")
         return v
 
-    def present_in_versions(self) -> list[ReportVersion]:
+    def present_in_versions(self) -> list[ProjectVersion]:
         """Get list of all report versions in which this finding is present."""
         return [k for k in self.risks]
 
@@ -138,7 +138,7 @@ class Finding(SeretoBaseModel):
 
 class FindingGroup(SeretoBaseModel):
     name: str
-    risks: dict[ReportVersion, Risk]
+    risks: dict[ProjectVersion, Risk]
     findings: list[Finding]
 
     @property

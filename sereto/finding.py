@@ -12,7 +12,7 @@ from sereto.models.config import Config
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
 from sereto.models.project import Project
 from sereto.models.target import Target
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 from sereto.utils import YAML
 
 
@@ -52,8 +52,12 @@ def add_finding(
 
 
 @validate_call
-def show_findings(config: Config, version: ReportVersion) -> None:
+def show_findings(config: Config, version: ProjectVersion | None = None) -> None:
+    if version is None:
+        version = config.last_version()
+
     Console().log(f"Showing findings for version {version}")
+
     cfg = config.at_version(version=version)
 
     for target in cfg.targets:
@@ -72,7 +76,7 @@ def show_findings(config: Config, version: ReportVersion) -> None:
 
 @validate_call
 def update_findings(project: Project) -> None:
-    for target in project.config.targets:
+    for target in project.config.last_config().targets:
         if target.path is None:
             raise SeretoValueError(f"target path not set for {target.uname!r}")
 
@@ -119,7 +123,7 @@ def update_findings(project: Project) -> None:
 def render_finding_j2(
     finding: Finding,
     target: Target,
-    version: ReportVersion,
+    version: ProjectVersion,
 ) -> None:
     assert finding.path is not None and target.path is not None
 
@@ -149,7 +153,7 @@ def render_finding_group_j2(
     project: Project,
     target: Target,
     finding_group: FindingGroup,
-    version: ReportVersion,
+    version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
     cfg = project.config.at_version(version=version)

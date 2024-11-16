@@ -1,16 +1,15 @@
 import re
 from collections.abc import Iterable
-from copy import deepcopy
 from typing import Self
 
-from pydantic import DirectoryPath, Field, FilePath, NewPath, ValidationError, model_validator, validate_call
+from pydantic import DirectoryPath, FilePath, NewPath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import Target
-from sereto.models.version import ReportVersion, SeretoVersion
+from sereto.models.version import ProjectVersion, SeretoVersion
 
 
 class VersionConfig(SeretoBaseModel):
@@ -19,7 +18,6 @@ class VersionConfig(SeretoBaseModel):
     Attributes:
         id: The ID of the report.
         name: The name of the report.
-        report_version: The version of the report.
         targets: List of targets.
         dates: List of dates.
         people: List of people.
@@ -27,7 +25,6 @@ class VersionConfig(SeretoBaseModel):
 
     id: str
     name: str
-    report_version: ReportVersion
     targets: list[Target] = []
     dates: list[Date] = []
     people: list[Person] = []
@@ -153,44 +150,122 @@ class VersionConfig(SeretoBaseModel):
             and (role is None or re.search(role, p.role))  # type: ignore[arg-type]
         ]
 
+    @validate_call
+    def add_target(self, target: Target) -> Self:
+        """Add a target to the configuration.
 
-class Config(VersionConfig):
+        Args:
+            target: The target to add.
+
+        Returns:
+            The configuration with the added target.
+        """
+        self.targets.append(target)
+        return self
+
+    @validate_call
+    def delete_target(self, index: int) -> Self:
+        """Delete a target from the configuration.
+
+        Args:
+            index: The index of the target to delete. First item is 1.
+
+        Returns:
+            The configuration with the target deleted.
+        """
+        # Convert to 0-based index
+        index -= 1
+
+        # Check if the index is in the allowed range
+        if not 0 <= index <= len(self.targets) - 1:
+            raise SeretoValueError("index out of range")
+
+        # Delete the target
+        del self.targets[index]
+
+        return self
+
+    @validate_call
+    def add_date(self, date: Date) -> Self:
+        """Add a date to the configuration.
+
+        Args:
+            date: The date to add.
+
+        Returns:
+            The configuration with the added date.
+        """
+        self.dates.append(date)
+        return self
+
+    @validate_call
+    def delete_date(self, index: int) -> Self:
+        """Delete a date from the configuration.
+
+        Args:
+            index: The index of the date to delete. First item is 1.
+
+        Returns:
+            The configuration with the date deleted.
+        """
+        # Convert to 0-based index
+        index -= 1
+
+        # Check if the index is in the allowed range
+        if not 0 <= index <= len(self.dates) - 1:
+            raise SeretoValueError("index out of range")
+
+        # Delete the date
+        del self.dates[index]
+
+        return self
+
+    @validate_call
+    def add_person(self, person: Person) -> Self:
+        """Add a person to the configuration.
+
+        Args:
+            person: The person to add.
+
+        Returns:
+            The configuration with the added person.
+        """
+        self.people.append(person)
+        return self
+
+    @validate_call
+    def delete_person(self, index: int) -> Self:
+        """Delete a person from the configuration.
+
+        Args:
+            index: The index of the person to delete. First item is 1.
+
+        Returns:
+            The configuration with the person deleted.
+        """
+        # Convert to 0-based index
+        index -= 1
+
+        # Check if the index is in the allowed range
+        if not 0 <= index <= len(self.people) - 1:
+            raise SeretoValueError("index out of range")
+
+        # Delete the person
+        del self.people[index]
+
+        return self
+
+
+class Config(SeretoBaseModel):
     """Model representing the full report configuration.
 
     Attributes:
-        id: The ID of the report.
-        name: The name of the report.
-        report_version: The version of the report.
-        targets: List of targets.
-        dates: List of dates.
-        people: List of people.
         sereto_version: Version of SeReTo which produced the config.
-        updates: List of updates.
+        version_configs: Configuration for each version of the Project.
     """
 
     sereto_version: SeretoVersion
-    updates: list[VersionConfig] = Field(default=[])
-
-    @model_validator(mode="after")
-    def config_validator(self) -> Self:
-        # if self.id is None or self.name is None:
-        #     raise ValueError("'id' and 'name' variables cannot be None")
-
-        previous: VersionConfig = self
-
-        for update in self.updates:
-            # report_version is incremented in subsequent update sections
-            if previous.report_version >= update.report_version:
-                raise ValueError(f"report_version {update.report_version!r} after {previous.report_version!r}")
-
-            # copy values from previous versions, which are not explicitly stated
-            for field in ["id", "name", "targets", "people"]:
-                if not getattr(update, field):
-                    setattr(update, field, deepcopy(getattr(previous, field)))
-
-            previous = update
-
-        return self
+    version_configs: dict[ProjectVersion, VersionConfig]
 
     @classmethod
     @validate_call
@@ -225,6 +300,44 @@ class Config(VersionConfig):
         """
         file.write_text(self.model_dump_json(indent=2) + "\n")
 
+    def iter(self) -> Iterable[VersionConfig]:
+        """Iterate over all version configurations."""
+        for version in self.versions():
+            yield self.version_configs[version]
+
+    @validate_call
+    def add_config(self, version: ProjectVersion, config: VersionConfig) -> Self:
+        """Add a configuration for a specific version.
+
+        Args:
+            version: The version of the configuration.
+            config: The configuration.
+
+        Returns:
+            The configuration with the added version configuration.
+        """
+        if version in self.version_configs:
+            raise SeretoValueError(f"version '{version}' already exists")
+
+        self.version_configs[version] = config
+        return self
+
+    def first_config(self) -> VersionConfig:
+        """Get the configuration for the first project version.
+
+        Returns:
+            The configuration for the last project version.
+        """
+        return self.at_version(self.first_version())
+
+    def last_config(self) -> VersionConfig:
+        """Get the configuration for the last project version.
+
+        Returns:
+            The configuration for the last project version.
+        """
+        return self.at_version(self.last_version())
+
     @validate_call
     def update_paths(self, project_path: DirectoryPath) -> Self:
         """Update the full paths of the individual config components.
@@ -238,23 +351,32 @@ class Config(VersionConfig):
         Returns:
             The configuration with updated paths.
         """
-        for cfg in [self] + self.updates:
-            for target in cfg.targets:
+        for vc in self.iter():
+            for target in vc.targets:
                 target.path = project_path / target.uname
 
         return self
 
     @validate_call
-    def versions(self) -> list[ReportVersion]:
+    def versions(self) -> list[ProjectVersion]:
         """Get a sorted list of report versions in ascending order.
 
         Returns:
             A list of report versions.
         """
-        return [self.report_version] + [update.report_version for update in self.updates]
+        return sorted(list(self.version_configs.keys()))
 
     @validate_call
-    def last_version(self) -> ReportVersion:
+    def first_version(self) -> ProjectVersion:
+        """Get the first report version present in the configuration.
+
+        Returns:
+            The first report version.
+        """
+        return self.versions()[0]
+
+    @validate_call
+    def last_version(self) -> ProjectVersion:
         """Get the last report version present in the configuration.
 
         Returns:
@@ -263,7 +385,7 @@ class Config(VersionConfig):
         return self.versions()[-1]
 
     @validate_call
-    def at_version(self, version: str | ReportVersion) -> VersionConfig:
+    def at_version(self, version: str | ProjectVersion) -> VersionConfig:
         """Return the configuration at a specific version.
 
         Args:
@@ -275,21 +397,10 @@ class Config(VersionConfig):
         Raises:
             SeretoValueError: If the specified version is unknown.
         """
-        if version is None:
-            return self
         if isinstance(version, str):
-            version = ReportVersion.from_str(version)
+            version = ProjectVersion.from_str(version)
 
-        # For v1.0, we need to convert Config to VersionConfig manually (excluding extra fields)
-        if version == ReportVersion("v1.0"):  # type: ignore[arg-type]
-            cfg = VersionConfig.model_validate(self.model_dump(exclude={"sereto_version", "updates"}))
-            # copy values of the excluded fields
-            for t1, t2 in zip(self.targets, cfg.targets, strict=True):
-                t2.path = t1.path
-            return cfg
-
-        # Otherwise, we need to find the matching update section
-        if len(res := [cfg for cfg in self.updates if cfg.report_version == version]) != 1:
+        if version not in self.version_configs:
             raise SeretoValueError(f"version '{version}' not found")
 
-        return res[0]
+        return self.version_configs[version]

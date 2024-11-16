@@ -7,10 +7,10 @@ from pydantic import DirectoryPath, validate_call
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
 from sereto.jinja import render_j2
-from sereto.models.config import Config
+from sereto.models.config import Config, VersionConfig
 from sereto.models.project import Project
 from sereto.models.settings import Settings
-from sereto.models.version import ReportVersion, SeretoVersion
+from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_target_pdf
 from sereto.plot import risks_plot
 from sereto.source_archive import create_source_archive, embed_source_archive
@@ -74,9 +74,12 @@ def new_report(settings: Settings, id: TypeProjectId, name: str) -> None:
 
     cfg = Config(
         sereto_version=SeretoVersion.from_str(sereto_ver),
-        id=id,
-        name=name,
-        report_version=ReportVersion.from_str("v1.0"),
+        version_configs={
+            ProjectVersion.from_str("v1.0"): VersionConfig(
+                id=id,
+                name=name,
+            ),
+        },
     )
 
     Console().log("Copy report skeleton")
@@ -91,7 +94,7 @@ def new_report(settings: Settings, id: TypeProjectId, name: str) -> None:
 @validate_call
 def render_report_j2(
     project: Project,
-    version: ReportVersion,
+    version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
     """Renders Jinja templates into TeX files.
@@ -99,7 +102,7 @@ def render_report_j2(
     This function processes Jinja templates for report, approach and scope in each target, and all relevant findings.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The version of the report which should be rendered.
         convert_recipe: Name which will be used to pick a recipe from Render configuration. If none is provided, the
             first recipe with a matching format is used.
@@ -135,7 +138,7 @@ def render_report_j2(
 
 
 @validate_call
-def render_sow_j2(project: Project, version: ReportVersion) -> None:
+def render_sow_j2(project: Project, version: ProjectVersion) -> None:
     cfg = project.config.at_version(version=version)
 
     # Find the SoW template
@@ -163,14 +166,14 @@ def render_sow_j2(project: Project, version: ReportVersion) -> None:
 
 
 @validate_call
-def report_create_missing(project: Project, version: ReportVersion) -> None:
+def report_create_missing(project: Project, version: ProjectVersion) -> None:
     """Creates missing target directories from config.
 
     This function creates any missing target directories and populates them with content of the "skel" directory from
     templates.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The version of the report.
     """
     cfg = project.config.at_version(version=version)
@@ -202,7 +205,7 @@ def report_create_missing(project: Project, version: ReportVersion) -> None:
 @validate_call
 def report_pdf(
     project: Project,
-    version: ReportVersion,
+    version: ProjectVersion,
     report_recipe: str | None = None,
     target_recipe: str | None = None,
     finding_recipe: str | None = None,
@@ -229,7 +232,7 @@ def report_pdf(
 @validate_call
 def report_cleanup(
     project: Project,
-    version: ReportVersion,
+    version: ProjectVersion,
 ) -> None:
     cfg = project.config.at_version(version=version)
 

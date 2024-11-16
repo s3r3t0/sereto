@@ -28,7 +28,7 @@ from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueEr
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
-from sereto.models.version import ReportVersion
+from sereto.models.version import ProjectVersion
 from sereto.pdf import render_sow_pdf
 from sereto.project import load_project
 from sereto.report import (
@@ -173,14 +173,14 @@ def config_edit(settings: Settings) -> None:
 @load_project
 def config_show(
     project: Project,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
     all: bool,
     output_format: OutputFormat,
 ) -> None:
     """Show the reports's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The specific version of the configuration to show.
         all: Flag to show all versions of the configuration.
         output_format: The output format for displaying the configuration.
@@ -208,7 +208,7 @@ def config_dates_add(project: Project) -> None:
     """Add date to the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
     """
     add_dates_config(project=project)
 
@@ -221,7 +221,7 @@ def config_dates_delete(project: Project, index: int) -> None:
     """Delete date from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         index: The index of the date to be deleted. You can obtain the index by running `sereto config dates show`.
     """
     delete_dates_config(project=project, index=index)
@@ -248,14 +248,14 @@ def config_dates_delete(project: Project, index: int) -> None:
 @load_project
 def config_dates_show(
     project: Project,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
     all: bool,
     output_format: OutputFormat,
 ) -> None:
     """Show dates from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The specific version of the configuration to show dates from.
         all: Flag to show dates from all versions of the configuration.
         output_format: The output format for displaying the dates.
@@ -284,7 +284,7 @@ def config_people_add(project: Project) -> None:
     """Add person to the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
     """
     add_people_config(project=project)
 
@@ -297,7 +297,7 @@ def config_people_delete(project: Project, index: int) -> None:
     """Delete person from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         index: The index of the person to be deleted. You can obtain the index by running `sereto config people show`.
     """
     delete_people_config(project=project, index=index)
@@ -324,14 +324,14 @@ def config_people_delete(project: Project, index: int) -> None:
 @load_project
 def config_people_show(
     project: Project,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
     all: bool,
     output_format: OutputFormat,
 ) -> None:
     """Show people from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The specific version of the configuration to show people from.
         all: Flag to show people from all versions of the configuration.
         output_format: The output format for displaying the people.
@@ -359,7 +359,7 @@ def config_targets_add(project: Project) -> None:
     """Add targets to the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
     """
     add_targets_config(project=project)
 
@@ -372,7 +372,7 @@ def config_targets_delete(project: Project, index: int) -> None:
     """Delete target from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
     """
     delete_targets_config(project=project, index=index, interactive=True)
@@ -399,14 +399,14 @@ def config_targets_delete(project: Project, index: int) -> None:
 @load_project
 def config_targets_show(
     project: Project,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
     all: bool,
     output_format: OutputFormat,
 ) -> None:
     """Show targets from the report's configuration.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         version: The specific version of the configuration to show targets from.
         all: Flag to show targets from all versions of the configuration.
         output_format: The output format for displaying the targets.
@@ -443,7 +443,7 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
     """Add finding from template.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         target: The target for which the finding is being added.
         format: The file format of the template.
         name: The name of the finding.
@@ -462,7 +462,7 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
 # @click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
 @load_project
-def finding_show(project: Project, version: ReportVersion | None) -> None:
+def finding_show(project: Project, version: ProjectVersion | None) -> None:
     """Show findings."""
     if version is None:
         version = project.config.last_version()
@@ -479,7 +479,7 @@ def finding_update(project: Project) -> None:
     \f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
     """
     update_findings(project=project)
 
@@ -501,7 +501,7 @@ def open_folder(project: Project) -> None:
     """Open the folder containing the current report.\f
 
     Args:
-        project: project: Report's project representation.
+        project: project: Project's representation.
     """
     click.launch(str(project.path))
 
@@ -510,11 +510,11 @@ def open_folder(project: Project) -> None:
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
 @load_project
-def open_report(project: Project, version: ReportVersion | None) -> None:
+def open_report(project: Project, version: ProjectVersion | None) -> None:
     """Open the report document in the default PDF viewer.\f
 
     Args:
-        project: project: Report's project representation.
+        project: project: Project's representation.
         version: The version of the report that is opened. If None, the last version is used.
     """
     if version is None:
@@ -532,11 +532,11 @@ def open_report(project: Project, version: ReportVersion | None) -> None:
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
 @load_project
-def open_sow(project: Project, version: ReportVersion | None) -> None:
+def open_sow(project: Project, version: ProjectVersion | None) -> None:
     """Open the Statement of Work (SoW) document in the default PDF viewer.\f
 
     Args:
-        project: project: Report's project representation.
+        project: project: Project's representation.
         version: The version of the SoW that is opened. If None, the last version is used.
     """
     if version is None:
@@ -577,12 +577,12 @@ def pdf_report(
     target_recipe: str | None,
     finding_recipe: str | None,
     convert_recipe: str | None,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
 ) -> None:
     """Generate a PDF report by following build recipes.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         report_recipe: The recipe used for generating the report. If None, the default recipe is used.
         target_recipe: The recipe used for generating targets. If None, the default recipe is used.
         convert_recipe: The convert recipe used for file format transformations. If None, the default recipe is used.
@@ -612,12 +612,12 @@ def pdf_report(
 def pdf_sow(
     project: Project,
     sow_recipe: str | None,
-    version: ReportVersion | None,
+    version: ProjectVersion | None,
 ) -> None:
     """Generate a PDF Statement of Work (SoW) for a given report.\f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         sow_recipe: The recipe used for generating the SoW. If None, the default recipe is used.
         version: The version of the report for which the SoW is generated. If None, the last version is used.
     """
@@ -739,7 +739,7 @@ def templates_skel_copy(project: Project) -> None:
     \f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
     """
     copy_skel(templates=project.settings.templates_path, dst=project.path, overwrite=True)
 
@@ -761,7 +761,7 @@ def templates_target_skel_copy(project: Project, target: str | None) -> None:
     \f
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
         target: The target for which the templates are being copied.
     """
     selected_target = project.select_target(selector=target)

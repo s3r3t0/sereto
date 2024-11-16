@@ -39,7 +39,7 @@ def create_source_archive(project: Project) -> Path:
     keyring.
 
     Args:
-        project: Report's project representation.
+        project: Project's representation.
 
     Returns:
         The path to the created source archive.
@@ -60,6 +60,9 @@ def create_source_archive(project: Project) -> Path:
 
         Console().log(f"Creating source archive: '{archive_path}'")
 
+        # Determine the original project ID (store the project always with the original ID)
+        original_id = project.config.first_config().id
+
         # Create the source archive
         with tarfile.open(archive_path, "w:gz") as tar:
             for item in project.path.rglob("*"):
@@ -74,7 +77,7 @@ def create_source_archive(project: Project) -> Path:
                     continue
 
                 Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
-                tar.add(item, arcname=str(Path(project.config.id) / item.relative_to(project.path)))
+                tar.add(item, arcname=str(Path(original_id) / item.relative_to(project.path)))
 
     try:
         return encrypt_file(archive_path)
