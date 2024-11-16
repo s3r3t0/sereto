@@ -1,4 +1,5 @@
 import subprocess
+import time
 from pathlib import Path
 from textwrap import dedent
 from typing import Annotated, Any, Self
@@ -88,7 +89,10 @@ class RenderTool(SeretoBaseModel):
             )
         )
         try:
+            start_time = time.time()
             subprocess.run(command, cwd=cwd, capture_output=True, check=True)
+            end_time = time.time()
+            Console().log(f"Command finished in {end_time - start_time:.2f} s")
         except subprocess.CalledProcessError as e:
             Console().log(Markdown(f"Command failed with error: `{e}`"))
             raise SeretoCalledProcessError("command execution failed") from e
