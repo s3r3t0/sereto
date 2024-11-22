@@ -41,6 +41,7 @@ class VersionConfig(SeretoBaseModel):
         self,
         category: str | Iterable[str] | None = None,
         name: str | None = None,
+        inverse: bool = False,
     ) -> list[Target]:
         """Filter targets based on specified criteria.
 
@@ -49,6 +50,7 @@ class VersionConfig(SeretoBaseModel):
         Args:
             category: The category of the target. Can be a single category, a list of categories, or None.
             name: Regular expression to match the name of the target.
+            inverse: If True, return the inverse of the usual results.
 
         Returns:
             A list of targets matching the criteria.
@@ -56,11 +58,15 @@ class VersionConfig(SeretoBaseModel):
         if isinstance(category, str):
             category = [category]
 
-        return [
+        filtered_targets = [
             t
             for t in self.targets
             if (category is None or t.category in category) and (name is None or re.search(name, t.name))
         ]
+
+        if inverse:
+            return [t for t in self.targets if t not in filtered_targets]
+        return filtered_targets
 
     @validate_call
     def filter_dates(
@@ -68,6 +74,7 @@ class VersionConfig(SeretoBaseModel):
         type: str | DateType | Iterable[str] | Iterable[DateType] | None = None,
         start: str | SeretoDate | None = None,
         end: str | SeretoDate | None = None,
+        inverse: bool = False,
     ) -> list[Date]:
         """Filter dates based on specified criteria.
 
@@ -76,6 +83,9 @@ class VersionConfig(SeretoBaseModel):
 
         Args:
             type: The type of the date. Can be a single type, a list of types, or None.
+            start: Only dates on or after this date will be included.
+            end: Only dates on or before this date will be included.
+            inverse: If True, return the inverse of the usual results.
 
         Returns:
             A list of dates matching the criteria.
@@ -93,7 +103,7 @@ class VersionConfig(SeretoBaseModel):
         if isinstance(end, str):
             end = SeretoDate.from_str(end)
 
-        return [
+        filtered_dates = [
             d
             for d in self.dates
             if (type is None or d.type in type)
@@ -109,6 +119,10 @@ class VersionConfig(SeretoBaseModel):
             )
         ]
 
+        if inverse:
+            return [d for d in self.dates if d not in filtered_dates]
+        return filtered_dates
+
     @validate_call
     def filter_people(
         self,
@@ -117,6 +131,7 @@ class VersionConfig(SeretoBaseModel):
         business_unit: str | None = None,
         email: str | None = None,
         role: str | None = None,
+        inverse: bool = False,
     ) -> list[Person]:
         """Filter people based on specified criteria.
 
@@ -128,6 +143,7 @@ class VersionConfig(SeretoBaseModel):
             business_unit: Regular expression to match the business unit of the person.
             email: Regular expression to match the email of the person.
             role: Regular expression to match the role of the person.
+            inverse: If True, return the inverse of the usual results.
 
         Returns:
             A list of people matching the criteria.
@@ -140,15 +156,19 @@ class VersionConfig(SeretoBaseModel):
             case None:
                 pass
 
-        return [
+        filtered_people = [
             p
             for p in self.people
             if (type is None or p.type in type)
-            and (name is None or re.search(name, p.name))  # type: ignore[arg-type]
-            and (business_unit is None or re.search(business_unit, p.business_unit))  # type: ignore[arg-type]
-            and (email is None or re.search(email, p.email))  # type: ignore[arg-type]
-            and (role is None or re.search(role, p.role))  # type: ignore[arg-type]
+            and (name is None or (p.name is not None and re.search(name, p.name)))
+            and (business_unit is None or (p.business_unit is not None and re.search(business_unit, p.business_unit)))
+            and (email is None or (p.email is not None and re.search(email, p.email)))
+            and (role is None or (p.role is not None and re.search(role, p.role)))
         ]
+
+        if inverse:
+            return [p for p in self.people if p not in filtered_people]
+        return filtered_people
 
     @validate_call
     def add_target(self, target: Target) -> Self:
