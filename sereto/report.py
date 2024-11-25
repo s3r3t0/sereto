@@ -16,6 +16,7 @@ from sereto.plot import risks_plot
 from sereto.source_archive import create_source_archive, embed_source_archive
 from sereto.target import create_findings_config, get_risks, render_target_j2
 from sereto.types import TypeProjectId
+from sereto.utils import write_if_different
 
 
 @validate_call
@@ -130,11 +131,9 @@ def render_report_j2(
     )
 
     # Write the rendered template to a file
-    with report_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
-        for chunk in report_generator:
-            f.write(chunk)
-
-    Console().log(f"Rendered Jinja template: {report_j2_path.with_suffix('').relative_to(project.path)}")
+    report_path = report_j2_path.with_suffix("")
+    write_if_different(file=report_path, content="".join(report_generator))
+    Console().log(f"Rendered Jinja template: {report_path.relative_to(project.path)}")
 
 
 @validate_call
@@ -158,10 +157,8 @@ def render_sow_j2(project: Project, version: ProjectVersion) -> None:
     )
 
     # Write the rendered template to a file
-    with sow_j2_path.with_suffix("").open("w", encoding="utf-8") as f:
-        for chunk in sow_generator:
-            f.write(chunk)
-
+    sow_path = sow_j2_path.with_suffix("")
+    write_if_different(file=sow_path, content="".join(sow_generator))
     Console().log(f"Rendered Jinja template: {sow_j2_path.with_suffix('').relative_to(project.path)}")
 
 

@@ -36,7 +36,7 @@ from sereto.report import (
     new_report,
     render_report_j2,
     render_sow_j2,
-    report_cleanup,
+    # report_cleanup,
     report_create_missing,
     report_pdf,
 )
@@ -601,7 +601,7 @@ def pdf_report(
         target_recipe=target_recipe,
         finding_recipe=finding_recipe,
     )
-    report_cleanup(project=project, version=version)
+    # report_cleanup(project=project, version=version)
 
 
 @pdf.command(name="sow")
@@ -627,7 +627,7 @@ def pdf_sow(
     Console().log(f"Rendering SoW version: '{version}'")
     report_create_missing(project=project, version=version)
     render_sow_j2(project=project, version=version)
-    render_sow_pdf(project=project, version=version, recipe=sow_recipe, keep_original=False)
+    render_sow_pdf(project=project, version=version, recipe=sow_recipe, keep_original=True)
 
 
 # -------------

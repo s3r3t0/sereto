@@ -13,7 +13,7 @@ from sereto.models.project import Project
 from sereto.models.risks import Risks
 from sereto.models.target import Target
 from sereto.models.version import ProjectVersion
-from sereto.utils import YAML
+from sereto.utils import YAML, write_if_different
 
 
 @validate_call
@@ -114,11 +114,8 @@ def render_target_j2(
     )
 
     target_tex_path = project.path / f"{target.uname}.tex"
-
-    with target_tex_path.open("w", encoding="utf-8") as f:
-        for chunk in target_generator:
-            f.write(chunk)
-        Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(project.path)}")
+    write_if_different(file=target_tex_path, content="".join(target_generator))
+    Console().log(f"Rendered Jinja template: {target_tex_path.relative_to(project.path)}")
 
 
 @validate_call
