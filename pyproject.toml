@@ -60,7 +60,7 @@ dependencies = [
   "pandocfilters~=1.5.1",
   "pathspec>=0.12.1",
   "pydantic-settings~=2.6.0",
-  "pydantic~=2.9.1",
+  "pydantic~=2.10.1",
   "pydantic[email]",
   "pypdf~=5.1.0",
   "python-frontmatter~=1.1.0",
