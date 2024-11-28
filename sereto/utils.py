@@ -1,8 +1,5 @@
-import hashlib
 import re
-import shutil
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import overload
 
 import click
@@ -49,31 +46,8 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
 
 
 @validate_call
-def _compute_md5(file: FilePath) -> str:
-    """Computes the MD5 hash of the file content.
-
-    This must be used only for non-cryptographic purposes.
-
-    Args:
-        file: The path to the file.
-
-    Returns:
-        The MD5 hash of the file content.
-    """
-    md5 = hashlib.md5()
-
-    with file.open("rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            md5.update(chunk)
-
-    return md5.hexdigest()
-
-
-@validate_call
 def write_if_different(file: Path, content: str) -> bool:
     """Writes content to file only if the content is different from the existing file content.
-
-    The comparison is done using the MD5 hash of the file content.
 
     Args:
         file: The path to the file.
@@ -82,17 +56,15 @@ def write_if_different(file: Path, content: str) -> bool:
     Returns:
         True if new content was written to the file, False otherwise.
     """
-    with NamedTemporaryFile(delete=False, mode="w", encoding="utf-8") as tmp_file:
-        tmp_file_path = Path(tmp_file.name)
-        tmp_file_path.write_text(content, encoding="utf-8")
-
-    if file.is_file() and _compute_md5(tmp_file_path) == _compute_md5(file):
-        # No changes, remove the temporary file
-        tmp_file_path.unlink()
-        return False
+    # Check if the file exists and has the same size
+    if file.is_file() and file.stat().st_size == len(content):
+        assert_file_size_within_range(file=file, max_bytes=104_857_600)  # 100 MiB
+        # Check if the content is the same
+        if file.read_text(encoding="utf-8") == content:
+            return False
 
     # Changes detected, write the content to the file
-    shutil.move(src=tmp_file_path, dst=file)
+    file.write_text(content, encoding="utf-8")
     return True
 
 
