@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.17] - 2024-11-29
+
 ### Added
 
 - Docs: Markdown building blocks (writing findings and their templates).
@@ -15,11 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** Modify the structure of `config.json`.
 - Update REPL to use `click-repl`.
+- Remove redundancy in Jinja2 rendering.
+- Adjust variables passed when rendering Jinja templates.
+- Use `prompt_toolkit` for user input.
+- Make the default TeX rendering less verbose + fail early.
+- Remove command output during rendering. We might still need to show the errors in the future.
+- Display command execution time.
+- `Config.filter_*` methods now contain parameter `invert`, which allows to invert the filtering logic.
+- Avoid overriding TeX files if the content was not changed. This should speed up the rendering process as `latexmk` uses the file modification time to decide whether to recompile the document.
 
-### Removed
+### Fixed
 
-- Remove redundancy in Jinja2 rendering
+- Fix `Config.filter_*` methods to handle correctly None values.
 
 ## [0.0.16] - 2024-10-28
 
@@ -217,7 +228,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.16...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.17...HEAD
+[0.0.17]: https://github.com/s3r3t0/sereto/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/s3r3t0/sereto/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/s3r3t0/sereto/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/s3r3t0/sereto/compare/v0.0.13...v0.0.14
