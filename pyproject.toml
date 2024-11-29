@@ -84,7 +84,7 @@ Homepage = "https://github.com/s3r3t0/sereto"
 Source = "https://github.com/s3r3t0/sereto"
 
 [project.scripts]
-sereto = "sereto.cli.cli:cli"
+sereto = "sereto.cli.cli:entry_point"
 
 [tool.black]
 line-length = 119

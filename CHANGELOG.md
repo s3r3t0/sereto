@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Introduce plugin system for adding new commands to the CLI.
+
 ## [0.0.17] - 2024-11-29
 
 ### Added

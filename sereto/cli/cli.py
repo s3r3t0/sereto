@@ -1,4 +1,6 @@
+import importlib
 import importlib.metadata
+import importlib.util
 from contextlib import suppress
 from pathlib import Path
 
@@ -24,7 +26,7 @@ from sereto.cli.config import (
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
-from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
+from sereto.exceptions import SeretoException, SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
@@ -44,6 +46,7 @@ from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.source_archive import extract_source_archive, retrieve_source_archive
 from sereto.types import TypeProjectId
+from sereto.utils import replace_strings
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -774,3 +777,64 @@ def templates_target_skel_copy(project: Project, target: str | None) -> None:
         dst=selected_target.path,
         overwrite=True,
     )
+
+
+# -----------
+# entry point
+# -----------
+
+
+def load_plugins() -> None:
+    """Load plugins from the plugins directory.
+
+    This function loads plugins from the configured directory and registers their commands with the CLI. The plugin
+    support needs to be enabled in the settings.
+    """
+    settings = load_settings_function()
+
+    # Check if plugins are enabled
+    if not settings.plugins.enabled:
+        return
+
+    # Get plugins directory
+    plugins_dir = Path(
+        replace_strings(text=settings.plugins.directory, replacements={"%TEMPLATES%": str(settings.templates_path)})
+    )
+    if not plugins_dir.is_dir():
+        raise SeretoPathError(f"Plugins directory not found: '{plugins_dir}'")
+
+    # Load plugins from the directory
+    for file in plugins_dir.glob(pattern="*.py"):
+        # Skip dunder files like __init__.py
+        if file.name.startswith("__"):
+            continue
+
+        # Register commands
+        module_name = f"plugins.{file.name[:-3]}"
+        try:
+            # Create a module specification
+            spec = importlib.util.spec_from_file_location(module_name, file)
+            if spec is None or spec.loader is None:
+                Console().log(f"Failed to load plugin: {file.name}")
+                continue
+
+            # Create a new module based on the specification
+            module = importlib.util.module_from_spec(spec)
+
+            # Execute the module to initialize it
+            spec.loader.exec_module(module)
+        except ModuleNotFoundError:
+            Console().log(f"Plugin module not found: {file.name}")
+            continue
+
+        # Run the plugin's register_commands function
+        if hasattr(module, "register_commands"):
+            module.register_commands(cli)
+            Console().log(f"Plugin registered: '{file.name}'")
+
+
+def entry_point() -> None:
+    with suppress(SeretoException):
+        load_plugins()
+
+    cli()

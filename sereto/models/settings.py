@@ -194,6 +194,18 @@ DEFAULT_CATEGORIES = {
 }
 
 
+class Plugins(SeretoBaseModel):
+    """Plugins settings.
+
+    Attributes:
+        enabled: whether plugins are enabled
+        directory: path to the directory containing plugins (`%TEMPLATES%` will be replaced with the templates path`)
+    """
+
+    enabled: bool = False
+    directory: str = "%TEMPLATES%/plugins"
+
+
 class Settings(SeretoBaseSettings):
     """Global settings:
 
@@ -213,6 +225,7 @@ class Settings(SeretoBaseSettings):
     templates_path: DirectoryPath
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
+    plugins: Plugins = Field(default_factory=Plugins)
 
     @staticmethod
     def get_path() -> Path:
