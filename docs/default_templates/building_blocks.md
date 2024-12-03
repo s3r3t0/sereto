@@ -17,6 +17,7 @@ The attributes of the `c` object are also accessible directly. Primarily, the `c
 
 - `id`: The ID of the report.
 - `name`: The name of the report.
+- `version_description`: The description of the version (e.g. "retest").
 - `targets`: List of targets.
 - `dates`: List of dates.
 - `people`: List of people.

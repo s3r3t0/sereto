@@ -44,6 +44,7 @@ def edit_config(settings: Settings) -> None:
                 ProjectVersion.from_str("v1.0"): VersionConfig(
                     id="",
                     name="",
+                    version_description="Initial",
                 ),
             },
         ).dump_json(file=config)

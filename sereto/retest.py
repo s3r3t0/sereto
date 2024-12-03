@@ -14,7 +14,10 @@ def add_retest(project: Project) -> None:
     retest_version = last_version.next_major_version()
 
     # Duplicate last version config
-    project.config.add_config(version=retest_version, config=deepcopy(project.config.last_config()))
+    last_config = deepcopy(project.config.last_config())
+    last_config.version_description = "Retest"
+
+    project.config.add_config(version=retest_version, config=last_config)
     project.config.dump_json(file=project.get_config_path())
 
     # Update project files

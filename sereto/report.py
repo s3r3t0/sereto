@@ -79,6 +79,7 @@ def new_report(settings: Settings, id: TypeProjectId, name: str) -> None:
             ProjectVersion.from_str("v1.0"): VersionConfig(
                 id=id,
                 name=name,
+                version_description="Initial",
             ),
         },
     )

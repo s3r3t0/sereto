@@ -18,6 +18,7 @@ class VersionConfig(SeretoBaseModel):
     Attributes:
         id: The ID of the report.
         name: The name of the report.
+        version_description: The description of the version (e.g. "retest").
         targets: List of targets.
         dates: List of dates.
         people: List of people.
@@ -25,6 +26,7 @@ class VersionConfig(SeretoBaseModel):
 
     id: str
     name: str
+    version_description: str
     targets: list[Target] = []
     dates: list[Date] = []
     people: list[Person] = []
