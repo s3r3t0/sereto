@@ -4,9 +4,8 @@ from tempfile import NamedTemporaryFile
 from typing import NamedTuple
 
 import keyring
-from argon2.low_level import Type as Argon2Type
-from argon2.low_level import hash_secret_raw as argon2_hash_secret_raw
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.utils import Console
@@ -52,19 +51,18 @@ def derive_key_argon2(
         ta_salt: TypeAdapter[TypeSalt16B] = TypeAdapter(TypeSalt16B)  # hack for mypy
         salt = ta_salt.validate_python(os.urandom(16))
 
+    # Prepare the Argon2id key derivation function
+    kdf = Argon2id(
+        salt=salt.get_secret_value(),
+        length=32,  # Desired key length in bytes (32 bytes = 256 bits for AES-256)
+        iterations=time_cost,
+        lanes=parallelism,
+        memory_cost=memory_cost,
+    )
+
     # Derive a key using Argon2id
     ta_key: TypeAdapter[SecretBytes] = TypeAdapter(SecretBytes)  # hack for mypy
-    key = ta_key.validate_python(
-        argon2_hash_secret_raw(
-            secret=password.get_secret_value().encode(encoding="utf-8"),
-            salt=salt.get_secret_value(),
-            time_cost=time_cost,
-            memory_cost=memory_cost,
-            parallelism=parallelism,
-            hash_len=32,  # Desired key length in bytes (32 bytes = 256 bits for AES-256)
-            type=Argon2Type.ID,  # Argon2id variant (mix of Argon2i and Argon2d)
-        )
-    )
+    key = ta_key.validate_python(kdf.derive(password.get_secret_value().encode(encoding="utf-8")))
 
     return DerivedKeyResult(key=key, salt=salt)
 
