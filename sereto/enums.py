@@ -38,7 +38,7 @@ class Risk(str, Enum):
     high = "high"
     medium = "medium"
     low = "low"
-    informational = "informational"
+    info = "info"
     closed = "closed"
 
     @classmethod
@@ -53,7 +53,7 @@ class Risk(str, Enum):
         match self:
             case Risk.closed:
                 return 0
-            case Risk.informational:
+            case Risk.info:
                 return 1
             case Risk.low:
                 return 2

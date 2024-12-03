@@ -31,14 +31,14 @@ class Risks(SeretoBaseModel):
         high: A Risk object representing the high severity level.
         medium: A Risk object representing the medium severity level.
         low: A Risk object representing the low severity level.
-        info: A Risk object representing the informational severity level.
+        info: A Risk object representing the info severity level.
     """
 
     critical: Risk = Risk(name="critical", cnt=0, color="red")
     high: Risk = Risk(name="high", cnt=0, color="orange")
     medium: Risk = Risk(name="medium", cnt=0, color="#f0f000")
     low: Risk = Risk(name="low", cnt=0, color="#33cc33")
-    info: Risk = Risk(name="informational", cnt=0, color="#3366ff")
+    info: Risk = Risk(name="info", cnt=0, color="#3366ff")
 
     def names(self) -> tuple[str, ...]:
         """Return a tuple of the names for each severity.
@@ -91,7 +91,7 @@ class Risks(SeretoBaseModel):
             high: An integer representing the count of the high Risk object.
             medium: An integer representing the count of the medium Risk object.
             low: An integer representing the count of the low Risk object.
-            info: An integer representing the count of the informational Risk object.
+            info: An integer representing the count of the info Risk object.
 
         Returns:
             The Risks object with updated counts for each Risk object.

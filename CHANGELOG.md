@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Introduce plugin system for adding new commands to the CLI.
 
+### Changed
+
+- **Breaking:** Rename "informational" risk to "info".
+
 ### Removed
 
 - Remove `argon2-cffi` dependency. This was added to the `crytography` library in version 44.0.0.

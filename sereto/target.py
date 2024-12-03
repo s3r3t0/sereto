@@ -127,5 +127,5 @@ def get_risks(target: Target, version: ProjectVersion) -> Risks:
         high=len([f for f in fg if version in f.risks and f.risks[version].name == "high"]),
         medium=len([f for f in fg if version in f.risks and f.risks[version].name == "medium"]),
         low=len([f for f in fg if version in f.risks and f.risks[version].name == "low"]),
-        info=len([f for f in fg if version in f.risks and f.risks[version].name == "informational"]),
+        info=len([f for f in fg if version in f.risks and f.risks[version].name == "info"]),
     )
