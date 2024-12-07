@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix target index in `delete_targets_config`
 - Set correct indexes for partials (target, finding group)
+- Fix path to template when reading metadata
 
 ### Removed
 

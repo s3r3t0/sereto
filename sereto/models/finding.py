@@ -110,7 +110,7 @@ class Finding(SeretoBaseModel):
 
     @validate_call
     def template_path(self, templates: DirectoryPath, category: str) -> Path:
-        return templates / "categories" / category / f"{self.path_name}.{self.format.value}.j2"
+        return templates / "categories" / category / "findings" / f"{self.path_name}.{self.format.value}.j2"
 
     @validate_call
     def metadata(self, templates: DirectoryPath, category: str) -> TemplateMetadata | None:
