@@ -374,7 +374,7 @@ def delete_targets_config(
 
     # Extract the filesystem path before deleting the values
     version_config = project.config.at_version(version)
-    target_path = version_config.targets[index].path
+    target_path = version_config.targets[index - 1].path
 
     # Delete the date from the configuration
     version_config.delete_target(index=index)

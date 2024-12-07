@@ -373,8 +373,8 @@ class Config(SeretoBaseModel):
         Returns:
             The configuration with updated paths.
         """
-        for vc in self.iter():
-            for target in vc.targets:
+        for version_config in self.iter():
+            for target in version_config.targets:
                 target.path = project_path / target.uname
 
         return self

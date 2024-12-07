@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** Rename "informational" risk to "info".
 - **Breaking:** Add `version_description` attribute to `VersionConfig`.
 
+### Fixed
+
+- Fix target index in `delete_targets_config`
+
 ### Removed
 
 - Remove `argon2-cffi` dependency. This was added to the `crytography` library in version 44.0.0.
