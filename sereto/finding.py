@@ -162,7 +162,9 @@ def render_finding_j2(
 def render_finding_group_j2(
     project: Project,
     target: Target,
+    target_ix: int,
     finding_group: FindingGroup,
+    finding_group_ix: int,
     version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
@@ -192,7 +194,9 @@ def render_finding_group_j2(
         file=finding_group_j2_path,
         vars={
             "finding_group": finding_group,
+            "finding_group_index": finding_group_ix,
             "target": target,
+            "target_index": target_ix,
             "c": cfg,
             "config": project.config,
             "version": version,

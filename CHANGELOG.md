@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix target index in `delete_targets_config`
+- Set correct indexes for partials (target, finding group)
 
 ### Removed
 

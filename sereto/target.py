@@ -82,6 +82,7 @@ def create_findings_config(target: Target, project: Project, templates: Director
 @validate_call
 def render_target_j2(
     target: Target,
+    target_ix: int,
     project: Project,
     version: ProjectVersion,
     convert_recipe: str | None = None,
@@ -89,9 +90,15 @@ def render_target_j2(
     cfg = project.config.at_version(version=version)
 
     # Render dependencies
-    for finding_group in target.findings_config.finding_groups:
+    for ix, finding_group in enumerate(target.findings_config.finding_groups):
         render_finding_group_j2(
-            project=project, target=target, finding_group=finding_group, version=version, convert_recipe=convert_recipe
+            project=project,
+            target=target,
+            target_ix=target_ix,
+            finding_group=finding_group,
+            finding_group_ix=ix,
+            version=version,
+            convert_recipe=convert_recipe,
         )
 
     target_j2_path = project.path / "target_standalone_wrapper.tex.j2"
@@ -105,6 +112,7 @@ def render_target_j2(
         file=target_j2_path,
         vars={
             "target": target,
+            "target_index": target_ix,
             "c": cfg,
             "config": project.config,
             "version": version,

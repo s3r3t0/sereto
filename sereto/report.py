@@ -112,8 +112,8 @@ def render_report_j2(
     cfg = project.config.at_version(version=version)
 
     # Render dependencies
-    for target in cfg.targets:
-        render_target_j2(target=target, project=project, version=version, convert_recipe=convert_recipe)
+    for ix, target in enumerate(cfg.targets):
+        render_target_j2(target=target, target_ix=ix, project=project, version=version, convert_recipe=convert_recipe)
 
     # Find the report template
     report_j2_path = project.path / f"report{version.path_suffix}.tex.j2"
