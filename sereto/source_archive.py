@@ -104,9 +104,8 @@ def embed_source_archive(archive: FilePath, report: FilePath, keep_original: boo
     reader = PdfReader(report, strict=True)
     writer = PdfWriter()
 
-    # Copy all pages from the reader to the writer
-    for page in reader.pages:
-        writer.add_page(page)
+    # Copy content from the reader to the writer
+    writer.append(reader)
 
     # Embed the source archive
     writer.add_attachment(filename=f"source{archive.suffix}", data=archive.read_bytes())
