@@ -27,17 +27,23 @@ from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
-from sereto.finding import add_finding, show_findings, update_findings
+from sereto.finding import (
+    add_finding,
+    render_j2_finding_group_dependencies,
+    render_j2_finding_group_standalone,
+    show_findings,
+    update_findings,
+)
 from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
-from sereto.pdf import render_sow_pdf
+from sereto.pdf import render_pdf_finding_group, render_pdf_sow, render_pdf_target
 from sereto.project import load_project
 from sereto.report import (
     copy_skel,
     new_report,
-    render_report_j2,
-    render_sow_j2,
+    render_j2_report,
+    render_j2_sow,
     # report_cleanup,
     report_create_missing,
     report_pdf,
@@ -45,6 +51,7 @@ from sereto.report import (
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.source_archive import extract_source_archive, retrieve_source_archive
+from sereto.target import render_j2_target_dependencies, render_j2_target_standalone
 from sereto.types import TypeProjectId
 from sereto.utils import replace_strings
 
@@ -566,19 +573,89 @@ def pdf() -> None:
     """
 
 
+@pdf.command(name="finding-group")
+@handle_exceptions
+@click.option("-ts", "--target-selector", help="Target selector.")
+@click.option("-fs", "--finding-group-selector", help="Finding group selector.")
+@click.option("-c", "--convert-recipe", help="Convert finding recipe")
+@click.option("-r", "--finding-recipe", help="Build TeX finding recipe")
+@click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
+@load_project
+def pdf_finding_group(
+    project: Project,
+    target_selector: int | str | None,
+    finding_group_selector: int | str | None,
+    finding_recipe: str | None,
+    convert_recipe: str | None,
+    version: ProjectVersion | None,
+) -> None:
+    if version is None:
+        version = project.config.last_version()
+
+    # Select target
+    target = project.select_target(version=version, selector=target_selector)
+    target_ix = project.config.at_version(version).targets.index(target)
+
+    # Select finding group
+    fg = target.select_finding_group(selector=finding_group_selector)
+    fg_ix = target.findings_config.finding_groups.index(fg)
+
+    Console().log(f"Rendering partial report for finding group {fg.uname!r}")
+    report_create_missing(project=project, version=version)
+
+    # Render Jinja2
+    render_j2_finding_group_dependencies(
+        project=project, target=target, finding_group=fg, version=version, convert_recipe=convert_recipe
+    )
+    render_j2_finding_group_standalone(
+        project=project, target=target, target_ix=target_ix, finding_group=fg, finding_group_ix=fg_ix, version=version
+    )
+
+    # Render PDF
+    render_pdf_finding_group(project=project, finding_group=fg, target=target, version=version, recipe=finding_recipe)
+
+
+@pdf.command(name="target")
+@handle_exceptions
+@click.option("-ts", "--target-selector", required=True, help="Target selector.")
+@click.option("-c", "--convert-recipe", help="Convert finding recipe")
+@click.option("-r", "--target-recipe", help="Build TeX target recipe")
+@click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
+@load_project
+def pdf_target(
+    project: Project,
+    target_selector: int | str | None,
+    target_recipe: str | None,
+    convert_recipe: str | None,
+    version: ProjectVersion | None,
+) -> None:
+    if version is None:
+        version = project.config.last_version()
+
+    # Select target
+    target = project.select_target(version=version, selector=target_selector)
+    target_ix = project.config.at_version(version).targets.index(target)
+
+    Console().log(f"Rendering partial report for target '{target.uname}'")
+    report_create_missing(project=project, version=version)
+
+    # Render Jinja2
+    render_j2_target_dependencies(target=target, project=project, version=version, convert_recipe=convert_recipe)
+    render_j2_target_standalone(target=target, target_ix=target_ix, project=project, version=version)
+
+    # Render PDF
+    render_pdf_target(project=project, target=target, version=version, recipe=target_recipe)
+
+
 @pdf.command(name="report")
 @handle_exceptions
 @click.option("-c", "--convert-recipe", help="Convert finding recipe")
 @click.option("-r", "--report-recipe", help="Build TeX report recipe")
-@click.option("-t", "--target-recipe", help="Build TeX target recipe")
-@click.option("-f", "--finding-recipe", help="Build TeX finding recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @load_project
 def pdf_report(
     project: Project,
     report_recipe: str | None,
-    target_recipe: str | None,
-    finding_recipe: str | None,
     convert_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
@@ -596,14 +673,17 @@ def pdf_report(
 
     Console().log(f"Rendering report version: '{version}'")
     report_create_missing(project=project, version=version)
-    render_report_j2(project=project, version=version, convert_recipe=convert_recipe)
+
+    # Render Jinja2
+    render_j2_report(project=project, version=version, convert_recipe=convert_recipe)
+
+    # Render PDF
     report_pdf(
         project=project,
         version=version,
         report_recipe=report_recipe,
-        target_recipe=target_recipe,
-        finding_recipe=finding_recipe,
     )
+
     # report_cleanup(project=project, version=version)
 
 
@@ -629,8 +709,8 @@ def pdf_sow(
 
     Console().log(f"Rendering SoW version: '{version}'")
     report_create_missing(project=project, version=version)
-    render_sow_j2(project=project, version=version)
-    render_sow_pdf(project=project, version=version, recipe=sow_recipe, keep_original=True)
+    render_j2_sow(project=project, version=version)
+    render_pdf_sow(project=project, version=version, recipe=sow_recipe, keep_original=True)
 
 
 # -------------

@@ -11,10 +11,10 @@ from sereto.models.config import Config, VersionConfig
 from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion, SeretoVersion
-from sereto.pdf import render_finding_group_pdf, render_report_pdf, render_target_pdf
+from sereto.pdf import render_pdf_report
 from sereto.plot import risks_plot
 from sereto.source_archive import create_source_archive, embed_source_archive
-from sereto.target import create_findings_config, get_risks, render_target_j2
+from sereto.target import create_findings_config, get_risks, render_j2_target_dependencies
 from sereto.types import TypeProjectId
 from sereto.utils import write_if_different
 
@@ -94,7 +94,7 @@ def new_report(settings: Settings, id: TypeProjectId, name: str) -> None:
 
 
 @validate_call
-def render_report_j2(
+def render_j2_report(
     project: Project,
     version: ProjectVersion,
     convert_recipe: str | None = None,
@@ -112,8 +112,8 @@ def render_report_j2(
     cfg = project.config.at_version(version=version)
 
     # Render dependencies
-    for ix, target in enumerate(cfg.targets):
-        render_target_j2(target=target, target_ix=ix, project=project, version=version, convert_recipe=convert_recipe)
+    for target in cfg.targets:
+        render_j2_target_dependencies(target=target, project=project, version=version, convert_recipe=convert_recipe)
 
     # Find the report template
     report_j2_path = project.path / f"report{version.path_suffix}.tex.j2"
@@ -138,7 +138,7 @@ def render_report_j2(
 
 
 @validate_call
-def render_sow_j2(project: Project, version: ProjectVersion) -> None:
+def render_j2_sow(project: Project, version: ProjectVersion) -> None:
     cfg = project.config.at_version(version=version)
 
     # Find the SoW template
@@ -205,24 +205,8 @@ def report_pdf(
     project: Project,
     version: ProjectVersion,
     report_recipe: str | None = None,
-    target_recipe: str | None = None,
-    finding_recipe: str | None = None,
 ) -> None:
-    cfg = project.config.at_version(version=version)
-
-    for target in cfg.targets:
-        render_target_pdf(project=project, target=target, version=version, recipe=target_recipe)
-
-        for finding_group in target.findings_config.finding_groups:
-            render_finding_group_pdf(
-                project=project,
-                finding_group=finding_group,
-                target=target,
-                version=version,
-                recipe=finding_recipe,
-            )
-
-    report_path = render_report_pdf(project=project, version=version, recipe=report_recipe)
+    report_path = render_pdf_report(project=project, version=version, recipe=report_recipe)
     archive_path = create_source_archive(project=project)
     embed_source_archive(archive=archive_path, report=report_path, keep_original=False)
 

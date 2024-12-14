@@ -37,7 +37,7 @@ def _render_pdf(
 
 
 @validate_call
-def render_report_pdf(project: Project, version: ProjectVersion, recipe: str | None = None) -> Path:
+def render_pdf_report(project: Project, version: ProjectVersion, recipe: str | None = None) -> Path:
     """Render the report to PDF format according to the recipe.
 
     Prerequisite is having the report in TeX format.
@@ -69,7 +69,7 @@ def render_report_pdf(project: Project, version: ProjectVersion, recipe: str | N
 
 
 @validate_call
-def render_sow_pdf(
+def render_pdf_sow(
     project: Project, version: ProjectVersion, recipe: str | None = None, keep_original: bool = True
 ) -> None:
     """Render the SoW to PDF format according to the recipe.
@@ -100,7 +100,7 @@ def render_sow_pdf(
 
 
 @validate_call
-def render_target_pdf(project: Project, target: Target, version: ProjectVersion, recipe: str | None = None) -> None:
+def render_pdf_target(project: Project, target: Target, version: ProjectVersion, recipe: str | None = None) -> None:
     """Render the target to PDF format according to the recipe.
 
     Prerequisite is having the target in TeX format.
@@ -128,11 +128,11 @@ def render_target_pdf(project: Project, target: Target, version: ProjectVersion,
 
 
 @validate_call
-def render_finding_group_pdf(
+def render_pdf_finding_group(
     project: Project,
     finding_group: FindingGroup,
     target: Target,
-    version: ProjectVersion,
+    version: ProjectVersion,  # TODO: use versions when rendering finding groups
     recipe: str | None = None,
 ) -> None:
     """Render the finding group to PDF format according to the recipe.

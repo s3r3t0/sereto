@@ -159,17 +159,13 @@ def render_finding_j2(
 
 
 @validate_call
-def render_finding_group_j2(
+def render_j2_finding_group_dependencies(
     project: Project,
     target: Target,
-    target_ix: int,
     finding_group: FindingGroup,
-    finding_group_ix: int,
     version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    cfg = project.config.at_version(version=version)
-
     for finding in finding_group.findings:
         if version in finding.risks:
             finding.assert_required_vars(templates=project.settings.templates_path, category=target.category)
@@ -182,6 +178,18 @@ def render_finding_group_j2(
                     version=version,
                     recipe=convert_recipe,
                 )
+
+
+@validate_call
+def render_j2_finding_group_standalone(
+    project: Project,
+    target: Target,
+    target_ix: int,
+    finding_group: FindingGroup,
+    finding_group_ix: int,
+    version: ProjectVersion,
+) -> None:
+    cfg = project.config.at_version(version=version)
 
     finding_group_j2_path = project.path / "finding_standalone_wrapper.tex.j2"
     if not finding_group_j2_path.is_file():

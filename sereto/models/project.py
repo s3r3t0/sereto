@@ -144,5 +144,5 @@ class Project(SeretoBaseModel):
         # by uname
         targets = [t for t in cfg.targets if t.uname == selector]
         if len(targets) != 1:
-            raise SeretoValueError(f"cannot find target with uname {selector!r}")
+            raise SeretoValueError(f"target with uname {selector!r} not found")
         return targets[0]

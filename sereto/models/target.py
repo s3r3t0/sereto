@@ -2,13 +2,13 @@ from functools import cached_property
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
+from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator, validate_call
 from unidecode import unidecode
 
 from sereto.enums import Environment
-from sereto.exceptions import SeretoPathError
+from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.finding import FindingsConfig
+from sereto.models.finding import FindingGroup, FindingsConfig
 from sereto.settings import load_settings_function
 
 
@@ -49,6 +49,40 @@ class Target(SeretoBaseModel, extra="allow"):
             finding.path = self.path / "findings" / finding.path_name
 
         return fc
+
+    @validate_call
+    def select_finding_group(self, selector: int | str | None = None) -> FindingGroup:
+        """Select a finding group from the target.
+
+        Args:
+            selector: The index or name of the finding group to select.
+
+        Returns:
+            The selected finding group.
+        """
+        finding_groups = self.findings_config.finding_groups
+
+        # only single finding group present
+        if selector is None:
+            if len(finding_groups) != 1:
+                raise SeretoValueError(
+                    f"cannot select finding group; no selector provided and there are {len(finding_groups)} finding "
+                    "groups present"
+                )
+            return finding_groups[0]
+
+        # by index
+        if isinstance(selector, int) or selector.isnumeric():
+            ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
+            if not (0 <= ix <= len(finding_groups) - 1):
+                raise SeretoValueError("finding group index out of range")
+            return finding_groups[ix]
+
+        # by uname
+        fg_matches = [fg for fg in finding_groups if fg.uname == selector]
+        if len(fg_matches) != 1:
+            raise SeretoValueError(f"finding group with uname {selector!r} not found")
+        return fg_matches[0]
 
 
 class TargetDast(Target):

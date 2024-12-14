@@ -6,7 +6,7 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.finding import render_finding_group_j2
+from sereto.finding import render_j2_finding_group_dependencies
 from sereto.jinja import render_j2
 from sereto.models.finding import TemplateMetadata
 from sereto.models.project import Project
@@ -80,26 +80,30 @@ def create_findings_config(target: Target, project: Project, templates: Director
 
 
 @validate_call
-def render_target_j2(
+def render_j2_target_dependencies(
     target: Target,
-    target_ix: int,
     project: Project,
     version: ProjectVersion,
     convert_recipe: str | None = None,
 ) -> None:
-    cfg = project.config.at_version(version=version)
-
-    # Render dependencies
-    for ix, finding_group in enumerate(target.findings_config.finding_groups):
-        render_finding_group_j2(
+    for finding_group in target.findings_config.finding_groups:
+        render_j2_finding_group_dependencies(
             project=project,
             target=target,
-            target_ix=target_ix,
             finding_group=finding_group,
-            finding_group_ix=ix,
             version=version,
             convert_recipe=convert_recipe,
         )
+
+
+@validate_call
+def render_j2_target_standalone(
+    target: Target,
+    target_ix: int,
+    project: Project,
+    version: ProjectVersion,
+) -> None:
+    cfg = project.config.at_version(version=version)
 
     target_j2_path = project.path / "target_standalone_wrapper.tex.j2"
     if not target_j2_path.is_file():

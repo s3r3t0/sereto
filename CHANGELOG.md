@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Introduce plugin system for adding new commands to the CLI.
+- Add CLI commands: `sereto pdf target`, `sereto pdf finding-group` to render partial reports.
 
 ### Changed
 
 - **Breaking:** Rename "informational" risk to "info".
 - **Breaking:** Add `version_description` attribute to `VersionConfig`.
+- Command `sereto pdf report` no longer renders the partial reports.
 
 ### Fixed
 
