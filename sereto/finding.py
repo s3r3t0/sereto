@@ -5,7 +5,7 @@ from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
-from sereto.convert import convert_file_to_tex
+from sereto.convert import convert_finding_to_tex
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.jinja import render_j2
@@ -171,7 +171,7 @@ def render_j2_finding_group_dependencies(
             finding.assert_required_vars(templates=project.settings.templates_path, category=target.category)
             content_changed = render_finding_j2(finding=finding, target=target, version=version)
             if finding.format != FileFormat.tex and content_changed:
-                convert_file_to_tex(
+                convert_finding_to_tex(
                     finding=finding,
                     render=project.settings.render,
                     templates=project.settings.templates_path,

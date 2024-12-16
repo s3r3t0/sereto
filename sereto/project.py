@@ -12,7 +12,7 @@ R = TypeVar("R")
 
 
 def load_project(f: Callable[..., R]) -> Callable[..., R]:
-    """Decorator which calls `load_project_function` and provides Report as the first argument"""
+    """Decorator which loads the `Project` from filesystem."""
 
     @wraps(f)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:

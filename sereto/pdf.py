@@ -2,7 +2,6 @@ from pathlib import Path
 
 from pydantic import FilePath, validate_call
 
-from sereto.exceptions import SeretoValueError
 from sereto.models.finding import FindingGroup
 from sereto.models.project import Project
 from sereto.models.settings import RenderRecipe, Settings
@@ -54,12 +53,7 @@ def render_pdf_report(project: Project, version: ProjectVersion, recipe: str | N
     report_tex_path = project.path / f"report{version.path_suffix}.tex"
 
     # Get the recipe to render the report
-    if recipe is None:
-        render_recipe = project.settings.render.report_recipes[0]
-    else:
-        if len(res := [r for r in project.settings.render.report_recipes if r.name == recipe]) != 1:
-            raise SeretoValueError(f"no report recipe found with name {recipe!r}")
-        render_recipe = res[0]
+    render_recipe = project.settings.render.get_report_recipe(name=recipe)
 
     # Render the report to PDF
     _render_pdf(tex_path=report_tex_path, render_recipe=render_recipe, settings=project.settings)
@@ -86,15 +80,13 @@ def render_pdf_sow(
     """
     sow_tex_path = project.path / f"sow{version.path_suffix}.tex"
 
-    if recipe is None:
-        render_recipe = project.settings.render.sow_recipes[0]
-    else:
-        if len(res := [r for r in project.settings.render.sow_recipes if r.name == recipe]) != 1:
-            raise SeretoValueError(f"no SoW recipe found with name {recipe!r}")
-        render_recipe = res[0]
+    # Get the recipe to render the SoW
+    render_recipe = project.settings.render.get_sow_recipe(name=recipe)
 
+    # Render the SoW to PDF
     _render_pdf(tex_path=sow_tex_path, render_recipe=render_recipe, settings=project.settings)
 
+    # Remove the original TeX file if requested
     if not keep_original:
         sow_tex_path.unlink()
 
@@ -115,13 +107,10 @@ def render_pdf_target(project: Project, target: Target, version: ProjectVersion,
     target_tex_path = project.path / f"{target.uname}.tex"
     replacements = {"%TARGET_DIR%": str(project.path / target.uname)}
 
-    if recipe is None:
-        render_recipe = project.settings.render.target_recipes[0]
-    else:
-        if len(res := [r for r in project.settings.render.target_recipes if r.name == recipe]) != 1:
-            raise SeretoValueError(f"no target recipe found with name {recipe!r}")
-        render_recipe = res[0]
+    # Get the recipe to render the target
+    render_recipe = project.settings.render.get_target_recipe(name=recipe)
 
+    # Render the target to PDF
     _render_pdf(
         tex_path=target_tex_path, render_recipe=render_recipe, settings=project.settings, replacements=replacements
     )
@@ -150,13 +139,10 @@ def render_pdf_finding_group(
     finding_group_tex_path = project.path / f"{target.uname}_{finding_group.uname}.tex"
     replacements = {"%FINDINGS_DIR%": str(project.path / target.uname / "findings")}
 
-    if recipe is None:
-        render_recipe = project.settings.render.finding_recipes[0]
-    else:
-        if len(res := [r for r in project.settings.render.target_recipes if r.name == recipe]) != 1:
-            raise SeretoValueError(f"no finding recipe found with name {recipe!r}")
-        render_recipe = res[0]
+    # Get the recipe to render the finding group
+    render_recipe = project.settings.render.get_finding_group_recipe(name=recipe)
 
+    # Render the finding group to PDF
     _render_pdf(
         tex_path=finding_group_tex_path,
         render_recipe=render_recipe,

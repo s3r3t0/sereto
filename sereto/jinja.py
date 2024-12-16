@@ -126,13 +126,13 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
 
 @validate_call
 def render_j2(
-    templates: DirectoryPath | Sequence[DirectoryPath], file: FilePath, vars: dict[str, Any]
+    file: FilePath, templates: DirectoryPath | Sequence[DirectoryPath], vars: dict[str, Any]
 ) -> Iterator[str]:
     """Renders a Jinja2 template.
 
     Args:
-        templates: The directory/directories containing the template files.
         file: The path to the template file to be rendered.
+        templates: The directory/directories containing the template files.
         vars: A dictionary of variables to be passed to the Jinja2 template engine.
 
     Returns:

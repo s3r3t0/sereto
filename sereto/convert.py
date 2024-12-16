@@ -1,16 +1,13 @@
-from pathlib import Path
-
 from pydantic import DirectoryPath, validate_call
 
 from sereto.enums import FileFormat
-from sereto.exceptions import SeretoValueError
 from sereto.models.finding import Finding
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
 
 
 @validate_call
-def convert_file_to_tex(
+def convert_finding_to_tex(
     finding: Finding,
     render: Render,
     templates: DirectoryPath,
@@ -35,23 +32,13 @@ def convert_file_to_tex(
     """
 
     assert finding.path is not None
-
     if finding.format == FileFormat.tex:
         return
-    convert_recipes = [c for c in render.convert_recipes if c.input_format == finding.format]
-    if len(convert_recipes) == 0:
-        raise SeretoValueError(f"no converter for {finding.format.value!r} format")
 
-    if recipe is None:  # user did not provide recipe's name -> use the first
-        run_recipe = convert_recipes[0]
-    else:
-        if len(res := [c for c in convert_recipes if c.name == recipe]) != 1:
-            raise SeretoValueError(f"no converter found with name {recipe!r}")
-        run_recipe = res[0]
+    convert_recipe = render.get_convert_recipe(name=recipe, input_format=finding.format, output_format=FileFormat.tex)
+    finding_file = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}"
 
-    finding_file: Path = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}"
-
-    for tool_name in run_recipe.tools:
+    for tool_name in convert_recipe.tools:
         tool = [t for t in render.tools if t.name == tool_name][0]
         tool.run(
             cwd=finding.path,
