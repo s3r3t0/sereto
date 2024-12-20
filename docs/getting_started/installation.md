@@ -75,15 +75,15 @@
 
 ## Docker
 
-Alternatively you can use SeReTo in a Docker container. You will need to mount the directories with reports and templates to the container.
+Alternatively you can use SeReTo in a Docker container. You will need to mount the directories with projects and templates to the container.
 
 === "DockerHub"
     ```sh
-    docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto/sereto
+    docker run -it --rm -v "<path_to_projects>:/projects" -v "<path_to_templates>:/templates" sereto/sereto
     ```
 
 === "Build"
     ```sh
     docker build . -t sereto
-    docker run -it --rm -v "<path_to_reports>:/reports" -v "<path_to_templates>:/templates" sereto
+    docker run -it --rm -v "<path_to_projects>:/projects" -v "<path_to_templates>:/templates" sereto
     ```

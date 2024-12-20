@@ -15,7 +15,7 @@ __all__ = [
 
 
 TypeProjectId = Annotated[str, StringConstraints(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]
-"""Type for report ID.
+"""Type for project ID.
 
 The value should meet the following requirements:
 

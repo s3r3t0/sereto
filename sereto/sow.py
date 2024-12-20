@@ -28,7 +28,7 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
             project.path,
         ],
         file=template,
-        vars={"c": cfg, "config": project.config, "version": version, "report_path": project.path, **cfg_dict},
+        vars={"c": cfg, "config": project.config, "version": version, "project_path": project.path, **cfg_dict},
     )
 
     return "".join(sow_generator)

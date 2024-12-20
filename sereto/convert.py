@@ -49,7 +49,7 @@ def convert_finding_to_tex(
         finding: The finding object representing the file to be converted.
         render: The render object containing convert_recipes and tools for the conversion.
         templates: The path to the templates directory.
-        version: The report version object.
+        version: The project version object.
         recipe: The name of the recipe to use for conversion. Defaults to None.
 
     Raises:

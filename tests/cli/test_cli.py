@@ -29,11 +29,11 @@ def mock_input():
 
 @patch("sereto.models.settings.Settings.get_path")
 def test_sereto_new(mock_get_path, sereto_templates, tmp_path, mock_input):
-    reports_path = tmp_path / "reports"
-    reports_path.mkdir()
+    projects_path = tmp_path / "projects"
+    projects_path.mkdir()
 
     settings_path = tmp_path / "settings.json"
-    settings_path.write_text(f'{{"reports_path": "{reports_path}", "templates_path": "{sereto_templates}"}}')
+    settings_path.write_text(f'{{"projects_path": "{projects_path}", "templates_path": "{sereto_templates}"}}')
     mock_get_path.return_value = settings_path
 
     runner = CliRunner()

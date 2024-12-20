@@ -6,17 +6,17 @@ This is so far valid for the `report.tex.j2` and `sow.tex.j2` templates.
 
 ## Variables
 
-- `c`: The [VersionConfig](../reference/models/config.md#sereto.models.config.VersionConfig) object for the current version of the report.
+- `c`: The [VersionConfig](../reference/models/config.md#sereto.models.config.VersionConfig) object for the current version of the project.
 - `config`: The full [Config](../reference/models/config.md#sereto.models.config.Config) object (most of the time, you should use `c` instead).
-- `version`: The version of the report.
-- `report_path`: Path object to the report directory.
+- `version`: The version of the project.
+- `project_path`: Path object to the project directory.
 
 ### [VersionConfig](../reference/models/config.md#sereto.models.config.VersionConfig) variables
 
 The attributes of the `c` object are also accessible directly. Primarily, the `c` object is used for invoking methods.
 
-- `id`: The ID of the report.
-- `name`: The name of the report.
+- `id`: The ID of the project.
+- `name`: The name of the project.
 - `version_description`: The description of the version (e.g. "retest").
 - `targets`: List of targets.
 - `dates`: List of dates.

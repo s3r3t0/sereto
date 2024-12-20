@@ -25,23 +25,23 @@ __all__ = ["sereto_ls", "sereto_repl"]
 
 @validate_call
 def sereto_ls(settings: Settings) -> None:
-    """List all reports in the user's reports directory.
+    """List all projects in the user's projects directory.
 
     Print a table with the details to the console.
 
     Args:
         settings: The Settings object.
     """
-    project_paths: list[Path] = [d for d in settings.reports_path.iterdir() if Project.is_project_dir(d)]
-    table = Table("ID", "Name", "Location", title="Reports", box=box.MINIMAL)
+    project_paths: list[Path] = [d for d in settings.projects_path.iterdir() if Project.is_project_dir(d)]
+    table = Table("ID", "Name", "Location", title="Projects", box=box.MINIMAL)
 
     for dir in project_paths:
         try:
-            report_name = Project.load_from(dir).config.last_config().name
+            project_name = Project.load_from(dir).config.last_config().name
         except (RuntimeError, SeretoValueError):
-            report_name = "n/a"
+            project_name = "n/a"
 
-        table.add_row(dir.name, report_name, f"[link {dir.as_uri()}]{dir}")
+        table.add_row(dir.name, project_name, f"[link {dir.as_uri()}]{dir}")
 
     Console().print(table, justify="center")
 
@@ -84,11 +84,11 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
     Returns:
         The prompt string.
     """
-    # Determine if the current working directory is a report directory
+    # Determine if the current working directory is a project directory
     project_id: TypeProjectId | None = None
     cwd = Path.cwd()
     if Project.is_project_dir(cwd):
-        # Load the report to get the ID (this can be different from the directory name)
+        # Load the project to get the ID (this can be different from the directory name)
         project = Project.load_from()
         project_id = project.config.last_config().id
 
@@ -122,8 +122,8 @@ def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> Non
         project_id: The ID of the project to switch to. Use '-' to go back to the previous working directory.
 
     Raises:
-        SeretoValueError: If the report ID is invalid.
-        SeretoPathError: If the report's path does not exist.
+        SeretoValueError: If the project ID is invalid.
+        SeretoPathError: If the project's path does not exist.
     """
     wd = WorkingDir()
 
@@ -132,14 +132,14 @@ def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> Non
         wd.go_back()
         return
 
-    # Check if the report's location exists
-    # TODO: Should we iterate over all reports and read the config to get the correct path?
-    report_path = settings.reports_path / project_id
-    if not Project.is_project_dir(report_path):
-        raise SeretoPathError(f"Report '{project_id}' does not exist. Use 'ls' to list reports.")
+    # Check if the project's location exists
+    # TODO: Should we iterate over all projects and read the config to get the correct path?
+    project_path = settings.projects_path / project_id
+    if not Project.is_project_dir(project_path):
+        raise SeretoPathError(f"project '{project_id}' does not exist. Use 'ls' to list all projects")
 
     # Change the current working directory to the new location
-    wd.change(report_path)
+    wd.change(project_path)
 
 
 @click.command(name="exit")

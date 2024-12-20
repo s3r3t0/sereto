@@ -106,7 +106,7 @@ class Finding(SeretoBaseModel):
         return v
 
     def present_in_versions(self) -> list[ProjectVersion]:
-        """Get list of all report versions in which this finding is present."""
+        """Get list of all project versions in which this finding is present."""
         return [k for k in self.risks]
 
     @validate_call

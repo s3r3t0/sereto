@@ -6,9 +6,9 @@ The **location** where the configuration file is stored is determined by using [
 
 Settings consist of the following fields:
 
-## `reports_path`
+## `projects_path`
 
-The path to the directory where the *reports* are located.
+The path to the directory where the *projects* are located.
 
 ## `templates_path`
 

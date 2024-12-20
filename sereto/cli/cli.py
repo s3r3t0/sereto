@@ -32,8 +32,7 @@ from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
-from sereto.project import copy_skel, load_project
-from sereto.report import new_report
+from sereto.project import copy_skel, load_project, new_project
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.source_archive import (
@@ -57,10 +56,10 @@ def cli() -> None:
 
 @cli.command()
 @handle_exceptions
-@click.argument("report_id")
+@click.argument("project_id")
 @load_settings
-def new(settings: Settings, report_id: TypeProjectId) -> None:
-    """Create a new report.
+def new(settings: Settings, project_id: TypeProjectId) -> None:
+    """Create a new project.
 
     \b
     Example:
@@ -71,18 +70,18 @@ def new(settings: Settings, report_id: TypeProjectId) -> None:
 
     Args:
         settings: The settings object containing the tool's global configuration.
-        report_id: The ID of the report to be created.
+        project_id: The ID of the project to be created.
     """
-    Console().print("[cyan]We will ask you a few questions to set up the new report.\n")
-    name = prompt("Name of the report: ")
-    new_report(settings=settings, id=report_id, name=name)
+    Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
+    name = prompt("Name of the project: ")
+    new_project(projects_path=settings.projects_path, templates_path=settings.templates_path, id=project_id, name=name)
 
 
 @cli.command()
 @handle_exceptions
 @load_settings
 def ls(settings: Settings) -> None:
-    """List all available reports.\f
+    """List all available projects.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
@@ -104,7 +103,7 @@ def repl() -> None:
 def decrypt(settings: Settings, file: FilePath) -> None:
     """Extract the SeReTo project from the encrypted archive."""
     source_tgz = decrypt_file(file=file, keep_original=True)
-    extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=settings.projects_path, keep_original=False)
 
 
 @cli.command()
@@ -124,7 +123,7 @@ def unpack(settings: Settings, file: FilePath) -> None:
     else:
         source_tgz = retrieve_source_archive(pdf=file, name="source.tgz")
 
-    extract_source_archive(file=source_tgz, output_dir=settings.reports_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=settings.projects_path, keep_original=False)
 
 
 # -------------
@@ -134,9 +133,9 @@ def unpack(settings: Settings, file: FilePath) -> None:
 
 @cli.group(cls=AliasedGroup)
 def config() -> None:
-    """Report's configuration.
+    """Project's configuration.
 
-    This group of commands allows you to manage the configuration of a report.
+    This group of commands allows you to manage the configuration of a project.
     """
 
 
@@ -144,7 +143,7 @@ def config() -> None:
 @handle_exceptions
 @load_settings
 def config_edit(settings: Settings) -> None:
-    """Launch editor with report's configuration file.\f
+    """Launch editor with project's configuration file.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
@@ -177,7 +176,7 @@ def config_show(
     all: bool,
     output_format: OutputFormat,
 ) -> None:
-    """Show the reports's configuration.\f
+    """Show the projects's configuration.\f
 
     Args:
         project: Project's representation.
@@ -197,7 +196,7 @@ def config_show(
 def config_dates() -> None:
     """Configuration of dates.
 
-    This group of commands allows you to manage the dates configuration of a report.
+    This group of commands allows you to manage the dates configuration of a project.
     """
 
 
@@ -205,7 +204,7 @@ def config_dates() -> None:
 @handle_exceptions
 @load_project
 def config_dates_add(project: Project) -> None:
-    """Add date to the report's configuration.\f
+    """Add date to the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -218,7 +217,7 @@ def config_dates_add(project: Project) -> None:
 @click.option("-i", "--index", required=True, type=int, help="Date index to be deleted.")
 @load_project
 def config_dates_delete(project: Project, index: int) -> None:
-    """Delete date from the report's configuration.\f
+    """Delete date from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -252,7 +251,7 @@ def config_dates_show(
     all: bool,
     output_format: OutputFormat,
 ) -> None:
-    """Show dates from the report's configuration.\f
+    """Show dates from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -272,7 +271,7 @@ def config_dates_show(
 def config_people() -> None:
     """Configuration of people.
 
-    This group of commands allows you to manage the people configuration of a report.
+    This group of commands allows you to manage the people configuration of a project.
     """
     pass
 
@@ -281,7 +280,7 @@ def config_people() -> None:
 @handle_exceptions
 @load_project
 def config_people_add(project: Project) -> None:
-    """Add person to the report's configuration.\f
+    """Add person to the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -294,7 +293,7 @@ def config_people_add(project: Project) -> None:
 @click.option("-i", "--index", required=True, type=int, help="Person index to be deleted.")
 @load_project
 def config_people_delete(project: Project, index: int) -> None:
-    """Delete person from the report's configuration.\f
+    """Delete person from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -328,7 +327,7 @@ def config_people_show(
     all: bool,
     output_format: OutputFormat,
 ) -> None:
-    """Show people from the report's configuration.\f
+    """Show people from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -348,7 +347,7 @@ def config_people_show(
 def config_targets() -> None:
     """Configuration of targets.
 
-    This group of commands allows you to manage the targets configuration of a report.
+    This group of commands allows you to manage the targets configuration of a project.
     """
 
 
@@ -356,7 +355,7 @@ def config_targets() -> None:
 @handle_exceptions
 @load_project
 def config_targets_add(project: Project) -> None:
-    """Add targets to the report's configuration.\f
+    """Add targets to the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -369,7 +368,7 @@ def config_targets_add(project: Project) -> None:
 @click.option("-i", "--index", required=True, type=int, help="Target index to be deleted.")
 @load_project
 def config_targets_delete(project: Project, index: int) -> None:
-    """Delete target from the report's configuration.\f
+    """Delete target from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -403,7 +402,7 @@ def config_targets_show(
     all: bool,
     output_format: OutputFormat,
 ) -> None:
-    """Show targets from the report's configuration.\f
+    """Show targets from the project's configuration.\f
 
     Args:
         project: Project's representation.
@@ -423,7 +422,7 @@ def config_targets_show(
 def findings() -> None:
     """Operations with findings.
 
-    This group of commands allows you to manage the findings of a report.
+    This group of commands allows you to manage the findings of a project.
     """
 
 
@@ -491,14 +490,14 @@ def finding_update(project: Project) -> None:
 
 @cli.group(cls=AliasedGroup)
 def open() -> None:
-    """Open report, Statement of Work (SoW), or the report's folder."""
+    """Open report, Statement of Work (SoW), or the project's folder."""
 
 
 @open.command(name="folder")
 @handle_exceptions
 @load_project
 def open_folder(project: Project) -> None:
-    """Open the folder containing the current report.\f
+    """Open the folder containing the current project.\f
 
     Args:
         project: project: Project's representation.
@@ -740,22 +739,22 @@ def settings_show(settings: Settings) -> None:
 def templates() -> None:
     """Operations with templates.
 
-    This group of commands allows you to copy report's skeleton from templates.
+    This group of commands allows you to copy project's skeleton from templates.
     """
 
 
 @templates.group(cls=AliasedGroup)
 def skel() -> None:
-    """Report template skeleton files."""
+    """Project template skeleton files."""
 
 
 @skel.command(name="copy")
 @handle_exceptions
 @load_project
 def templates_skel_copy(project: Project) -> None:
-    """Update the report's templates from the skeleton directory.
+    """Update the project's templates from the skeleton directory.
 
-    This function copies all files from the templates skeleton directory to the report's directory, overwriting any
+    This function copies all files from the templates skeleton directory to the project's directory, overwriting any
     existing files.
     \f
 

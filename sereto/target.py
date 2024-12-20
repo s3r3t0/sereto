@@ -107,7 +107,7 @@ def render_target_to_tex(project: Project, target: Target, target_ix: int, versi
             "c": cfg,
             "config": project.config,
             "version": version,
-            "report_path": project.path,
+            "project_path": project.path,
             **cfg_dict,
         },
     )

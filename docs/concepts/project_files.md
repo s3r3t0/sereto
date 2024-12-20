@@ -86,7 +86,7 @@ Usually, it is an empty file.
 
 ## `.seretoignore`
 
-SeReTo offers a convenient feature that allows the inclusion of report sources in the final report PDF. This functionality utilizes the `.seretoignore` file with the same syntax as `.gitignore`, enabling the exclusion of specific files.
+SeReTo offers a convenient feature that allows the inclusion of project sources in the final report PDF. This functionality utilizes the `.seretoignore` file with the same syntax as `.gitignore`, enabling the exclusion of specific files.
 
 ## `sow.tex.j2`
 

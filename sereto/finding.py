@@ -202,7 +202,7 @@ def render_finding_group_to_tex(
             "c": cfg,
             "config": project.config,
             "version": version,
-            "report_path": project.path,
+            "project_path": project.path,
             **cfg_dict,
         },
     )

@@ -32,10 +32,10 @@ def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
 
 @validate_call
 def create_source_archive(project: Project) -> Path:
-    """Create a source archive for the report.
+    """Create a source archive for the project.
 
-    This function creates a source archive for the report by copying all the files not matching any ignore pattern in
-    the report directory to a compressed archive file. The archive is encrypted if the password is set in the system's
+    This function creates a source archive for the project by copying all the files not matching any ignore pattern in
+    the project directory to a compressed archive file. The archive is encrypted if the password is set in the system's
     keyring.
 
     Args:

@@ -287,7 +287,7 @@ class Settings(SeretoBaseSettings):
     """Global settings:
 
     Attributes:
-        reports_path: path to the directory containing all reports
+        projects_path: path to the directory containing all projects
         templates_path: path to the directory containing templates
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
@@ -298,7 +298,7 @@ class Settings(SeretoBaseSettings):
         SeretoValueError: If the JSON file is invalid.
     """
 
-    reports_path: DirectoryPath
+    projects_path: DirectoryPath
     templates_path: DirectoryPath
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)

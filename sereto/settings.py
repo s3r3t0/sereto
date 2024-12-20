@@ -50,7 +50,7 @@ def load_settings_function() -> Settings:
     else:
         Console().print("[cyan]It seems like this is the first time you're running the tool. Let's set it up!\n")
 
-        reports_path = _ask_for_dirpath("Enter the path to the reports directory")
+        projects_path = _ask_for_dirpath("Enter the path to the projects directory")
         templates_path = _ask_for_dirpath("Enter the path to the templates directory")
 
         Console().print("\nThank you! The minimal setup is complete.")
@@ -59,7 +59,7 @@ def load_settings_function() -> Settings:
         )
         Console().rule()
 
-        settings = Settings(reports_path=reports_path, templates_path=templates_path)
+        settings = Settings(projects_path=projects_path, templates_path=templates_path)
         write_settings(settings)
 
         return settings

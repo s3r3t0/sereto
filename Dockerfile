@@ -1,7 +1,7 @@
 FROM texlive/texlive:latest
 
-# Volumes for mounting the reports and templates
-VOLUME /reports
+# Volumes for mounting the projects and templates
+VOLUME /projects
 VOLUME /templates
 
 USER root
@@ -19,7 +19,7 @@ RUN useradd -m sereto && \
     rm -rf /tmp/* && \
     rm -rf /usr/src/sereto && \
     mkdir -p /home/sereto/.config/sereto && \
-    echo '{\n  "reports_path": "/reports",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json && \
+    echo '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json && \
     chown -R sereto:sereto /home/sereto/.config
 
 # Switch to sereto user

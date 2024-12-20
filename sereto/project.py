@@ -1,3 +1,4 @@
+import importlib.metadata
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
@@ -10,10 +11,12 @@ from typing_extensions import ParamSpec
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
+from sereto.models.config import Config, VersionConfig
 from sereto.models.project import Project
-from sereto.models.version import ProjectVersion
+from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
 from sereto.target import create_findings_config, get_risks
+from sereto.types import TypeProjectId
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -85,7 +88,7 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
 
     Args:
         project: Project's representation.
-        version: The version of the report.
+        version: The version of the project.
     """
     cfg = project.config.at_version(version=version)
 
@@ -112,3 +115,45 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
         # Generate risks plot for the target
         risks = get_risks(target=target, version=version)
         risks_plot(risks=risks, path=project.path / ".build" / target.uname / "risks.png")
+
+
+@validate_call
+def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id: TypeProjectId, name: str) -> None:
+    """Generates a new project with the specified ID.
+
+    Args:
+        projects_path: The path to the projects directory.
+        templates_path: The path to the templates directory.
+        id: The ID of the new project. This should be a string that uniquely identifies the project.
+        name: The name of the new project.
+
+    Raises:
+        SeretoValueError: If a project with the specified ID already exists in the `projects` directory.
+    """
+    Console().log(f"Generating a new project with ID {id!r}")
+
+    if (new_path := (projects_path / id)).exists():
+        raise SeretoPathError("project with specified ID already exists")
+    else:
+        new_path.mkdir()
+
+    sereto_ver = importlib.metadata.version("sereto")
+
+    cfg = Config(
+        sereto_version=SeretoVersion.from_str(sereto_ver),
+        version_configs={
+            ProjectVersion.from_str("v1.0"): VersionConfig(
+                id=id,
+                name=name,
+                version_description="Initial",
+            ),
+        },
+    )
+
+    Console().log("Copy project skeleton")
+    copy_skel(templates=templates_path, dst=new_path)
+
+    config_path: Path = new_path / "config.json"
+    Console().log(f"Writing the config '{config_path}'")
+    with config_path.open("w", encoding="utf-8") as f:
+        f.write(cfg.model_dump_json(indent=2))

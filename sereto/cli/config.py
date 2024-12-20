@@ -34,7 +34,7 @@ def edit_config(settings: Settings) -> None:
         settings: Global settings.
     """
     sereto_ver = importlib.metadata.version("sereto")
-    config = get_config_path(dir_subtree=settings.reports_path)
+    config = get_config_path(dir_subtree=settings.projects_path)
 
     # If the config file does not exist, create it with default values
     if not config.is_file():
@@ -60,7 +60,7 @@ def show_config(
     all: bool = False,
     version: ProjectVersion | None = None,
 ) -> None:
-    """Display the configuration for a report.
+    """Display the configuration for a project.
 
     Args:
         project: Project's representation.
@@ -423,7 +423,7 @@ def show_targets_config(
         project: Project's representation.
         output_format: Select format of the output.
         all: Show targets from all versions.
-        version: Show targets from the specified report's version.
+        version: Show targets from the specified project's version.
     """
     if version is None:
         version = project.config.last_version()

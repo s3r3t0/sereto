@@ -13,11 +13,11 @@ from sereto.models.version import ProjectVersion, SeretoVersion
 
 
 class VersionConfig(SeretoBaseModel):
-    """Model with core attributes for a specific version of the report configuration.
+    """Model with core attributes for a specific version of the project configuration.
 
     Attributes:
-        id: The ID of the report.
-        name: The name of the report.
+        id: The ID of the project.
+        name: The name of the project.
         version_description: The description of the version (e.g. "retest").
         targets: List of targets.
         dates: List of dates.
@@ -279,7 +279,7 @@ class VersionConfig(SeretoBaseModel):
 
 
 class Config(SeretoBaseModel):
-    """Model representing the full report configuration.
+    """Model representing the full project configuration.
 
     Attributes:
         sereto_version: Version of SeReTo which produced the config.
@@ -315,7 +315,7 @@ class Config(SeretoBaseModel):
 
     @validate_call
     def dump_json(self, file: FilePath | NewPath) -> None:
-        """Write report configuration to a JSON file.
+        """Write project configuration to a JSON file.
 
         Args:
             file: The path to the configuration file.
@@ -381,28 +381,28 @@ class Config(SeretoBaseModel):
 
     @validate_call
     def versions(self) -> list[ProjectVersion]:
-        """Get a sorted list of report versions in ascending order.
+        """Get a sorted list of project versions in ascending order.
 
         Returns:
-            A list of report versions.
+            A list of project versions.
         """
         return sorted(list(self.version_configs.keys()))
 
     @validate_call
     def first_version(self) -> ProjectVersion:
-        """Get the first report version present in the configuration.
+        """Get the first project version present in the configuration.
 
         Returns:
-            The first report version.
+            The first project version.
         """
         return self.versions()[0]
 
     @validate_call
     def last_version(self) -> ProjectVersion:
-        """Get the last report version present in the configuration.
+        """Get the last project version present in the configuration.
 
         Returns:
-            The last report version.
+            The last project version.
         """
         return self.versions()[-1]
 
@@ -414,7 +414,7 @@ class Config(SeretoBaseModel):
             version: Selects which version of the configuration should be returned.
 
         Returns:
-            Configuration for the report at the specified version.
+            Configuration for the project at the specified version.
 
         Raises:
             SeretoValueError: If the specified version is unknown.
