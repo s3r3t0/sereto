@@ -1,20 +1,21 @@
 import frontmatter  # type: ignore[import-untyped]
 from prompt_toolkit.shortcuts import yes_no_dialog
-from pydantic import ValidationError, validate_call
+from pydantic import DirectoryPath, ValidationError, validate_call
 from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
-from sereto.convert import convert_finding_to_tex
+from sereto.convert import apply_convertor
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
-from sereto.jinja import render_j2
+from sereto.jinja import render_jinja2
 from sereto.models.config import Config
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
 from sereto.models.project import Project
+from sereto.models.settings import Render
 from sereto.models.target import Target
 from sereto.models.version import ProjectVersion
-from sereto.utils import YAML, write_if_different
+from sereto.utils import YAML
 
 
 @validate_call
@@ -121,30 +122,27 @@ def update_findings(project: Project) -> None:
 
 
 @validate_call
-def render_finding_j2(
-    finding: Finding,
+def render_finding_to_tex(
     target: Target,
+    finding: Finding,
     version: ProjectVersion,
-) -> bool:
-    """Render a Jinja template for a finding.
-
-    Args:
-        finding: The finding to render.
-        target: The target for which the finding is rendered.
-        version: The version of the project.
-
-    Returns:
-        True if changes were made to the destination file, False otherwise.
-    """
+    templates: DirectoryPath,
+    render: Render,
+    converter: str | None = None,
+) -> str:
     assert finding.path is not None and target.path is not None
+    category = finding.category if finding.category is not None else target.category
+    finding.assert_required_vars(templates=templates, category=category)
 
-    finding_j2_path = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}.j2"
-    if not finding_j2_path.is_file():
-        raise SeretoPathError(f"finding template not found: '{finding_j2_path}'")
+    # Construct path to finding template
+    finding_template = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}.j2"
+    if not finding_template.is_file():
+        raise SeretoPathError(f"finding template not found: '{finding_template}'")
 
-    text_generator = render_j2(
+    # Render Jinja2 template
+    finding_generator = render_jinja2(
         templates=[finding.path, target.path / "findings"],
-        file=finding_j2_path,
+        file=finding_template,
         vars={
             "target": target.model_dump(),
             "version": version,
@@ -152,54 +150,50 @@ def render_finding_j2(
         },
     )
 
-    finding_path = finding_j2_path.with_suffix("")
-    changed = write_if_different(file=finding_path, content="".join(text_generator))
-    Console().log(f"Rendered Jinja finding: {finding_path.relative_to(target.path.parent)}")
-    return changed
+    # Convert to TeX
+    content = apply_convertor(
+        input="".join(finding_generator),
+        input_format=finding.format,
+        output_format=FileFormat.tex,
+        render=render,
+        recipe=converter,
+        replacements={
+            "%TEMPLATES%": str(templates),
+        },
+    )
+
+    return content
 
 
 @validate_call
-def render_j2_finding_group_dependencies(
-    project: Project,
-    target: Target,
-    finding_group: FindingGroup,
-    version: ProjectVersion,
-    convert_recipe: str | None = None,
-) -> None:
-    for finding in finding_group.findings:
-        if version in finding.risks:
-            finding.assert_required_vars(templates=project.settings.templates_path, category=target.category)
-            content_changed = render_finding_j2(finding=finding, target=target, version=version)
-            if finding.format != FileFormat.tex and content_changed:
-                convert_finding_to_tex(
-                    finding=finding,
-                    render=project.settings.render,
-                    templates=project.settings.templates_path,
-                    version=version,
-                    recipe=convert_recipe,
-                )
-
-
-@validate_call
-def render_j2_finding_group_standalone(
+def render_finding_group_to_tex(
     project: Project,
     target: Target,
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
     version: ProjectVersion,
-) -> None:
+) -> str:
+    """Render selected finding group (top-level document) to TeX format."""
     cfg = project.config.at_version(version=version)
 
-    finding_group_j2_path = project.path / "finding_standalone_wrapper.tex.j2"
-    if not finding_group_j2_path.is_file():
-        raise SeretoPathError(f"template not found: '{finding_group_j2_path}'")
+    # Construct path to finding group template
+    template = project.path / "layouts/finding_group.tex.j2"
+    if not template.is_file():
+        raise SeretoPathError(f"template not found: '{template}'")
 
-    # make shallow dict - values remain objects on which we can call their methods in Jinja
+    # Make shallow dict - values remain objects on which we can call their methods in Jinja
     cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
-    finding_group_generator = render_j2(
-        templates=project.path,
-        file=finding_group_j2_path,
+
+    # Render Jinja2 template
+    finding_group_generator = render_jinja2(
+        templates=[
+            project.path / "layouts/generated",
+            project.path / "layouts",
+            project.path / "includes",
+            project.path,
+        ],
+        file=template,
         vars={
             "finding_group": finding_group,
             "finding_group_index": finding_group_ix,
@@ -213,6 +207,4 @@ def render_j2_finding_group_standalone(
         },
     )
 
-    finding_group_tex_path = project.path / f"{target.uname}_{finding_group.uname}.tex"
-    write_if_different(file=finding_group_tex_path, content="".join(finding_group_generator))
-    Console().log(f"Rendered Jinja template: {finding_group_tex_path.relative_to(project.path)}")
+    return "".join(finding_group_generator)

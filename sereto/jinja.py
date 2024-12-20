@@ -1,5 +1,4 @@
 from collections.abc import Iterator, Sequence
-from collections.abc import Sequence as abc_Sequence
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template, is_undefined
@@ -125,7 +124,7 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
 
 
 @validate_call
-def render_j2(
+def render_jinja2(
     file: FilePath, templates: DirectoryPath | Sequence[DirectoryPath], vars: dict[str, Any]
 ) -> Iterator[str]:
     """Renders a Jinja2 template.
@@ -145,8 +144,6 @@ def render_j2(
     else:
         raise SeretoValueError("unsupported file type")
 
-    template: Template = env.get_template(
-        str(file.relative_to(templates[0] if isinstance(templates, abc_Sequence) else templates))
-    )
+    template: Template = env.get_template(name=file.name)
 
     return template.generate(vars)

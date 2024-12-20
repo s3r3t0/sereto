@@ -86,39 +86,37 @@ def create_source_archive(project: Project) -> Path:
 
 
 @validate_call
-def embed_source_archive(archive: FilePath, report: FilePath, keep_original: bool = True) -> None:
-    """Embed the source archive in the report PDF.
+def embed_attachment_to_pdf(
+    pdf: FilePath, attachment: FilePath, name: str | None = None, keep_original: bool = True
+) -> None:
+    """Embed the attachment to the PDF.
 
     Args:
-        archive: The path to the source archive.
-        report: The path to the report PDF.
+        pdf: The path to the PDF file where the attachment will be embedded.
+        attachment: The path to the attahcment.
+        name: The name of the attachment in the PDF. If None, the attachment's name is used. Defaults to None.
         keep_original: If True, the original source archive is kept. Defaults to True.
     """
-    # Check if the provided files exist
-    if not archive.is_file():
-        raise SeretoPathError(f"file not found: '{archive}'")
-    if not report.is_file():
-        raise SeretoPathError(f"file not found: '{report}'")
-
     # Initialize PDF reader and writer
-    reader = PdfReader(report, strict=True)
+    reader = PdfReader(pdf, strict=True)
     writer = PdfWriter()
 
     # Copy content from the reader to the writer
     writer.append(reader)
 
     # Embed the source archive
-    writer.add_attachment(filename=f"source{archive.suffix}", data=archive.read_bytes())
+    attachment_name = name if name is not None else attachment.name
+    writer.add_attachment(filename=attachment_name, data=attachment.read_bytes())
 
     # Write the output PDF
-    with report.open("wb") as output_pdf:
+    with pdf.open("wb") as output_pdf:
         writer.write(output_pdf)
-        Console().log(f"[green]+[/green] Embedded source archive into '{report}'")
+        Console().log(f"[green]+[/green] Embedded attachment '{attachment.name}' into '{pdf}'")
 
     # Delete the source archive if `keep_original=False`
     if not keep_original:
-        archive.unlink()
-        Console().log(f"[red]-[/red] Deleted source archive: '{archive}'")
+        attachment.unlink()
+        Console().log(f"[red]-[/red] Deleted original file: '{attachment}'")
 
 
 @validate_call

@@ -19,7 +19,7 @@ from sereto.models.project import Project, get_config_path
 from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ProjectVersion, SeretoVersion
-from sereto.report import report_create_missing
+from sereto.project import project_create_missing
 
 # -------------
 # sereto config
@@ -354,7 +354,7 @@ def add_targets_config(project: Project, version: ProjectVersion | None = None) 
 
     # Post-process the new target
     project.config.update_paths(project.path)
-    report_create_missing(project=project, version=version)
+    project_create_missing(project=project, version=version)
 
 
 @validate_call

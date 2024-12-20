@@ -85,6 +85,7 @@ class ReportIncludeGroup(SeretoBaseModel):
 
 class Finding(SeretoBaseModel):
     name: str
+    category: str | None = None
     path_name: TypePathName
     risks: dict[ProjectVersion, Risk]
     vars: dict[str, Any] = {}
@@ -149,7 +150,7 @@ class FindingGroup(SeretoBaseModel):
             The unique name of the finding group.
         """
         name = "".join([x.lower() for x in unidecode(self.name) if x.isalnum()])
-        return f"finding_{name}"
+        return f"finding_group_{name}"
 
 
 class FindingsConfig(SeretoBaseModel):

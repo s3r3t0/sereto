@@ -1,11 +1,19 @@
 from collections.abc import Callable
 from functools import wraps
+from pathlib import Path
+from shutil import copy2, copytree
 from typing import TypeVar
 
 from click import get_current_context
+from pydantic import DirectoryPath, validate_call
 from typing_extensions import ParamSpec
 
+from sereto.cli.utils import Console
+from sereto.exceptions import SeretoPathError
 from sereto.models.project import Project
+from sereto.models.version import ProjectVersion
+from sereto.plot import risks_plot
+from sereto.target import create_findings_config, get_risks
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -20,3 +28,87 @@ def load_project(f: Callable[..., R]) -> Callable[..., R]:
         return get_current_context().invoke(f, project, *args, **kwargs)
 
     return wrapper
+
+
+@validate_call
+def init_build_dir(project: Project, version: ProjectVersion) -> None:
+    """Initialize the build directory."""
+    # Create ".build" directory
+    if not (build_dir := project.path / ".build").is_dir():
+        build_dir.mkdir(parents=True)
+
+    # Create target directories
+    for target in project.config.at_version(version=version).targets:
+        if not (target_dir := build_dir / target.uname).is_dir():
+            target_dir.mkdir(parents=True)
+
+
+@validate_call
+def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = False) -> None:
+    """Copy the content of a templates `skel` directory to a destination directory.
+
+    A `skel` directory is a directory that contains a set of files and directories that can be used as a template
+    for creating new projects. This function copies the contents of the `skel` directory located at
+    the path specified by `templates` to the destination directory specified by `dst`.
+
+    Args:
+        templates: The path to the directory containing the `skel` directory.
+        dst: The destination directory to copy the `skel` directory contents to.
+        overwrite: Whether to allow overwriting of existing files in the destination directory.
+            If `True`, existing files will be overwritten. If `False` (default), a `SeretoPathError` will be raised
+            if the destination already exists.
+
+    Raises:
+        SeretoPathError: If the destination directory already exists and `overwrite` is `False`.
+    """
+    skel_path: Path = templates / "skel"
+    Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
+
+    for item in skel_path.iterdir():
+        dst_item: Path = dst / (item.relative_to(skel_path))
+        if not overwrite and dst_item.exists():
+            raise SeretoPathError("Destination already exists")
+        if item.is_file():
+            Console().log(f" [green]+[/green] copy file: '{item.relative_to(skel_path)}'")
+            copy2(item, dst_item, follow_symlinks=False)
+        if item.is_dir():
+            Console().log(f" [green]+[/green] copy dir: '{item.relative_to(skel_path)}'")
+            copytree(item, dst_item, dirs_exist_ok=overwrite)
+
+
+@validate_call
+def project_create_missing(project: Project, version: ProjectVersion) -> None:
+    """Creates missing target directories from config.
+
+    This function creates any missing target directories and populates them with content of the "skel" directory from
+    templates.
+
+    Args:
+        project: Project's representation.
+        version: The version of the report.
+    """
+    cfg = project.config.at_version(version=version)
+
+    # Initialize the build directory
+    init_build_dir(project=project, version=version)
+
+    for target in cfg.targets:
+        assert target.path is not None
+        category_templates = project.settings.templates_path / "categories" / target.category
+
+        # Create target directory if missing
+        if not target.path.is_dir():
+            Console().log(f"Target directory not found, creating: '{target.path}'")
+            target.path.mkdir()
+            if (category_templates / "skel").is_dir():
+                Console().log(f"""Populating new target directory from: '{category_templates / "skel"}'""")
+                copy_skel(templates=category_templates, dst=target.path)
+            else:
+                Console().log(f"No 'skel' directory found: '{category_templates}'")
+
+            # Dynamically compose "findings.yaml"
+            create_findings_config(target=target, project=project, templates=category_templates / "findings")
+
+        # Generate risks plot for the target
+        risks = get_risks(target=target, version=version)
+        risks_plot(risks=risks, path=project.path / ".build" / target.uname / "risks.png")

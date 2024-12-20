@@ -16,6 +16,7 @@ from pydantic import (
     validate_call,
 )
 from rich.markdown import Markdown
+from rich.markup import escape
 
 from sereto.cli.utils import Console
 from sereto.enums import FileFormat
@@ -39,7 +40,10 @@ class RenderTool(SeretoBaseModel):
     args: list[str]
 
     @validate_call
-    def run(self, cwd: DirectoryPath, replacements: dict[str, str] | None = None) -> None:
+    def run(
+        self, cwd: DirectoryPath | None = None, input: bytes | None = None, replacements: dict[str, str] | None = None
+    ) -> bytes:
+        # Prepare the command
         command = [self.command] + self.args
         if replacements is not None:
             command = replace_strings(text=command, replacements=replacements)
@@ -48,19 +52,36 @@ class RenderTool(SeretoBaseModel):
                 dedent(f"""\
                     Running command:
                     ```bash
-                    {' '.join(command)}
+                    {escape(' '.join(command))}
                     ```
                 """)
             )
         )
-        try:
-            start_time = time.time()
-            subprocess.run(command, cwd=cwd, capture_output=True, check=True)
-            end_time = time.time()
-            Console().log(f"Command finished in {end_time - start_time:.2f} s")
-        except subprocess.CalledProcessError as e:
-            Console().log(Markdown(f"Command failed with error: `{e}`"))
-            raise SeretoCalledProcessError("command execution failed") from e
+        Console().line()
+
+        # Run the command and measure the execution time
+        start_time = time.time()
+        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True)
+        end_time = time.time()
+
+        # Check if the command failed
+        if result.returncode != 0:
+            Console().log(
+                Markdown(f"""\
+Command failed ({result.returncode}):
+```text
+{escape(result.stderr.decode("utf-8"))}
+```
+""")
+            )
+            Console().line()
+            raise SeretoCalledProcessError("command execution failed")
+
+        # Report success
+        Console().log(f"Command finished in {end_time - start_time:.2f} s")
+
+        # Return the command output
+        return result.stdout
 
 
 class RenderRecipe(SeretoBaseModel):
@@ -185,7 +206,7 @@ DEFAULT_RENDER_CONFIG = Render(
     target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"])],
     convert_recipes=[
         ConvertRecipe(
-            name="convert-md", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]
+            name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]
         ),
     ],
     tools=[
@@ -198,8 +219,6 @@ DEFAULT_RENDER_CONFIG = Render(
                 "--sandbox",
                 "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
                 "--filter=%TEMPLATES%/pandocfilters/minted.py",
-                "--output=%DOC%.tex",
-                "%DOC_EXT%",
             ],
         ),
         RenderTool(
@@ -210,7 +229,6 @@ DEFAULT_RENDER_CONFIG = Render(
                 "-interaction=batchmode",
                 "-halt-on-error",
                 "--shell-escape",
-                "-auxdir=.build_artifacts",
                 "%DOC%",
             ],
         ),
@@ -222,8 +240,6 @@ DEFAULT_RENDER_CONFIG = Render(
                 "-interaction=batchmode",
                 "-halt-on-error",
                 "--shell-escape",
-                "-auxdir=.build_artifacts",
-                "-outdir=%TARGET_DIR%",
                 "%DOC%",
             ],
         ),
@@ -235,8 +251,6 @@ DEFAULT_RENDER_CONFIG = Render(
                 "-interaction=batchmode",
                 "-halt-on-error",
                 "--shell-escape",
-                "-auxdir=.build_artifacts",
-                "-outdir=%FINDINGS_DIR%",
                 "%DOC%",
             ],
         ),

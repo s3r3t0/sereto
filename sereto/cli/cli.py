@@ -27,31 +27,21 @@ from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
-from sereto.finding import (
-    add_finding,
-    render_j2_finding_group_dependencies,
-    render_j2_finding_group_standalone,
-    show_findings,
-    update_findings,
-)
+from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
-from sereto.pdf import render_pdf_finding_group, render_pdf_sow, render_pdf_target
-from sereto.project import load_project
-from sereto.report import (
-    copy_skel,
-    new_report,
-    render_j2_report,
-    render_j2_sow,
-    # report_cleanup,
-    report_create_missing,
-    report_pdf,
-)
+from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
+from sereto.project import copy_skel, load_project
+from sereto.report import new_report
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
-from sereto.source_archive import extract_source_archive, retrieve_source_archive
-from sereto.target import render_j2_target_dependencies, render_j2_target_standalone
+from sereto.source_archive import (
+    create_source_archive,
+    embed_attachment_to_pdf,
+    extract_source_archive,
+    retrieve_source_archive,
+)
 from sereto.types import TypeProjectId
 from sereto.utils import replace_strings
 
@@ -577,74 +567,51 @@ def pdf() -> None:
 @handle_exceptions
 @click.option("-ts", "--target-selector", help="Target selector.")
 @click.option("-fs", "--finding-group-selector", help="Finding group selector.")
-@click.option("-c", "--convert-recipe", help="Convert finding recipe")
-@click.option("-r", "--finding-recipe", help="Build TeX finding recipe")
+@click.option("-c", "--converter", help="Convert finding recipe")
+@click.option("-r", "--renderer", help="Build TeX finding recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @load_project
-def pdf_finding_group(
+def cli_pdf_finding_group(
     project: Project,
     target_selector: int | str | None,
     finding_group_selector: int | str | None,
-    finding_recipe: str | None,
-    convert_recipe: str | None,
+    converter: str | None,
+    renderer: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    if version is None:
-        version = project.config.last_version()
-
-    # Select target
-    target = project.select_target(version=version, selector=target_selector)
-    target_ix = project.config.at_version(version).targets.index(target)
-
-    # Select finding group
-    fg = target.select_finding_group(selector=finding_group_selector)
-    fg_ix = target.findings_config.finding_groups.index(fg)
-
-    Console().log(f"Rendering partial report for finding group {fg.uname!r}")
-    report_create_missing(project=project, version=version)
-
-    # Render Jinja2
-    render_j2_finding_group_dependencies(
-        project=project, target=target, finding_group=fg, version=version, convert_recipe=convert_recipe
+    """Generate a finding group PDF."""
+    generate_pdf_finding_group(
+        project=project,
+        target_selector=target_selector,
+        finding_group_selector=finding_group_selector,
+        converter=converter,
+        renderer=renderer,
+        version=version,
     )
-    render_j2_finding_group_standalone(
-        project=project, target=target, target_ix=target_ix, finding_group=fg, finding_group_ix=fg_ix, version=version
-    )
-
-    # Render PDF
-    render_pdf_finding_group(project=project, finding_group=fg, target=target, version=version, recipe=finding_recipe)
 
 
 @pdf.command(name="target")
 @handle_exceptions
-@click.option("-ts", "--target-selector", required=True, help="Target selector.")
+@click.option("-ts", "--target-selector", help="Target selector.")
 @click.option("-c", "--convert-recipe", help="Convert finding recipe")
 @click.option("-r", "--target-recipe", help="Build TeX target recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @load_project
-def pdf_target(
+def cli_pdf_target(
     project: Project,
     target_selector: int | str | None,
     target_recipe: str | None,
     convert_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    if version is None:
-        version = project.config.last_version()
-
-    # Select target
-    target = project.select_target(version=version, selector=target_selector)
-    target_ix = project.config.at_version(version).targets.index(target)
-
-    Console().log(f"Rendering partial report for target '{target.uname}'")
-    report_create_missing(project=project, version=version)
-
-    # Render Jinja2
-    render_j2_target_dependencies(target=target, project=project, version=version, convert_recipe=convert_recipe)
-    render_j2_target_standalone(target=target, target_ix=target_ix, project=project, version=version)
-
-    # Render PDF
-    render_pdf_target(project=project, target=target, version=version, recipe=target_recipe)
+    """Generate a target PDF."""
+    generate_pdf_target(
+        project=project,
+        target_selector=target_selector,
+        target_recipe=target_recipe,
+        convert_recipe=convert_recipe,
+        version=version,
+    )
 
 
 @pdf.command(name="report")
@@ -653,38 +620,21 @@ def pdf_target(
 @click.option("-r", "--report-recipe", help="Build TeX report recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @load_project
-def pdf_report(
+def cli_pdf_report(
     project: Project,
     report_recipe: str | None,
     convert_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    """Generate a PDF report by following build recipes.\f
-
-    Args:
-        project: Project's representation.
-        report_recipe: The recipe used for generating the report. If None, the default recipe is used.
-        target_recipe: The recipe used for generating targets. If None, the default recipe is used.
-        convert_recipe: The convert recipe used for file format transformations. If None, the default recipe is used.
-        version: The version of the report that is generated. If None, the last version is used.
-    """
-    if version is None:
-        version = project.config.last_version()
-
-    Console().log(f"Rendering report version: '{version}'")
-    report_create_missing(project=project, version=version)
-
-    # Render Jinja2
-    render_j2_report(project=project, version=version, convert_recipe=convert_recipe)
-
-    # Render PDF
-    report_pdf(
-        project=project,
-        version=version,
-        report_recipe=report_recipe,
+    """Generate a report PDF."""
+    # Create report PDF
+    report_pdf = generate_pdf_report(
+        project=project, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
     )
 
-    # report_cleanup(project=project, version=version)
+    # Create and attach source archive
+    archive = create_source_archive(project=project)
+    embed_attachment_to_pdf(attachment=archive, pdf=report_pdf, name=f"sereto{archive.suffix}", keep_original=False)
 
 
 @pdf.command(name="sow")
@@ -692,25 +642,13 @@ def pdf_report(
 @click.option("-r", "--sow-recipe", help="Build TeX recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @load_project
-def pdf_sow(
+def cli_pdf_sow(
     project: Project,
     sow_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    """Generate a PDF Statement of Work (SoW) for a given report.\f
-
-    Args:
-        project: Project's representation.
-        sow_recipe: The recipe used for generating the SoW. If None, the default recipe is used.
-        version: The version of the report for which the SoW is generated. If None, the last version is used.
-    """
-    if version is None:
-        version = project.config.last_version()
-
-    Console().log(f"Rendering SoW version: '{version}'")
-    report_create_missing(project=project, version=version)
-    render_j2_sow(project=project, version=version)
-    render_pdf_sow(project=project, version=version, recipe=sow_recipe, keep_original=True)
+    """Generate a Statement of Work (SoW) PDF."""
+    generate_pdf_sow(project=project, sow_recipe=sow_recipe, version=version)
 
 
 # -------------

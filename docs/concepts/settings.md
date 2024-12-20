@@ -50,10 +50,6 @@ Example:
 
 List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *finding*.
 
-In addition to the standard variables defined below in the [`tools`](#tools) section, the following variables are available:
-
- - `%FINDINGS_DIR%`: path to the "findings" directory inside
-
 Example:
 
 === "JSON"
@@ -105,10 +101,6 @@ Example:
 ### `target_recipes`
 
 List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *target*.
-
-In addition to the standard variables defined below in the [`tools`](#tools) section, the following variables are available:
-
- - `%TARGET_DIR%`: path to the target's directory
 
 Example:
 
