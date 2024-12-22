@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** Implement new directory structure for the project.
 - **Breaking:** Rename "informational" risk to "info".
 - **Breaking:** Add `version_description` attribute to `VersionConfig`.
 - **Breaking:** `ConvertRecipe` now has in addition to input_format also output_format.

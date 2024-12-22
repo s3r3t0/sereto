@@ -98,6 +98,7 @@ nav:
       - reference/models/settings.md
       - reference/models/target.md
       - reference/models/version.md
+    - reference/build.md
     - reference/convert.md
     - reference/crypto.md
     - reference/enums.md
@@ -112,6 +113,7 @@ nav:
     - reference/settings.md
     - reference/singleton.md
     - reference/source_archive.md
+    - reference/sow.md
     - reference/target.md
     - reference/types.md
     - reference/utils.md

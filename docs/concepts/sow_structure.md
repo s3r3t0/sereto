@@ -7,7 +7,7 @@ The *Statement of Work (SoW)* is a document that outlines the scope of work, del
 The **high-level overview** of the SoW document in SeReTo is defined as follows:
 
 ```text
-┌───base_document.tex.j2──────────────────────────────┐
+┌───layouts/_base.tex.j2──────────────────────────────┐
 │                                                     │
 │ \documentclass{sereto}                              │
 │                                                     │
@@ -17,26 +17,25 @@ The **high-level overview** of the SoW document in SeReTo is defined as follows:
 │                                                     │
 │ \begin{document}                                    │
 │                                                     │
-│  ┌───sow.tex.j2──────────────────────────────────┐  │
+│  ┌───layouts/sow.tex.j2──────────────────────────┐  │
 │  │                                               │  │
 │  │   Management Summary                          │  │
 │  │   ...                                         │  │
 │  │                                               │  │
+|  ├───────────────────────────────────────────────┤  │
+│  │                                               │  │
 │  │   Target 1                                    │  │
 │  │                                               │  │
-│  │  ┌───target_<name_1>/scope.tex.j2───┐         │  │
-│  │  └──────────────────────────────────┘         │  │
+│  │  ┌───target_<name>/scope.tex.j2───┐           │  │
+│  │  └────────────────────────────────┘           │  │
 │  │                                               │  │
-│  │  ┌───target_<name_1>/approach.tex.j2───┐      │  │
-│  │  └─────────────────────────────────────┘      │  │
+│  │  ┌───target_<name>/approach.tex.j2───┐        │  │
+│  │  └───────────────────────────────────┘        │  │
+│  │                                               │  │
+|  ├───────────────────────────────────────────────┤  │
 │  │                                               │  │
 │  │   Target 2                                    │  │
-│  │                                               │  │
-│  │  ┌───target_<name_2>/scope.tex.j2───┐         │  │
-│  │  └──────────────────────────────────┘         │  │
-│  │                                               │  │
-│  │  ┌───target_<name_2>/approach.tex.j2───┐      │  │
-│  │  └─────────────────────────────────────┘      │  │
+│  │   ...                                         │  │
 │  │                                               │  │
 │  └───────────────────────────────────────────────┘  │
 │                                                     │

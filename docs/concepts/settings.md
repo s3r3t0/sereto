@@ -135,6 +135,7 @@ Example:
     {
         "name": "convert-md",
         "input_format": "md",
+        "output_format": "tex",
         "tools": [
             "pandoc-md"
         ]
@@ -146,6 +147,7 @@ Example:
     ConvertRecipe(
         name="convert-md",
         input_format=FileFormat.md,
+        output_format=FileFormat.tex,
         tools=[
             "pandoc-md"
         ]
@@ -157,8 +159,6 @@ Example:
 List of [`RenderTool`](../reference/models/settings.md#sereto.models.settings.RenderTool)s, which are the commands with their parameters. Tools are referenced in recipes by their name.
 
 The following variables are always available and will be automatically substituted for their value before running the command:
-
-> Other variables may be available, depending on the context. Check the sections above concerning individual recipe types: [`finding_recipes`](#finding_recipes), [`target_recipes`](#target_recipes).
 
  - `%DOC%`: path to the current file without the extension
  - `%DOC_EXT%`: path to the current file with the extension
@@ -176,8 +176,9 @@ Example:
         "command": "latexmk",
         "args": [
             "-xelatex",
+            "-interaction=batchmode",
+            "-halt-on-error",
             "--shell-escape",
-            "-auxdir=.build_artifacts",
             "%DOC%"
         ]
     }
@@ -190,8 +191,9 @@ Example:
         command="latexmk",
         args=[
             "-xelatex",
+            "-interaction=batchmode",
+            "-halt-on-error",
             "--shell-escape",
-            "-auxdir=.build_artifacts",
             "%DOC%"
         ]
     )
