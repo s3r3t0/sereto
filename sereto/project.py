@@ -95,6 +95,10 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
     # Initialize the build directory
     init_build_dir(project=project, version=version)
 
+    # Make sure that "layouts/generated" directory exists
+    if not (layouts_generated := project.path / "layouts" / "generated").is_dir():
+        layouts_generated.mkdir(parents=True)
+
     for target in cfg.targets:
         assert target.path is not None
         category_templates = project.settings.templates_path / "categories" / target.category
@@ -132,7 +136,7 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
     """
     Console().log(f"Generating a new project with ID {id!r}")
 
-    if (new_path := (projects_path / id)).exists():
+    if (new_path := projects_path / id).exists():
         raise SeretoPathError("project with specified ID already exists")
     else:
         new_path.mkdir()

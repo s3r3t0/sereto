@@ -519,9 +519,7 @@ def open_report(project: Project, version: ProjectVersion | None) -> None:
     if version is None:
         version = project.config.last_version()
 
-    report_path = project.path / f"report{version.path_suffix}.pdf"
-
-    if not report_path.is_file():
+    if not (report_path := project.path / "pdf" / f"report{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
 
     click.launch(str(report_path))
@@ -541,9 +539,7 @@ def open_sow(project: Project, version: ProjectVersion | None) -> None:
     if version is None:
         version = project.config.last_version()
 
-    sow_path = project.path / f"sow{version.path_suffix}.pdf"
-
-    if not sow_path.is_file():
+    if not (sow_path := project.path / "pdf" / f"sow{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
 
     click.launch(str(sow_path))

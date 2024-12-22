@@ -117,7 +117,6 @@ def generate_pdf_report(
     Args:
         project: Project's representation.
         report_recipe: The recipe used for generating the report. If None, the first recipe is used.
-        target_recipe: The recipe used for generating targets. If None, the first recipe is used.
         convert_recipe: The convert recipe used for file format transformations. If None, the first recipe is used.
         version: The version of the project to use. If None, the last version
 
