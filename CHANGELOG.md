@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-12-22
+
 ### Added
 
 - Introduce plugin system for adding new commands to the CLI.
@@ -253,7 +255,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.0.17...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/s3r3t0/sereto/compare/v0.0.17...v0.1.0
 [0.0.17]: https://github.com/s3r3t0/sereto/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/s3r3t0/sereto/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/s3r3t0/sereto/compare/v0.0.14...v0.0.15
