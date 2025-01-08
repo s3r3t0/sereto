@@ -7,47 +7,21 @@
 
 ## Install dependencies
 
-### [`pipx`](https://pipx.pypa.io/stable/installation/)
+### Common
 
-> You might skip this step if you know what you are doing and prefer other methods of installation for Python packages.
+#### [`uv`](https://docs.astral.sh)
 
-=== "Ubuntu 23.04 or above"
-    ```sh
-    sudo apt update
-    sudo apt install pipx
-    pipx ensurepath
-    sudo pipx ensurepath --global  # optional to allow pipx actions in global scope.
-    ```
+> You might skip this step if you know what you are doing and prefer other methods of installation for Python packages (e.g. `pip`).
 
-=== "Fedora"
-    ```sh
-    sudo dnf install pipx
-    pipx ensurepath
-    sudo pipx ensurepath --global # optional to allow pipx actions in global scope.
-    ```
+For installation instructions visit: [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
 
-=== "Pip"
-    ```sh
-    python3 -m pip install --user pipx
-    python3 -m pipx ensurepath
-    sudo pipx ensurepath --global # optional to allow pipx actions in global scope.
-    ```
+#### Pandoc
 
-### TeX Live
+> Pandoc is used as a default command for transformation of markdown files to TeX.
 
-=== "Ubuntu"
-    ```sh
-    sudo apt install texlive-full
-    ```
+For installation instructions visit: [https://pandoc.org/installing.html](https://pandoc.org/installing.html)
 
-=== "Fedora"
-    ```sh
-    sudo dnf install texlive-scheme-full
-    ```
-
-### Pandoc
-
-> Pandoc is used as a default command for transformation of markdown files.
+E.g.:
 
 === "Ubuntu"
     ```sh
@@ -59,18 +33,62 @@
     sudo dnf install pandoc
     ```
 
+=== "Windows"
+    ```cmd
+    winget install --source winget --exact --id JohnMacFarlane.Pandoc
+    ```
+
+For certain installations (e.g., using `uv`), it is recommended to install the `pandocfilters` package system-wide. This is because the Pandoc tool is executed in a new process, which will not have access to the virtual environment.
+
+```sh
+pip install pandocfilters
+```
+
+### Linux
+
+> First see [Common](#common) section.
+
+#### TeX Live
+
+> TeX Live is a distribution of the TeX/LaTeX typesetting system.
+
+=== "Ubuntu"
+    ```sh
+    sudo apt install texlive-full
+    ```
+
+=== "Fedora"
+    ```sh
+    sudo dnf install texlive-scheme-full
+    ```
+
+### Windows
+
+> First see [Common](#common) section.
+
+#### MikTeX
+
+> MikTeX is a distribution of the TeX/LaTeX typesetting system for Microsoft Windows.
+
+For installation instructions visit: [https://miktex.org/download](https://miktex.org/download)
+
+#### Perl
+
+> Perl is a programming language that is commonly used for text manipulation.
+
+Install e.g. Strawberry Perl from: [https://strawberryperl.com/](https://strawberryperl.com/)
+
+
 ## Install SeReTo
 
 === "PyPI"
     ```sh
-    pipx install sereto
+    uv tool install sereto
     ```
 
 === "GitHub"
     ```sh
-    git clone https://github.com/s3r3t0/sereto.git
-    cd sereto
-    pipx install .
+    uv tool install git+https://github.com/s3r3t0/sereto
     ```
 
 ## Docker
