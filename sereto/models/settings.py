@@ -52,7 +52,7 @@ class RenderTool(SeretoBaseModel):
                 dedent(f"""\
                     Running command:
                     ```bash
-                    {escape(' '.join(command))}
+                    {escape(" ".join(command))}
                     ```
                 """)
             )

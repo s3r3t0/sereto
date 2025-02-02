@@ -66,7 +66,7 @@ def create_findings_config(target: Target, project: Project, templates: Director
 
         for var in template_metadata.variables:
             finding["vars"][var.name] = CommentedSeq() if var.list else ""
-            comment = f'{"[required]" if var.required else "[optional]"} {var.description}'
+            comment = f"{'[required]' if var.required else '[optional]'} {var.description}"
             finding["vars"].yaml_add_eol_comment(comment, var.name)
 
         findings["findings"].append(finding)

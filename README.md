@@ -13,8 +13,10 @@
 ## Getting Started
 
 ```bash
-pipx install sereto
+uv tool install sereto
 ```
+
+> Instead of `uv` you can use can use alternative package manager, e.g. `pip install sereto`.
 
 For more information, please visit the [documentation](https://sereto.s4n.cz/getting_started/installation/).
 

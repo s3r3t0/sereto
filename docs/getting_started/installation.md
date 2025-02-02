@@ -38,7 +38,7 @@ E.g.:
     winget install --source winget --exact --id JohnMacFarlane.Pandoc
     ```
 
-For certain installations (e.g., using `uv`), it is recommended to install the `pandocfilters` package system-wide. This is because the Pandoc tool is executed in a new process, which will not have access to the virtual environment.
+For certain installations (e.g., using `uv`), it is recommended to install the `pandocfilters` package system-wide. This is because the Pandoc tool is executed in a new process, which will not have access to SeReTo dependencies.
 
 ```sh
 pip install pandocfilters
