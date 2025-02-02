@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Docs: `uv` as preferred package manager for installation.
+- `sereto findings add`: Allow adding findings from other categories.
+
 ## [0.1.0] - 2024-12-22
 
 ### Added

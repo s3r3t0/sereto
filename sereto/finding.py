@@ -26,24 +26,25 @@ def add_finding(
     name: str,
     interactive: bool = False,
 ) -> None:
+    # select target
     target = project.select_target(selector=target_selector)
+    assert target.path is not None
 
-    # read template
-    template_path = (
-        project.settings.templates_path / "categories" / target.category / "findings" / f"{name}.{format}.j2"
-    )
-    if not template_path.is_file():
-        raise SeretoPathError(f"template not found '{template_path}'")
+    # load finding info from findings.yaml config
+    fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
+    finding = fc.get_finding(path_name=name)
+    category = finding.category if finding.category is not None else target.category
+    template_path = finding.template_path(templates=project.settings.templates_path, category=category)
 
+    # read finding's template content
     _, content = frontmatter.parse(template_path.read_text())
 
-    # write template content
-    assert target.path is not None
+    # add finding to project
     finding_dir = target.path / "findings" / name
     finding_dir.mkdir(exist_ok=True)
     dst_path = finding_dir / f"{name}{project.config.last_version().path_suffix}.{format}.j2"
 
-    # Destination file exists and we cannot proceed
+    # destination file exists and we cannot proceed
     if dst_path.is_file() and (
         not interactive
         or not yes_no_dialog(title="Warning", text=f"Destination '{dst_path}' exists. Overwrite?").run()
