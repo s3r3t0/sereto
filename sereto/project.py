@@ -10,8 +10,9 @@ from pydantic import DirectoryPath, validate_call
 from typing_extensions import ParamSpec
 
 from sereto.cli.utils import Console
+from sereto.config import Config, VersionConfig
 from sereto.exceptions import SeretoPathError
-from sereto.models.config import Config, VersionConfig
+from sereto.models.config import VersionConfigModel
 from sereto.models.project import Project
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
@@ -41,7 +42,7 @@ def init_build_dir(project: Project, version: ProjectVersion) -> None:
         build_dir.mkdir(parents=True)
 
     # Create target directories
-    for target in project.config.at_version(version=version).targets:
+    for target in project.config_new.at_version(version=version).config.targets:
         if not (target_dir := build_dir / target.uname).is_dir():
             target_dir.mkdir(parents=True)
 
@@ -90,7 +91,7 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
         project: Project's representation.
         version: The version of the project.
     """
-    cfg = project.config.at_version(version=version)
+    cfg = project.config_new.at_version(version=version)
 
     # Initialize the build directory
     init_build_dir(project=project, version=version)
@@ -99,7 +100,7 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
     if not (layouts_generated := project.path / "layouts" / "generated").is_dir():
         layouts_generated.mkdir(parents=True)
 
-    for target in cfg.targets:
+    for target in cfg.config.targets:
         assert target.path is not None
         category_templates = project.settings.templates_path / "categories" / target.category
 
@@ -143,21 +144,23 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
 
     sereto_ver = importlib.metadata.version("sereto")
 
-    cfg = Config(
-        sereto_version=SeretoVersion.from_str(sereto_ver),
-        version_configs={
-            ProjectVersion.from_str("v1.0"): VersionConfig(
-                id=id,
-                name=name,
-                version_description="Initial",
-            ),
-        },
-    )
-
     Console().log("Copy project skeleton")
     copy_skel(templates=templates_path, dst=new_path)
 
-    config_path: Path = new_path / "config.json"
+    config_path = new_path / "config.json"
+
     Console().log(f"Writing the config '{config_path}'")
-    with config_path.open("w", encoding="utf-8") as f:
-        f.write(cfg.model_dump_json(indent=2))
+    Config(
+        sereto_version=SeretoVersion.from_str(sereto_ver),
+        version_configs={
+            ProjectVersion.from_str("v1.0"): VersionConfig(
+                version=ProjectVersion.from_str("v1.0"),
+                config=VersionConfigModel(
+                    id=id,
+                    name=name,
+                    version_description="Initial",
+                ),
+            ),
+        },
+        path=config_path,
+    ).save()

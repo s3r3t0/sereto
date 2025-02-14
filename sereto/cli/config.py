@@ -11,8 +11,9 @@ from sereto.cli.date import prompt_user_for_date
 from sereto.cli.person import prompt_user_for_person
 from sereto.cli.target import prompt_user_for_target
 from sereto.cli.utils import Console, load_enum
+from sereto.config import Config, VersionConfig
 from sereto.enums import OutputFormat
-from sereto.models.config import Config, VersionConfig
+from sereto.models.config import VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.project import Project, get_config_path
@@ -42,12 +43,16 @@ def edit_config(settings: Settings) -> None:
             sereto_version=SeretoVersion.from_str(sereto_ver),
             version_configs={
                 ProjectVersion.from_str("v1.0"): VersionConfig(
-                    id="",
-                    name="",
-                    version_description="Initial",
+                    version=ProjectVersion.from_str("v1.0"),
+                    config=VersionConfigModel(
+                        id="",
+                        name="",
+                        version_description="Initial",
+                    ),
                 ),
             },
-        ).dump_json(file=config)
+            path=get_config_path(dir_subtree=settings.projects_path),
+        ).save()
 
     # Open the config file in the default editor
     click.edit(filename=str(config))
@@ -69,9 +74,9 @@ def show_config(
         version: Show config at specific version, e.g. 'v1.0'.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
-    version_config = project.config.at_version(version)
+    version_config = project.config_new.at_version(version).config
 
     match output_format:
         case OutputFormat.table:
@@ -96,7 +101,7 @@ def show_config(
             )
         case OutputFormat.json:
             if all:
-                Console().print_json(project.config.model_dump_json())
+                Console().print_json(project.config_new.to_model().model_dump_json())
             else:
                 Console().print_json(version_config.model_dump_json())
 
@@ -115,17 +120,17 @@ def add_dates_config(project: Project, version: ProjectVersion | None = None) ->
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Prompt user for the date
     date_type: DateType = load_enum(enum=DateType, message="Type:")
     new_date = prompt_user_for_date(date_type=date_type)
 
     # Add the date to the configuration
-    project.config.at_version(version).add_date(Date(type=date_type, date=new_date))
+    project.config_new.at_version(version).add_date(Date(type=date_type, date=new_date))
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
 
 @validate_call
@@ -138,17 +143,17 @@ def delete_dates_config(project: Project, index: int, version: ProjectVersion | 
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Delete the date from the configuration
-    project.config.at_version(version).delete_date(index=index)
+    project.config_new.at_version(version).delete_date(index=index)
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
 
 @validate_call
-def _get_dates_table(version_config: VersionConfig, version: ProjectVersion) -> Table:
+def _get_dates_table(version_config: VersionConfigModel, version: ProjectVersion) -> Table:
     """Get table of dates from specified VersionConfig."""
     table = Table(
         "%",
@@ -192,13 +197,13 @@ def show_dates_config(
         version: Show dates from specific version.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     match output_format:
         case OutputFormat.table:
-            for ver in project.config.versions() if all else [version]:
+            for ver in project.config_new.versions if all else [version]:
                 Console().line()
-                table = _get_dates_table(version_config=project.config.at_version(version=ver), version=ver)
+                table = _get_dates_table(version_config=project.config_new.at_version(version=ver).config, version=ver)
                 Console().print(table, justify="center")
         case OutputFormat.json:
             DateList: TypeAdapter[list[Date]] = TypeAdapter(list[Date])
@@ -206,11 +211,14 @@ def show_dates_config(
 
             if all:
                 all_dates = DateAll.validate_python(
-                    {str(ver): project.config.at_version(version=ver).dates for ver in project.config.versions()}
+                    {
+                        str(ver): project.config_new.at_version(version=ver).config.dates
+                        for ver in project.config_new.versions
+                    }
                 )
                 Console().print_json(DateAll.dump_json(all_dates).decode("utf-8"))
             else:
-                dates = DateList.validate_python(project.config.at_version(version).dates)
+                dates = DateList.validate_python(project.config_new.at_version(version).config.dates)
                 Console().print_json(DateList.dump_json(dates).decode("utf-8"))
 
 
@@ -228,17 +236,17 @@ def add_people_config(project: Project, version: ProjectVersion | None = None) -
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Prompt user for the person
     person_type: PersonType = load_enum(enum=PersonType, message="Type:")
     new_person = prompt_user_for_person(person_type=person_type)
 
     # Add the person to the configuration
-    project.config.at_version(version).add_person(new_person)
+    project.config_new.at_version(version).add_person(new_person)
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
 
 @validate_call
@@ -251,17 +259,17 @@ def delete_people_config(project: Project, index: int, version: ProjectVersion |
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Delete the date from the configuration
-    project.config.at_version(version).delete_person(index=index)
+    project.config_new.at_version(version).delete_person(index=index)
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
 
 @validate_call
-def _get_person_table(version_config: VersionConfig, version: ProjectVersion) -> Table:
+def _get_person_table(version_config: VersionConfigModel, version: ProjectVersion) -> Table:
     """Get table of people from specified VersionConfig."""
     table = Table(
         "%",
@@ -305,13 +313,15 @@ def show_people_config(
         version: Show people from specific version.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     match output_format:
         case OutputFormat.table:
-            for ver in project.config.versions() if all else [version]:
+            for ver in project.config_new.versions if all else [version]:
                 Console().line()
-                table = _get_person_table(version_config=project.config.at_version(version=ver), version=ver)
+                table = _get_person_table(
+                    version_config=project.config_new.at_version(version=ver).config, version=ver
+                )
                 Console().print(table, justify="center")
         case OutputFormat.json:
             PersonList: TypeAdapter[list[Person]] = TypeAdapter(list[Person])
@@ -319,11 +329,14 @@ def show_people_config(
 
             if all:
                 all_people = PersonAll.validate_python(
-                    {str(ver): project.config.at_version(version=ver).people for ver in project.config.versions()}
+                    {
+                        str(ver): project.config_new.at_version(version=ver).config.people
+                        for ver in project.config_new.versions
+                    }
                 )
                 Console().print_json(PersonAll.dump_json(all_people).decode("utf-8"))
             else:
-                people = PersonList.validate_python(project.config.at_version(version).people)
+                people = PersonList.validate_python(project.config_new.at_version(version).config.people)
                 Console().print_json(PersonList.dump_json(people).decode("utf-8"))
 
 
@@ -341,16 +354,16 @@ def add_targets_config(project: Project, version: ProjectVersion | None = None) 
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Prompt user for the target
     new_target = prompt_user_for_target(settings=project.settings)
 
     # Add the target to the configuration
-    project.config.at_version(version).add_target(new_target)
+    project.config_new.at_version(version).add_target(new_target)
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
     # Post-process the new target
     project.config.update_paths(project.path)
@@ -370,17 +383,17 @@ def delete_targets_config(
         interactive: Whether to ask for confirmations.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     # Extract the filesystem path before deleting the values
-    version_config = project.config.at_version(version)
-    target_path = version_config.targets[index - 1].path
+    version_config = project.config_new.at_version(version)
+    target_path = version_config.config.targets[index - 1].path
 
     # Delete the date from the configuration
     version_config.delete_target(index=index)
 
     # Write the configuration
-    project.config.dump_json(file=project.get_config_path())
+    project.config_new.save()
 
     # Delete target from the filesystem
     if (
@@ -393,7 +406,7 @@ def delete_targets_config(
 
 
 @validate_call
-def _get_target_table(version_config: VersionConfig, version: ProjectVersion) -> Table:
+def _get_target_table(version_config: VersionConfigModel, version: ProjectVersion) -> Table:
     """Get table of targets from specified VersionConfig."""
     table = Table(
         "%",
@@ -426,13 +439,15 @@ def show_targets_config(
         version: Show targets from the specified project's version.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     match output_format:
         case OutputFormat.table:
-            for ver in project.config.versions() if all else [version]:
+            for ver in project.config_new.versions if all else [version]:
                 Console().line()
-                table = _get_target_table(version_config=project.config.at_version(version=ver), version=ver)
+                table = _get_target_table(
+                    version_config=project.config_new.at_version(version=ver).config, version=ver
+                )
                 Console().print(table, justify="center")
         case OutputFormat.json:
             TargetList: TypeAdapter[list[Target]] = TypeAdapter(list[Target])
@@ -440,9 +455,12 @@ def show_targets_config(
 
             if all:
                 all_targets = TargetAll.validate_python(
-                    {str(ver): project.config.at_version(version=ver).targets for ver in project.config.versions()}
+                    {
+                        str(ver): project.config_new.at_version(version=ver).config.targets
+                        for ver in project.config_new.versions
+                    }
                 )
                 Console().print_json(TargetAll.dump_json(all_targets).decode("utf-8"))
             else:
-                targets = TargetList.validate_python(project.config.at_version(version).targets)
+                targets = TargetList.validate_python(project.config_new.at_version(version).config.targets)
                 Console().print_json(TargetList.dump_json(targets).decode("utf-8"))

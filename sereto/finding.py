@@ -5,11 +5,11 @@ from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from sereto.cli.utils import Console
+from sereto.config import Config
 from sereto.convert import apply_convertor
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.jinja import render_jinja2
-from sereto.models.config import Config
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel
 from sereto.models.project import Project
 from sereto.models.settings import Render
@@ -42,7 +42,7 @@ def add_finding(
     # add finding to project
     finding_dir = target.path / "findings" / name
     finding_dir.mkdir(exist_ok=True)
-    dst_path = finding_dir / f"{name}{project.config.last_version().path_suffix}.{format}.j2"
+    dst_path = finding_dir / f"{name}{project.config_new.last_version.path_suffix}.{format}.j2"
 
     # destination file exists and we cannot proceed
     if dst_path.is_file() and (
@@ -54,16 +54,17 @@ def add_finding(
     dst_path.write_text(content, encoding="utf-8")
 
 
+# TODO move to cli module
 @validate_call
 def show_findings(config: Config, version: ProjectVersion | None = None) -> None:
     if version is None:
-        version = config.last_version()
+        version = config.last_version
 
     Console().log(f"Showing findings for version {version}")
 
     cfg = config.at_version(version=version)
 
-    for target in cfg.targets:
+    for target in cfg.config.targets:
         Console().line()
         table = Table("Finding name", "Category", "Risk", title=f"Target {target.name}")
         if target.path is None:
@@ -79,7 +80,7 @@ def show_findings(config: Config, version: ProjectVersion | None = None) -> None
 
 @validate_call
 def update_findings(project: Project) -> None:
-    for target in project.config.last_config().targets:
+    for target in project.config_new.last_config.config.targets:
         if target.path is None:
             raise SeretoValueError(f"target path not set for {target.uname!r}")
 
@@ -99,7 +100,7 @@ def update_findings(project: Project) -> None:
                 {
                     "name": template_metadata.name,
                     "path_name": file.with_suffix("").stem,
-                    "risks": CommentedMap({str(project.config.last_version()): template_metadata.risk}),
+                    "risks": CommentedMap({str(project.config_new.last_version): template_metadata.risk}),
                     "vars": CommentedMap(),
                 }
             )
@@ -170,7 +171,7 @@ def render_finding_group_to_tex(
     version: ProjectVersion,
 ) -> str:
     """Render selected finding group (top-level document) to TeX format."""
-    cfg = project.config.at_version(version=version)
+    cfg = project.config_new.at_version(version=version)
 
     # Construct path to finding group template
     template = project.path / "layouts/finding_group.tex.j2"
@@ -178,7 +179,7 @@ def render_finding_group_to_tex(
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
+    cfg_dict = {key: getattr(cfg, key) for key in cfg.config.model_dump()}
 
     # Render Jinja2 template
     finding_group_generator = render_jinja2(
@@ -195,7 +196,7 @@ def render_finding_group_to_tex(
             "target": target,
             "target_index": target_ix,
             "c": cfg,
-            "config": project.config,
+            "config": project.config_new,
             "version": version,
             "project_path": project.path,
             **cfg_dict,

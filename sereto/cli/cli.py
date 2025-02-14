@@ -464,8 +464,8 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
 def finding_show(project: Project, version: ProjectVersion | None) -> None:
     """Show findings."""
     if version is None:
-        version = project.config.last_version()
-    show_findings(config=project.config, version=version)
+        version = project.config_new.last_version
+    show_findings(config=project.config_new, version=version)
 
 
 @findings.command(name="update")
@@ -517,7 +517,7 @@ def open_report(project: Project, version: ProjectVersion | None) -> None:
         version: The version of the report that is opened. If None, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     if not (report_path := project.path / "pdf" / f"report{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
@@ -537,7 +537,7 @@ def open_sow(project: Project, version: ProjectVersion | None) -> None:
         version: The version of the SoW that is opened. If None, the last version is used.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config_new.last_version
 
     if not (sow_path := project.path / "pdf" / f"sow{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")

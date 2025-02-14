@@ -9,7 +9,7 @@ from sereto.models.version import ProjectVersion
 @validate_call
 def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
     """Render the SoW (top-level document) to TeX format."""
-    cfg = project.config.at_version(version=version)
+    cfg = project.config_new.at_version(version=version)
 
     # Construct path to SoW template
     template = project.path / "layouts/sow.tex.j2"
@@ -17,7 +17,7 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
+    cfg_dict = {key: getattr(cfg, key) for key in cfg.config.model_dump()}
 
     # Render the Jinja template
     sow_generator = render_jinja2(
@@ -28,7 +28,13 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
             project.path,
         ],
         file=template,
-        vars={"c": cfg, "config": project.config, "version": version, "project_path": project.path, **cfg_dict},
+        vars={
+            "c": cfg,
+            "config": project.config_new,
+            "version": version,
+            "project_path": project.path,
+            **cfg_dict,
+        },
     )
 
     return "".join(sow_generator)

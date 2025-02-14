@@ -53,7 +53,7 @@ def create_findings_config(target: Target, project: Project, templates: Director
             {
                 "name": template_metadata.name,
                 "path_name": file.with_suffix("").stem,
-                "risks": CommentedMap({str(project.config.last_version()): template_metadata.risk}),
+                "risks": CommentedMap({str(project.config_new.last_version): template_metadata.risk}),
                 "vars": CommentedMap(),
             }
         )
@@ -76,7 +76,7 @@ def render_target_to_tex(project: Project, target: Target, target_ix: int, versi
     """Render selected target (top-level document) to TeX format."""
     assert target.path is not None
 
-    cfg = project.config.at_version(version=version)
+    cfg = project.config_new.at_version(version=version)
 
     # Construct path to target template
     template = project.path / "layouts/target.tex.j2"
@@ -84,7 +84,7 @@ def render_target_to_tex(project: Project, target: Target, target_ix: int, versi
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
+    cfg_dict = {key: getattr(cfg, key) for key in cfg.config.model_dump()}
 
     # Render Jinja2 template
     target_generator = render_jinja2(
@@ -99,7 +99,7 @@ def render_target_to_tex(project: Project, target: Target, target_ix: int, versi
             "target": target,
             "target_index": target_ix,
             "c": cfg,
-            "config": project.config,
+            "config": project.config_new,
             "version": version,
             "project_path": project.path,
             **cfg_dict,

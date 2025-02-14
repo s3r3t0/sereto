@@ -37,7 +37,7 @@ def sereto_ls(settings: Settings) -> None:
 
     for dir in project_paths:
         try:
-            project_name = Project.load_from(dir).config.last_config().name
+            project_name = Project.load_from(dir).config_new.last_config.config.name
         except (RuntimeError, SeretoValueError):
             project_name = "n/a"
 
@@ -90,7 +90,7 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
     if Project.is_project_dir(cwd):
         # Load the project to get the ID (this can be different from the directory name)
         project = Project.load_from()
-        project_id = project.config.last_config().id
+        project_id = project.config_new.last_config.config.id
 
     final_prompt: list[tuple[str, str]] = []
 

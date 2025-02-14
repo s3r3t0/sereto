@@ -1,10 +1,12 @@
 from pathlib import Path
+from typing import Self
 
 from pydantic import DirectoryPath, validate_call
 
+from sereto.config import Config
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.config import Config
+from sereto.models.config import ConfigModel
 from sereto.models.settings import Settings
 from sereto.models.target import Target
 from sereto.models.version import ProjectVersion
@@ -59,12 +61,13 @@ def get_config_path(dir_subtree: DirectoryPath = Path("/")) -> Path:
 
 
 class Project(SeretoBaseModel):
-    config: Config
+    config: ConfigModel
+    config_new: Config
     settings: Settings
     path: DirectoryPath
 
-    @staticmethod
-    def load_from(path: DirectoryPath | None = None) -> "Project":
+    @classmethod
+    def load_from(cls, path: DirectoryPath | None = None) -> Self:
         """Load the project from the provided path.
 
         Args:
@@ -77,8 +80,9 @@ class Project(SeretoBaseModel):
         project_path = get_project_path_from_dir(
             dir=path if path is not None else Path.cwd(), dir_subtree=settings.projects_path
         )
-        config = Config.load_from(file=project_path / "config.json").update_paths(project_path=project_path)
-        return Project(config=config, settings=load_settings_function(), path=project_path)
+        config = ConfigModel.load_from(file=project_path / "config.json").update_paths(project_path=project_path)
+        config_new = Config.load_from(project_path / "config.json")
+        return cls(config=config, config_new=config_new, settings=load_settings_function(), path=project_path)
 
     @validate_call
     def get_config_path(self) -> Path:
@@ -111,9 +115,9 @@ class Project(SeretoBaseModel):
         selector: int | str | None = None,
     ) -> Target:
         if version is None:
-            version = self.config.last_version()
+            version = self.config_new.last_version
 
-        cfg = self.config.at_version(version)
+        cfg = self.config_new.at_version(version).config
 
         # only single target present
         if selector is None:
