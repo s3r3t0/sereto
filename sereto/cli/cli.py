@@ -26,7 +26,7 @@ from sereto.cli.config import (
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
-from sereto.exceptions import SeretoException, SeretoPathError, SeretoRuntimeError, SeretoValueError, handle_exceptions
+from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
@@ -780,13 +780,12 @@ def templates_target_skel_copy(project: Project, target: str | None) -> None:
         project: Project's representation.
         target: The target for which the templates are being copied.
     """
-    selected_target = project.select_target(selector=target)
-
-    if selected_target.path is None:
-        raise SeretoRuntimeError("target path is not set")
+    selected_target = project.config_new.last_config.select_target(
+        project_path=project.path, categories=project.settings.categories, selector=target
+    )
 
     copy_skel(
-        templates=project.settings.templates_path / "categories" / selected_target.category,
+        templates=project.settings.templates_path / "categories" / selected_target.data.category,
         dst=selected_target.path,
         overwrite=True,
     )

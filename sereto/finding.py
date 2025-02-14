@@ -8,12 +8,12 @@ from sereto.cli.utils import Console
 from sereto.config import Config
 from sereto.convert import apply_convertor
 from sereto.enums import FileFormat
-from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
+from sereto.exceptions import SeretoPathError, SeretoRuntimeError
 from sereto.jinja import render_jinja2
 from sereto.models.finding import Finding, FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel
 from sereto.models.project import Project
 from sereto.models.settings import Render
-from sereto.models.target import Target
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.utils import YAML
 
@@ -27,13 +27,14 @@ def add_finding(
     interactive: bool = False,
 ) -> None:
     # select target
-    target = project.select_target(selector=target_selector)
-    assert target.path is not None
+    target = project.config_new.last_config.select_target(
+        project_path=project.path, categories=project.settings.categories, selector=target_selector
+    )
 
     # load finding info from findings.yaml config
     fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
     finding = fc.get_finding(path_name=name)
-    category = finding.category if finding.category is not None else target.category
+    category = finding.category if finding.category is not None else target.data.category
     template_path = finding.template_path(templates=project.settings.templates_path, category=category)
 
     # read finding's template content
@@ -64,30 +65,24 @@ def show_findings(config: Config, version: ProjectVersion | None = None) -> None
 
     cfg = config.at_version(version=version)
 
-    for target in cfg.config.targets:
+    for target in cfg.targets:
         Console().line()
-        table = Table("Finding name", "Category", "Risk", title=f"Target {target.name}")
-        if target.path is None:
-            raise SeretoValueError(f"target path not set for {target.uname!r}")
-
+        table = Table("Finding name", "Category", "Risk", title=f"Target {target.data.name}")
         fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
 
         for finding_group in fc.finding_groups:
-            table.add_row(finding_group.name, target.category, finding_group.risks[version])
+            table.add_row(finding_group.name, target.data.category, finding_group.risks[version])
 
         Console().print(table, justify="center")
 
 
 @validate_call
 def update_findings(project: Project) -> None:
-    for target in project.config_new.last_config.config.targets:
-        if target.path is None:
-            raise SeretoValueError(f"target path not set for {target.uname!r}")
-
+    for target in project.config_new.last_config.targets:
         findings_path = target.path / "findings.yaml"
         findings = YAML.load(findings_path)
         fc = FindingsConfig.from_yaml(file=findings_path)
-        category_templates = project.settings.templates_path / "categories" / target.category / "findings"
+        category_templates = project.settings.templates_path / "categories" / target.data.category / "findings"
 
         for file in category_templates.glob(pattern="*.j2"):
             template_metadata = FindingTemplateFrontmatterModel.load_from(file)
@@ -119,7 +114,7 @@ def update_findings(project: Project) -> None:
 
 @validate_call
 def render_finding_to_tex(
-    target: Target,
+    target: TargetModel,
     finding: Finding,
     version: ProjectVersion,
     templates: DirectoryPath,
@@ -164,7 +159,7 @@ def render_finding_to_tex(
 @validate_call
 def render_finding_group_to_tex(
     project: Project,
-    target: Target,
+    target: TargetModel,
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
@@ -179,7 +174,8 @@ def render_finding_group_to_tex(
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.config.model_dump()}
+    cfg_model = cfg.to_model()
+    cfg_dict = {key: getattr(cfg_model, key) for key in cfg_model.model_dump()}
 
     # Render Jinja2 template
     finding_group_generator = render_jinja2(

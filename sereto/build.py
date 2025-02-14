@@ -8,18 +8,18 @@ from sereto.exceptions import SeretoPathError
 from sereto.finding import render_finding_group_to_tex, render_finding_to_tex
 from sereto.models.finding import Finding, FindingGroup
 from sereto.models.project import Project
-from sereto.models.target import Target
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.project import init_build_dir
 from sereto.report import render_report_to_tex
 from sereto.sow import render_sow_to_tex
-from sereto.target import render_target_to_tex
+from sereto.target import Target, render_target_to_tex
 from sereto.utils import write_if_different
 
 
 @validate_call
 def ensure_finding_group_template(
-    project: Project, target: Target, finding_group: FindingGroup, version: ProjectVersion
+    project: Project, target: TargetModel, finding_group: FindingGroup, version: ProjectVersion
 ) -> None:
     """Ensures that a template exists for the specified finding group.
 
@@ -37,7 +37,7 @@ def ensure_finding_group_template(
 
 
 @validate_call
-def ensure_target_template(project: Project, target: Target, version: ProjectVersion) -> None:
+def ensure_target_template(project: Project, target: TargetModel, version: ProjectVersion) -> None:
     """Ensures that a template exists for the specified target.
 
     Does not overwrite existing template.
@@ -56,7 +56,7 @@ def ensure_target_template(project: Project, target: Target, version: ProjectVer
 @validate_call
 def build_finding_to_tex(
     project: Project,
-    target: Target,
+    target: TargetModel,
     finding: Finding,
     version: ProjectVersion,
     converter: str | None = None,
@@ -90,7 +90,7 @@ def build_finding_to_tex(
 @validate_call
 def build_finding_group_dependencies(
     project: Project,
-    target: Target,
+    target: TargetModel,
     finding_group: FindingGroup,
     version: ProjectVersion,
     converter: str | None = None,
@@ -114,13 +114,13 @@ def build_finding_group_to_tex(
     init_build_dir(project=project, version=version)
 
     # Determine the indexes for correct section numbering
-    target_ix = project.config_new.at_version(version).config.targets.index(target)
-    fg_ix = target.findings_config.finding_groups.index(finding_group)
+    target_ix = project.config_new.at_version(version).targets.index(target)
+    fg_ix = target.data.findings_config.finding_groups.index(finding_group)
 
     # Render the finding group to TeX format
     content = render_finding_group_to_tex(
         project=project,
-        target=target,
+        target=target.data,
         target_ix=target_ix,
         finding_group=finding_group,
         finding_group_ix=fg_ix,
@@ -139,7 +139,7 @@ def build_finding_group_to_tex(
 
 @validate_call
 def build_target_dependencies(
-    project: Project, target: Target, version: ProjectVersion, converter: str | None = None
+    project: Project, target: TargetModel, version: ProjectVersion, converter: str | None = None
 ) -> None:
     # Finding group dependencies
     for finding_group in target.findings_config.finding_groups:
@@ -157,10 +157,12 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
     init_build_dir(project=project, version=version)
 
     # Determine the index for correct section numbering
-    target_ix = project.config_new.at_version(version).config.targets.index(target)
+    target_ix = project.config_new.at_version(version).targets.index(target)
 
     # Render the target to TeX format
-    content = render_target_to_tex(project=project, target=target, target_ix=target_ix, version=version)
+    content = render_target_to_tex(
+        target=target.data, config=project.config_new, version=version, target_ix=target_ix, project_path=project.path
+    )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)
     destination = project.path / ".build" / target.uname / f"{target.uname}{version.path_suffix}.tex"
@@ -175,8 +177,8 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 @validate_call
 def build_report_to_tex(project: Project, version: ProjectVersion, converter: str | None = None) -> Path:
     # Process all targets and their dependencies
-    for target in project.config_new.at_version(version).config.targets:
-        build_target_dependencies(project=project, target=target, version=version, converter=converter)
+    for target in project.config_new.at_version(version).targets:
+        build_target_dependencies(project=project, target=target.data, version=version, converter=converter)
 
     # Initialize the build directory
     init_build_dir(project=project, version=version)

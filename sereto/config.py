@@ -1,22 +1,52 @@
 import re
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Self
 
-from pydantic import FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.target import Target
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
+from sereto.target import Target
 
 
 @dataclass
 class VersionConfig:
     version: ProjectVersion
-    config: VersionConfigModel
+    id: str
+    name: str
+    version_description: str
+    targets: list[Target] = field(default_factory=list)
+    dates: list[Date] = field(default_factory=list)
+    people: list[Person] = field(default_factory=list)
+
+    @validate_call
+    def to_model(self) -> VersionConfigModel:
+        return VersionConfigModel(
+            id=self.id,
+            name=self.name,
+            version_description=self.version_description,
+            targets=[target.to_model() for target in self.targets],
+            dates=self.dates,
+            people=self.people,
+        )
+
+    @classmethod
+    @validate_call
+    def from_model(cls, model: VersionConfigModel, version: ProjectVersion, project_path: DirectoryPath) -> Self:
+        return cls(
+            version=version,
+            id=model.id,
+            name=model.name,
+            version_description=model.version_description,
+            targets=[Target.load(data=target, path=project_path / target.uname) for target in model.targets],
+            dates=model.dates,
+            people=model.people,
+        )
 
     @validate_call
     def filter_targets(
@@ -24,7 +54,7 @@ class VersionConfig:
         category: str | Iterable[str] | None = None,
         name: str | None = None,
         inverse: bool = False,
-    ) -> list[Target]:
+    ) -> list[TargetModel]:
         """Filter targets based on specified criteria.
 
         The regular expressions support the syntax of Python's `re` module.
@@ -42,13 +72,57 @@ class VersionConfig:
 
         filtered_targets = [
             t
-            for t in self.config.targets
-            if (category is None or t.category in category) and (name is None or re.search(name, t.name))
+            for t in self.targets
+            if (category is None or t.data.category in category) and (name is None or re.search(name, t.data.name))
         ]
 
         if inverse:
-            return [t for t in self.config.targets if t not in filtered_targets]
-        return filtered_targets
+            return [t.data for t in self.targets if t not in filtered_targets]
+        return [t.data for t in filtered_targets]
+
+    @validate_call
+    def select_target(
+        self,
+        project_path: DirectoryPath,
+        categories: Iterable[str],
+        selector: int | str | None = None,
+    ) -> Target:
+        targets = [t.data for t in self.targets]
+
+        # only single target present
+        if selector is None:
+            if len(targets) != 1:
+                raise SeretoValueError(
+                    f"cannot select target; no selector provided and there are {len(targets)} targets present"
+                )
+            return Target.load(data=targets[0], path=project_path / targets[0].uname)
+
+        # by index
+        if isinstance(selector, int) or selector.isnumeric():
+            ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
+            if not (0 <= ix <= len(targets) - 1):
+                raise SeretoValueError("target index out of range")
+
+            return Target.load(data=targets[ix], path=project_path / targets[ix].uname)
+
+        # by category
+        if selector in categories:
+            targets = [t for t in targets if t.category == selector]
+            match len(targets):
+                case 0:
+                    raise SeretoValueError(f"category {selector!r} does not contain any target")
+                case 1:
+                    data = targets[0]
+                    return Target.load(data=data, path=project_path / data.uname)
+                case _:
+                    raise SeretoValueError(f"category {selector!r} contains multiple targets, use uname when querying")
+
+        # by uname
+        filtered_targets = [t for t in targets if t.uname == selector]
+        if len(filtered_targets) != 1:
+            raise SeretoValueError(f"target with uname {selector!r} not found")
+        data = filtered_targets[0]
+        return Target.load(data=data, path=project_path / data.uname)
 
     @validate_call
     def filter_dates(
@@ -87,7 +161,7 @@ class VersionConfig:
 
         filtered_dates = [
             d
-            for d in self.config.dates
+            for d in self.dates
             if (type is None or d.type in type)
             and (
                 start is None
@@ -102,7 +176,7 @@ class VersionConfig:
         ]
 
         if inverse:
-            return [d for d in self.config.dates if d not in filtered_dates]
+            return [d for d in self.dates if d not in filtered_dates]
         return filtered_dates
 
     @validate_call
@@ -140,7 +214,7 @@ class VersionConfig:
 
         filtered_people = [
             p
-            for p in self.config.people
+            for p in self.people
             if (type is None or p.type in type)
             and (name is None or (p.name is not None and re.search(name, p.name)))
             and (business_unit is None or (p.business_unit is not None and re.search(business_unit, p.business_unit)))
@@ -149,7 +223,7 @@ class VersionConfig:
         ]
 
         if inverse:
-            return [p for p in self.config.people if p not in filtered_people]
+            return [p for p in self.people if p not in filtered_people]
         return filtered_people
 
     @validate_call
@@ -162,7 +236,7 @@ class VersionConfig:
         Returns:
             The configuration with the added target.
         """
-        self.config.targets.append(target)
+        self.targets.append(target)
         return self
 
     @validate_call
@@ -179,11 +253,11 @@ class VersionConfig:
         index -= 1
 
         # Check if the index is in the allowed range
-        if not 0 <= index <= len(self.config.targets) - 1:
+        if not 0 <= index <= len(self.targets) - 1:
             raise SeretoValueError("index out of range")
 
         # Delete the target
-        del self.config.targets[index]
+        del self.targets[index]
 
         return self
 
@@ -197,7 +271,7 @@ class VersionConfig:
         Returns:
             The configuration with the added date.
         """
-        self.config.dates.append(date)
+        self.dates.append(date)
         return self
 
     @validate_call
@@ -214,11 +288,11 @@ class VersionConfig:
         index -= 1
 
         # Check if the index is in the allowed range
-        if not 0 <= index <= len(self.config.dates) - 1:
+        if not 0 <= index <= len(self.dates) - 1:
             raise SeretoValueError("index out of range")
 
         # Delete the date
-        del self.config.dates[index]
+        del self.dates[index]
 
         return self
 
@@ -232,7 +306,7 @@ class VersionConfig:
         Returns:
             The configuration with the added person.
         """
-        self.config.people.append(person)
+        self.people.append(person)
         return self
 
     @validate_call
@@ -249,11 +323,11 @@ class VersionConfig:
         index -= 1
 
         # Check if the index is in the allowed range
-        if not 0 <= index <= len(self.config.people) - 1:
+        if not 0 <= index <= len(self.people) - 1:
             raise SeretoValueError("index out of range")
 
         # Delete the person
-        del self.config.people[index]
+        del self.people[index]
 
         return self
 
@@ -278,8 +352,8 @@ class Config:
         return cls(
             sereto_version=config.sereto_version,
             version_configs={
-                version: VersionConfig(version=version, config=config.version_configs[version])
-                for version in config.version_configs
+                version: VersionConfig.from_model(model=config, version=version, project_path=path.parent)
+                for version, config in config.version_configs.items()
             },
             path=path,
         )
@@ -287,7 +361,7 @@ class Config:
     def to_model(self) -> ConfigModel:
         return ConfigModel(
             sereto_version=self.sereto_version,
-            version_configs={version: config.config for version, config in self.version_configs.items()},
+            version_configs={version: config.to_model() for version, config in self.version_configs.items()},
         )
 
     def save(self) -> None:
@@ -317,7 +391,7 @@ class Config:
         if version not in self.versions:
             raise SeretoValueError(f"version '{version}' not found")
 
-        return VersionConfig(version=version, config=self.version_configs[version].config)
+        return self.version_configs[version]
 
     @property
     def first_version(self) -> ProjectVersion:
@@ -356,6 +430,8 @@ class Config:
         if version in self.versions:
             raise SeretoValueError(f"version '{version}' already exists")
 
-        self.version_configs[version].config = config
+        self.version_configs[version] = VersionConfig.from_model(
+            model=config, version=version, project_path=self.path.parent
+        )
 
         return self

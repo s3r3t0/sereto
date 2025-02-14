@@ -18,9 +18,10 @@ from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.project import Project, get_config_path
 from sereto.models.settings import Settings
-from sereto.models.target import Target
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.project import project_create_missing
+from sereto.target import Target
 
 # -------------
 # sereto config
@@ -44,11 +45,9 @@ def edit_config(settings: Settings) -> None:
             version_configs={
                 ProjectVersion.from_str("v1.0"): VersionConfig(
                     version=ProjectVersion.from_str("v1.0"),
-                    config=VersionConfigModel(
-                        id="",
-                        name="",
-                        version_description="Initial",
-                    ),
+                    id="",
+                    name="",
+                    version_description="Initial",
                 ),
             },
             path=get_config_path(dir_subtree=settings.projects_path),
@@ -76,7 +75,7 @@ def show_config(
     if version is None:
         version = project.config_new.last_version
 
-    version_config = project.config_new.at_version(version).config
+    version_config = project.config_new.at_version(version)
 
     match output_format:
         case OutputFormat.table:
@@ -103,7 +102,7 @@ def show_config(
             if all:
                 Console().print_json(project.config_new.to_model().model_dump_json())
             else:
-                Console().print_json(version_config.model_dump_json())
+                Console().print_json(version_config.to_model().model_dump_json())
 
 
 # -------------------
@@ -203,7 +202,9 @@ def show_dates_config(
         case OutputFormat.table:
             for ver in project.config_new.versions if all else [version]:
                 Console().line()
-                table = _get_dates_table(version_config=project.config_new.at_version(version=ver).config, version=ver)
+                table = _get_dates_table(
+                    version_config=project.config_new.at_version(version=ver).to_model(), version=ver
+                )
                 Console().print(table, justify="center")
         case OutputFormat.json:
             DateList: TypeAdapter[list[Date]] = TypeAdapter(list[Date])
@@ -211,14 +212,11 @@ def show_dates_config(
 
             if all:
                 all_dates = DateAll.validate_python(
-                    {
-                        str(ver): project.config_new.at_version(version=ver).config.dates
-                        for ver in project.config_new.versions
-                    }
+                    {str(ver): project.config_new.at_version(version=ver).dates for ver in project.config_new.versions}
                 )
                 Console().print_json(DateAll.dump_json(all_dates).decode("utf-8"))
             else:
-                dates = DateList.validate_python(project.config_new.at_version(version).config.dates)
+                dates = DateList.validate_python(project.config_new.at_version(version).dates)
                 Console().print_json(DateList.dump_json(dates).decode("utf-8"))
 
 
@@ -320,7 +318,7 @@ def show_people_config(
             for ver in project.config_new.versions if all else [version]:
                 Console().line()
                 table = _get_person_table(
-                    version_config=project.config_new.at_version(version=ver).config, version=ver
+                    version_config=project.config_new.at_version(version=ver).to_model(), version=ver
                 )
                 Console().print(table, justify="center")
         case OutputFormat.json:
@@ -330,13 +328,13 @@ def show_people_config(
             if all:
                 all_people = PersonAll.validate_python(
                     {
-                        str(ver): project.config_new.at_version(version=ver).config.people
+                        str(ver): project.config_new.at_version(version=ver).people
                         for ver in project.config_new.versions
                     }
                 )
                 Console().print_json(PersonAll.dump_json(all_people).decode("utf-8"))
             else:
-                people = PersonList.validate_python(project.config_new.at_version(version).config.people)
+                people = PersonList.validate_python(project.config_new.at_version(version).people)
                 Console().print_json(PersonList.dump_json(people).decode("utf-8"))
 
 
@@ -357,7 +355,8 @@ def add_targets_config(project: Project, version: ProjectVersion | None = None) 
         version = project.config_new.last_version
 
     # Prompt user for the target
-    new_target = prompt_user_for_target(settings=project.settings)
+    new_target_model = prompt_user_for_target(settings=project.settings)
+    new_target = Target.load(data=new_target_model, path=project.path)
 
     # Add the target to the configuration
     project.config_new.at_version(version).add_target(new_target)
@@ -387,7 +386,7 @@ def delete_targets_config(
 
     # Extract the filesystem path before deleting the values
     version_config = project.config_new.at_version(version)
-    target_path = version_config.config.targets[index - 1].path
+    target_path = version_config.targets[index - 1].path
 
     # Delete the date from the configuration
     version_config.delete_target(index=index)
@@ -397,8 +396,7 @@ def delete_targets_config(
 
     # Delete target from the filesystem
     if (
-        target_path is not None
-        and target_path.is_dir()
+        target_path.is_dir()
         and interactive
         and yes_no_dialog(title="Confirm", text=f"Delete '{target_path}' from the filesystem?").run()
     ):
@@ -446,21 +444,22 @@ def show_targets_config(
             for ver in project.config_new.versions if all else [version]:
                 Console().line()
                 table = _get_target_table(
-                    version_config=project.config_new.at_version(version=ver).config, version=ver
+                    version_config=project.config_new.at_version(version=ver).to_model(), version=ver
                 )
                 Console().print(table, justify="center")
         case OutputFormat.json:
-            TargetList: TypeAdapter[list[Target]] = TypeAdapter(list[Target])
-            TargetAll: TypeAdapter[dict[str, list[Target]]] = TypeAdapter(dict[str, list[Target]])
+            TargetList: TypeAdapter[list[TargetModel]] = TypeAdapter(list[TargetModel])
+            TargetAll: TypeAdapter[dict[str, list[TargetModel]]] = TypeAdapter(dict[str, list[TargetModel]])
 
             if all:
                 all_targets = TargetAll.validate_python(
                     {
-                        str(ver): project.config_new.at_version(version=ver).config.targets
+                        str(ver): [t.to_model() for t in project.config_new.at_version(version=ver).targets]
                         for ver in project.config_new.versions
                     }
                 )
                 Console().print_json(TargetAll.dump_json(all_targets).decode("utf-8"))
             else:
-                targets = TargetList.validate_python(project.config_new.at_version(version).config.targets)
+                target_models = [t.to_model() for t in project.config_new.at_version(version).targets]
+                targets = TargetList.validate_python(target_models)
                 Console().print_json(TargetList.dump_json(targets).decode("utf-8"))

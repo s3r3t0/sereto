@@ -17,7 +17,8 @@ def render_report_to_tex(project: Project, version: ProjectVersion) -> str:
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.config.model_dump()}
+    cfg_model = cfg.to_model()
+    cfg_dict = {key: getattr(cfg_model, key) for key in cfg_model.model_dump()}
 
     # Render Jinja2 template
     report_generator = render_jinja2(

@@ -12,7 +12,6 @@ from typing_extensions import ParamSpec
 from sereto.cli.utils import Console
 from sereto.config import Config, VersionConfig
 from sereto.exceptions import SeretoPathError
-from sereto.models.config import VersionConfigModel
 from sereto.models.project import Project
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
@@ -42,7 +41,7 @@ def init_build_dir(project: Project, version: ProjectVersion) -> None:
         build_dir.mkdir(parents=True)
 
     # Create target directories
-    for target in project.config_new.at_version(version=version).config.targets:
+    for target in project.config_new.at_version(version=version).targets:
         if not (target_dir := build_dir / target.uname).is_dir():
             target_dir.mkdir(parents=True)
 
@@ -100,9 +99,8 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
     if not (layouts_generated := project.path / "layouts" / "generated").is_dir():
         layouts_generated.mkdir(parents=True)
 
-    for target in cfg.config.targets:
-        assert target.path is not None
-        category_templates = project.settings.templates_path / "categories" / target.category
+    for target in cfg.targets:
+        category_templates = project.settings.templates_path / "categories" / target.data.category
 
         # Create target directory if missing
         if not target.path.is_dir():
@@ -115,10 +113,10 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
                 Console().log(f"No 'skel' directory found: '{category_templates}'")
 
             # Dynamically compose "findings.yaml"
-            create_findings_config(target=target, project=project, templates=category_templates / "findings")
+            create_findings_config(target=target.data, templates=category_templates / "findings", last_version=version)
 
         # Generate risks plot for the target
-        risks = get_risks(target=target, version=version)
+        risks = get_risks(target=target.data, version=version)
         risks_plot(risks=risks, path=project.path / ".build" / target.uname / "risks.png")
 
 
@@ -155,11 +153,9 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
         version_configs={
             ProjectVersion.from_str("v1.0"): VersionConfig(
                 version=ProjectVersion.from_str("v1.0"),
-                config=VersionConfigModel(
-                    id=id,
-                    name=name,
-                    version_description="Initial",
-                ),
+                id=id,
+                name=name,
+                version_description="Initial",
             ),
         },
         path=config_path,

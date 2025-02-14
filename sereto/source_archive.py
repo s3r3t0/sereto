@@ -61,7 +61,7 @@ def create_source_archive(project: Project) -> Path:
         Console().log(f"Creating source archive: '{archive_path}'")
 
         # Determine the original project ID (store the project always with the original ID)
-        original_id = project.config_new.first_config.config.id
+        original_id = project.config_new.first_config.id
 
         # Create the source archive
         with tarfile.open(archive_path, "w:gz") as tar:

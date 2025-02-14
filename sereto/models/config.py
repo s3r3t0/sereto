@@ -6,7 +6,7 @@ from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.date import Date
 from sereto.models.person import Person
-from sereto.models.target import Target
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 
 
@@ -25,7 +25,7 @@ class VersionConfigModel(SeretoBaseModel):
     id: str
     name: str
     version_description: str
-    targets: list[Target] = Field(default_factory=list)
+    targets: list[TargetModel] = Field(default_factory=list)
     dates: list[Date] = Field(default_factory=list)
     people: list[Person] = Field(default_factory=list)
 
