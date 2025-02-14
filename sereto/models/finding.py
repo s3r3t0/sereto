@@ -16,7 +16,7 @@ from sereto.types import TypePathName
 from sereto.utils import YAML
 
 
-class VarsMetadata(SeretoBaseModel):
+class VarsMetadataModel(SeretoBaseModel):
     name: str
     description: str
     required: bool = False
@@ -31,11 +31,11 @@ class VarsMetadata(SeretoBaseModel):
         return f"{self.name}{params}: {self.description}"
 
 
-class TemplateMetadata(SeretoBaseModel):
+class FindingTemplateFrontmatterModel(SeretoBaseModel):
     name: str
     risk: Risk
     keywords: list[str] = []
-    variables: list[VarsMetadata] = []
+    variables: list[VarsMetadataModel] = []
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -47,6 +47,15 @@ class TemplateMetadata(SeretoBaseModel):
                 return Risk(risk)
             case _:
                 raise ValueError("unsupported type for Risk")
+
+    @classmethod
+    @validate_call
+    def load_from(cls, path: Path) -> Self:
+        try:
+            metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
+            return cls.model_validate(metadata)
+        except ValidationError as ex:
+            raise SeretoValueError(f"invalid template metadata in '{path}'") from ex
 
 
 class ReportIncludeGroup(SeretoBaseModel):
@@ -114,17 +123,13 @@ class Finding(SeretoBaseModel):
         return templates / "categories" / category / "findings" / f"{self.path_name}.{self.format.value}.j2"
 
     @validate_call
-    def metadata(self, templates: DirectoryPath, category: str) -> TemplateMetadata | None:
+    def metadata(self, templates: DirectoryPath, category: str) -> FindingTemplateFrontmatterModel | None:
         template = self.template_path(templates=templates, category=category)
         if not template.is_file():
             Console().log(f"Finding template not found at '{template}'")
             return None
 
-        metadata, _ = frontmatter.parse(template.read_text())
-        try:
-            return TemplateMetadata.model_validate(metadata)
-        except ValidationError as ex:
-            raise SeretoValueError(f"invalid template metadata in '{template}'") from ex
+        return FindingTemplateFrontmatterModel.load_from(template)
 
     @validate_call
     def assert_required_vars(self, templates: DirectoryPath, category: str) -> None:

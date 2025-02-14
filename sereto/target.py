@@ -1,12 +1,11 @@
 from textwrap import dedent
 
-import frontmatter  # type: ignore[import-untyped]
-from pydantic import DirectoryPath, ValidationError, validate_call
+from pydantic import DirectoryPath, validate_call
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoPathError
 from sereto.jinja import render_jinja2
-from sereto.models.finding import TemplateMetadata
+from sereto.models.finding import FindingTemplateFrontmatterModel
 from sereto.models.project import Project
 from sereto.models.risks import Risks
 from sereto.models.target import Target
@@ -48,12 +47,7 @@ def create_findings_config(target: Target, project: Project, templates: Director
     findings["findings"] = CommentedSeq()
 
     for file in templates.glob(pattern="*.j2"):
-        metadata, _ = frontmatter.parse(file.read_text())
-
-        try:
-            template_metadata = TemplateMetadata.model_validate(metadata)
-        except ValidationError as ex:
-            raise SeretoValueError(f"invalid template metadata in '{file}'") from ex
+        template_metadata = FindingTemplateFrontmatterModel.load_from(file)
 
         finding = CommentedMap(
             {

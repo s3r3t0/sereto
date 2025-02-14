@@ -22,7 +22,7 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def load_project(f: Callable[..., R]) -> Callable[..., R]:
+def load_project(f: Callable[P, R]) -> Callable[P, R]:
     """Decorator which loads the `Project` from filesystem."""
 
     @wraps(f)

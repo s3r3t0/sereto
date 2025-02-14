@@ -1,6 +1,6 @@
 import frontmatter  # type: ignore[import-untyped]
 from prompt_toolkit.shortcuts import yes_no_dialog
-from pydantic import DirectoryPath, ValidationError, validate_call
+from pydantic import DirectoryPath, validate_call
 from rich.table import Table
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
@@ -10,7 +10,7 @@ from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
 from sereto.jinja import render_jinja2
 from sereto.models.config import Config
-from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
+from sereto.models.finding import Finding, FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel
 from sereto.models.project import Project
 from sereto.models.settings import Render
 from sereto.models.target import Target
@@ -89,13 +89,7 @@ def update_findings(project: Project) -> None:
         category_templates = project.settings.templates_path / "categories" / target.category / "findings"
 
         for file in category_templates.glob(pattern="*.j2"):
-            metadata, _ = frontmatter.parse(file.read_text())
-
-            try:
-                template_metadata = TemplateMetadata.model_validate(metadata)
-            except ValidationError as ex:
-                raise SeretoValueError(f"invalid template metadata in '{file}'") from ex
-
+            template_metadata = FindingTemplateFrontmatterModel.load_from(file)
             name = template_metadata.name
 
             if len([f for f in fc.findings if f.name == name]) > 0:
