@@ -5,7 +5,6 @@ from typing import Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
 from pydantic import DirectoryPath, Field, FilePath, ValidationError, field_validator, model_validator, validate_call
-from unidecode import unidecode
 
 from sereto.cli.utils import Console
 from sereto.enums import FileFormat, Risk
@@ -13,7 +12,7 @@ from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueEr
 from sereto.models.base import SeretoBaseModel
 from sereto.models.version import ProjectVersion
 from sereto.types import TypePathName
-from sereto.utils import YAML
+from sereto.utils import YAML, lower_alphanum
 
 
 class VarsMetadataModel(SeretoBaseModel):
@@ -154,8 +153,7 @@ class FindingGroup(SeretoBaseModel):
         Returns:
             The unique name of the finding group.
         """
-        name = "".join([x.lower() for x in unidecode(self.name) if x.isalnum()])
-        return f"finding_group_{name}"
+        return lower_alphanum(f"finding_group_{self.name}")
 
 
 class FindingsConfig(SeretoBaseModel):

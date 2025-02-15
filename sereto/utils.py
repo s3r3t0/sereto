@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from pathlib import Path
 from typing import overload
 
@@ -43,6 +44,24 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
         return pattern.sub(lambda match: replacements[match.group(0)], text)
     else:
         return [pattern.sub(lambda match: replacements[match.group(0)], item) for item in text]
+
+
+@validate_call
+def lower_alphanum(text: str) -> str:
+    """Converts the input text to lowercase alphanumerical delimited by underscores.
+
+    Also all spaces are replaced with underscores.
+
+    Args:
+        text: The input text.
+
+    Returns:
+        The input text with the modifications applied.
+    """
+    normalized = unicodedata.normalize("NFKD", text)
+    ascii_text = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    ascii_text = re.sub(r"[^a-z0-9\s]", "", ascii_text)
+    return re.sub(r"\s+", "_", ascii_text)
 
 
 @validate_call

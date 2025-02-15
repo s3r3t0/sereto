@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
-from unidecode import unidecode
 
 from sereto.enums import Environment
 from sereto.exceptions import SeretoPathError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.finding import FindingsConfig
 from sereto.settings import load_settings_function
+from sereto.utils import lower_alphanum
 
 
 class TargetModel(SeretoBaseModel, extra="allow"):
@@ -35,8 +35,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
         Returns:
             The unique name of the target.
         """
-        name: str = "".join([x.lower() for x in unidecode(self.name) if x.isalnum()])
-        return f"target_{self.category}_{name}"
+        return lower_alphanum(f"target_{self.category}_{self.name}")
 
     @cached_property
     def findings_config(self) -> FindingsConfig:
