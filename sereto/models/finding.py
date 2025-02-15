@@ -57,7 +57,7 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
             raise SeretoValueError(f"invalid template metadata in '{path}'") from ex
 
 
-class ReportIncludeGroup(SeretoBaseModel):
+class FindingGroupModel(SeretoBaseModel):
     name: str
     risks: dict[ProjectVersion, Risk] = {}
     findings: list[str]
@@ -91,7 +91,7 @@ class ReportIncludeGroup(SeretoBaseModel):
         return risks
 
 
-class Finding(SeretoBaseModel):
+class SubFindingModel(SeretoBaseModel):
     name: str
     category: str | None = None
     path_name: TypePathName
@@ -144,7 +144,7 @@ class Finding(SeretoBaseModel):
 class FindingGroup(SeretoBaseModel):
     name: str
     risks: dict[ProjectVersion, Risk]
-    findings: list[Finding]
+    findings: list[SubFindingModel]
 
     @property
     def uname(self) -> str:
@@ -157,8 +157,8 @@ class FindingGroup(SeretoBaseModel):
 
 
 class FindingsConfig(SeretoBaseModel):
-    report_include: list[ReportIncludeGroup]
-    findings: list[Finding]
+    report_include: list[FindingGroupModel]
+    findings: list[SubFindingModel]
 
     @model_validator(mode="after")
     def default_risks(self) -> Self:
@@ -208,14 +208,14 @@ class FindingsConfig(SeretoBaseModel):
         except ValueError as e:
             raise SeretoValueError("invalid findings.yaml") from e
 
-    def included_findings(self) -> Iterator[Finding]:
+    def included_findings(self) -> Iterator[SubFindingModel]:
         """Generator of individual findings included in the report."""
         for ri in self.report_include:
             for finding_path in ri.findings:
                 yield [f for f in self.findings if f.path_name == finding_path][0]
 
     @validate_call
-    def get_finding(self, path_name: str) -> Finding:
+    def get_finding(self, path_name: str) -> SubFindingModel:
         """Retrieve specific Finding instance by its 'path_name' attribute."""
         matches = [f for f in self.findings if f.path_name == path_name]
         match len(matches):

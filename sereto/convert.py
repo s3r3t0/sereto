@@ -1,7 +1,7 @@
 from pydantic import DirectoryPath, validate_call
 
 from sereto.enums import FileFormat
-from sereto.models.finding import Finding
+from sereto.models.finding import SubFindingModel
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
 
@@ -37,7 +37,7 @@ def apply_convertor(
 
 @validate_call
 def convert_finding_to_tex(
-    finding: Finding,
+    finding: SubFindingModel,
     render: Render,
     templates: DirectoryPath,
     version: ProjectVersion,

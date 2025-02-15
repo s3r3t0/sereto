@@ -6,7 +6,7 @@ from pydantic import validate_call
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
 from sereto.finding import render_finding_group_to_tex, render_finding_to_tex
-from sereto.models.finding import Finding, FindingGroup
+from sereto.models.finding import FindingGroup, SubFindingModel
 from sereto.models.project import Project
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
@@ -57,7 +57,7 @@ def ensure_target_template(project: Project, target: TargetModel, version: Proje
 def build_finding_to_tex(
     project: Project,
     target: TargetModel,
-    finding: Finding,
+    finding: SubFindingModel,
     version: ProjectVersion,
     converter: str | None = None,
 ) -> None:

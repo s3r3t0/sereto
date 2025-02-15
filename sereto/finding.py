@@ -10,7 +10,7 @@ from sereto.convert import apply_convertor
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoRuntimeError
 from sereto.jinja import render_jinja2
-from sereto.models.finding import Finding, FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel
+from sereto.models.finding import FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel, SubFindingModel
 from sereto.models.project import Project
 from sereto.models.settings import Render
 from sereto.models.target import TargetModel
@@ -115,7 +115,7 @@ def update_findings(project: Project) -> None:
 @validate_call
 def render_finding_to_tex(
     target: TargetModel,
-    finding: Finding,
+    finding: SubFindingModel,
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
