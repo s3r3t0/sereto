@@ -1,9 +1,11 @@
+import operator
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from functools import reduce
 from typing import Self
 
-from pydantic import DirectoryPath, FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
 
 from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
@@ -11,6 +13,7 @@ from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
+from sereto.risk import Risks
 from sereto.target import Target
 
 
@@ -334,6 +337,16 @@ class VersionConfig:
         del self.people[index]
 
         return self
+
+    @property
+    def total_open_risks(self) -> NonNegativeInt:
+        """Get the total number of open risks across all risk levels."""
+        return sum(t.findings.risks.sum_open for t in self.targets)
+
+    @property
+    def sum_risks(self) -> Risks:
+        """Get the sum of risks across all targets."""
+        return reduce(operator.add, (t.findings.risks for t in self.targets))
 
 
 @dataclass

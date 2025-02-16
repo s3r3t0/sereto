@@ -12,9 +12,10 @@ from sereto.models.finding import (
     FindingGroupModel,
     FindingsConfigModel,
 )
-from sereto.models.risks import Risks
 from sereto.models.settings import Render
+from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
+from sereto.risk import Risks
 from sereto.utils import lower_alphanum
 
 if TYPE_CHECKING:
@@ -184,19 +185,20 @@ class Findings:
     @property
     def risks(self) -> Risks:
         """Get the summary of risks for the specified version."""
-        return Risks().set_counts(
+        return Risks(
             critical=len([g for g in self.groups if g.risk == Risk.critical]),
             high=len([g for g in self.groups if g.risk == Risk.high]),
             medium=len([g for g in self.groups if g.risk == Risk.medium]),
             low=len([g for g in self.groups if g.risk == Risk.low]),
             info=len([g for g in self.groups if g.risk == Risk.info]),
+            closed=len([g for g in self.groups if g.risk == Risk.closed]),
         )
 
 
 @validate_call
 def render_subfinding_to_tex(
     sub_finding: SubFinding,
-    # target: TargetModel,
+    target: TargetModel,
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
@@ -210,7 +212,7 @@ def render_subfinding_to_tex(
         templates=[sub_finding.path.parent],
         file=sub_finding.path,
         vars={
-            # "target": target.model_dump(),  # TODO removed for now
+            "target": target.model_dump(),
             "version": version,
             "f": sub_finding,
         },
@@ -234,7 +236,7 @@ def render_subfinding_to_tex(
 def render_finding_group_to_tex(
     config: "Config",
     project_path: DirectoryPath,
-    # target: TargetModel,
+    target: TargetModel,
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
@@ -264,7 +266,7 @@ def render_finding_group_to_tex(
         vars={
             "finding_group": finding_group,
             "finding_group_index": finding_group_ix,
-            # "target": target,  # TODO removed for now
+            "target": target.model_dump(),
             "target_index": target_ix,
             "c": version_config,
             "config": config,

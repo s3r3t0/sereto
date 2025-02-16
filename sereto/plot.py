@@ -6,7 +6,7 @@ from matplotlib.axes import Axes
 from matplotlib.container import BarContainer
 from pydantic import validate_call
 
-from sereto.models.risks import Risks
+from sereto.risk import Risks
 
 
 def _label_plot(ax: Axes, rect: BarContainer) -> None:
@@ -37,6 +37,10 @@ def risks_plot(risks: Risks, path: Path) -> None:
         risks: Object containing the counts of vulnerabilities for each risk rating.
         path: Desired destination for the generated PNG file.
     """
+    NAMES = ["Critical", "High", "Medium", "Low", "Info"]
+    COUNTS = [risks.critical, risks.high, risks.medium, risks.low, risks.info]
+    COLORS = ["red", "orange", "#f0f000", "#33cc33", "#3366ff"]
+
     # Set global font size
     rcParams["font.size"] = 14
 
@@ -44,12 +48,10 @@ def risks_plot(risks: Risks, path: Path) -> None:
     fig.set_size_inches(10, 5)
     ax.set_title("Number of Vulnerabilities by Risk Rating")
 
-    RISKS_CNT = len(risks.names())
-
-    rect = ax.bar(range(RISKS_CNT), risks.counts(), align="center", color=risks.colors())
-    ax.set_xticks(range(RISKS_CNT))
-    ax.set_xticklabels([r.capitalize() for r in risks.names()])
-    ax.set_yticks(range(max(risks.counts()) + 1))
+    rect = ax.bar(range(len(NAMES)), COUNTS, align="center", color=COLORS)
+    ax.set_xticks(range(len(NAMES)))
+    ax.set_xticklabels(NAMES)
+    ax.set_yticks(range(max(risks.critical, risks.high, risks.medium, risks.low, risks.info) + 1))
     _label_plot(ax, rect)
 
     fig.tight_layout()
