@@ -30,7 +30,8 @@ def add_retest(project: Project) -> None:
 
     # for target in project.config.at_version(last_version).targets:
     #     for file in ["approach", "scope", "target"]:
-    #         shutil.copy(src=target.path / f"{file}{old_suffix}.tex.j2", dst=target.path / f"{file}{new_suffix}.tex.j2")
+    #         shutil.copy(src=target.path / f"{file}{old_suffix}.tex.j2",
+    #                     dst=target.path / f"{file}{new_suffix}.tex.j2")
 
     #     findings_path = target.path / "findings.yaml"
     #     findings = YAML.load(findings_path)
@@ -52,7 +53,7 @@ def add_retest(project: Project) -> None:
 
     #         # set risk for the new version same as the last one
     #         if str(retest_version) not in yaml_finding["risks"]:  # type: ignore[call-overload]
-    #             yaml_finding["risks"][str(retest_version)] = finding.risks[last_version].value  # type: ignore[call-overload]
+    #             yaml_finding["risks"][str(retest_version)] = finding.risks[last_version].value
 
     #     # Write updated findings.yaml
     #     with findings_path.open(mode="w", encoding="utf-8") as f:

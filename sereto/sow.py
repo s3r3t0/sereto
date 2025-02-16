@@ -16,10 +16,6 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
     if not template.is_file():
         raise SeretoPathError(f"template not found: '{template}'")
 
-    # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_model = cfg.to_model()
-    cfg_dict = {key: getattr(cfg_model, key) for key in cfg_model.model_dump()}
-
     # Render the Jinja template
     sow_generator = render_jinja2(
         templates=[
@@ -34,7 +30,6 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
             "config": project.config,
             "version": version,
             "project_path": project.path,
-            **cfg_dict,
         },
     )
 

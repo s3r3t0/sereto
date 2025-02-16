@@ -137,22 +137,37 @@ class VersionConfig:
         type: str | DateType | Iterable[str] | Iterable[DateType] | None = None,
         start: str | SeretoDate | None = None,
         end: str | SeretoDate | None = None,
+        first_date: bool = False,
+        last_date: bool = False,
         inverse: bool = False,
-    ) -> list[Date]:
+    ) -> list[Date] | SeretoDate | None:
         """Filter dates based on specified criteria.
 
         The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps
         with the specified range.
 
+        The return type is always `list[Date]` except when `first_date` or `last_date` is True, in which case the
+        return type is `SeretoDate` or None.
+
         Args:
             type: The type of the date. Can be a single type, a list of types, or None.
             start: Only dates on or after this date will be included.
             end: Only dates on or before this date will be included.
+            first_date: If True, return the earliest date matching the criteria. Even for date ranges, only the start
+                date  is considered. The type returned is `SeretoDate` or None.
+            last_date: If True, return the latest date matching the criteria. Even for date ranges, only the end date
+                is considered. The type returned is `SeretoDate` or None.
             inverse: If True, return the inverse of the usual results.
 
         Returns:
-            A list of dates matching the criteria.
+            If A list of dates matching the criteria.
         """
+        # Check for invalid parameter combinations
+        if first_date and last_date:
+            raise SeretoValueError("cannot specify both first_date and last_date")
+        if (first_date or last_date) and inverse:
+            raise SeretoValueError("cannot specify inverse with first_date or last_date")
+
         match type:
             case str():
                 type = [DateType(type)]
@@ -181,6 +196,14 @@ class VersionConfig:
                 or (isinstance(d.date, DateRange) and d.date.end <= end)
             )
         ]
+
+        if first_date:
+            single_dates = [d.date.start if isinstance(d.date, DateRange) else d.date for d in filtered_dates]
+            return min(single_dates, default=None)
+
+        if last_date:
+            single_dates = [d.date.end if isinstance(d.date, DateRange) else d.date for d in filtered_dates]
+            return max(single_dates, default=None)
 
         if inverse:
             return [d for d in self.dates if d not in filtered_dates]

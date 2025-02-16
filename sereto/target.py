@@ -94,18 +94,10 @@ def render_target_to_tex(
     target: TargetModel, config: "Config", version: ProjectVersion, target_ix: int, project_path: DirectoryPath
 ) -> str:
     """Render selected target (top-level document) to TeX format."""
-    assert target.path is not None
-
-    cfg = config.at_version(version)
-
     # Construct path to target template
     template = project_path / "layouts/target.tex.j2"
     if not template.is_file():
         raise SeretoPathError(f"template not found: '{template}'")
-
-    # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_model = cfg.to_model()
-    cfg_dict = {key: getattr(cfg_model, key) for key in cfg_model.model_dump()}
 
     # Render Jinja2 template
     target_generator = render_jinja2(
@@ -119,11 +111,10 @@ def render_target_to_tex(
         vars={
             "target": target,
             "target_index": target_ix,
-            "c": cfg,
+            "c": config.at_version(version),
             "config": config,
             "version": version,
             "project_path": project_path,
-            **cfg_dict,
         },
     )
 

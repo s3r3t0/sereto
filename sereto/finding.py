@@ -13,7 +13,6 @@ from sereto.models.finding import (
     FindingsConfigModel,
 )
 from sereto.models.settings import Render
-from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.risk import Risks
 from sereto.utils import lower_alphanum
@@ -195,10 +194,8 @@ class Findings:
         )
 
 
-@validate_call
 def render_subfinding_to_tex(
     sub_finding: SubFinding,
-    target: TargetModel,
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
@@ -212,9 +209,8 @@ def render_subfinding_to_tex(
         templates=[sub_finding.path.parent],
         file=sub_finding.path,
         vars={
-            "target": target.model_dump(),
-            "version": version,
             "f": sub_finding,
+            "version": version,
         },
     )
 
@@ -236,7 +232,6 @@ def render_subfinding_to_tex(
 def render_finding_group_to_tex(
     config: "Config",
     project_path: DirectoryPath,
-    target: TargetModel,
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
@@ -250,10 +245,6 @@ def render_finding_group_to_tex(
     if not template.is_file():
         raise SeretoPathError(f"template not found: '{template}'")
 
-    # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_model = version_config.to_model()
-    cfg_dict = {key: getattr(cfg_model, key) for key in cfg_model.model_dump()}
-
     # Render Jinja2 template
     finding_group_generator = render_jinja2(
         templates=[
@@ -266,13 +257,11 @@ def render_finding_group_to_tex(
         vars={
             "finding_group": finding_group,
             "finding_group_index": finding_group_ix,
-            "target": target.model_dump(),
             "target_index": target_ix,
             "c": version_config,
             "config": config,
             "version": version,
             "project_path": project_path,
-            **cfg_dict,
         },
     )
 

@@ -65,7 +65,6 @@ def build_subfinding_to_tex(
     # Process the finding
     content = render_subfinding_to_tex(
         sub_finding=sub_finding,
-        target=target.data,
         version=version,
         templates=project.settings.templates_path,
         render=project.settings.render,
@@ -118,7 +117,6 @@ def build_finding_group_to_tex(
     content = render_finding_group_to_tex(
         config=project.config,
         project_path=project.path,
-        target=target.data,
         target_ix=target_ix,
         finding_group=finding_group,
         finding_group_ix=fg_ix,
