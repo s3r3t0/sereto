@@ -39,7 +39,7 @@ def init_build_dir(project: Project, version: ProjectVersion) -> None:
         build_dir.mkdir(parents=True)
 
     # Create target directories
-    for target in project.config_new.at_version(version=version).targets:
+    for target in project.config.at_version(version=version).targets:
         if not (target_dir := build_dir / target.uname).is_dir():
             target_dir.mkdir(parents=True)
 
@@ -52,7 +52,7 @@ def project_create_missing(project: Project, version: ProjectVersion) -> None:
         project: Project's representation.
         version: The version of the project.
     """
-    cfg = project.config_new.at_version(version=version)
+    cfg = project.config.at_version(version=version)
 
     # Initialize the build directory
     init_build_dir(project=project, version=version)

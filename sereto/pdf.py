@@ -75,12 +75,10 @@ def generate_pdf_finding_group(
         Path to the generated finding group PDF.
     """
     if version is None:
-        version = project.config_new.last_version
+        version = project.config.last_version
 
     # Select target and finding group
-    target = project.config_new.last_config.select_target(
-        categories=project.settings.categories, selector=target_selector
-    )
+    target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
 
     fg = target.findings.select_group(selector=finding_group_selector)
 
@@ -127,7 +125,7 @@ def generate_pdf_report(
         Path to the generated report PDF.
     """
     if version is None:
-        version = project.config_new.last_version
+        version = project.config.last_version
 
     Console().log(f"Rendering report version: '{version}'")
 
@@ -163,7 +161,7 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
         Path to the generated Statement of Work (SoW) PDF.
     """
     if version is None:
-        version = project.config_new.last_version
+        version = project.config.last_version
 
     Console().log(f"Rendering SoW version: '{version}'")
 
@@ -207,12 +205,10 @@ def generate_pdf_target(
         Path to the generated target PDF.
     """
     if version is None:
-        version = project.config_new.last_version
+        version = project.config.last_version
 
     # Select target
-    target = project.config_new.last_config.select_target(
-        categories=project.settings.categories, selector=target_selector
-    )
+    target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
 
     Console().log(f"Rendering partial report for target '{target.uname}'")
 

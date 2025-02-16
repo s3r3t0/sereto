@@ -110,12 +110,12 @@ def build_finding_group_to_tex(
     init_build_dir(project=project, version=version)
 
     # Determine the indexes for correct section numbering
-    target_ix = project.config_new.at_version(version).targets.index(target)
+    target_ix = project.config.at_version(version).targets.index(target)
     fg_ix = target.findings.groups.index(finding_group)
 
     # Render the finding group to TeX format
     content = render_finding_group_to_tex(
-        config=project.config_new,
+        config=project.config,
         project_path=project.path,
         target_ix=target_ix,
         finding_group=finding_group,
@@ -153,11 +153,11 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
     init_build_dir(project=project, version=version)
 
     # Determine the index for correct section numbering
-    target_ix = project.config_new.at_version(version).targets.index(target)
+    target_ix = project.config.at_version(version).targets.index(target)
 
     # Render the target to TeX format
     content = render_target_to_tex(
-        target=target.data, config=project.config_new, version=version, target_ix=target_ix, project_path=project.path
+        target=target.data, config=project.config, version=version, target_ix=target_ix, project_path=project.path
     )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)
@@ -173,7 +173,7 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 @validate_call
 def build_report_to_tex(project: Project, version: ProjectVersion, converter: str | None = None) -> Path:
     # Process all targets and their dependencies
-    for target in project.config_new.at_version(version).targets:
+    for target in project.config.at_version(version).targets:
         build_target_dependencies(project=project, target=target, version=version, converter=converter)
 
     # Initialize the build directory

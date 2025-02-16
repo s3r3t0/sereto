@@ -9,7 +9,7 @@ from sereto.models.version import ProjectVersion
 @validate_call
 def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
     """Render the SoW (top-level document) to TeX format."""
-    cfg = project.config_new.at_version(version=version)
+    cfg = project.config.at_version(version=version)
 
     # Construct path to SoW template
     template = project.path / "layouts/sow.tex.j2"
@@ -31,7 +31,7 @@ def render_sow_to_tex(project: Project, version: ProjectVersion) -> str:
         file=template,
         vars={
             "c": cfg,
-            "config": project.config_new,
+            "config": project.config,
             "version": version,
             "project_path": project.path,
             **cfg_dict,

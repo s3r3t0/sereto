@@ -1,6 +1,6 @@
 from typing import Self
 
-from pydantic import DirectoryPath, Field, FilePath, ValidationError, model_validator, validate_call
+from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -71,23 +71,3 @@ class ConfigModel(SeretoBaseModel):
             raise SeretoPathError(f"permission denied for '{file}'") from None
         except ValidationError as e:
             raise SeretoValueError(f"invalid config\n\n{e}") from e
-
-    # TODO remove
-    @validate_call
-    def update_paths(self, project_path: DirectoryPath) -> Self:
-        """Update the full paths of the individual config components.
-
-        When the configuration is loaded, it has no knowledge of the project path. This method updates the paths in the
-        individual config components.
-
-        Args:
-            project_path: The path to the project directory.
-
-        Returns:
-            The configuration with updated paths.
-        """
-        for version_config in self.version_configs.values():
-            for target in version_config.targets:
-                target.path = project_path / target.uname
-
-        return self

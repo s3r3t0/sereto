@@ -6,7 +6,6 @@ from pydantic import DirectoryPath, validate_call
 from sereto.config import Config
 from sereto.exceptions import SeretoPathError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.config import ConfigModel
 from sereto.models.settings import Settings
 from sereto.settings import load_settings_function
 
@@ -59,8 +58,7 @@ def get_config_path(dir_subtree: DirectoryPath = Path("/")) -> Path:
 
 
 class Project(SeretoBaseModel):
-    config: ConfigModel
-    config_new: Config
+    config: Config
     settings: Settings
     path: DirectoryPath
 
@@ -78,9 +76,9 @@ class Project(SeretoBaseModel):
         project_path = get_project_path_from_dir(
             dir=path if path is not None else Path.cwd(), dir_subtree=settings.projects_path
         )
-        config = ConfigModel.load_from(file=project_path / "config.json").update_paths(project_path=project_path)
-        config_new = Config.load_from(project_path / "config.json")
-        return cls(config=config, config_new=config_new, settings=load_settings_function(), path=project_path)
+        return cls(
+            config=Config.load_from(project_path / "config.json"), settings=load_settings_function(), path=project_path
+        )
 
     @validate_call
     def get_config_path(self) -> Path:

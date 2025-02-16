@@ -12,14 +12,14 @@ from sereto.models.project import Project
 @validate_call
 def add_retest(project: Project) -> None:
     ...
-    # last_version = project.config_new.last_version
+    # last_version = project.config.last_version
     # retest_version = last_version.next_major_version()
 
     # # Duplicate last version config
-    # last_config = deepcopy(project.config_new.last_config)
+    # last_config = deepcopy(project.config.last_config)
     # last_config.version_description = "Retest"
 
-    # project.config_new.add_version_config(version=retest_version, config=last_config.to_model()).save()
+    # project.config.add_version_config(version=retest_version, config=last_config.to_model()).save()
 
     # # Update project files
     # old_suffix = last_version.path_suffix
@@ -28,7 +28,7 @@ def add_retest(project: Project) -> None:
     # for file in ["report", "sow"]:
     #     shutil.copy(src=project.path / f"{file}{old_suffix}.tex.j2", dst=project.path / f"{file}{new_suffix}.tex.j2")
 
-    # for target in project.config_new.at_version(last_version).targets:
+    # for target in project.config.at_version(last_version).targets:
     #     for file in ["approach", "scope", "target"]:
     #         shutil.copy(src=target.path / f"{file}{old_suffix}.tex.j2", dst=target.path / f"{file}{new_suffix}.tex.j2")
 
