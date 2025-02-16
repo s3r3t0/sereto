@@ -20,7 +20,6 @@ from sereto.models.project import Project, get_config_path
 from sereto.models.settings import Settings
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
-from sereto.project import project_create_missing
 from sereto.target import Target
 
 # -------------
@@ -344,7 +343,7 @@ def show_people_config(
 
 
 @validate_call
-def add_targets_config(project: Project, version: ProjectVersion | None = None) -> None:
+def add_target(project: Project, version: ProjectVersion | None = None) -> None:
     """Add target to the configuration.
 
     Args:
@@ -354,9 +353,13 @@ def add_targets_config(project: Project, version: ProjectVersion | None = None) 
     if version is None:
         version = project.config_new.last_version
 
-    # Prompt user for the target
+    # Prompt user for the target details
     new_target_model = prompt_user_for_target(settings=project.settings)
-    new_target = Target.load(data=new_target_model, path=project.path)
+
+    # Create the target instance, including on the filesystem
+    new_target = Target.new(
+        data=new_target_model, project_path=project.path, templates=project.settings.templates_path, version=version
+    )
 
     # Add the target to the configuration
     project.config_new.at_version(version).add_target(new_target)
@@ -364,13 +367,9 @@ def add_targets_config(project: Project, version: ProjectVersion | None = None) 
     # Write the configuration
     project.config_new.save()
 
-    # Post-process the new target
-    project.config.update_paths(project.path)
-    project_create_missing(project=project, version=version)
-
 
 @validate_call
-def delete_targets_config(
+def delete_target(
     project: Project, index: int, version: ProjectVersion | None = None, interactive: bool = False
 ) -> None:
     """Delete target from the configuration by its index.

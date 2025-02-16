@@ -1,13 +1,10 @@
-from functools import cached_property
 from pathlib import Path
 from typing import Literal
 
 from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
 
 from sereto.enums import Environment
-from sereto.exceptions import SeretoPathError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.finding import FindingsConfig
 from sereto.settings import load_settings_function
 from sereto.utils import lower_alphanum
 
@@ -36,18 +33,6 @@ class TargetModel(SeretoBaseModel, extra="allow"):
             The unique name of the target.
         """
         return lower_alphanum(f"target_{self.category}_{self.name}")
-
-    @cached_property
-    def findings_config(self) -> FindingsConfig:
-        if self.path is None:
-            raise SeretoPathError("target path not configured")
-
-        fc = FindingsConfig.from_yaml(file=self.path / "findings.yaml")
-
-        for finding in fc.findings:
-            finding.path = self.path / "findings" / finding.path_name
-
-        return fc
 
 
 class TargetDastModel(TargetModel):

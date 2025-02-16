@@ -79,10 +79,10 @@ def generate_pdf_finding_group(
 
     # Select target and finding group
     target = project.config_new.last_config.select_target(
-        project_path=project.path, categories=project.settings.categories, selector=target_selector
+        categories=project.settings.categories, selector=target_selector
     )
 
-    fg = target.select_finding_group(selector=finding_group_selector)
+    fg = target.findings.select_group(selector=finding_group_selector)
 
     Console().log(f"Rendering partial report for finding group {fg.uname!r}")
 
@@ -90,7 +90,7 @@ def generate_pdf_finding_group(
 
     # Build finding group to TeX
     build_finding_group_dependencies(
-        project=project, target=target.data, finding_group=fg, version=version, converter=converter
+        project=project, target=target, finding_group=fg, version=version, converter=converter
     )
     finding_group_tex = build_finding_group_to_tex(project=project, target=target, finding_group=fg, version=version)
 
@@ -211,7 +211,7 @@ def generate_pdf_target(
 
     # Select target
     target = project.config_new.last_config.select_target(
-        project_path=project.path, categories=project.settings.categories, selector=target_selector
+        categories=project.settings.categories, selector=target_selector
     )
 
     Console().log(f"Rendering partial report for target '{target.uname}'")
@@ -219,7 +219,7 @@ def generate_pdf_target(
     project_create_missing(project=project, version=version)
 
     # Build target to TeX
-    build_target_dependencies(project=project, target=target.data, version=version, converter=convert_recipe)
+    build_target_dependencies(project=project, target=target, version=version, converter=convert_recipe)
     target_tex = build_target_to_tex(project=project, target=target, version=version)
 
     # Render PDF

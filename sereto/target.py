@@ -3,15 +3,14 @@ from textwrap import dedent
 from typing import TYPE_CHECKING, Self
 
 from pydantic import DirectoryPath, validate_call
-from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.cli.utils import Console
+from sereto.exceptions import SeretoPathError
+from sereto.finding import Findings
 from sereto.jinja import render_jinja2
-from sereto.models.finding import FindingGroup, FindingsConfig, FindingTemplateFrontmatterModel
-from sereto.models.risks import Risks
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
-from sereto.utils import YAML
+from sereto.utils import copy_skel
 
 if TYPE_CHECKING:
     from sereto.config import Config
@@ -20,23 +19,62 @@ if TYPE_CHECKING:
 @dataclass
 class Target:
     data: TargetModel
-    findings: FindingsConfig
+    findings: Findings
     path: DirectoryPath
+    version: ProjectVersion
 
     @classmethod
     @validate_call
-    def load(cls, data: TargetModel, path: DirectoryPath) -> Self:
-        fc = FindingsConfig.from_yaml(file=path / "findings.yaml")
-
-        # TODO remove when we are finished refactoring also the findings
-        for finding in fc.findings:
-            finding.path = path / "findings" / finding.path_name
-
+    def load(cls, data: TargetModel, path: DirectoryPath, version: ProjectVersion) -> Self:
         return cls(
             data=data,
-            findings=fc,
+            findings=Findings.load_from(path),
             path=path,
+            version=version,
         )
+
+    @classmethod
+    @validate_call
+    def new(
+        cls, data: TargetModel, project_path: DirectoryPath, templates: DirectoryPath, version: ProjectVersion
+    ) -> Self:
+        target_path = project_path / (data.uname + version.path_suffix)
+
+        Console().log(f"Creating target directory: '{target_path}'")
+        target_path.mkdir()
+
+        category_templates = templates / "categories" / data.category
+
+        if (category_templates / "skel").is_dir():
+            Console().log(f"""Populating new target directory from: '{category_templates / "skel"}'""")
+            copy_skel(templates=category_templates, dst=target_path)
+        else:
+            Console().log(f"No 'skel' directory found: '{category_templates}'")
+
+        # Create "findings.yaml"
+        (target_path / "findings.yaml").write_text(
+            dedent(
+                """
+                ############################################################
+                #    Select findings you want to include in the report     #
+                #----------------------------------------------------------#
+                #  report_include:                                         #
+                #  - name: "Group Finding"                                 #
+                #    findings:                                             #
+                #    - "finding_one"                                       #
+                #    - "finding_two"                                       #
+                #                                                          #
+                #  - name: "Standalone Finding"                            #
+                #    findings:                                             #
+                #    - "standalone_finding"                                #
+                ############################################################
+
+                report_include: []
+                """
+            )
+        )
+
+        return cls.load(data=data, path=target_path, version=version)
 
     @validate_call
     def to_model(self) -> TargetModel:
@@ -49,99 +87,7 @@ class Target:
         Returns:
             The unique name of the target.
         """
-        return self.data.uname
-
-    @validate_call
-    def select_finding_group(self, selector: int | str | None = None) -> FindingGroup:
-        """Select a finding group from the target.
-
-        Args:
-            selector: The index or name of the finding group to select.
-
-        Returns:
-            The selected finding group.
-        """
-        finding_groups = self.findings.finding_groups
-
-        # only single finding group present
-        if selector is None:
-            if len(finding_groups) != 1:
-                raise SeretoValueError(
-                    f"cannot select finding group; no selector provided and there are {len(finding_groups)} finding "
-                    "groups present"
-                )
-            return finding_groups[0]
-
-        # by index
-        if isinstance(selector, int) or selector.isnumeric():
-            ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
-            if not (0 <= ix <= len(finding_groups) - 1):
-                raise SeretoValueError("finding group index out of range")
-            return finding_groups[ix]
-
-        # by uname
-        fg_matches = [fg for fg in finding_groups if fg.uname == selector]
-        if len(fg_matches) != 1:
-            raise SeretoValueError(f"finding group with uname {selector!r} not found")
-        return fg_matches[0]
-
-
-@validate_call
-def create_findings_config(target: TargetModel, templates: DirectoryPath, last_version: ProjectVersion) -> None:
-    findings = YAML.load(
-        dedent(
-            """
-            ############################################################
-            #    Select findings you want to include in the report     #
-            #----------------------------------------------------------#
-            #  report_include:                                         #
-            #  - name: "Group Finding"                                 #
-            #    findings:                                             #
-            #    - "finding_one"                                       #
-            #    - "finding_two"                                       #
-            #                                                          #
-            #  - name: "Standalone Finding"                            #
-            #    findings:                                             #
-            #    - "standalone_finding"                                #
-            ############################################################
-
-            report_include: []
-
-
-            ############################################################
-            #    All discovered findings from the templates            #
-            ############################################################
-
-            findings:
-            """
-        )
-    )
-
-    findings["findings"] = CommentedSeq()
-
-    for file in templates.glob(pattern="*.j2"):
-        template_metadata = FindingTemplateFrontmatterModel.load_from(file)
-
-        finding = CommentedMap(
-            {
-                "name": template_metadata.name,
-                "path_name": file.with_suffix("").stem,
-                "risks": CommentedMap({str(last_version): template_metadata.risk}),
-                "vars": CommentedMap(),
-            }
-        )
-
-        for var in template_metadata.variables:
-            finding["vars"][var.name] = CommentedSeq() if var.list else ""
-            comment = f"{'[required]' if var.required else '[optional]'} {var.description}"
-            finding["vars"].yaml_add_eol_comment(comment, var.name)
-
-        findings["findings"].append(finding)
-
-    assert target.path is not None
-
-    with (target.path / "findings.yaml").open(mode="w", encoding="utf-8") as f:
-        YAML.dump(findings, f)
+        return self.data.uname + self.version.path_suffix
 
 
 def render_target_to_tex(
@@ -182,16 +128,3 @@ def render_target_to_tex(
     )
 
     return "".join(target_generator)
-
-
-@validate_call
-def get_risks(target: TargetModel, version: ProjectVersion) -> Risks:
-    fg = target.findings_config.finding_groups
-
-    return Risks().set_counts(
-        critical=len([f for f in fg if version in f.risks and f.risks[version].name == "critical"]),
-        high=len([f for f in fg if version in f.risks and f.risks[version].name == "high"]),
-        medium=len([f for f in fg if version in f.risks and f.risks[version].name == "medium"]),
-        low=len([f for f in fg if version in f.risks and f.risks[version].name == "low"]),
-        info=len([f for f in fg if version in f.risks and f.risks[version].name == "info"]),
-    )

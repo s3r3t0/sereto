@@ -13,26 +13,27 @@ from sereto.cli.commands import sereto_ls, sereto_repl
 from sereto.cli.config import (
     add_dates_config,
     add_people_config,
-    add_targets_config,
+    add_target,
     delete_dates_config,
     delete_people_config,
-    delete_targets_config,
+    delete_target,
     edit_config,
     show_config,
     show_dates_config,
     show_people_config,
     show_targets_config,
 )
+
+from sereto.cli.finding import show_findings
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
-from sereto.finding import add_finding, show_findings, update_findings
 from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
-from sereto.project import copy_skel, load_project, new_project
+from sereto.project import load_project, new_project
 from sereto.retest import add_retest
 from sereto.settings import load_settings, load_settings_function
 from sereto.source_archive import (
@@ -42,7 +43,7 @@ from sereto.source_archive import (
     retrieve_source_archive,
 )
 from sereto.types import TypeProjectId
-from sereto.utils import replace_strings
+from sereto.utils import copy_skel, replace_strings
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -360,7 +361,7 @@ def config_targets_add(project: Project) -> None:
     Args:
         project: Project's representation.
     """
-    add_targets_config(project=project)
+    add_target(project=project)
 
 
 @config_targets.command(name="delete")
@@ -374,7 +375,7 @@ def config_targets_delete(project: Project, index: int) -> None:
         project: Project's representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
     """
-    delete_targets_config(project=project, index=index, interactive=True)
+    delete_target(project=project, index=index, interactive=True)
 
 
 @config_targets.command(name="show")
@@ -447,13 +448,14 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
         format: The file format of the template.
         name: The name of the finding.
     """
-    add_finding(
-        project=project,
-        target_selector=target,
-        format=format,
-        name=name,
-        interactive=True,
-    )
+    ...  # TODO
+    # add_finding(
+    #     project=project,
+    #     target_selector=target,
+    #     format=format,
+    #     name=name,
+    #     interactive=True,
+    # )
 
 
 @findings.command(name="show")
@@ -465,22 +467,7 @@ def finding_show(project: Project, version: ProjectVersion | None) -> None:
     """Show findings."""
     if version is None:
         version = project.config_new.last_version
-    show_findings(config=project.config_new, version=version)
-
-
-@findings.command(name="update")
-@handle_exceptions
-@load_project
-def finding_update(project: Project) -> None:
-    """Update available findings from templates.
-
-    Only new findings will be added to the findings.yaml file. Existing findings will not be modified.
-    \f
-
-    Args:
-        project: Project's representation.
-    """
-    update_findings(project=project)
+    show_findings(version_config=project.config_new.at_version(version))
 
 
 # -----------
@@ -781,7 +768,7 @@ def templates_target_skel_copy(project: Project, target: str | None) -> None:
         target: The target for which the templates are being copied.
     """
     selected_target = project.config_new.last_config.select_target(
-        project_path=project.path, categories=project.settings.categories, selector=target
+        categories=project.settings.categories, selector=target
     )
 
     copy_skel(

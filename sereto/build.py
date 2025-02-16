@@ -3,12 +3,9 @@ from shutil import copy2
 
 from pydantic import validate_call
 
-from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
-from sereto.finding import render_finding_group_to_tex, render_finding_to_tex
-from sereto.models.finding import FindingGroup, SubFindingModel
+from sereto.finding import FindingGroup, SubFinding, render_finding_group_to_tex, render_subfinding_to_tex
 from sereto.models.project import Project
-from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.project import init_build_dir
 from sereto.report import render_report_to_tex
@@ -19,7 +16,7 @@ from sereto.utils import write_if_different
 
 @validate_call
 def ensure_finding_group_template(
-    project: Project, target: TargetModel, finding_group: FindingGroup, version: ProjectVersion
+    project: Project, target: Target, finding_group: FindingGroup, version: ProjectVersion
 ) -> None:
     """Ensures that a template exists for the specified finding group.
 
@@ -32,12 +29,12 @@ def ensure_finding_group_template(
     # Create template in "layouts/generated" directory
     template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}{version.path_suffix}.tex.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
-        template_src = project.settings.templates_path / "categories" / target.category / "finding_group.tex.j2"
+        template_src = project.settings.templates_path / "categories" / target.data.category / "finding_group.tex.j2"
         copy2(template_src, template_dst, follow_symlinks=False)
 
 
 @validate_call
-def ensure_target_template(project: Project, target: TargetModel, version: ProjectVersion) -> None:
+def ensure_target_template(project: Project, target: Target, version: ProjectVersion) -> None:
     """Ensures that a template exists for the specified target.
 
     Does not overwrite existing template.
@@ -49,31 +46,25 @@ def ensure_target_template(project: Project, target: TargetModel, version: Proje
     # Create template in "layouts/generated" directory
     template_dst = layouts_generated / f"{target.uname}{version.path_suffix}.tex.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
-        template_src = project.settings.templates_path / "categories" / target.category / "target.tex.j2"
+        template_src = project.settings.templates_path / "categories" / target.data.category / "target.tex.j2"
         copy2(template_src, template_dst, follow_symlinks=False)
 
 
 @validate_call
-def build_finding_to_tex(
+def build_subfinding_to_tex(
     project: Project,
-    target: TargetModel,
-    finding: SubFindingModel,
+    target: Target,
+    sub_finding: SubFinding,
     version: ProjectVersion,
     converter: str | None = None,
 ) -> None:
     """Process one finding into TeX format and write it to the ".build" directory."""
-    # Finding not included in the current version
-    if version not in finding.risks:
-        Console().log(f"Finding {finding.path_name!r} not found in version {version}. Skipping.")
-        return
-
     # Initialize the build directory
     init_build_dir(project=project, version=version)
 
     # Process the finding
-    content = render_finding_to_tex(
-        target,
-        finding=finding,
+    content = render_subfinding_to_tex(
+        sub_finding=sub_finding,
         version=version,
         templates=project.settings.templates_path,
         render=project.settings.render,
@@ -82,7 +73,10 @@ def build_finding_to_tex(
 
     # Write the finding to the ".build" directory; do not overwrite the same content (preserve timestamps)
     write_if_different(
-        file=project.path / ".build" / target.uname / f"{finding.path_name}{version.path_suffix}.tex",
+        file=project.path
+        / ".build"
+        / target.uname
+        / f"{sub_finding.path.name.removesuffix('.md.j2')}{version.path_suffix}.tex",
         content=content,
     )
 
@@ -90,14 +84,16 @@ def build_finding_to_tex(
 @validate_call
 def build_finding_group_dependencies(
     project: Project,
-    target: TargetModel,
+    target: Target,
     finding_group: FindingGroup,
     version: ProjectVersion,
     converter: str | None = None,
 ) -> None:
     # Render included findings to TeX format
-    for finding in finding_group.findings:
-        build_finding_to_tex(project=project, target=target, finding=finding, version=version, converter=converter)
+    for sub_finding in finding_group.sub_findings:
+        build_subfinding_to_tex(
+            project=project, target=target, sub_finding=sub_finding, version=version, converter=converter
+        )
 
     # Ensure that finding group "inner" template exists
     ensure_finding_group_template(project=project, target=target, finding_group=finding_group, version=version)
@@ -115,12 +111,12 @@ def build_finding_group_to_tex(
 
     # Determine the indexes for correct section numbering
     target_ix = project.config_new.at_version(version).targets.index(target)
-    fg_ix = target.data.findings_config.finding_groups.index(finding_group)
+    fg_ix = target.findings.groups.index(finding_group)
 
     # Render the finding group to TeX format
     content = render_finding_group_to_tex(
-        project=project,
-        target=target.data,
+        config=project.config_new,
+        project_path=project.path,
         target_ix=target_ix,
         finding_group=finding_group,
         finding_group_ix=fg_ix,
@@ -139,10 +135,10 @@ def build_finding_group_to_tex(
 
 @validate_call
 def build_target_dependencies(
-    project: Project, target: TargetModel, version: ProjectVersion, converter: str | None = None
+    project: Project, target: Target, version: ProjectVersion, converter: str | None = None
 ) -> None:
     # Finding group dependencies
-    for finding_group in target.findings_config.finding_groups:
+    for finding_group in target.findings.groups:
         build_finding_group_dependencies(
             project=project, target=target, finding_group=finding_group, version=version, converter=converter
         )
@@ -178,7 +174,7 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 def build_report_to_tex(project: Project, version: ProjectVersion, converter: str | None = None) -> Path:
     # Process all targets and their dependencies
     for target in project.config_new.at_version(version).targets:
-        build_target_dependencies(project=project, target=target.data, version=version, converter=converter)
+        build_target_dependencies(project=project, target=target, version=version, converter=converter)
 
     # Initialize the build directory
     init_build_dir(project=project, version=version)

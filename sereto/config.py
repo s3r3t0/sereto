@@ -37,13 +37,20 @@ class VersionConfig:
 
     @classmethod
     @validate_call
-    def from_model(cls, model: VersionConfigModel, version: ProjectVersion, project_path: DirectoryPath) -> Self:
+    def from_model(
+        cls,
+        model: VersionConfigModel,
+        version: ProjectVersion,
+        project_path: DirectoryPath,
+    ) -> Self:
         return cls(
             version=version,
             id=model.id,
             name=model.name,
             version_description=model.version_description,
-            targets=[Target.load(data=target, path=project_path / target.uname) for target in model.targets],
+            targets=[
+                Target.load(data=target, path=project_path / target.uname, version=version) for target in model.targets
+            ],
             dates=model.dates,
             people=model.people,
         )
@@ -83,46 +90,43 @@ class VersionConfig:
     @validate_call
     def select_target(
         self,
-        project_path: DirectoryPath,
         categories: Iterable[str],
         selector: int | str | None = None,
     ) -> Target:
-        targets = [t.data for t in self.targets]
-
         # only single target present
         if selector is None:
-            if len(targets) != 1:
+            if len(self.targets) != 1:
                 raise SeretoValueError(
-                    f"cannot select target; no selector provided and there are {len(targets)} targets present"
+                    f"cannot select target; no selector provided and there are {len(self.targets)} targets present"
                 )
-            return Target.load(data=targets[0], path=project_path / targets[0].uname)
+            return self.targets[0]
 
         # by index
         if isinstance(selector, int) or selector.isnumeric():
             ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
-            if not (0 <= ix <= len(targets) - 1):
+            if not (0 <= ix <= len(self.targets) - 1):
                 raise SeretoValueError("target index out of range")
 
-            return Target.load(data=targets[ix], path=project_path / targets[ix].uname)
+            return self.targets[ix]
 
-        # by category
+        # by unique category
         if selector in categories:
-            targets = [t for t in targets if t.category == selector]
-            match len(targets):
+            filtered_targets = [t for t in self.targets if t.data.category == selector]
+            match len(filtered_targets):
                 case 0:
                     raise SeretoValueError(f"category {selector!r} does not contain any target")
                 case 1:
-                    data = targets[0]
-                    return Target.load(data=data, path=project_path / data.uname)
+                    return filtered_targets[0]
                 case _:
-                    raise SeretoValueError(f"category {selector!r} contains multiple targets, use uname when querying")
+                    raise SeretoValueError(
+                        f"category {selector!r} contains multiple targets, use unique name when querying"
+                    )
 
         # by uname
-        filtered_targets = [t for t in targets if t.uname == selector]
+        filtered_targets = [t for t in self.targets if t.uname == selector]
         if len(filtered_targets) != 1:
             raise SeretoValueError(f"target with uname {selector!r} not found")
-        data = filtered_targets[0]
-        return Target.load(data=data, path=project_path / data.uname)
+        return filtered_targets[0]
 
     @validate_call
     def filter_dates(
@@ -343,17 +347,11 @@ class Config:
     def load_from(cls, path: FilePath) -> Self:
         config = ConfigModel.load_from(path)
 
-        # TODO remove when not needed anymore
-        # update target paths
-        for version_config in config.version_configs.values():
-            for target in version_config.targets:
-                target.path = path.parent / target.uname
-
         return cls(
             sereto_version=config.sereto_version,
             version_configs={
-                version: VersionConfig.from_model(model=config, version=version, project_path=path.parent)
-                for version, config in config.version_configs.items()
+                version: VersionConfig.from_model(model=version_config, version=version, project_path=path.parent)
+                for version, version_config in config.version_configs.items()
             },
             path=path,
         )
