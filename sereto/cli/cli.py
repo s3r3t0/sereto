@@ -14,8 +14,6 @@ from sereto.cli.config import (
     add_dates_config,
     add_people_config,
     add_target,
-    delete_dates_config,
-    delete_people_config,
     delete_target,
     edit_config,
     show_config,
@@ -28,13 +26,12 @@ from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import FileFormat, OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
-from sereto.models.project import Project
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
-from sereto.project import load_project, new_project
+from sereto.project import Project, new_project
 from sereto.retest import add_retest
-from sereto.settings import load_settings, load_settings_function
+from sereto.settings import load_settings_function
 from sereto.source_archive import (
     create_source_archive,
     embed_attachment_to_pdf,
@@ -47,18 +44,21 @@ from sereto.utils import copy_skel, replace_strings
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=importlib.metadata.version("sereto"))
-def cli() -> None:
+@click.pass_context
+def cli(ctx: click.Context) -> None:
     """Security Reporting Tool.
 
     This tool provides various commands for managing and generating security reports.
     """
+    ctx.obj = Project()
 
 
 @cli.command()
 @handle_exceptions
 @click.argument("project_id")
-@load_settings
-def new(settings: Settings, project_id: TypeProjectId) -> None:
+@click.pass_obj
+@validate_call
+def new(ctx: Project, project_id: TypeProjectId) -> None:
     """Create a new project.
 
     \b
@@ -69,24 +69,21 @@ def new(settings: Settings, project_id: TypeProjectId) -> None:
     \f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
         project_id: The ID of the project to be created.
     """
     Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
     name = prompt("Name of the project: ")
-    new_project(projects_path=settings.projects_path, templates_path=settings.templates_path, id=project_id, name=name)
+    new_project(
+        projects_path=ctx.settings.projects_path, templates_path=ctx.settings.templates_path, id=project_id, name=name
+    )
 
 
 @cli.command()
 @handle_exceptions
-@load_settings
-def ls(settings: Settings) -> None:
-    """List all available projects.\f
-
-    Args:
-        settings: The settings object containing the tool's global configuration.
-    """
-    sereto_ls(settings=settings)
+@click.pass_obj
+def ls(ctx: Project) -> None:
+    """List all available projects."""
+    sereto_ls(settings=ctx.settings)
 
 
 @cli.command()
@@ -98,20 +95,20 @@ def repl() -> None:
 @cli.command()
 @handle_exceptions
 @click.option("-f", "--file", required=True, help="Path to the source.sereto file.", type=Path)
-@load_settings
+@click.pass_obj
 @validate_call
-def decrypt(settings: Settings, file: FilePath) -> None:
+def decrypt(ctx: Project, file: FilePath) -> None:
     """Extract the SeReTo project from the encrypted archive."""
     source_tgz = decrypt_file(file=file, keep_original=True)
-    extract_source_archive(file=source_tgz, output_dir=settings.projects_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=ctx.settings.projects_path, keep_original=False)
 
 
 @cli.command()
 @handle_exceptions
 @click.option("-f", "--file", required=True, help="Path to the PDF file.", type=Path)
-@load_settings
+@click.pass_obj
 @validate_call
-def unpack(settings: Settings, file: FilePath) -> None:
+def unpack(ctx: Project, file: FilePath) -> None:
     """Unpack the SeReTo project from the report's PDF."""
     attachment: Path | None = None
 
@@ -123,7 +120,7 @@ def unpack(settings: Settings, file: FilePath) -> None:
     else:
         source_tgz = retrieve_source_archive(pdf=file, name="source.tgz")
 
-    extract_source_archive(file=source_tgz, output_dir=settings.projects_path, keep_original=False)
+    extract_source_archive(file=source_tgz, output_dir=ctx.settings.projects_path, keep_original=False)
 
 
 # -------------
@@ -141,14 +138,14 @@ def config() -> None:
 
 @config.command(name="edit")
 @handle_exceptions
-@load_settings
-def config_edit(settings: Settings) -> None:
+@click.pass_obj
+def config_edit(ctx: Project) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
         settings: The settings object containing the tool's global configuration.
     """
-    edit_config(settings=settings)
+    edit_config(project=ctx)
 
 
 @config.command(name="show")
@@ -169,13 +166,9 @@ def config_edit(settings: Settings) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_project
-def config_show(
-    project: Project,
-    version: ProjectVersion | None,
-    all: bool,
-    output_format: OutputFormat,
-) -> None:
+@click.pass_obj
+@validate_call
+def config_show(ctx: Project, version: ProjectVersion | None, all: bool, output_format: OutputFormat) -> None:
     """Show the projects's configuration.\f
 
     Args:
@@ -184,7 +177,7 @@ def config_show(
         all: Flag to show all versions of the configuration.
         output_format: The output format for displaying the configuration.
     """
-    show_config(project=project, output_format=output_format, all=all, version=version)
+    show_config(config=ctx.config, output_format=output_format, all=all, version=version)
 
 
 # -------------------
@@ -202,28 +195,39 @@ def config_dates() -> None:
 
 @config_dates.command(name="add")
 @handle_exceptions
-@load_project
-def config_dates_add(project: Project) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_dates_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add date to the project's configuration.\f
 
     Args:
         project: Project's representation.
     """
-    add_dates_config(project=project)
+    add_dates_config(config=ctx.config, version=version)
 
 
 @config_dates.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Date index to be deleted.")
-@load_project
-def config_dates_delete(project: Project, index: int) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_dates_delete(ctx: Project, index: int, version: ProjectVersion | None) -> None:
     """Delete date from the project's configuration.\f
 
     Args:
         project: Project's representation.
         index: The index of the date to be deleted. You can obtain the index by running `sereto config dates show`.
     """
-    delete_dates_config(project=project, index=index)
+    if version is None:
+        version = ctx.config.last_version
+
+    # Delete the date from the configuration
+    ctx.config.at_version(version).delete_date(index=index)
+
+    # Write the configuration
+    ctx.config.save()
 
 
 @config_dates.command(name="show")
@@ -244,13 +248,9 @@ def config_dates_delete(project: Project, index: int) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_project
-def config_dates_show(
-    project: Project,
-    version: ProjectVersion | None,
-    all: bool,
-    output_format: OutputFormat,
-) -> None:
+@click.pass_obj
+@validate_call
+def config_dates_show(ctx: Project, version: ProjectVersion | None, all: bool, output_format: OutputFormat) -> None:
     """Show dates from the project's configuration.\f
 
     Args:
@@ -259,7 +259,7 @@ def config_dates_show(
         all: Flag to show dates from all versions of the configuration.
         output_format: The output format for displaying the dates.
     """
-    show_dates_config(project=project, output_format=output_format, all=all, version=version)
+    show_dates_config(config=ctx.config, output_format=output_format, all=all, version=version)
 
 
 # --------------------
@@ -278,28 +278,39 @@ def config_people() -> None:
 
 @config_people.command(name="add")
 @handle_exceptions
-@load_project
-def config_people_add(project: Project) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_people_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add person to the project's configuration.\f
 
     Args:
         project: Project's representation.
     """
-    add_people_config(project=project)
+    add_people_config(config=ctx.config, version=version)
 
 
 @config_people.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Person index to be deleted.")
-@load_project
-def config_people_delete(project: Project, index: int) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_people_delete(ctx: Project, index: int, version: ProjectVersion | None) -> None:
     """Delete person from the project's configuration.\f
 
     Args:
         project: Project's representation.
         index: The index of the person to be deleted. You can obtain the index by running `sereto config people show`.
     """
-    delete_people_config(project=project, index=index)
+    if version is None:
+        version = ctx.config.last_version
+
+    # Delete the date from the configuration
+    ctx.config.at_version(version).delete_person(index=index)
+
+    # Write the configuration
+    ctx.config.save()
 
 
 @config_people.command(name="show")
@@ -320,13 +331,9 @@ def config_people_delete(project: Project, index: int) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_project
-def config_people_show(
-    project: Project,
-    version: ProjectVersion | None,
-    all: bool,
-    output_format: OutputFormat,
-) -> None:
+@click.pass_obj
+@validate_call
+def config_people_show(ctx: Project, version: ProjectVersion | None, all: bool, output_format: OutputFormat) -> None:
     """Show people from the project's configuration.\f
 
     Args:
@@ -335,7 +342,7 @@ def config_people_show(
         all: Flag to show people from all versions of the configuration.
         output_format: The output format for displaying the people.
     """
-    show_people_config(project=project, output_format=output_format, all=all, version=version)
+    show_people_config(config=ctx.config, output_format=output_format, all=all, version=version)
 
 
 # ---------------------
@@ -353,28 +360,38 @@ def config_targets() -> None:
 
 @config_targets.command(name="add")
 @handle_exceptions
-@load_project
-def config_targets_add(project: Project) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_targets_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add targets to the project's configuration.\f
 
     Args:
         project: Project's representation.
     """
-    add_target(project=project)
+    add_target(
+        project_path=ctx.path,
+        templates=ctx.settings.templates_path,
+        config=ctx.config,
+        categories=ctx.settings.categories,
+        version=version,
+    )
 
 
 @config_targets.command(name="delete")
 @handle_exceptions
 @click.option("-i", "--index", required=True, type=int, help="Target index to be deleted.")
-@load_project
-def config_targets_delete(project: Project, index: int) -> None:
+@click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.pass_obj
+@validate_call
+def config_targets_delete(ctx: Project, index: int, version: ProjectVersion | None) -> None:
     """Delete target from the project's configuration.\f
 
     Args:
-        project: Project's representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
+        version: The specific version of the configuration to delete the target from.
     """
-    delete_target(project=project, index=index, interactive=True)
+    delete_target(config=ctx.config, index=index, version=version, interactive=True)
 
 
 @config_targets.command(name="show")
@@ -395,22 +412,17 @@ def config_targets_delete(project: Project, index: int) -> None:
     default=OutputFormat.table,
     help="Output format.",
 )
-@load_project
-def config_targets_show(
-    project: Project,
-    version: ProjectVersion | None,
-    all: bool,
-    output_format: OutputFormat,
-) -> None:
+@click.pass_obj
+@validate_call
+def config_targets_show(ctx: Project, version: ProjectVersion | None, all: bool, output_format: OutputFormat) -> None:
     """Show targets from the project's configuration.\f
 
     Args:
-        project: Project's representation.
         version: The specific version of the configuration to show targets from.
         all: Flag to show targets from all versions of the configuration.
         output_format: The output format for displaying the targets.
     """
-    show_targets_config(project=project, output_format=output_format, all=all, version=version)
+    show_targets_config(config=ctx.config, output_format=output_format, all=all, version=version)
 
 
 # ---------------
@@ -437,19 +449,19 @@ def findings() -> None:
     help="Template file format.",
 )
 @click.argument("name")
-@load_project
-def finding_add(project: Project, target: str | None, format: str, name: str) -> None:
+@click.pass_obj
+@validate_call
+def finding_add(ctx: Project, target: str | None, format: str, name: str) -> None:
     """Add finding from template.\f
 
     Args:
-        project: Project's representation.
         target: The target for which the finding is being added.
         format: The file format of the template.
         name: The name of the finding.
     """
     ...  # TODO
     # add_finding(
-    #     project=project,
+    #     project=ctx,
     #     target_selector=target,
     #     format=format,
     #     name=name,
@@ -461,12 +473,13 @@ def finding_add(project: Project, target: str | None, format: str, name: str) ->
 @handle_exceptions
 # @click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_project
-def finding_show(project: Project, version: ProjectVersion | None) -> None:
+@click.pass_obj
+@validate_call
+def finding_show(ctx: Project, version: ProjectVersion | None) -> None:
     """Show findings."""
     if version is None:
-        version = project.config.last_version
-    show_findings(version_config=project.config.at_version(version))
+        version = ctx.config.last_version
+    show_findings(version_config=ctx.config.at_version(version))
 
 
 # -----------
@@ -481,31 +494,31 @@ def open() -> None:
 
 @open.command(name="folder")
 @handle_exceptions
-@load_project
-def open_folder(project: Project) -> None:
+@click.pass_obj
+def open_folder(ctx: Project) -> None:
     """Open the folder containing the current project.\f
 
     Args:
         project: project: Project's representation.
     """
-    click.launch(str(project.path))
+    click.launch(str(ctx.path))
 
 
 @open.command(name="report")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_project
-def open_report(project: Project, version: ProjectVersion | None) -> None:
+@click.pass_obj
+@validate_call
+def open_report(ctx: Project, version: ProjectVersion | None) -> None:
     """Open the report document in the default PDF viewer.\f
 
     Args:
-        project: project: Project's representation.
         version: The version of the report that is opened. If None, the last version is used.
     """
     if version is None:
-        version = project.config.last_version
+        version = ctx.config.last_version
 
-    if not (report_path := project.path / "pdf" / f"report{version.path_suffix}.pdf").is_file():
+    if not (report_path := ctx.path / "pdf" / f"report{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
 
     click.launch(str(report_path))
@@ -514,18 +527,18 @@ def open_report(project: Project, version: ProjectVersion | None) -> None:
 @open.command(name="sow")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
-@load_project
-def open_sow(project: Project, version: ProjectVersion | None) -> None:
+@click.pass_obj
+@validate_call
+def open_sow(ctx: Project, version: ProjectVersion | None) -> None:
     """Open the Statement of Work (SoW) document in the default PDF viewer.\f
 
     Args:
-        project: project: Project's representation.
         version: The version of the SoW that is opened. If None, the last version is used.
     """
     if version is None:
-        version = project.config.last_version
+        version = ctx.config.last_version
 
-    if not (sow_path := project.path / "pdf" / f"sow{version.path_suffix}.pdf").is_file():
+    if not (sow_path := ctx.path / "pdf" / f"sow{version.path_suffix}.pdf").is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
 
     click.launch(str(sow_path))
@@ -551,9 +564,10 @@ def pdf() -> None:
 @click.option("-c", "--converter", help="Convert finding recipe")
 @click.option("-r", "--renderer", help="Build TeX finding recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_project
+@click.pass_obj
+@validate_call
 def cli_pdf_finding_group(
-    project: Project,
+    ctx: Project,
     target_selector: int | str | None,
     finding_group_selector: int | str | None,
     converter: str | None,
@@ -562,7 +576,7 @@ def cli_pdf_finding_group(
 ) -> None:
     """Generate a finding group PDF."""
     generate_pdf_finding_group(
-        project=project,
+        project=ctx,
         target_selector=target_selector,
         finding_group_selector=finding_group_selector,
         converter=converter,
@@ -577,9 +591,10 @@ def cli_pdf_finding_group(
 @click.option("-c", "--convert-recipe", help="Convert finding recipe")
 @click.option("-r", "--target-recipe", help="Build TeX target recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_project
+@click.pass_obj
+@validate_call
 def cli_pdf_target(
-    project: Project,
+    ctx: Project,
     target_selector: int | str | None,
     target_recipe: str | None,
     convert_recipe: str | None,
@@ -587,7 +602,7 @@ def cli_pdf_target(
 ) -> None:
     """Generate a target PDF."""
     generate_pdf_target(
-        project=project,
+        project=ctx,
         target_selector=target_selector,
         target_recipe=target_recipe,
         convert_recipe=convert_recipe,
@@ -600,9 +615,10 @@ def cli_pdf_target(
 @click.option("-c", "--convert-recipe", help="Convert finding recipe")
 @click.option("-r", "--report-recipe", help="Build TeX report recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_project
+@click.pass_obj
+@validate_call
 def cli_pdf_report(
-    project: Project,
+    ctx: Project,
     report_recipe: str | None,
     convert_recipe: str | None,
     version: ProjectVersion | None,
@@ -610,11 +626,11 @@ def cli_pdf_report(
     """Generate a report PDF."""
     # Create report PDF
     report_pdf = generate_pdf_report(
-        project=project, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
+        project=ctx, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
     )
 
     # Create and attach source archive
-    archive = create_source_archive(project=project)
+    archive = create_source_archive(project_path=ctx.path, config=ctx.config)
     embed_attachment_to_pdf(attachment=archive, pdf=report_pdf, name=f"sereto{archive.suffix}", keep_original=False)
 
 
@@ -622,14 +638,11 @@ def cli_pdf_report(
 @handle_exceptions
 @click.option("-r", "--sow-recipe", help="Build TeX recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
-@load_project
-def cli_pdf_sow(
-    project: Project,
-    sow_recipe: str | None,
-    version: ProjectVersion | None,
-) -> None:
+@click.pass_obj
+@validate_call
+def cli_pdf_sow(ctx: Project, sow_recipe: str | None, version: ProjectVersion | None) -> None:
     """Generate a Statement of Work (SoW) PDF."""
-    generate_pdf_sow(project=project, sow_recipe=sow_recipe, version=version)
+    generate_pdf_sow(project=ctx, sow_recipe=sow_recipe, version=version)
 
 
 # -------------
@@ -639,9 +652,9 @@ def cli_pdf_sow(
 
 @cli.command(name="retest")
 @handle_exceptions
-@load_project
-def retest(project: Project) -> None:
-    add_retest(project=project)
+@click.pass_obj
+def retest(ctx: Project) -> None:
+    add_retest(project=ctx)
 
 
 # ---------------
@@ -687,6 +700,7 @@ def settings_password_get() -> None:
 
 @password.command(name="set")
 @handle_exceptions
+@validate_call
 @click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
 def settings_password_set(password: str) -> None:
     """Set the password for the encryption of attached archives.
@@ -698,8 +712,8 @@ def settings_password_set(password: str) -> None:
 
 @settings.command(name="show")
 @handle_exceptions
-@load_settings
-def settings_show(settings: Settings) -> None:
+@click.pass_obj
+def settings_show(ctx: Project) -> None:
     """Display the current settings.
 
     This function prints the current settings of the tool, including both the set values and the default values for any
@@ -709,7 +723,7 @@ def settings_show(settings: Settings) -> None:
     Args:
         settings: The settings object containing the tool's global configuration.
     """
-    Console().print_json(settings.model_dump_json())
+    Console().print_json(ctx.settings.model_dump_json())
 
 
 # ----------------
@@ -732,18 +746,14 @@ def skel() -> None:
 
 @skel.command(name="copy")
 @handle_exceptions
-@load_project
-def templates_skel_copy(project: Project) -> None:
+@click.pass_obj
+def templates_skel_copy(ctx: Project) -> None:
     """Update the project's templates from the skeleton directory.
 
     This function copies all files from the templates skeleton directory to the project's directory, overwriting any
     existing files.
-    \f
-
-    Args:
-        project: Project's representation.
     """
-    copy_skel(templates=project.settings.templates_path, dst=project.path, overwrite=True)
+    copy_skel(templates=ctx.settings.templates_path, dst=ctx.path, overwrite=True)
 
 
 @templates.group(cls=AliasedGroup)
@@ -754,8 +764,9 @@ def target_skel() -> None:
 @target_skel.command(name="copy")
 @handle_exceptions
 @click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
-@load_project
-def templates_target_skel_copy(project: Project, target: str | None) -> None:
+@click.pass_obj
+@validate_call
+def templates_target_skel_copy(ctx: Project, target: str | None) -> None:
     """Update the target's templates from the skeleton directory.
 
     This function copies all files from the templates skeleton directory to the target's directory, overwriting any
@@ -763,13 +774,12 @@ def templates_target_skel_copy(project: Project, target: str | None) -> None:
     \f
 
     Args:
-        project: Project's representation.
         target: The target for which the templates are being copied.
     """
-    selected_target = project.config.last_config.select_target(categories=project.settings.categories, selector=target)
+    selected_target = ctx.config.last_config.select_target(categories=ctx.settings.categories, selector=target)
 
     copy_skel(
-        templates=project.settings.templates_path / "categories" / selected_target.data.category,
+        templates=ctx.settings.templates_path / "categories" / selected_target.data.category,
         dst=selected_target.path,
         overwrite=True,
     )

@@ -1,9 +1,6 @@
-from collections.abc import Callable
-from functools import wraps
 from pathlib import Path
 from typing import TypeVar
 
-from click import get_current_context
 from prompt_toolkit import prompt
 from prompt_toolkit.shortcuts import yes_no_dialog
 from pydantic import validate_call
@@ -14,17 +11,6 @@ from sereto.models.settings import Settings
 
 P = ParamSpec("P")
 R = TypeVar("R")
-
-
-def load_settings(f: Callable[P, R]) -> Callable[P, R]:
-    """Decorator which calls `load_settings_function` and provides Settings as the first argument"""
-
-    @wraps(f)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        settings = load_settings_function()
-        return get_current_context().invoke(f, settings, *args, **kwargs)
-
-    return wrapper
 
 
 def _ask_for_dirpath(message: str) -> Path:

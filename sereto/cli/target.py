@@ -1,14 +1,15 @@
+from collections.abc import Iterable
+
 import click
 from prompt_toolkit import prompt
 from prompt_toolkit.shortcuts import radiolist_dialog
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
-from sereto.models.settings import Settings
 from sereto.models.target import TargetDastModel, TargetModel, TargetSastModel
 
 
-def prompt_user_for_target(settings: Settings) -> TargetModel:
+def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
     """Interactively prompt for a target's details.
 
     Args:
@@ -21,7 +22,7 @@ def prompt_user_for_target(settings: Settings) -> TargetModel:
     category = radiolist_dialog(
         title="New target",
         text="Category:",
-        values=[(c, c.upper()) for c in list(settings.categories)],
+        values=[(c, c.upper()) for c in list(categories)],
     ).run()
     name = prompt("Name: ")
 

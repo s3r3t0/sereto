@@ -4,7 +4,7 @@
 from pydantic import validate_call
 
 # from sereto.models.finding import FindingsConfigModel
-from sereto.models.project import Project
+from sereto.project import Project
 
 # from sereto.utils import YAML
 
