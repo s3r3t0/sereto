@@ -26,6 +26,15 @@ class VarsMetadataModel(SeretoBaseModel):
 
 
 class FindingTemplateFrontmatterModel(SeretoBaseModel):
+    """Representation of the frontmatter of a finding template.
+
+    Attributes:
+        name: The name of the sub-finding.
+        risk: The risk level of the sub-finding.
+        keywords: A list of keywords used to search for the sub-finding.
+        variables: A list of variables used in the sub-finding.
+    """
+
     name: str
     risk: Risk
     keywords: list[str] = []
@@ -45,6 +54,7 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
     @classmethod
     @validate_call
     def load_from(cls, path: Path) -> Self:
+        """Load FindingTemplateFrontmatterModel from a file."""
         try:
             metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
             return cls.model_validate(metadata)
@@ -53,6 +63,13 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
 
 
 class FindingFrontmatterModel(SeretoBaseModel):
+    """Representation of the frontmatter of a sub-finding included in project.
+
+    Attributes:
+        name: The name of the sub-finding.
+        risk: The risk level of the sub-finding.
+    """
+
     name: str
     risk: Risk
 
@@ -71,6 +88,7 @@ class FindingFrontmatterModel(SeretoBaseModel):
     @classmethod
     @validate_call
     def load_from(cls, path: Path) -> Self:
+        """Load FindingFrontmatterModel from a file."""
         try:
             metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
             return cls.model_validate(metadata)
@@ -79,7 +97,7 @@ class FindingFrontmatterModel(SeretoBaseModel):
 
 
 class FindingGroupModel(SeretoBaseModel):
-    """Representation of a single item in the `report_include` list inside findings.yaml.
+    """Representation of a single finding group from the `findings.yaml`.
 
     Attributes:
         name: The name of the finding group.
@@ -113,15 +131,17 @@ class FindingGroupModel(SeretoBaseModel):
 
     @property
     def uname(self) -> str:
-        """Get unique name for the finding group instance.
-
-        Returns:
-            The unique name of the finding group.
-        """
+        """Get unique name for the finding group instance."""
         return lower_alphanum(f"finding_group_{self.name}")
 
 
 class FindingsConfigModel(SeretoBaseModel):
+    """Model representing the included findings configuration from `findings.yaml`.
+
+    Attributes:
+        report_include: The list of finding groups to include in the report.
+    """
+
     report_include: list[FindingGroupModel]
 
     @model_validator(mode="after")

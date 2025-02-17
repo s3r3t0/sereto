@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
+from pydantic import AnyUrl, IPvAnyAddress, IPvAnyNetwork, field_validator
 
 from sereto.enums import Environment
 from sereto.models.base import SeretoBaseModel
@@ -10,11 +9,15 @@ from sereto.utils import lower_alphanum
 
 
 class TargetModel(SeretoBaseModel, extra="allow"):
-    """Base class for model representing the details of a target."""
+    """Base class for model representing the details of a target.
+
+    Attributes:
+        category: The category of the target.
+        name: The name of the target (e.g. DAST, SAST).
+    """
 
     category: str
     name: str
-    path: Path | None = Field(exclude=True, default=None)
 
     @field_validator("category")
     @classmethod
@@ -27,11 +30,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 
     @property
     def uname(self) -> str:
-        """Unique name for the target instance.
-
-        Returns:
-            The unique name of the target.
-        """
+        """Unique name for the target instance."""
         return lower_alphanum(f"target_{self.category}_{self.name}")
 
 

@@ -306,7 +306,8 @@ def config_people_delete(ctx: Project, index: int, version: ProjectVersion | Non
     Args:
         ctx: Project's representation.
         index: The index of the person to be deleted. You can obtain the index by running `sereto config people show`.
-        version: The specific version of the configuration to delete the person from. If None, the last version is used.
+        version: The specific version of the configuration to delete the person from. If None, the last version is
+            used.
     """
     if version is None:
         version = ctx.config.last_version
@@ -396,7 +397,8 @@ def config_targets_delete(ctx: Project, index: int, version: ProjectVersion | No
     Args:
         ctx: Project's representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
-        version: The specific version of the configuration to delete the target from. If None, the last version is used.
+        version: The specific version of the configuration to delete the target from. If None, the last version is
+            used.
     """
     delete_target(config=ctx.config, index=index, version=version, interactive=True)
 
