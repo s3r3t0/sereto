@@ -13,7 +13,7 @@ def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
     """Interactively prompt for a target's details.
 
     Args:
-        settings: The Settings object.
+        categories: List of all categories to present to the user for selection.
 
     Returns:
         The target as provided by the user.

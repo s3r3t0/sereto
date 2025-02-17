@@ -7,6 +7,11 @@ from sereto.config import VersionConfig
 
 @validate_call
 def show_findings(version_config: VersionConfig) -> None:
+    """Show the findings for a specific version.
+
+    Args:
+        version_config: The project configuration for specific version.
+    """
     Console().log(f"Showing findings for version {version_config.version}")
 
     for target in version_config.targets:

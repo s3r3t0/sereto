@@ -69,6 +69,7 @@ def new(ctx: Project, project_id: TypeProjectId) -> None:
     \f
 
     Args:
+        ctx: Project's representation.
         project_id: The ID of the project to be created.
     """
     Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
@@ -143,7 +144,7 @@ def config_edit(ctx: Project) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        ctx: Project's representation.
     """
     edit_config(project=ctx)
 
@@ -172,8 +173,8 @@ def config_show(ctx: Project, version: ProjectVersion | None, all: bool, output_
     """Show the projects's configuration.\f
 
     Args:
-        project: Project's representation.
-        version: The specific version of the configuration to show.
+        ctx: Project's representation.
+        version: The specific version of the configuration to show. If None, the last version is used.
         all: Flag to show all versions of the configuration.
         output_format: The output format for displaying the configuration.
     """
@@ -202,7 +203,8 @@ def config_dates_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add date to the project's configuration.\f
 
     Args:
-        project: Project's representation.
+        ctx: Project's representation.
+        version: The specific version of the configuration to add the date to. If None, the last version is used.
     """
     add_dates_config(config=ctx.config, version=version)
 
@@ -217,8 +219,9 @@ def config_dates_delete(ctx: Project, index: int, version: ProjectVersion | None
     """Delete date from the project's configuration.\f
 
     Args:
-        project: Project's representation.
+        ctx: Project's representation.
         index: The index of the date to be deleted. You can obtain the index by running `sereto config dates show`.
+        version: The specific version of the configuration to delete the date from. If None, the last version is used.
     """
     if version is None:
         version = ctx.config.last_version
@@ -254,8 +257,8 @@ def config_dates_show(ctx: Project, version: ProjectVersion | None, all: bool, o
     """Show dates from the project's configuration.\f
 
     Args:
-        project: Project's representation.
-        version: The specific version of the configuration to show dates from.
+        ctx: Project's representation.
+        version: The specific version of the configuration to show dates from. If None, the last version is used.
         all: Flag to show dates from all versions of the configuration.
         output_format: The output format for displaying the dates.
     """
@@ -285,7 +288,8 @@ def config_people_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add person to the project's configuration.\f
 
     Args:
-        project: Project's representation.
+        ctx: Project's representation.
+        version: The specific version of the configuration to add the person to. If None, the last version is used.
     """
     add_people_config(config=ctx.config, version=version)
 
@@ -300,8 +304,9 @@ def config_people_delete(ctx: Project, index: int, version: ProjectVersion | Non
     """Delete person from the project's configuration.\f
 
     Args:
-        project: Project's representation.
+        ctx: Project's representation.
         index: The index of the person to be deleted. You can obtain the index by running `sereto config people show`.
+        version: The specific version of the configuration to delete the person from. If None, the last version is used.
     """
     if version is None:
         version = ctx.config.last_version
@@ -337,8 +342,8 @@ def config_people_show(ctx: Project, version: ProjectVersion | None, all: bool, 
     """Show people from the project's configuration.\f
 
     Args:
-        project: Project's representation.
-        version: The specific version of the configuration to show people from.
+        ctx: Project's representation.
+        version: The specific version of the configuration to show people from. If None, the last version is used.
         all: Flag to show people from all versions of the configuration.
         output_format: The output format for displaying the people.
     """
@@ -367,7 +372,8 @@ def config_targets_add(ctx: Project, version: ProjectVersion | None) -> None:
     """Add targets to the project's configuration.\f
 
     Args:
-        project: Project's representation.
+        ctx: Project's representation.
+        version: The specific version of the configuration to add the targets to. If None, the last version is used.
     """
     add_target(
         project_path=ctx.path,
@@ -388,8 +394,9 @@ def config_targets_delete(ctx: Project, index: int, version: ProjectVersion | No
     """Delete target from the project's configuration.\f
 
     Args:
+        ctx: Project's representation.
         index: The index of the target to be deleted. You can obtain the index by running `sereto config targets show`.
-        version: The specific version of the configuration to delete the target from.
+        version: The specific version of the configuration to delete the target from. If None, the last version is used.
     """
     delete_target(config=ctx.config, index=index, version=version, interactive=True)
 
@@ -418,7 +425,8 @@ def config_targets_show(ctx: Project, version: ProjectVersion | None, all: bool,
     """Show targets from the project's configuration.\f
 
     Args:
-        version: The specific version of the configuration to show targets from.
+        ctx: Project's representation.
+        version: The specific version of the configuration to show targets from. If None, the last version is used.
         all: Flag to show targets from all versions of the configuration.
         output_format: The output format for displaying the targets.
     """
@@ -455,6 +463,7 @@ def finding_add(ctx: Project, target: str | None, format: str, name: str) -> Non
     """Add finding from template.\f
 
     Args:
+        ctx: Project's representation.
         target: The target for which the finding is being added.
         format: The file format of the template.
         name: The name of the finding.
@@ -476,7 +485,12 @@ def finding_add(ctx: Project, target: str | None, format: str, name: str) -> Non
 @click.pass_obj
 @validate_call
 def finding_show(ctx: Project, version: ProjectVersion | None) -> None:
-    """Show findings."""
+    """Show findings.\f
+
+    Args:
+        ctx: Project's representation.
+        version: The version of the findings to show. If None, the last version is used.
+    """
     if version is None:
         version = ctx.config.last_version
     show_findings(version_config=ctx.config.at_version(version))
@@ -499,7 +513,7 @@ def open_folder(ctx: Project) -> None:
     """Open the folder containing the current project.\f
 
     Args:
-        project: project: Project's representation.
+        ctx: Project's representation.
     """
     click.launch(str(ctx.path))
 
@@ -513,6 +527,7 @@ def open_report(ctx: Project, version: ProjectVersion | None) -> None:
     """Open the report document in the default PDF viewer.\f
 
     Args:
+        ctx: Project's representation.
         version: The version of the report that is opened. If None, the last version is used.
     """
     if version is None:
@@ -533,6 +548,7 @@ def open_sow(ctx: Project, version: ProjectVersion | None) -> None:
     """Open the Statement of Work (SoW) document in the default PDF viewer.\f
 
     Args:
+        ctx: Project's representation.
         version: The version of the SoW that is opened. If None, the last version is used.
     """
     if version is None:
@@ -574,7 +590,16 @@ def cli_pdf_finding_group(
     renderer: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    """Generate a finding group PDF."""
+    """Generate a finding group PDF.\f
+
+    Args:
+        ctx: Project's representation.
+        target_selector: The target for which the finding group is being generated.
+        finding_group_selector: The finding group to be generated.
+        converter: The recipe for converting the findings.
+        renderer: The recipe for building TeX..
+        version: The version of the configuration to use. If None, the last version is used.
+    """
     generate_pdf_finding_group(
         project=ctx,
         target_selector=target_selector,
@@ -600,7 +625,15 @@ def cli_pdf_target(
     convert_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    """Generate a target PDF."""
+    """Generate a target PDF.\f
+
+    Args:
+        ctx: Project's representation.
+        target_selector: The target for which the PDF is being generated.
+        target_recipe: The recipe for building the TeX target.
+        convert_recipe: The recipe for converting the findings.
+        version: The version of the configuration to use. If None, the last version is used.
+    """
     generate_pdf_target(
         project=ctx,
         target_selector=target_selector,
@@ -623,7 +656,14 @@ def cli_pdf_report(
     convert_recipe: str | None,
     version: ProjectVersion | None,
 ) -> None:
-    """Generate a report PDF."""
+    """Generate a report PDF.\f
+
+    Args:
+        ctx: Project's representation.
+        report_recipe: The recipe for building the TeX report.
+        convert_recipe: The recipe for converting the findings.
+        version: The version of the configuration to use. If None, the last version is used.
+    """
     # Create report PDF
     report_pdf = generate_pdf_report(
         project=ctx, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
@@ -641,7 +681,13 @@ def cli_pdf_report(
 @click.pass_obj
 @validate_call
 def cli_pdf_sow(ctx: Project, sow_recipe: str | None, version: ProjectVersion | None) -> None:
-    """Generate a Statement of Work (SoW) PDF."""
+    """Generate a Statement of Work (SoW) PDF.\f
+
+    Args:
+        ctx: Project's representation.
+        sow_recipe: The recipe for building the TeX SoW.
+        version: The version of the configuration to use. If None, the last version is used.
+    """
     generate_pdf_sow(project=ctx, sow_recipe=sow_recipe, version=version)
 
 
@@ -654,6 +700,11 @@ def cli_pdf_sow(ctx: Project, sow_recipe: str | None, version: ProjectVersion | 
 @handle_exceptions
 @click.pass_obj
 def retest(ctx: Project) -> None:
+    """Add retest to the project.\f
+
+    Args:
+        ctx: Project's representation.
+    """
     add_retest(project=ctx)
 
 
@@ -701,11 +752,15 @@ def settings_password_get() -> None:
 @password.command(name="set")
 @handle_exceptions
 @validate_call
-@click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
+@click.option("--password", prompt=True, hide_input=True)
 def settings_password_set(password: str) -> None:
     """Set the password for the encryption of attached archives.
 
     This will store the password in the system's keyring.
+    \f
+
+    Args:
+        password: The password to be stored.
     """
     keyring.set_password("sereto", "encrypt_attached_archive", password)
 
@@ -721,7 +776,7 @@ def settings_show(ctx: Project) -> None:
     \f
 
     Args:
-        settings: The settings object containing the tool's global configuration.
+        ctx: The settings object containing the tool's global configuration.
     """
     Console().print_json(ctx.settings.model_dump_json())
 
@@ -752,6 +807,10 @@ def templates_skel_copy(ctx: Project) -> None:
 
     This function copies all files from the templates skeleton directory to the project's directory, overwriting any
     existing files.
+    \f
+
+    Args:
+        ctx: Project's representation.
     """
     copy_skel(templates=ctx.settings.templates_path, dst=ctx.path, overwrite=True)
 
@@ -774,7 +833,8 @@ def templates_target_skel_copy(ctx: Project, target: str | None) -> None:
     \f
 
     Args:
-        target: The target for which the templates are being copied.
+        ctx: Project's representation.
+        target: Selector of a target for which the templates are being copied.
     """
     selected_target = ctx.config.last_config.select_target(categories=ctx.settings.categories, selector=target)
 

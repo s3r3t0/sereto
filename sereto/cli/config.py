@@ -32,7 +32,7 @@ def edit_config(project: Project) -> None:
     """Edit the configuration file in default CLI editor.
 
     Args:
-        settings: Global settings.
+        project: Project's representation.
     """
     sereto_ver = importlib.metadata.version("sereto")
     config = project.config_path
@@ -58,15 +58,12 @@ def edit_config(project: Project) -> None:
 
 @validate_call
 def show_config(
-    config: Config,
-    output_format: OutputFormat,
-    all: bool = False,
-    version: ProjectVersion | None = None,
+    config: Config, output_format: OutputFormat, all: bool = False, version: ProjectVersion | None = None
 ) -> None:
     """Display the configuration for a project.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         output_format: Format of the output.
         all: Whether to show values from all versions or just the last one.
         version: Show config at specific version, e.g. 'v1.0'.
@@ -99,7 +96,7 @@ def add_dates_config(config: Config, version: ProjectVersion | None = None) -> N
     """Add date to the configuration.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
@@ -155,7 +152,7 @@ def show_dates_config(
     By default, if neither of `version` and `all` arguments are used, dates from the latest version are displayed.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         output_format: Select format of the output.
         all: Show dates from all versions.
         version: Show dates from specific version.
@@ -193,7 +190,7 @@ def add_people_config(config: Config, version: ProjectVersion | None = None) -> 
     """Add person to the configuration.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
@@ -238,18 +235,13 @@ def _get_person_table(version_config: VersionConfigModel, version: ProjectVersio
 
 
 @validate_call
-def show_people_config(
-    config: Config,
-    output_format: OutputFormat,
-    all: bool,
-    version: ProjectVersion | None,
-) -> None:
+def show_people_config(config: Config, output_format: OutputFormat, all: bool, version: ProjectVersion | None) -> None:
     """Display the configured people.
 
     By default, if neither of `version` and `all` arguments are used, people from the latest version are displayed.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         output_format: Select format of the output.
         all: Show people from all versions.
         version: Show people from specific version.
@@ -293,7 +285,10 @@ def add_target(
     """Add target to the configuration.
 
     Args:
-        project: Project's representation.
+        project_path: Path to the project directory.
+        templates: Path to the templates directory.
+        config: Configuration of the project.
+        categories: List of all categories.
         version: The version of the project. If not provided, the last version is used.
     """
     if version is None:
@@ -319,7 +314,7 @@ def delete_target(
     """Delete target from the configuration by its index.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         index: Index to item which should be deleted. First item is 1.
         version: The version of the project. If not provided, the last version is used.
         interactive: Whether to ask for confirmations.
@@ -364,17 +359,14 @@ def _get_target_table(version_config: VersionConfigModel, version: ProjectVersio
 
 @validate_call
 def show_targets_config(
-    config: Config,
-    output_format: OutputFormat,
-    all: bool,
-    version: ProjectVersion | None,
+    config: Config, output_format: OutputFormat, all: bool, version: ProjectVersion | None
 ) -> None:
     """Display the configured targets.
 
     By default, if neither of `version` and `all` arguments are used, targets from the latest version are displayed.
 
     Args:
-        project: Project's representation.
+        config: Configuration of the project.
         output_format: Select format of the output.
         all: Show targets from all versions.
         version: Show targets from the specified project's version.

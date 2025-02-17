@@ -78,11 +78,7 @@ class WorkingDir(metaclass=Singleton):
 
 
 def _get_repl_prompt() -> list[tuple[str, str]]:
-    """Get the prompt for the Read-Eval-Print Loop (REPL).
-
-    Returns:
-        The prompt string.
-    """
+    """Get the prompt for the Read-Eval-Print Loop (REPL)."""
     # Determine if the current working directory is a project directory
     project_id: TypeProjectId | None = None
     if is_project_dir(cwd := Path.cwd()):
@@ -115,7 +111,6 @@ def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
     """Switch the active project in the REPL.
 
     Args:
-        settings: The Settings object.
         project_id: The ID of the project to switch to. Use '-' to go back to the previous working directory.
 
     Raises:
