@@ -3,7 +3,7 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from functools import reduce
-from typing import Self
+from typing import Literal, Self, overload
 
 from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
 
@@ -132,11 +132,48 @@ class VersionConfig:
         return filtered_targets[0]
 
     @validate_call
+    @overload
+    def filter_dates(
+        self,
+        type: str | DateType | Iterable[str] | Iterable[DateType] | None = ...,
+        start: str | SeretoDate | None = ...,
+        end: str | SeretoDate | None = ...,
+        *,
+        first_date: Literal[True],
+        last_date: Literal[False] = False,
+        inverse: bool = False,
+    ) -> SeretoDate | None: ...
+
+    @overload
+    def filter_dates(
+        self,
+        type: str | DateType | Iterable[str] | Iterable[DateType] | None = ...,
+        start: str | SeretoDate | None = ...,
+        end: str | SeretoDate | None = ...,
+        *,
+        first_date: Literal[False] = False,
+        last_date: Literal[True],
+        inverse: bool = False,
+    ) -> SeretoDate | None: ...
+
+    @overload
+    def filter_dates(
+        self,
+        type: str | DateType | Iterable[str] | Iterable[DateType] | None = ...,
+        start: str | SeretoDate | None = ...,
+        end: str | SeretoDate | None = ...,
+        *,
+        first_date: Literal[False],
+        last_date: Literal[False],
+        inverse: bool = False,
+    ) -> list[Date]: ...
+
     def filter_dates(
         self,
         type: str | DateType | Iterable[str] | Iterable[DateType] | None = None,
         start: str | SeretoDate | None = None,
         end: str | SeretoDate | None = None,
+        *,
         first_date: bool = False,
         last_date: bool = False,
         inverse: bool = False,
@@ -146,11 +183,8 @@ class VersionConfig:
         The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps
         with the specified range.
 
-        The return type is always `list[Date]` except when `first_date` or `last_date` is True, in which case the
-        return type is `SeretoDate` or None.
-
         Args:
-            type: The type of the date. Can be a single type, a list of types, or None.
+            type: The type of the date. Can be `DateType`, a list of `DateType`s, or None.
             start: Only dates on or after this date will be included.
             end: Only dates on or before this date will be included.
             first_date: If True, return the earliest date matching the criteria. Even for date ranges, only the start
@@ -160,7 +194,7 @@ class VersionConfig:
             inverse: If True, return the inverse of the usual results.
 
         Returns:
-            If A list of dates matching the criteria.
+            For first_date or last_date = True, returns SeretoDate or None. Otherwise, returns a list[Date].
         """
         # Check for invalid parameter combinations
         if first_date and last_date:
@@ -360,6 +394,16 @@ class VersionConfig:
         del self.people[index]
 
         return self
+
+    @property
+    def report_sent_date(self) -> SeretoDate | None:
+        """Get the report sent date
+
+        If has fallback to the review date and last date of the pentest ongoing.
+        """
+        return self.filter_dates(
+            type=[DateType.report_sent, DateType.review, DateType.pentest_ongoing], last_date=True
+        )
 
     @property
     def total_open_risks(self) -> NonNegativeInt:
