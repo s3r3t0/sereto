@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from textwrap import dedent
 from typing import TYPE_CHECKING, Self
 
 from pydantic import DirectoryPath, validate_call
@@ -51,29 +50,6 @@ class Target:
         else:
             Console().log(f"No 'skel' directory found: '{category_templates}'")
 
-        # Create "findings.yaml"
-        (target_path / "findings.yaml").write_text(
-            dedent(
-                """
-                ############################################################
-                #    Select findings you want to include in the report     #
-                #----------------------------------------------------------#
-                #  report_include:                                         #
-                #  - name: "Group Finding"                                 #
-                #    findings:                                             #
-                #    - "finding_one"                                       #
-                #    - "finding_two"                                       #
-                #                                                          #
-                #  - name: "Standalone Finding"                            #
-                #    findings:                                             #
-                #    - "standalone_finding"                                #
-                ############################################################
-
-                report_include: []
-                """
-            )
-        )
-
         return cls.load(data=data, path=target_path, version=version)
 
     @validate_call
@@ -91,7 +67,7 @@ class Target:
 
 
 def render_target_to_tex(
-    target: TargetModel, config: "Config", version: ProjectVersion, target_ix: int, project_path: DirectoryPath
+    target: Target, config: "Config", version: ProjectVersion, target_ix: int, project_path: DirectoryPath
 ) -> str:
     """Render selected target (top-level document) to TeX format."""
     # Construct path to target template

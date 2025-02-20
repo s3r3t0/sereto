@@ -128,6 +128,7 @@ def build_finding_group_to_tex(
     content = render_finding_group_to_tex(
         config=project.config,
         project_path=project.path,
+        target=target,
         target_ix=target_ix,
         finding_group=finding_group,
         finding_group_ix=fg_ix,
@@ -170,7 +171,7 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 
     # Render the target to TeX format
     content = render_target_to_tex(
-        target=target.data, config=project.config, version=version, target_ix=target_ix, project_path=project.path
+        target=target, config=project.config, version=version, target_ix=target_ix, project_path=project.path
     )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)

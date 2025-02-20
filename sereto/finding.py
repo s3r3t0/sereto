@@ -22,6 +22,7 @@ from sereto.utils import lower_alphanum
 
 if TYPE_CHECKING:
     from sereto.config import Config
+    from sereto.target import Target
 
 
 @dataclass
@@ -302,6 +303,7 @@ def render_subfinding_to_tex(
 def render_finding_group_to_tex(
     config: "Config",
     project_path: DirectoryPath,
+    target: "Target",
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
@@ -327,6 +329,7 @@ def render_finding_group_to_tex(
         vars={
             "finding_group": finding_group,
             "finding_group_index": finding_group_ix,
+            "target": target,
             "target_index": target_ix,
             "c": version_config,
             "config": config,
