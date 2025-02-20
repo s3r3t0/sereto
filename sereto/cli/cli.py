@@ -24,7 +24,7 @@ from sereto.cli.config import (
 from sereto.cli.finding import show_findings
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
-from sereto.enums import FileFormat, OutputFormat
+from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
@@ -38,6 +38,7 @@ from sereto.source_archive import (
     extract_source_archive,
     retrieve_source_archive,
 )
+from sereto.tui.finding import SeretoApp
 from sereto.types import TypeProjectId
 from sereto.utils import copy_skel, replace_strings
 
@@ -450,34 +451,17 @@ def findings() -> None:
 
 @findings.command(name="add")
 @handle_exceptions
-@click.option("--target", "-t", type=str, help="Specify target (required for more than one).")
-@click.option(
-    "--format",
-    "-f",
-    type=click.Choice([it.value for it in FileFormat]),
-    default="md",
-    help="Template file format.",
-)
-@click.argument("name")
 @click.pass_obj
 @validate_call
-def finding_add(ctx: Project, target: str | None, format: str, name: str) -> None:
-    """Add finding from template.\f
+def finding_add(ctx: Project) -> None:
+    """Launch TUI app for searching and adding findings from templates.\f
 
     Args:
         ctx: Project's representation.
-        target: The target for which the finding is being added.
-        format: The file format of the template.
-        name: The name of the finding.
     """
-    ...  # TODO
-    # add_finding(
-    #     project=ctx,
-    #     target_selector=target,
-    #     format=format,
-    #     name=name,
-    #     interactive=True,
-    # )
+    categories = sorted([c.upper() for c in ctx.settings.categories])
+    app = SeretoApp(project=ctx, categories=categories)
+    app.run()
 
 
 @findings.command(name="show")

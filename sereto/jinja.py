@@ -125,10 +125,10 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
 
 def strip_toml_frontmatter(source: str) -> str:
     # Example: frontmatter delimited by '+++'
-    if source.startswith('+++'):
-        if (end := source.find('+++', 3)) == -1:
+    if source.startswith("+++"):
+        if (end := source.find("+++", 3)) == -1:
             raise SeretoValueError("invalid TOML frontmatter")
-        return source[end + 3:].lstrip()
+        return source[end + 3 :].lstrip()
     return source
 
 
