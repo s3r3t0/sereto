@@ -52,7 +52,8 @@ class VersionConfig:
             name=model.name,
             version_description=model.version_description,
             targets=[
-                Target.load(data=target, path=project_path / target.uname, version=version) for target in model.targets
+                Target.load(data=target, path=project_path / (target.uname + version.path_suffix), version=version)
+                for target in model.targets
             ],
             dates=model.dates,
             people=model.people,

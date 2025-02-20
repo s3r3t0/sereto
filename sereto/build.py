@@ -30,7 +30,7 @@ def ensure_finding_group_layout(
         layouts_generated.mkdir(parents=True)
 
     # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}{version.path_suffix}.tex.j2"
+    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.tex.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = templates / "categories" / target.data.category / "finding_group.tex.j2"
         copy2(template_src, template_dst, follow_symlinks=False)
@@ -49,7 +49,7 @@ def ensure_target_layout(
         layouts_generated.mkdir(parents=True)
 
     # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}{version.path_suffix}.tex.j2"
+    template_dst = layouts_generated / f"{target.uname}.tex.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = templates / "categories" / target.data.category / "target.tex.j2"
         copy2(template_src, template_dst, follow_symlinks=False)
@@ -78,10 +78,7 @@ def build_subfinding_to_tex(
 
     # Write the finding to the ".build" directory; do not overwrite the same content (preserve timestamps)
     write_if_different(
-        file=project.path
-        / ".build"
-        / target.uname
-        / f"{sub_finding.path.name.removesuffix('.md.j2')}{version.path_suffix}.tex",
+        file=project.path / ".build" / target.uname / f"{sub_finding.path.name.removesuffix('.md.j2')}.tex",
         content=content,
     )
 
@@ -136,7 +133,7 @@ def build_finding_group_to_tex(
     )
 
     # Write the finding group to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{finding_group.uname}{version.path_suffix}.tex"
+    destination = project.path / ".build" / target.uname / f"{finding_group.uname}.tex"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered finding group
@@ -175,7 +172,7 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
     )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{target.uname}{version.path_suffix}.tex"
+    destination = project.path / ".build" / target.uname / f"{target.uname}.tex"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered target

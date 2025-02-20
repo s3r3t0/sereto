@@ -30,7 +30,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 
     @property
     def uname(self) -> str:
-        """Unique name for the target instance."""
+        """Unique name for the target instance (version is not included)."""
         return lower_alphanum(f"target_{self.category}_{self.name}")
 
 
