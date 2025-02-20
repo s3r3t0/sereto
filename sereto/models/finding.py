@@ -1,13 +1,15 @@
+import tomllib
+from collections.abc import ItemsView
 from pathlib import Path
 from typing import Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
-from pydantic import Field, FilePath, ValidationError, field_validator, model_validator, validate_call
+from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.utils import YAML, lower_alphanum
+from sereto.types import TypeCategoryName
 
 
 class VarsMetadataModel(SeretoBaseModel):
@@ -68,10 +70,12 @@ class FindingFrontmatterModel(SeretoBaseModel):
     Attributes:
         name: The name of the sub-finding.
         risk: The risk level of the sub-finding.
+        category: From which category the sub-finding originates.
     """
 
     name: str
     risk: Risk
+    category: TypeCategoryName
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -85,6 +89,10 @@ class FindingFrontmatterModel(SeretoBaseModel):
             case _:
                 raise ValueError("unsupported type for Risk")
 
+    def dumps_toml(self) -> str:
+        """Dump the model to a TOML-formatted string."""
+        return f'name = "{self.name}"\nrisk = "{self.risk.value}"\ncategory = "{self.category.lower()}"\n'
+
     @classmethod
     @validate_call
     def load_from(cls, path: Path) -> Self:
@@ -97,15 +105,13 @@ class FindingFrontmatterModel(SeretoBaseModel):
 
 
 class FindingGroupModel(SeretoBaseModel):
-    """Representation of a single finding group from the `findings.yaml`.
+    """Representation of a single finding group from `findings.toml`.
 
     Attributes:
-        name: The name of the finding group.
         risks: Explicit risks associated with the finding group for specific versions.
         findings: The list of sub-findings in the format of their unique name to include in the report.
     """
 
-    name: str
     risk: Risk | None = None
     findings: list[str] = Field(min_length=1)
 
@@ -129,38 +135,38 @@ class FindingGroupModel(SeretoBaseModel):
             raise ValueError("finding names must be unique")
         return findings
 
-    @property
-    def uname(self) -> str:
-        """Get unique name for the finding group instance."""
-        return lower_alphanum(f"finding_group_{self.name}")
 
+class FindingsConfigModel(RootModel[dict[str, FindingGroupModel]]):
+    """Model representing the included findings configuration.
 
-class FindingsConfigModel(SeretoBaseModel):
-    """Model representing the included findings configuration from `findings.yaml`.
-
-    Attributes:
-        report_include: The list of finding groups to include in the report.
+    The data itself is expected to be a dict where each key is
+    the name of a finding group and the value is a FindingGroupModel.
     """
 
-    report_include: list[FindingGroupModel]
+    root: dict[str, FindingGroupModel]
 
-    @model_validator(mode="after")
-    def unique_findings(self) -> Self:
-        """Ensure that all finding are included only once."""
-        unique_names = [uname for finding_group in self.report_include for uname in finding_group.findings]
-        if len(unique_names) != len(set(unique_names)):
-            raise ValueError("finding names must be unique")
-        return self
+    @field_validator("root", mode="after")
+    @classmethod
+    def unique_findings(cls, findings: dict[str, FindingGroupModel]) -> dict[str, FindingGroupModel]:
+        all_findings: list[str] = []
+        for _, group in findings.items():
+            all_findings.extend(group.findings)
+        if len(all_findings) != len(set(all_findings)):
+            raise ValueError("each sub-finding must be included only once")
+        return findings
 
     @classmethod
     @validate_call
-    def from_yaml(cls, file: FilePath) -> Self:
-        """Load FindingsConfigModel from a YAML file."""
+    def load_from(cls, file: FilePath) -> Self:
         try:
-            return cls.model_validate(YAML.load(file))
+            with file.open(mode="rb") as f:
+                return cls.model_validate(tomllib.load(f))
         except FileNotFoundError:
             raise SeretoPathError(f"file not found at '{file}'") from None
         except PermissionError:
             raise SeretoPathError(f"permission denied for '{file}'") from None
         except ValueError as e:
-            raise SeretoValueError("invalid findings.yaml") from e
+            raise SeretoValueError("invalid findings.toml") from e
+
+    def items(self) -> ItemsView[str, FindingGroupModel]:
+        return self.root.items()

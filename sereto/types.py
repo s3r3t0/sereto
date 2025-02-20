@@ -34,8 +34,18 @@ The value should meet the following requirements:
 """
 
 
-TypeCategories = set[Annotated[str, StringConstraints(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]]
-"""Type for categories names.
+TypeCategoryName = Annotated[str, StringConstraints(pattern=r"^[a-zA-Z0-9._-]{1,20}$", strict=True)]
+"""Type for category name.
+
+The value should meet the following requirements:
+
+- It can only contain letters (`a-zA-Z`), numbers (`0-9`), underscore (`_`), dash (`-`), and dot (`.`).
+- It should be between 1 and 20 characters long.
+"""
+
+
+TypeCategories = set[TypeCategoryName]
+"""Type for set of categories.
 
 The values should meet the following requirements:
 

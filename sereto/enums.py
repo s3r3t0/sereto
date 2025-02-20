@@ -1,10 +1,6 @@
 from enum import Enum
 
-from ruamel.yaml import yaml_object
-from ruamel.yaml.representer import RoundTripRepresenter
-
 from sereto.exceptions import SeretoValueError
-from sereto.utils import YAML
 
 
 class Environment(str, Enum):
@@ -30,7 +26,6 @@ class OutputFormat(str, Enum):
     json = "json"
 
 
-@yaml_object(YAML)
 class Risk(str, Enum):
     """Enum representing the risk level of a finding."""
 
@@ -40,10 +35,6 @@ class Risk(str, Enum):
     low = "low"
     info = "info"
     closed = "closed"
-
-    @classmethod
-    def to_yaml(cls, representer: RoundTripRepresenter, node: "Risk") -> str:
-        return representer.represent_str(data=node.value)
 
     def to_int(self) -> int:
         """Convert risks to a number.
@@ -65,6 +56,3 @@ class Risk(str, Enum):
                 return 5
             case _:
                 raise SeretoValueError("unexpected risk value")
-
-
-YAML.register_class(Risk)

@@ -5,14 +5,11 @@ from shutil import copy2, copytree
 from typing import overload
 
 import click
-import ruamel.yaml
 from humanize import naturalsize
 from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
-
-YAML = ruamel.yaml.YAML()
 
 
 @overload

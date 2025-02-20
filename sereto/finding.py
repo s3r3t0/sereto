@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
+import frontmatter  # type: ignore[import-untyped]
 from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.convert import apply_convertor
@@ -11,6 +13,7 @@ from sereto.models.finding import (
     FindingFrontmatterModel,
     FindingGroupModel,
     FindingsConfigModel,
+    FindingTemplateFrontmatterModel,
 )
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
@@ -71,11 +74,12 @@ class FindingGroup:
 
     @classmethod
     @validate_call
-    def load(cls, group_desc: FindingGroupModel, findings_dir: DirectoryPath) -> Self:
+    def load(cls, name: str, group_desc: FindingGroupModel, findings_dir: DirectoryPath) -> Self:
         """
         Load a finding group.
 
         Args:
+            name: The name of the finding group.
             group_desc: The description of the finding group.
             findings_dir: The path to the findings directory.
 
@@ -85,10 +89,24 @@ class FindingGroup:
         sub_findings = [SubFinding.load_from(findings_dir / f"{name}.md.j2") for name in group_desc.findings]
 
         return cls(
-            name=group_desc.name,
+            name=name,
             explicit_risk=group_desc.risk,
             sub_findings=sub_findings,
         )
+
+    def dumps_toml(self) -> str:
+        """Dump the finding group to a TOML string."""
+        lines = [f'["{self.name}"]']
+        if self.explicit_risk is not None:
+            lines.append(f'risk = "{self.explicit_risk.value}"')
+        if len(self.sub_findings) == 1:
+            lines.append(f'findings = ["{self.sub_findings[0].uname}"]')
+        else:
+            lines.append("findings = [")
+            for sf in self.sub_findings:
+                lines.append(f'    "{sf.uname}",')
+            lines.append("]")
+        return "\n".join(lines)
 
     @property
     def risk(self) -> Risk:
@@ -116,11 +134,11 @@ class Findings:
 
     Attributes:
         groups: A list of finding groups.
-        config_path: The path to the findings configuration file.
+        target_dir: The path to the target directory containing the findings.
     """
 
     groups: list[FindingGroup]
-    config_path: FilePath
+    target_dir: FilePath
 
     @classmethod
     @validate_call
@@ -135,11 +153,11 @@ class Findings:
         Returns:
             The loaded findings object.
         """
-        config = FindingsConfigModel.from_yaml(target_dir / "findings.yaml")
+        config = FindingsConfigModel.load_from(target_dir / "findings.toml")
 
         groups = [
-            FindingGroup.load(group_desc=group, findings_dir=target_dir / "findings")
-            for group in config.report_include
+            FindingGroup.load(name=name, group_desc=group, findings_dir=target_dir / "findings")
+            for name, group in config.items()
         ]
 
         # ensure group names are unique
@@ -147,7 +165,49 @@ class Findings:
         if len(unique_names) != len(set(unique_names)):
             raise SeretoValueError("finding group unique names must be unique")
 
-        return cls(groups=groups, config_path=target_dir / "findings.yaml")
+        return cls(groups=groups, target_dir=target_dir)
+
+    @validate_call
+    def add_from_template(
+        self, template: FilePath, category: str, name: str | None = None, risk: Risk | None = None
+    ) -> None:
+        """Add a sub-finding from a template.
+
+        This will create a new finding group with a single sub-finding.
+
+        Args:
+            template: The path to the sub-finding template.
+            name: The name of the sub-finding. If not provided, the name will use the default value from the template.
+            risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
+        """
+        # read template
+        template_metadata = FindingTemplateFrontmatterModel.load_from(template)
+        _, content = frontmatter.parse(template.read_text(), encoding="utf-8")
+
+        # write sub-finding to findings directory
+        if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template.name}").is_file():
+            raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
+        sub_finding_metadata = FindingFrontmatterModel(
+            name=template_metadata.name, risk=template_metadata.risk, category=category
+        )
+        sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
+
+        # load the created sub-finding
+        sub_finding = SubFinding.load_from(sub_finding_path)
+
+        # prepare finding group
+        group = FindingGroup(
+            name=name or sub_finding_metadata.name,
+            explicit_risk=risk,
+            sub_findings=[sub_finding],
+        )
+
+        # write the finding group to findings.toml
+        with self.config_file.open("a", encoding="utf-8") as f:
+            f.write(f"\n{group.dumps_toml()}\n")
+
+        # add to loaded finding groups
+        self.groups.append(group)
 
     @validate_call
     def select_group(self, selector: int | str | None = None) -> FindingGroup:
@@ -180,6 +240,16 @@ class Findings:
         if len(matching_groups) != 1:
             raise SeretoValueError(f"finding group with uname {selector!r} not found")
         return matching_groups[0]
+
+    @property
+    def config_file(self) -> Path:
+        """Get the path to the findings.toml configuration file"""
+        return self.target_dir / "findings.toml"
+
+    @property
+    def findings_dir(self) -> Path:
+        """Get the path to the directory containing the findings"""
+        return self.target_dir / "findings"
 
     @property
     def risks(self) -> Risks:
