@@ -1,7 +1,8 @@
 import tomllib
 from collections.abc import ItemsView
 from pathlib import Path
-from typing import Any, Self
+from textwrap import dedent
+from typing import Any, Literal, Self
 
 import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
@@ -17,14 +18,11 @@ class VarsMetadataModel(SeretoBaseModel):
     description: str
     required: bool = False
     list: bool = False
+    type: Literal["string", "integer", "boolean"] = "string"
 
-    def __str__(self) -> str:
-        if self.required:
-            params = " (required, list)" if self.list else " (required)"
-        else:
-            params = " (list)" if self.list else ""
-
-        return f"{self.name}{params}: {self.description}"
+    @property
+    def value_description(self) -> str:
+        return f"({self.type}{', required' if self.required else ''}) {self.description}"
 
 
 class FindingTemplateFrontmatterModel(SeretoBaseModel):
@@ -71,11 +69,13 @@ class FindingFrontmatterModel(SeretoBaseModel):
         name: The name of the sub-finding.
         risk: The risk level of the sub-finding.
         category: From which category the sub-finding originates.
+        variables: A dictionary of variables used in the sub-finding.
     """
 
     name: str
     risk: Risk
     category: TypeCategoryName
+    variables: dict[str, Any] = {}
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -91,7 +91,15 @@ class FindingFrontmatterModel(SeretoBaseModel):
 
     def dumps_toml(self) -> str:
         """Dump the model to a TOML-formatted string."""
-        return f'name = "{self.name}"\nrisk = "{self.risk.value}"\ncategory = "{self.category.lower()}"\n'
+        output = dedent(f"""\
+            name = "{self.name}"
+            risk = "{self.risk.value}"
+            category = "{self.category.lower()}"
+
+            [variables]
+        """)
+        output += "\n".join(f'{k} = "{v}"' for k, v in self.variables.items())
+        return output + "\n"
 
     @classmethod
     @validate_call

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
 from pydantic import DirectoryPath, FilePath, validate_call
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class SubFinding:
     name: str
     risk: Risk
-    # vars: dict[str, Any]
+    vars: dict[str, Any]
     path: FilePath
 
     @classmethod
@@ -49,6 +49,7 @@ class SubFinding:
         return cls(
             name=frontmatter.name,
             risk=frontmatter.risk,
+            vars=frontmatter.variables,
             path=path,
         )
 
@@ -170,7 +171,12 @@ class Findings:
 
     @validate_call
     def add_from_template(
-        self, template: FilePath, category: str, name: str | None = None, risk: Risk | None = None
+        self,
+        template: FilePath,
+        category: str,
+        name: str | None = None,
+        risk: Risk | None = None,
+        variables: dict[str, Any] | None = None,
     ) -> None:
         """Add a sub-finding from a template.
 
@@ -181,6 +187,9 @@ class Findings:
             name: The name of the sub-finding. If not provided, the name will use the default value from the template.
             risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
         """
+        if variables is None:
+            variables = {}
+
         # read template
         template_metadata = FindingTemplateFrontmatterModel.load_from(template)
         _, content = frontmatter.parse(template.read_text(), encoding="utf-8")
@@ -189,7 +198,7 @@ class Findings:
         if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template.name}").is_file():
             raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
         sub_finding_metadata = FindingFrontmatterModel(
-            name=template_metadata.name, risk=template_metadata.risk, category=category
+            name=template_metadata.name, risk=template_metadata.risk, category=category, variables=variables
         )
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
 

@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import frontmatter  # type: ignore
 from pydantic import ValidationError
@@ -27,6 +27,7 @@ class FindingMetadata:
     path: Path
     category: str
     name: str
+    variables: dict[str, Any]
     keywords: list[str]
     search_similarity: float | None = None
 
@@ -189,7 +190,11 @@ class AddFindingScreen(ModalScreen[None]):
         target = matching_target[0]
 
         target.findings.add_from_template(
-            template=self.finding.path, category=self.finding.category.lower(), name=name, risk=risk
+            template=self.finding.path,
+            category=self.finding.category.lower(),
+            name=name,
+            risk=risk,
+            variables=self.finding.variables,
         )
 
         # navigate back, focus on the search input field
@@ -272,6 +277,7 @@ class ResultsWidget(Widget):
                         path=finding,
                         category=category,
                         name=data.name,
+                        variables={v.name: v.value_description for v in data.variables},
                         keywords=data.keywords,
                     )
                 )
