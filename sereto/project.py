@@ -1,124 +1,148 @@
 import importlib.metadata
-from collections.abc import Callable
-from functools import wraps
+from dataclasses import dataclass
 from pathlib import Path
-from shutil import copy2, copytree
-from typing import TypeVar
+from typing import Self, TypeVar
 
-from click import get_current_context
 from pydantic import DirectoryPath, validate_call
 from typing_extensions import ParamSpec
 
 from sereto.cli.utils import Console
-from sereto.exceptions import SeretoPathError
-from sereto.models.config import Config, VersionConfig
-from sereto.models.project import Project
+from sereto.config import Config, VersionConfig
+from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
-from sereto.target import create_findings_config, get_risks
+from sereto.settings import load_settings_function
+from sereto.target import Target
 from sereto.types import TypeProjectId
+from sereto.utils import copy_skel
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def load_project(f: Callable[..., R]) -> Callable[..., R]:
-    """Decorator which loads the `Project` from filesystem."""
+@dataclass
+class Project:
+    _settings: Settings | None = None
+    _project_path: DirectoryPath | None = None
+    _config: Config | None = None
 
-    @wraps(f)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        project = Project.load_from()
-        return get_current_context().invoke(f, project, *args, **kwargs)
+    @property
+    def settings(self) -> Settings:
+        if self._settings is None:
+            self._settings = load_settings_function()
+        return self._settings
 
-    return wrapper
+    @property
+    def path(self) -> DirectoryPath:
+        if self._project_path is None:
+            self._project_path = get_project_path_from_dir(dir=Path.cwd(), dir_subtree=self.settings.projects_path)
+        return self._project_path
+
+    @property
+    def config(self) -> Config:
+        if self._config is None:
+            self._config = Config.load_from(self.path / "config.json")
+        return self._config
+
+    @property
+    def config_path(self) -> Path:
+        """Get the path to the project configuration file."""
+        return self.path / "config.json"
+
+    @classmethod
+    def load_from(cls, path: DirectoryPath) -> Self:
+        if not is_project_dir(path):
+            raise SeretoPathError("not a project directory")
+        return cls(_project_path=path)
 
 
 @validate_call
-def init_build_dir(project: Project, version: ProjectVersion) -> None:
+def is_project_dir(path: Path) -> bool:
+    """Check if the provided path is a root directory of a project.
+
+    A project directory contains at least `.sereto` and `config.json` files.
+
+    Args:
+        path: The path to examine.
+
+    Returns:
+        True if the path is a project directory, False otherwise.
+    """
+    return path.is_dir() and path.exists() and (path / ".sereto").is_file() and (path / "config.json").is_file()
+
+
+@validate_call
+def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: DirectoryPath = Path("/")) -> Path:
+    """Get the path to the project directory.
+
+    Start the search from the 'dir' directory and go up the directory tree until the project directory is
+    found or 'dir_subtree' is reached.
+
+    Args:
+        dir: The directory to start the search from. Defaults to the current working directory.
+        dir_subtree: The directory to stop the search at. Defaults to the root directory.
+
+    Raises:
+        SeretoPathError: If the current working directory is not inside the project's (sub)directory.
+
+    Returns:
+        The path to the project directory.
+    """
+    if dir is None:
+        dir = Path.cwd()
+
+    # start from the current working directory and go up the directory tree
+    for d in [dir] + list(dir.parents):
+        # if the current directory is inside the subtree
+        if d.is_relative_to(dir_subtree):
+            # if the current directory is a project directory
+            if is_project_dir(d):
+                return d
+        else:
+            # stop the search before leaving the subtree
+            break
+
+    raise SeretoPathError("not inside project's (sub)directory")
+
+
+@validate_call
+def init_build_dir(
+    project_path: DirectoryPath, version_config: VersionConfig | None = None, target: Target | None = None
+) -> None:
     """Initialize the build directory."""
+    if (version_config is None and target is None) or (version_config is not None and target is not None):
+        raise SeretoValueError("either 'version_config' or 'target' must be specified")
+
     # Create ".build" directory
-    if not (build_dir := project.path / ".build").is_dir():
+    if not (build_dir := project_path / ".build").is_dir():
         build_dir.mkdir(parents=True)
 
     # Create target directories
-    for target in project.config.at_version(version=version).targets:
+    targets: list[Target] = [target] if target is not None else version_config.targets  # type: ignore[union-attr]
+    for target in targets:
         if not (target_dir := build_dir / target.uname).is_dir():
             target_dir.mkdir(parents=True)
 
 
 @validate_call
-def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = False) -> None:
-    """Copy the content of a templates `skel` directory to a destination directory.
-
-    A `skel` directory is a directory that contains a set of files and directories that can be used as a template
-    for creating new projects. This function copies the contents of the `skel` directory located at
-    the path specified by `templates` to the destination directory specified by `dst`.
+def project_create_missing(project_path: DirectoryPath, version_config: VersionConfig) -> None:
+    """Creates missing content in the project.
 
     Args:
-        templates: The path to the directory containing the `skel` directory.
-        dst: The destination directory to copy the `skel` directory contents to.
-        overwrite: Whether to allow overwriting of existing files in the destination directory.
-            If `True`, existing files will be overwritten. If `False` (default), a `SeretoPathError` will be raised
-            if the destination already exists.
-
-    Raises:
-        SeretoPathError: If the destination directory already exists and `overwrite` is `False`.
+        project_path: The path to the project directory.
+        version_config: Configuration for a specific project version.
     """
-    skel_path: Path = templates / "skel"
-    Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
-
-    for item in skel_path.iterdir():
-        dst_item: Path = dst / (item.relative_to(skel_path))
-        if not overwrite and dst_item.exists():
-            raise SeretoPathError("Destination already exists")
-        if item.is_file():
-            Console().log(f" [green]+[/green] copy file: '{item.relative_to(skel_path)}'")
-            copy2(item, dst_item, follow_symlinks=False)
-        if item.is_dir():
-            Console().log(f" [green]+[/green] copy dir: '{item.relative_to(skel_path)}'")
-            copytree(item, dst_item, dirs_exist_ok=overwrite)
-
-
-@validate_call
-def project_create_missing(project: Project, version: ProjectVersion) -> None:
-    """Creates missing target directories from config.
-
-    This function creates any missing target directories and populates them with content of the "skel" directory from
-    templates.
-
-    Args:
-        project: Project's representation.
-        version: The version of the project.
-    """
-    cfg = project.config.at_version(version=version)
-
     # Initialize the build directory
-    init_build_dir(project=project, version=version)
+    init_build_dir(project_path=project_path, version_config=version_config)
 
     # Make sure that "layouts/generated" directory exists
-    if not (layouts_generated := project.path / "layouts" / "generated").is_dir():
+    if not (layouts_generated := project_path / "layouts" / "generated").is_dir():
         layouts_generated.mkdir(parents=True)
 
-    for target in cfg.targets:
-        assert target.path is not None
-        category_templates = project.settings.templates_path / "categories" / target.category
-
-        # Create target directory if missing
-        if not target.path.is_dir():
-            Console().log(f"Target directory not found, creating: '{target.path}'")
-            target.path.mkdir()
-            if (category_templates / "skel").is_dir():
-                Console().log(f"""Populating new target directory from: '{category_templates / "skel"}'""")
-                copy_skel(templates=category_templates, dst=target.path)
-            else:
-                Console().log(f"No 'skel' directory found: '{category_templates}'")
-
-            # Dynamically compose "findings.yaml"
-            create_findings_config(target=target, project=project, templates=category_templates / "findings")
-
+    for target in version_config.targets:
         # Generate risks plot for the target
-        risks = get_risks(target=target, version=version)
-        risks_plot(risks=risks, path=project.path / ".build" / target.uname / "risks.png")
+        risks_plot(risks=target.findings.risks, path=project_path / ".build" / target.uname / "risks.png")
 
 
 @validate_call
@@ -143,21 +167,21 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
 
     sereto_ver = importlib.metadata.version("sereto")
 
-    cfg = Config(
+    Console().log("Copy project skeleton")
+    copy_skel(templates=templates_path, dst=new_path)
+
+    config_path = new_path / "config.json"
+
+    Console().log(f"Writing the config '{config_path}'")
+    Config(
         sereto_version=SeretoVersion.from_str(sereto_ver),
         version_configs={
             ProjectVersion.from_str("v1.0"): VersionConfig(
+                version=ProjectVersion.from_str("v1.0"),
                 id=id,
                 name=name,
                 version_description="Initial",
             ),
         },
-    )
-
-    Console().log("Copy project skeleton")
-    copy_skel(templates=templates_path, dst=new_path)
-
-    config_path: Path = new_path / "config.json"
-    Console().log(f"Writing the config '{config_path}'")
-    with config_path.open("w", encoding="utf-8") as f:
-        f.write(cfg.model_dump_json(indent=2))
+        path=config_path,
+    ).save()

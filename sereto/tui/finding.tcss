@@ -1,0 +1,10 @@
+SearchWidget {
+    height: 13;
+    border: dodgerblue;
+}
+SearchWidget .input-field {
+    align: center middle;
+}
+SearchWidget .category-filter {
+    width: 20%;
+}

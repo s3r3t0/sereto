@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 import click
-from click import Group, get_app_dir
+from click import Group, get_app_dir, get_current_context
 from click_repl import exit as click_repl_exit  # type: ignore[import-untyped]
 from click_repl import repl
 from prompt_toolkit.history import FileHistory
@@ -14,9 +14,8 @@ from rich.table import Table
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.models.project import Project
 from sereto.models.settings import Settings
-from sereto.settings import load_settings
+from sereto.project import Project, is_project_dir
 from sereto.singleton import Singleton
 from sereto.types import TypeProjectId
 
@@ -32,12 +31,12 @@ def sereto_ls(settings: Settings) -> None:
     Args:
         settings: The Settings object.
     """
-    project_paths: list[Path] = [d for d in settings.projects_path.iterdir() if Project.is_project_dir(d)]
+    project_paths: list[Path] = [d for d in settings.projects_path.iterdir() if is_project_dir(d)]
     table = Table("ID", "Name", "Location", title="Projects", box=box.MINIMAL)
 
     for dir in project_paths:
         try:
-            project_name = Project.load_from(dir).config.last_config().name
+            project_name = Project.load_from(dir).config.last_config.name
         except (RuntimeError, SeretoValueError):
             project_name = "n/a"
 
@@ -79,18 +78,13 @@ class WorkingDir(metaclass=Singleton):
 
 
 def _get_repl_prompt() -> list[tuple[str, str]]:
-    """Get the prompt for the Read-Eval-Print Loop (REPL).
-
-    Returns:
-        The prompt string.
-    """
+    """Get the prompt for the Read-Eval-Print Loop (REPL)."""
     # Determine if the current working directory is a project directory
     project_id: TypeProjectId | None = None
-    cwd = Path.cwd()
-    if Project.is_project_dir(cwd):
+    if is_project_dir(cwd := Path.cwd()):
         # Load the project to get the ID (this can be different from the directory name)
-        project = Project.load_from()
-        project_id = project.config.last_config().id
+        project = Project.load_from(cwd)
+        project_id = project.config.last_config.id
 
     final_prompt: list[tuple[str, str]] = []
 
@@ -112,19 +106,18 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
 
 @click.command(name="cd")
 @click.argument("project_id", type=str)
-@load_settings
 @validate_call
-def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> None:
+def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
     """Switch the active project in the REPL.
 
     Args:
-        settings: The Settings object.
         project_id: The ID of the project to switch to. Use '-' to go back to the previous working directory.
 
     Raises:
         SeretoValueError: If the project ID is invalid.
         SeretoPathError: If the project's path does not exist.
     """
+    project: Project = get_current_context().obj
     wd = WorkingDir()
 
     # `cd -` ... Go back to the previous working directory
@@ -134,8 +127,8 @@ def repl_cd(settings: Settings, project_id: TypeProjectId | Literal["-"]) -> Non
 
     # Check if the project's location exists
     # TODO: Should we iterate over all projects and read the config to get the correct path?
-    project_path = settings.projects_path / project_id
-    if not Project.is_project_dir(project_path):
+    project_path = project.settings.projects_path / project_id
+    if not is_project_dir(project_path):
         raise SeretoPathError(f"project '{project_id}' does not exist. Use 'ls' to list all projects")
 
     # Change the current working directory to the new location

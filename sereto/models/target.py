@@ -1,23 +1,23 @@
-from functools import cached_property
-from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator, validate_call
-from unidecode import unidecode
+from pydantic import AnyUrl, IPvAnyAddress, IPvAnyNetwork, field_validator
 
 from sereto.enums import Environment
-from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.finding import FindingGroup, FindingsConfig
 from sereto.settings import load_settings_function
+from sereto.utils import lower_alphanum
 
 
-class Target(SeretoBaseModel, extra="allow"):
-    """Base class for model representing the details of a target."""
+class TargetModel(SeretoBaseModel, extra="allow"):
+    """Base class for model representing the details of a target.
+
+    Attributes:
+        category: The category of the target.
+        name: The name of the target (e.g. DAST, SAST).
+    """
 
     category: str
     name: str
-    path: Path | None = Field(exclude=True, default=None)
 
     @field_validator("category")
     @classmethod
@@ -30,62 +30,11 @@ class Target(SeretoBaseModel, extra="allow"):
 
     @property
     def uname(self) -> str:
-        """Unique name for the target instance.
-
-        Returns:
-            The unique name of the target.
-        """
-        name: str = "".join([x.lower() for x in unidecode(self.name) if x.isalnum()])
-        return f"target_{self.category}_{name}"
-
-    @cached_property
-    def findings_config(self) -> FindingsConfig:
-        if self.path is None:
-            raise SeretoPathError("target path not configured")
-
-        fc = FindingsConfig.from_yaml(file=self.path / "findings.yaml")
-
-        for finding in fc.findings:
-            finding.path = self.path / "findings" / finding.path_name
-
-        return fc
-
-    @validate_call
-    def select_finding_group(self, selector: int | str | None = None) -> FindingGroup:
-        """Select a finding group from the target.
-
-        Args:
-            selector: The index or name of the finding group to select.
-
-        Returns:
-            The selected finding group.
-        """
-        finding_groups = self.findings_config.finding_groups
-
-        # only single finding group present
-        if selector is None:
-            if len(finding_groups) != 1:
-                raise SeretoValueError(
-                    f"cannot select finding group; no selector provided and there are {len(finding_groups)} finding "
-                    "groups present"
-                )
-            return finding_groups[0]
-
-        # by index
-        if isinstance(selector, int) or selector.isnumeric():
-            ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
-            if not (0 <= ix <= len(finding_groups) - 1):
-                raise SeretoValueError("finding group index out of range")
-            return finding_groups[ix]
-
-        # by uname
-        fg_matches = [fg for fg in finding_groups if fg.uname == selector]
-        if len(fg_matches) != 1:
-            raise SeretoValueError(f"finding group with uname {selector!r} not found")
-        return fg_matches[0]
+        """Unique name for the target instance (version is not included)."""
+        return lower_alphanum(f"target_{self.category}_{self.name}")
 
 
-class TargetDast(Target):
+class TargetDastModel(TargetModel):
     """Model representing a target which is characterized by IP address."""
 
     dst_ips: list[IPvAnyAddress | IPvAnyNetwork] = []
@@ -105,7 +54,7 @@ class TargetDast(Target):
     api: str | None = None
 
 
-class TargetSast(Target):
+class TargetSastModel(TargetModel):
     """Model representing the details of the 'sast' category.
 
     Attributes:

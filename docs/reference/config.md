@@ -1,0 +1,1 @@
+::: sereto.config

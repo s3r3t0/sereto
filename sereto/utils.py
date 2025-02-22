@@ -1,16 +1,15 @@
 import re
+import unicodedata
 from pathlib import Path
+from shutil import copy2, copytree
 from typing import overload
 
 import click
-import ruamel.yaml
 from humanize import naturalsize
-from pydantic import FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
-
-YAML = ruamel.yaml.YAML()
 
 
 @overload
@@ -43,6 +42,24 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
         return pattern.sub(lambda match: replacements[match.group(0)], text)
     else:
         return [pattern.sub(lambda match: replacements[match.group(0)], item) for item in text]
+
+
+@validate_call
+def lower_alphanum(text: str) -> str:
+    """Converts the input text to lowercase alphanumerical delimited by underscores.
+
+    Also all spaces are replaced with underscores.
+
+    Args:
+        text: The input text.
+
+    Returns:
+        The input text with the modifications applied.
+    """
+    normalized = unicodedata.normalize("NFKD", text)
+    ascii_text = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    ascii_text = re.sub(r"[^a-z0-9_\s]", "", ascii_text)
+    return re.sub(r"\s+", "_", ascii_text)
 
 
 @validate_call
@@ -114,3 +131,36 @@ def assert_file_size_within_range(
 
     # Otherwise, raise an error
     raise SeretoValueError(f"File '{file}' size is not within the range {min_bytes} - {max_bytes} B")
+
+
+@validate_call
+def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = False) -> None:
+    """Copy the content of a templates `skel` directory to a destination directory.
+
+    A `skel` directory is a directory that contains a set of files and directories that can be used as a template
+    for creating new projects. This function copies the contents of the `skel` directory located at
+    the path specified by `templates` to the destination directory specified by `dst`.
+
+    Args:
+        templates: The path to the directory containing the `skel` directory.
+        dst: The destination directory to copy the `skel` directory contents to.
+        overwrite: Whether to allow overwriting of existing files in the destination directory.
+            If `True`, existing files will be overwritten. If `False` (default), a `SeretoPathError` will be raised
+            if the destination already exists.
+
+    Raises:
+        SeretoPathError: If the destination directory already exists and `overwrite` is `False`.
+    """
+    skel_path: Path = templates / "skel"
+    Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
+
+    for item in skel_path.iterdir():
+        dst_item: Path = dst / (item.relative_to(skel_path))
+        if not overwrite and dst_item.exists():
+            raise SeretoPathError("Destination already exists")
+        if item.is_file():
+            Console().log(f" [green]+[/green] copy file: '{item.relative_to(skel_path)}'")
+            copy2(item, dst_item, follow_symlinks=False)
+        if item.is_dir():
+            Console().log(f" [green]+[/green] copy dir: '{item.relative_to(skel_path)}'")
+            copytree(item, dst_item, dirs_exist_ok=overwrite)

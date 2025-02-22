@@ -1,160 +1,302 @@
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Self
+
 import frontmatter  # type: ignore[import-untyped]
-from prompt_toolkit.shortcuts import yes_no_dialog
-from pydantic import DirectoryPath, ValidationError, validate_call
-from rich.table import Table
-from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from pydantic import DirectoryPath, FilePath, validate_call
 
-from sereto.cli.utils import Console
 from sereto.convert import apply_convertor
-from sereto.enums import FileFormat
-from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
+from sereto.enums import FileFormat, Risk
+from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.jinja import render_jinja2
-from sereto.models.config import Config
-from sereto.models.finding import Finding, FindingGroup, FindingsConfig, TemplateMetadata
-from sereto.models.project import Project
+from sereto.models.finding import (
+    FindingFrontmatterModel,
+    FindingGroupModel,
+    FindingsConfigModel,
+    FindingTemplateFrontmatterModel,
+)
 from sereto.models.settings import Render
-from sereto.models.target import Target
 from sereto.models.version import ProjectVersion
-from sereto.utils import YAML
+from sereto.risk import Risks
+from sereto.utils import lower_alphanum
+
+if TYPE_CHECKING:
+    from sereto.config import Config
+    from sereto.target import Target
 
 
-@validate_call
-def add_finding(
-    project: Project,
-    target_selector: str | None,
-    format: str,
-    name: str,
-    interactive: bool = False,
-) -> None:
-    # select target
-    target = project.select_target(selector=target_selector)
-    assert target.path is not None
+@dataclass
+class SubFinding:
+    name: str
+    risk: Risk
+    vars: dict[str, Any]
+    path: FilePath
 
-    # load finding info from findings.yaml config
-    fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
-    finding = fc.get_finding(path_name=name)
-    category = finding.category if finding.category is not None else target.category
-    template_path = finding.template_path(templates=project.settings.templates_path, category=category)
+    @classmethod
+    @validate_call
+    def load_from(cls, path: FilePath) -> Self:
+        """
+        Load a sub-finding from a file.
 
-    # read finding's template content
-    _, content = frontmatter.parse(template_path.read_text())
+        Args:
+            path: The path to the sub-finding file.
 
-    # add finding to project
-    finding_dir = target.path / "findings" / name
-    finding_dir.mkdir(exist_ok=True)
-    dst_path = finding_dir / f"{name}{project.config.last_version().path_suffix}.{format}.j2"
+        Returns:
+            The loaded sub-finding object.
+        """
+        frontmatter = FindingFrontmatterModel.load_from(path)
 
-    # destination file exists and we cannot proceed
-    if dst_path.is_file() and (
-        not interactive
-        or not yes_no_dialog(title="Warning", text=f"Destination '{dst_path}' exists. Overwrite?").run()
-    ):
-        raise SeretoRuntimeError("cannot proceed")
+        return cls(
+            name=frontmatter.name,
+            risk=frontmatter.risk,
+            vars=frontmatter.variables,
+            path=path,
+        )
 
-    dst_path.write_text(content, encoding="utf-8")
+    @property
+    def uname(self) -> str:
+        """Unique name of the finding."""
+        return self.path.name.removesuffix(".md.j2")
 
 
-@validate_call
-def show_findings(config: Config, version: ProjectVersion | None = None) -> None:
-    if version is None:
-        version = config.last_version()
+@dataclass
+class FindingGroup:
+    """
+    Represents a finding group.
 
-    Console().log(f"Showing findings for version {version}")
+    Attributes:
+        name: The name of the finding group.
+        explicit_risk: Risk to be used for the group. Overrides the calculated risks from sub-findings.
+        sub_findings: A list of sub-findings in the group.
+    """
 
-    cfg = config.at_version(version=version)
+    name: str
+    explicit_risk: Risk | None
+    sub_findings: list[SubFinding]
 
-    for target in cfg.targets:
-        Console().line()
-        table = Table("Finding name", "Category", "Risk", title=f"Target {target.name}")
-        if target.path is None:
-            raise SeretoValueError(f"target path not set for {target.uname!r}")
+    @classmethod
+    @validate_call
+    def load(cls, name: str, group_desc: FindingGroupModel, findings_dir: DirectoryPath) -> Self:
+        """
+        Load a finding group.
 
-        fc = FindingsConfig.from_yaml(file=target.path / "findings.yaml")
+        Args:
+            name: The name of the finding group.
+            group_desc: The description of the finding group.
+            findings_dir: The path to the findings directory.
 
-        for finding_group in fc.finding_groups:
-            table.add_row(finding_group.name, target.category, finding_group.risks[version])
+        Returns:
+            The loaded finding group object.
+        """
+        sub_findings = [SubFinding.load_from(findings_dir / f"{name}.md.j2") for name in group_desc.findings]
 
-        Console().print(table, justify="center")
+        return cls(
+            name=name,
+            explicit_risk=group_desc.risk,
+            sub_findings=sub_findings,
+        )
 
+    def dumps_toml(self) -> str:
+        """Dump the finding group to a TOML string."""
+        lines = [f'["{self.name}"]']
+        if self.explicit_risk is not None:
+            lines.append(f'risk = "{self.explicit_risk.value}"')
+        if len(self.sub_findings) == 1:
+            lines.append(f'findings = ["{self.sub_findings[0].uname}"]')
+        else:
+            lines.append("findings = [")
+            for sf in self.sub_findings:
+                lines.append(f'    "{sf.uname}",')
+            lines.append("]")
+        return "\n".join(lines)
 
-@validate_call
-def update_findings(project: Project) -> None:
-    for target in project.config.last_config().targets:
-        if target.path is None:
-            raise SeretoValueError(f"target path not set for {target.uname!r}")
+    @property
+    def risk(self) -> Risk:
+        """
+        Get the finding group risk.
 
-        findings_path = target.path / "findings.yaml"
-        findings = YAML.load(findings_path)
-        fc = FindingsConfig.from_yaml(file=findings_path)
-        category_templates = project.settings.templates_path / "categories" / target.category / "findings"
+        Returns:
+            The explicit risk if set, otherwise the highest risk from the sub-findings.
+        """
+        if self.explicit_risk is not None:
+            return self.explicit_risk
+        return max([sf.risk for sf in self.sub_findings], key=lambda r: r.to_int())
 
-        for file in category_templates.glob(pattern="*.j2"):
-            metadata, _ = frontmatter.parse(file.read_text())
-
-            try:
-                template_metadata = TemplateMetadata.model_validate(metadata)
-            except ValidationError as ex:
-                raise SeretoValueError(f"invalid template metadata in '{file}'") from ex
-
-            name = template_metadata.name
-
-            if len([f for f in fc.findings if f.name == name]) > 0:
-                continue
-
-            finding = CommentedMap(
-                {
-                    "name": template_metadata.name,
-                    "path_name": file.with_suffix("").stem,
-                    "risks": CommentedMap({str(project.config.last_version()): template_metadata.risk}),
-                    "vars": CommentedMap(),
-                }
-            )
-
-            for var in template_metadata.variables:
-                finding["vars"][var.name] = CommentedSeq() if var.list else ""
-                comment = f"{'[required]' if var.required else '[optional]'} {var.description}"
-                finding["vars"].yaml_add_eol_comment(comment, var.name)
-
-            findings["findings"].append(finding)
-            Console().log(f"Discovered new finding: '{name}'")
-
-        with findings_path.open(mode="w", encoding="utf-8") as f:
-            YAML.dump(findings, f)
+    @property
+    @validate_call
+    def uname(self) -> str:
+        """Unique name of the finding group."""
+        return lower_alphanum(f"finding_group_{self.name}")
 
 
-@validate_call
-def render_finding_to_tex(
-    target: Target,
-    finding: Finding,
+@dataclass
+class Findings:
+    """
+    Represents a collection of findings.
+
+    Attributes:
+        groups: A list of finding groups.
+        target_dir: The path to the target directory containing the findings.
+    """
+
+    groups: list[FindingGroup]
+    target_dir: FilePath
+
+    @classmethod
+    @validate_call
+    def load_from(cls, target_dir: DirectoryPath) -> Self:
+        """
+        Load findings belonging to the same target.
+
+        Args:
+            target_dir: The path to the target directory.
+
+        Returns:
+            The loaded findings object.
+        """
+        config = FindingsConfigModel.load_from(target_dir / "findings.toml")
+
+        groups = [
+            FindingGroup.load(name=name, group_desc=group, findings_dir=target_dir / "findings")
+            for name, group in config.items()
+        ]
+
+        # ensure group names are unique
+        unique_names = [g.uname for g in groups]
+        if len(unique_names) != len(set(unique_names)):
+            raise SeretoValueError("finding group unique names must be unique")
+
+        return cls(groups=groups, target_dir=target_dir)
+
+    @validate_call
+    def add_from_template(
+        self,
+        template: FilePath,
+        category: str,
+        name: str | None = None,
+        risk: Risk | None = None,
+        variables: dict[str, Any] | None = None,
+    ) -> None:
+        """Add a sub-finding from a template.
+
+        This will create a new finding group with a single sub-finding.
+
+        Args:
+            template: The path to the sub-finding template.
+            name: The name of the sub-finding. If not provided, the name will use the default value from the template.
+            risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
+        """
+        if variables is None:
+            variables = {}
+
+        # read template
+        template_metadata = FindingTemplateFrontmatterModel.load_from(template)
+        _, content = frontmatter.parse(template.read_text(), encoding="utf-8")
+
+        # write sub-finding to findings directory
+        if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template.name}").is_file():
+            raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
+        sub_finding_metadata = FindingFrontmatterModel(
+            name=template_metadata.name, risk=template_metadata.risk, category=category, variables=variables
+        )
+        sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
+
+        # load the created sub-finding
+        sub_finding = SubFinding.load_from(sub_finding_path)
+
+        # prepare finding group
+        group = FindingGroup(
+            name=name or sub_finding_metadata.name,
+            explicit_risk=risk,
+            sub_findings=[sub_finding],
+        )
+
+        # write the finding group to findings.toml
+        with self.config_file.open("a", encoding="utf-8") as f:
+            f.write(f"\n{group.dumps_toml()}\n")
+
+        # add to loaded finding groups
+        self.groups.append(group)
+
+    @validate_call
+    def select_group(self, selector: int | str | None = None) -> FindingGroup:
+        """Select a finding group by index or name.
+
+        Args:
+            selector: The index or name of the finding group to select.
+
+        Returns:
+            The selected finding group.
+        """
+        # only single finding group present
+        if selector is None:
+            if len(self.groups) != 1:
+                raise SeretoValueError(
+                    f"cannot select finding group; no selector provided and there are {len(self.groups)} finding "
+                    "groups present"
+                )
+            return self.groups[0]
+
+        # by index
+        if isinstance(selector, int) or selector.isnumeric():
+            ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
+            if not (0 <= ix <= len(self.groups) - 1):
+                raise SeretoValueError("finding group index out of range")
+            return self.groups[ix]
+
+        # by unique name
+        matching_groups = [g for g in self.groups if g.uname == selector]
+        if len(matching_groups) != 1:
+            raise SeretoValueError(f"finding group with uname {selector!r} not found")
+        return matching_groups[0]
+
+    @property
+    def config_file(self) -> Path:
+        """Get the path to the findings.toml configuration file"""
+        return self.target_dir / "findings.toml"
+
+    @property
+    def findings_dir(self) -> Path:
+        """Get the path to the directory containing the findings"""
+        return self.target_dir / "findings"
+
+    @property
+    def risks(self) -> Risks:
+        """Get the summary of risks for the specified version."""
+        return Risks(
+            critical=len([g for g in self.groups if g.risk == Risk.critical]),
+            high=len([g for g in self.groups if g.risk == Risk.high]),
+            medium=len([g for g in self.groups if g.risk == Risk.medium]),
+            low=len([g for g in self.groups if g.risk == Risk.low]),
+            info=len([g for g in self.groups if g.risk == Risk.info]),
+            closed=len([g for g in self.groups if g.risk == Risk.closed]),
+        )
+
+
+def render_subfinding_to_tex(
+    sub_finding: SubFinding,
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
     converter: str | None = None,
 ) -> str:
-    assert finding.path is not None and target.path is not None
-    category = finding.category if finding.category is not None else target.category
-    finding.assert_required_vars(templates=templates, category=category)
-
-    # Construct path to finding template
-    finding_template = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}.j2"
-    if not finding_template.is_file():
-        raise SeretoPathError(f"finding template not found: '{finding_template}'")
+    # # TODO: Ensure required variables are present
+    # finding.assert_required_vars(templates=templates, category=category)
 
     # Render Jinja2 template
     finding_generator = render_jinja2(
-        templates=[finding.path, target.path / "findings"],
-        file=finding_template,
+        templates=[sub_finding.path.parent],
+        file=sub_finding.path,
         vars={
-            "target": target.model_dump(),
+            "f": sub_finding,
             "version": version,
-            "f": finding.model_dump(),
         },
     )
 
     # Convert to TeX
     content = apply_convertor(
         input="".join(finding_generator),
-        input_format=finding.format,
+        input_format=FileFormat.md,
         output_format=FileFormat.tex,
         render=render,
         recipe=converter,
@@ -166,33 +308,30 @@ def render_finding_to_tex(
     return content
 
 
-@validate_call
 def render_finding_group_to_tex(
-    project: Project,
-    target: Target,
+    config: "Config",
+    project_path: DirectoryPath,
+    target: "Target",
     target_ix: int,
     finding_group: FindingGroup,
     finding_group_ix: int,
     version: ProjectVersion,
 ) -> str:
     """Render selected finding group (top-level document) to TeX format."""
-    cfg = project.config.at_version(version=version)
+    version_config = config.at_version(version=version)
 
     # Construct path to finding group template
-    template = project.path / "layouts/finding_group.tex.j2"
+    template = project_path / "layouts/finding_group.tex.j2"
     if not template.is_file():
         raise SeretoPathError(f"template not found: '{template}'")
-
-    # Make shallow dict - values remain objects on which we can call their methods in Jinja
-    cfg_dict = {key: getattr(cfg, key) for key in cfg.model_dump()}
 
     # Render Jinja2 template
     finding_group_generator = render_jinja2(
         templates=[
-            project.path / "layouts/generated",
-            project.path / "layouts",
-            project.path / "includes",
-            project.path,
+            project_path / "layouts/generated",
+            project_path / "layouts",
+            project_path / "includes",
+            project_path,
         ],
         file=template,
         vars={
@@ -200,11 +339,10 @@ def render_finding_group_to_tex(
             "finding_group_index": finding_group_ix,
             "target": target,
             "target_index": target_ix,
-            "c": cfg,
-            "config": project.config,
+            "c": version_config,
+            "config": config,
             "version": version,
-            "project_path": project.path,
-            **cfg_dict,
+            "project_path": project_path,
         },
     )
 

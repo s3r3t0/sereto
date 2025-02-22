@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import FilePath, validate_call
+from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.build import (
     build_finding_group_dependencies,
@@ -12,16 +12,16 @@ from sereto.build import (
 )
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
-from sereto.models.project import Project
-from sereto.models.settings import RenderRecipe, Settings
+from sereto.models.settings import Render, RenderRecipe
 from sereto.models.version import ProjectVersion
-from sereto.project import project_create_missing
+from sereto.project import Project, project_create_missing
 
 
 @validate_call
 def render_tex_to_pdf(
     file: FilePath,
-    settings: Settings,
+    templates: DirectoryPath,
+    render: Render,
     recipe: RenderRecipe,
     replacements: dict[str, str] | None = None,
 ) -> Path:
@@ -30,7 +30,7 @@ def render_tex_to_pdf(
 
     # Run the tools defined in the recipe
     for tool_name in recipe.tools:
-        tool = [t for t in settings.render.tools if t.name == tool_name][0]
+        tool = [t for t in render.tools if t.name == tool_name][0]
         tool.run(
             cwd=file.parent,
             replacements={
@@ -39,7 +39,7 @@ def render_tex_to_pdf(
                 "%DOCFILE%": file.stem,
                 "%DOCFILE_EXT%": file.name,
                 "%DIR%": str(file.parent),
-                "%TEMPLATES%": str(settings.templates_path),
+                "%TEMPLATES%": str(templates),
             }
             | replacements,
         )
@@ -75,15 +75,18 @@ def generate_pdf_finding_group(
         Path to the generated finding group PDF.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config.last_version
 
     # Select target and finding group
-    target = project.select_target(version=version, selector=target_selector)
-    fg = target.select_finding_group(selector=finding_group_selector)
+    target = project.config.at_version(version).select_target(
+        categories=project.settings.categories, selector=target_selector
+    )
+
+    fg = target.findings.select_group(selector=finding_group_selector)
 
     Console().log(f"Rendering partial report for finding group {fg.uname!r}")
 
-    project_create_missing(project=project, version=version)
+    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
 
     # Build finding group to TeX
     build_finding_group_dependencies(
@@ -93,7 +96,12 @@ def generate_pdf_finding_group(
 
     # Render PDF
     recipe = project.settings.render.get_finding_group_recipe(name=renderer)
-    finding_group_pdf = render_tex_to_pdf(file=finding_group_tex, settings=project.settings, recipe=recipe)
+    finding_group_pdf = render_tex_to_pdf(
+        file=finding_group_tex,
+        templates=project.settings.templates_path,
+        render=project.settings.render,
+        recipe=recipe,
+    )
 
     # Create directory for the PDF results if it does not exist
     if not (pdf_dir := project.path / "pdf").is_dir():
@@ -107,10 +115,7 @@ def generate_pdf_finding_group(
 
 @validate_call
 def generate_pdf_report(
-    project: Project,
-    report_recipe: str | None,
-    convert_recipe: str | None,
-    version: ProjectVersion | None,
+    project: Project, report_recipe: str | None, convert_recipe: str | None, version: ProjectVersion | None
 ) -> Path:
     """Generate a report PDF.
 
@@ -124,18 +129,20 @@ def generate_pdf_report(
         Path to the generated report PDF.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config.last_version
 
     Console().log(f"Rendering report version: '{version}'")
 
-    project_create_missing(project=project, version=version)
+    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
 
     # Build report to TeX
     report_tex = build_report_to_tex(project=project, version=version, converter=convert_recipe)
 
     # Render PDF
     recipe = project.settings.render.get_report_recipe(name=report_recipe)
-    report_pdf = render_tex_to_pdf(file=report_tex, settings=project.settings, recipe=recipe)
+    report_pdf = render_tex_to_pdf(
+        file=report_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    )
 
     # Create directory for the PDF results if it does not exist
     if not (pdf_dir := project.path / "pdf").is_dir():
@@ -160,18 +167,20 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
         Path to the generated Statement of Work (SoW) PDF.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config.last_version
 
     Console().log(f"Rendering SoW version: '{version}'")
 
-    project_create_missing(project=project, version=version)
+    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
 
     # Build SoW to TeX
     sow_tex = build_sow_to_tex(project=project, version=version)
 
     # Render PDF
     recipe = project.settings.render.get_sow_recipe(name=sow_recipe)
-    sow_pdf = render_tex_to_pdf(file=sow_tex, settings=project.settings, recipe=recipe)
+    sow_pdf = render_tex_to_pdf(
+        file=sow_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    )
 
     # Create directory for the PDF results if it does not exist
     if not (pdf_dir := project.path / "pdf").is_dir():
@@ -204,14 +213,14 @@ def generate_pdf_target(
         Path to the generated target PDF.
     """
     if version is None:
-        version = project.config.last_version()
+        version = project.config.last_version
 
     # Select target
-    target = project.select_target(version=version, selector=target_selector)
+    target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
 
     Console().log(f"Rendering partial report for target '{target.uname}'")
 
-    project_create_missing(project=project, version=version)
+    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
 
     # Build target to TeX
     build_target_dependencies(project=project, target=target, version=version, converter=convert_recipe)
@@ -219,7 +228,9 @@ def generate_pdf_target(
 
     # Render PDF
     recipe = project.settings.render.get_target_recipe(name=target_recipe)
-    target_pdf = render_tex_to_pdf(file=target_tex, settings=project.settings, recipe=recipe)
+    target_pdf = render_tex_to_pdf(
+        file=target_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    )
 
     # Create directory for the PDF results if it does not exist
     if not (pdf_dir := project.path / "pdf").is_dir():

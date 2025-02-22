@@ -10,9 +10,8 @@
 ├── pictures/
 ├── target_<category>_<name>/
 │   ├── findings/
-│   │   └── <finding_name>
-│   │       └── <finding_name>.md.j2
-│   └── findings.yaml
+│   │   └── <finding_name>.md.j2
+│   └── findings.toml
 ├── .sereto
 ├── .seretoignore
 └── config.json
@@ -54,9 +53,9 @@ Directories for a individual targets.
 
 Directory for findings related to this target.
 
-### `findings.yaml`
+### `findings.toml`
 
-YAML file containing metadata for the findings of this target. It is possible to define name, risk, and variables for each finding, but also to group several findings together to form a single finding group with multiple sub-findings.
+TOML file containing metadata for the findings of this target. It is possible to define name, risk, and variables for each finding, but also to group several findings together to form a single finding group with multiple sub-findings.
 
 ## `.sereto`
 

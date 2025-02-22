@@ -1,9 +1,12 @@
+from typing import TYPE_CHECKING
+
 from pydantic import DirectoryPath, validate_call
 
 from sereto.enums import FileFormat
-from sereto.models.finding import Finding
 from sereto.models.settings import Render
-from sereto.models.version import ProjectVersion
+
+if TYPE_CHECKING:
+    from sereto.finding import SubFinding
 
 
 @validate_call
@@ -35,21 +38,18 @@ def apply_convertor(
     return content.decode("utf-8")
 
 
-@validate_call
-def convert_finding_to_tex(
-    finding: Finding,
+def convert_subfinding_to_tex(
+    sub_finding: "SubFinding",
     render: Render,
     templates: DirectoryPath,
-    version: ProjectVersion,
     recipe: str | None = None,
 ) -> None:
-    """Convert a file to TeX format using the specified finding, render, templates, version, and recipe.
+    """Convert a sub-finding to TeX format.
 
     Args:
-        finding: The finding object representing the file to be converted.
+        sub_finding: The sub-finding object.
         render: The render object containing convert_recipes and tools for the conversion.
         templates: The path to the templates directory.
-        version: The project version object.
         recipe: The name of the recipe to use for conversion. Defaults to None.
 
     Raises:
@@ -59,24 +59,18 @@ def convert_finding_to_tex(
     Returns:
         None
     """
-
-    assert finding.path is not None
-    if finding.format == FileFormat.tex:
-        return
-
-    convert_recipe = render.get_convert_recipe(name=recipe, input_format=finding.format, output_format=FileFormat.tex)
-    finding_file = finding.path / f"{finding.path_name}{version.path_suffix}.{finding.format.value}"
+    convert_recipe = render.get_convert_recipe(name=recipe, input_format=FileFormat.md, output_format=FileFormat.tex)
 
     for tool_name in convert_recipe.tools:
         tool = [t for t in render.tools if t.name == tool_name][0]
         tool.run(
-            cwd=finding.path,
+            cwd=sub_finding.path,
             replacements={
-                "%DOC%": str(finding_file.resolve().with_suffix("")),
-                "%DOC_EXT%": str(finding_file.resolve()),
-                "%DOCFILE%": finding_file.resolve().stem,
-                "%DOCFILE_EXT%": finding_file.resolve().name,
-                "%DIR%": str(finding.path.resolve()),
+                "%DOC%": str(sub_finding.path.resolve().with_suffix("")),
+                "%DOC_EXT%": str(sub_finding.path.resolve()),
+                "%DOCFILE%": sub_finding.path.resolve().stem,
+                "%DOCFILE_EXT%": sub_finding.path.resolve().name,
+                "%DIR%": str(sub_finding.path.resolve()),
                 "%TEMPLATES%": str(templates),
             },
         )

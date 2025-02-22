@@ -101,8 +101,9 @@ class ConvertRecipe(RenderRecipe):
 
     Attributes:
         name: name of the recipe
-        input_format: input file format
         tools: list of `RenderTool` names to run
+        input_format: input file format
+        output_format: output file format
     """
 
     input_format: FileFormat
@@ -121,6 +122,17 @@ class ConvertRecipe(RenderRecipe):
 
 
 class Render(SeretoBaseModel):
+    """Rendering settings.
+
+    Attributes:
+        report_recipes: list of `RenderRecipe`s for rendering reports
+        finding_group_recipes: list of `RenderRecipe`s for rendering finding groups
+        sow_recipes: list of `RenderRecipe`s for rendering SoWs
+        target_recipes: list of `RenderRecipe`s for rendering targets
+        convert_recipes: list of `ConvertRecipe`s for converting between file formats
+        tools: list of `RenderTool`s used in recipes
+    """
+
     report_recipes: Annotated[list[RenderRecipe], MinLen(1)]
     finding_group_recipes: Annotated[list[RenderRecipe], MinLen(1)]
     sow_recipes: Annotated[list[RenderRecipe], MinLen(1)]
@@ -140,6 +152,11 @@ class Render(SeretoBaseModel):
 
     @validate_call
     def get_report_recipe(self, name: str | None) -> RenderRecipe:
+        """Get a report recipe by name.
+
+        Args:
+            name: The name of the recipe to get. If None, the first recipe is returned.
+        """
         if name is None:
             return self.report_recipes[0]
 
@@ -150,6 +167,11 @@ class Render(SeretoBaseModel):
 
     @validate_call
     def get_finding_group_recipe(self, name: str | None) -> RenderRecipe:
+        """Get a finding group recipe by name.
+
+        Args:
+            name: The name of the recipe to get. If None, the first recipe is returned.
+        """
         if name is None:
             return self.finding_group_recipes[0]
 
@@ -160,6 +182,11 @@ class Render(SeretoBaseModel):
 
     @validate_call
     def get_sow_recipe(self, name: str | None) -> RenderRecipe:
+        """Get a SoW recipe by name.
+
+        Args:
+            name: The name of the recipe to get. If None, the first recipe is returned.
+        """
         if name is None:
             return self.sow_recipes[0]
 
@@ -170,6 +197,11 @@ class Render(SeretoBaseModel):
 
     @validate_call
     def get_target_recipe(self, name: str | None) -> RenderRecipe:
+        """Get a target recipe by name.
+
+        Args:
+            name: The name of the recipe to get. If None, the first recipe is returned.
+        """
         if name is None:
             return self.target_recipes[0]
 
@@ -182,6 +214,13 @@ class Render(SeretoBaseModel):
     def get_convert_recipe(
         self, name: str | None, input_format: FileFormat, output_format: FileFormat
     ) -> ConvertRecipe:
+        """Get a convert recipe by name, input format, and output format.
+
+        Args:
+            name: The name of the recipe to get. If None, the first matching recipe is returned.
+            input_format: The input file format.
+            output_format: The output file format.
+        """
         acceptable_recipes = [
             r for r in self.convert_recipes if r.input_format == input_format and r.output_format == output_format
         ]
@@ -292,6 +331,7 @@ class Settings(SeretoBaseSettings):
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
             possible in all positions except the first and last one)
+        plugins: plugins settings
 
     Raises:
         SeretoPathError: If the file is not found or permission is denied.
