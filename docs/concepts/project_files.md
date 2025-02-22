@@ -10,8 +10,7 @@
 ├── pictures/
 ├── target_<category>_<name>/
 │   ├── findings/
-│   │   └── <finding_name>
-│   │       └── <finding_name>.md.j2
+│   │   └── <finding_name>.md.j2
 │   └── findings.toml
 ├── .sereto
 ├── .seretoignore

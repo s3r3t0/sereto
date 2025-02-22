@@ -81,9 +81,10 @@ nav:
   - Reference:
     - CLI:
       - reference/cli/cli.md
-      - reference/cli/config.md
       - reference/cli/commands.md
+      - reference/cli/config.md
       - reference/cli/date.md
+      - reference/cli/finding.md
       - reference/cli/person.md
       - reference/cli/target.md
       - reference/cli/utils.md
@@ -93,12 +94,13 @@ nav:
       - reference/models/date.md
       - reference/models/finding.md
       - reference/models/person.md
-      - reference/models/project.md
-      - reference/models/risks.md
       - reference/models/settings.md
       - reference/models/target.md
       - reference/models/version.md
+    - TUI:
+      - reference/tui/finding.md
     - reference/build.md
+    - reference/config.md
     - reference/convert.md
     - reference/crypto.md
     - reference/enums.md
@@ -110,6 +112,7 @@ nav:
     - reference/project.md
     - reference/report.md
     - reference/retest.md
+    - reference/risk.md
     - reference/settings.md
     - reference/singleton.md
     - reference/source_archive.md

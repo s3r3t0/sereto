@@ -146,11 +146,10 @@ class Findings:
     @validate_call
     def load_from(cls, target_dir: DirectoryPath) -> Self:
         """
-        Load a collection of findings.
+        Load findings belonging to the same target.
 
         Args:
-            findings_desc: The description of the findings.
-            path: The path to the target directory.
+            target_dir: The path to the target directory.
 
         Returns:
             The loaded findings object.

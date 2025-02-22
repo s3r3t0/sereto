@@ -39,7 +39,8 @@ def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
     keyring.
 
     Args:
-        project: Project's representation.
+        project_path: The path to the project directory.
+        config: The configuration object..
 
     Returns:
         The path to the created source archive.

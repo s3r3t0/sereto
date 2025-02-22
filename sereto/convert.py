@@ -44,13 +44,12 @@ def convert_subfinding_to_tex(
     templates: DirectoryPath,
     recipe: str | None = None,
 ) -> None:
-    """Convert a file to TeX format using the specified finding, render, templates, version, and recipe.
+    """Convert a sub-finding to TeX format.
 
     Args:
-        finding: The finding object representing the file to be converted.
+        sub_finding: The sub-finding object.
         render: The render object containing convert_recipes and tools for the conversion.
         templates: The path to the templates directory.
-        version: The project version object.
         recipe: The name of the recipe to use for conversion. Defaults to None.
 
     Raises:

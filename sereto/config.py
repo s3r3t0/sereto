@@ -400,7 +400,7 @@ class VersionConfig:
     def report_sent_date(self) -> SeretoDate | None:
         """Get the report sent date
 
-        If has fallback to the review date and last date of the pentest ongoing.
+        It has fallback to the review date and last date of the pentest ongoing.
         """
         return self.filter_dates(
             type=[DateType.report_sent, DateType.review, DateType.pentest_ongoing], last_date=True

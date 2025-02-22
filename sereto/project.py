@@ -130,8 +130,8 @@ def project_create_missing(project_path: DirectoryPath, version_config: VersionC
     """Creates missing content in the project.
 
     Args:
-        project: Project's representation.
-        version: The version of the project.
+        project_path: The path to the project directory.
+        version_config: Configuration for a specific project version.
     """
     # Initialize the build directory
     init_build_dir(project_path=project_path, version_config=version_config)
