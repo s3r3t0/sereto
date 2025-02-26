@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-02-26
+
+### Added
+
+- TUI utility for fuzzy searching and adding findings to the report (`sereto findings add`).
+
+### Changed
+- **Major refactoring**: separated runtime classes from Pydantic models to better distinguish operational logic from data loading and validation.
+- The entire target subtree is now version-specific; for retests, copy the subtree from the previous version.
+- Migrated from findings.yaml to findings.toml.
+- Updated how risk counts are represented.
+- Used more explicit function arguments.
+- Revised unique name generation.
+- Improved `VersionConfig.filter_dates`.
+- Fixed REPL UsageError (requires removing `click-repl` 0.3.0 if installed).
+
 ## [0.1.1] - 2025-02-02
 
 ### Changed
@@ -262,7 +278,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/s3r3t0/sereto/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/s3r3t0/sereto/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/s3r3t0/sereto/compare/v0.0.17...v0.1.0
 [0.0.17]: https://github.com/s3r3t0/sereto/compare/v0.0.16...v0.0.17
