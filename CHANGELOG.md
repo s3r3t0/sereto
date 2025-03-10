@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-03-10
+
+### Changed
+
+- Add fallback keyring backend (keyring-alt) to support Docker and WSL.
+- Fork `click-repl` and build release from master.
+
 ## [0.2.0] - 2025-02-26
 
 ### Added
@@ -278,7 +285,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/s3r3t0/sereto/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/s3r3t0/sereto/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/s3r3t0/sereto/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/s3r3t0/sereto/compare/v0.0.17...v0.1.0
