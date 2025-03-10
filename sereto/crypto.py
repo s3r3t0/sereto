@@ -3,13 +3,13 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import NamedTuple
 
-import keyring
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
+from sereto.keyring import get_password
 from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
 from sereto.utils import assert_file_size_within_range
 
@@ -93,7 +93,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
     # Retrieve the password from the system keyring
     try:
         ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
-        password = ta_password.validate_python(keyring.get_password("sereto", "encrypt_attached_archive"))
+        password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
         Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
@@ -164,7 +164,7 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     # Retrieve the password from the system keyring
     try:
         ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
-        password = ta_password.validate_python(keyring.get_password("sereto", "encrypt_attached_archive"))
+        password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
         Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e

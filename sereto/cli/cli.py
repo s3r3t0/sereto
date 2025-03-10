@@ -5,7 +5,6 @@ from contextlib import suppress
 from pathlib import Path
 
 import click
-import keyring
 from prompt_toolkit import prompt
 from pydantic import FilePath, validate_call
 
@@ -26,6 +25,7 @@ from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
+from sereto.keyring import get_password, set_password
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
@@ -631,9 +631,10 @@ def cli_pdf_target(
 
 @pdf.command(name="report")
 @handle_exceptions
-@click.option("-c", "--convert-recipe", help="Convert finding recipe")
-@click.option("-r", "--report-recipe", help="Build TeX report recipe")
+@click.option("-c", "--convert-recipe", help="Convert finding recipe.")
+@click.option("-r", "--report-recipe", help="Build TeX report recipe.")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
+# @click.option("-l", "--layout", help="Alternative layout for the report.")
 @click.pass_obj
 @validate_call
 def cli_pdf_report(
@@ -732,7 +733,7 @@ def settings_password_get() -> None:
 
     This will print the password from the system's keyring.
     """
-    click.echo(keyring.get_password("sereto", "encrypt_attached_archive"))
+    click.echo(get_password("sereto", "encrypt_attached_archive"))
 
 
 @password.command(name="set")
@@ -748,7 +749,7 @@ def settings_password_set(password: str) -> None:
     Args:
         password: The password to be stored.
     """
-    keyring.set_password("sereto", "encrypt_attached_archive", password)
+    set_password("sereto", "encrypt_attached_archive", password)
 
 
 @settings.command(name="show")
