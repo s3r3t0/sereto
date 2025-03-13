@@ -876,8 +876,8 @@ def load_plugins() -> None:
 
             # Execute the module to initialize it
             spec.loader.exec_module(module)
-        except ModuleNotFoundError:
-            Console().log(f"Plugin module not found: {file.name}")
+        except ModuleNotFoundError as e:
+            Console().log(f"Plugin module '{e.name}' not found: '{file.name}'")
             continue
 
         # Run the plugin's register_commands function
