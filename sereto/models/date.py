@@ -33,8 +33,8 @@ class SeretoDate(RootModel[date]):
                 raise ValueError("invalid type, use string or date")
 
     @classmethod
-    def from_str(cls, v: str) -> "SeretoDate":
-        date = datetime.strptime(v, r"%d-%b-%Y").date()
+    def from_str(cls, v: str, fmt: str = r"%d-%b-%Y") -> "SeretoDate":
+        date = datetime.strptime(v, fmt).date()
         return cls.model_construct(root=date)
 
     @field_serializer("root")
