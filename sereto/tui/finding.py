@@ -325,6 +325,10 @@ class SeretoApp(App[None]):
 
     def compose(self) -> ComposeResult:
         """Add widgets to the app."""
+        # adding findings only works if there is at least one target
+        if len(self.project.config.last_config.targets) == 0:
+            raise SeretoValueError("no targets found in the configuration")
+
         yield Header()
         yield SearchWidget(id="search")
         yield ResultsWidget(id="results")
@@ -337,7 +341,6 @@ class SeretoApp(App[None]):
 
 if __name__ == "__main__":
     project = Project()
-    # settings = load_settings_function()
     categories = sorted([c.upper() for c in project.settings.categories])
     app = SeretoApp(project=project, categories=categories)
     app.run()
