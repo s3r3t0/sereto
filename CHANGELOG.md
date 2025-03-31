@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update pypdf requirement from ~=5.3.0 to ~=5.4.0
 - Update textual requirement from ~=2.1.1 to ~=3.0.0
 - Update rich requirement from ~=13.9.2 to ~=14.0.0
+- Update pydantic requirement from ~=2.10.1 to ~=2.11.1
 
 ## [0.2.1] - 2025-03-10
 
