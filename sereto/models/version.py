@@ -68,7 +68,7 @@ class SeretoVersion(RootModel[VersionPydanticAnnotation]):
 
     @model_serializer()
     def serialize_model(self) -> str:
-        return self.__str__()  # type: ignore[call-arg]
+        return self.__str__()
 
     def __str__(self) -> str:
         return self.root.__str__()
@@ -176,7 +176,7 @@ class ProjectVersion(RootModel[VersionVPrefixPydanticAnnotation]):
 
     @model_serializer()
     def serialize_model(self) -> str:
-        return self.__str__()  # type: ignore[call-arg]
+        return self.__str__()
 
     def __lt__(self, other: Any) -> bool:
         if type(self) is not type(other):
