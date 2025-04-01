@@ -15,7 +15,7 @@ def render_sow_to_tex(project_path: DirectoryPath, config: Config, version: Proj
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Render the Jinja template
-    sow_generator = render_jinja2(
+    return render_jinja2(
         templates=[
             project_path / "layouts/generated",
             project_path / "layouts",
@@ -30,5 +30,3 @@ def render_sow_to_tex(project_path: DirectoryPath, config: Config, version: Proj
             "project_path": project_path,
         },
     )
-
-    return "".join(sow_generator)

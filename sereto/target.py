@@ -76,7 +76,7 @@ def render_target_to_tex(
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Render Jinja2 template
-    target_generator = render_jinja2(
+    return render_jinja2(
         templates=[
             project_path / "layouts/generated",
             project_path / "layouts",
@@ -93,5 +93,3 @@ def render_target_to_tex(
             "project_path": project_path,
         },
     )
-
-    return "".join(target_generator)

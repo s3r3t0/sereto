@@ -284,7 +284,7 @@ def render_subfinding_to_tex(
     # finding.assert_required_vars(templates=templates, category=category)
 
     # Render Jinja2 template
-    finding_generator = render_jinja2(
+    finding_content = render_jinja2(
         templates=[sub_finding.path.parent],
         file=sub_finding.path,
         vars={
@@ -295,7 +295,7 @@ def render_subfinding_to_tex(
 
     # Convert to TeX
     content = apply_convertor(
-        input="".join(finding_generator),
+        input=finding_content,
         input_format=FileFormat.md,
         output_format=FileFormat.tex,
         render=render,
@@ -326,7 +326,7 @@ def render_finding_group_to_tex(
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Render Jinja2 template
-    finding_group_generator = render_jinja2(
+    return render_jinja2(
         templates=[
             project_path / "layouts/generated",
             project_path / "layouts",
@@ -345,5 +345,3 @@ def render_finding_group_to_tex(
             "project_path": project_path,
         },
     )
-
-    return "".join(finding_group_generator)

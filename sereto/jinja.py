@@ -1,7 +1,7 @@
-from collections.abc import Iterator, Sequence
+from collections.abc import Sequence
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, Template, is_undefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template, UndefinedError, is_undefined
 from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.exceptions import SeretoValueError
@@ -87,7 +87,7 @@ def get_generic_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) ->
     Returns:
         A Jinja2 environment object.
     """
-    env: Environment = Environment(autoescape=False, loader=FileSystemLoader(templates))
+    env: Environment = Environment(autoescape=False, loader=FileSystemLoader(templates), undefined=StrictUndefined)
     env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
     env.add_extension("jinja2.ext.debug")
     return env
@@ -112,6 +112,7 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
         comment_end_string="=))",
         autoescape=False,
         loader=FileSystemLoader(templates),
+        undefined=StrictUndefined,
     )
 
     # TODO: Once Jinja2 allows custom escape functions, we might use autoescape of special TeX characters.
@@ -133,9 +134,7 @@ def strip_toml_frontmatter(source: str) -> str:
 
 
 @validate_call
-def render_jinja2(
-    file: FilePath, templates: DirectoryPath | Sequence[DirectoryPath], vars: dict[str, Any]
-) -> Iterator[str]:
+def render_jinja2(file: FilePath, templates: DirectoryPath | Sequence[DirectoryPath], vars: dict[str, Any]) -> str:
     """Renders a Jinja2 template.
 
     Args:
@@ -144,7 +143,7 @@ def render_jinja2(
         vars: A dictionary of variables to be passed to the Jinja2 template engine.
 
     Returns:
-        A generator that yields the rendered template as a string.
+        Rendered template as a string.
     """
     if file.name.endswith(".tex.j2"):
         env: Environment = get_tex_jinja_env(templates=templates)
@@ -157,4 +156,8 @@ def render_jinja2(
 
     content = strip_toml_frontmatter(file.read_text(encoding="utf-8"))
     template = env.from_string(content)
-    return template.generate(vars)
+
+    try:
+        return template.render(vars)
+    except UndefinedError as e:
+        raise SeretoValueError(f"Undefined variable or attribute in template '{file.name}': {e}") from e

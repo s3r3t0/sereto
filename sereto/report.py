@@ -15,7 +15,7 @@ def render_report_to_tex(project_path: DirectoryPath, config: Config, version: P
         raise SeretoPathError(f"template not found: '{template}'")
 
     # Render Jinja2 template
-    report_generator = render_jinja2(
+    return render_jinja2(
         templates=[
             project_path / "layouts/generated",
             project_path / "layouts",
@@ -30,5 +30,3 @@ def render_report_to_tex(project_path: DirectoryPath, config: Config, version: P
             "project_path": project_path,
         },
     )
-
-    return "".join(report_generator)
