@@ -658,7 +658,7 @@ def cli_pdf_report(
 
     # Create and attach source archive
     archive = create_source_archive(project_path=ctx.path, config=ctx.config)
-    embed_attachment_to_pdf(attachment=archive, pdf=report_pdf, name=f"sereto{archive.suffix}", keep_original=False)
+    embed_attachment_to_pdf(attachment=archive, pdf=report_pdf, name=f"source{archive.suffix}", keep_original=False)
 
 
 @pdf.command(name="sow")

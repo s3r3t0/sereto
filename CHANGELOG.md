@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix mismatch in the attached source archive name when embedding the archive vs. unpacking.
+
 ## [0.2.3] - 2025-04-02
 
 ### Changed
