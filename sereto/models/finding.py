@@ -17,12 +17,13 @@ class VarsMetadataModel(SeretoBaseModel):
     name: str
     description: str
     required: bool = False
-    list: bool = False
+    is_list: bool = Field(False, alias="list")
     type: Literal["string", "integer", "boolean"] = "string"
 
     @property
-    def value_description(self) -> str:
-        return f"({self.type}{', required' if self.required else ''}) {self.description}"
+    def descriptive_value(self) -> str | list[str]:
+        description = f"({self.type}{', required' if self.required else ''}) {self.description}"
+        return [description] if self.is_list else description
 
 
 class FindingTemplateFrontmatterModel(SeretoBaseModel):
@@ -70,12 +71,14 @@ class FindingFrontmatterModel(SeretoBaseModel):
         risk: The risk level of the sub-finding.
         category: From which category the sub-finding originates.
         variables: A dictionary of variables used in the sub-finding.
+        template_path: Relative path to the finding in templates directory.
     """
 
     name: str
     risk: Risk
     category: TypeCategoryName
     variables: dict[str, Any] = {}
+    template_path: str | None = None
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -95,10 +98,13 @@ class FindingFrontmatterModel(SeretoBaseModel):
             name = "{self.name}"
             risk = "{self.risk.value}"
             category = "{self.category.lower()}"
-
-            [variables]
         """)
-        output += "\n".join(f'{k} = "{v}"' for k, v in self.variables.items())
+
+        if self.template_path:
+            output += f'template_path = "{self.template_path}"'
+
+        output += "\n\n[variables]\n"
+        output += "\n".join(f"#{k} = {v!r}" for k, v in self.variables.items())
         return output + "\n"
 
     @classmethod

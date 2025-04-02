@@ -45,6 +45,7 @@ class VersionConfig:
         model: VersionConfigModel,
         version: ProjectVersion,
         project_path: DirectoryPath,
+        templates: DirectoryPath,
     ) -> Self:
         return cls(
             version=version,
@@ -52,7 +53,12 @@ class VersionConfig:
             name=model.name,
             version_description=model.version_description,
             targets=[
-                Target.load(data=target, path=project_path / (target.uname + version.path_suffix), version=version)
+                Target.load(
+                    data=target,
+                    path=project_path / (target.uname + version.path_suffix),
+                    version=version,
+                    templates=templates,
+                )
                 for target in model.targets
             ],
             dates=model.dates,
@@ -425,13 +431,15 @@ class Config:
 
     @classmethod
     @validate_call
-    def load_from(cls, path: FilePath) -> Self:
+    def load_from(cls, path: FilePath, templates: DirectoryPath) -> Self:
         config = ConfigModel.load_from(path)
 
         return cls(
             sereto_version=config.sereto_version,
             version_configs={
-                version: VersionConfig.from_model(model=version_config, version=version, project_path=path.parent)
+                version: VersionConfig.from_model(
+                    model=version_config, version=version, project_path=path.parent, templates=templates
+                )
                 for version, version_config in config.version_configs.items()
             },
             path=path,
@@ -493,7 +501,9 @@ class Config:
         return self.at_version(self.last_version)
 
     @validate_call
-    def add_version_config(self, version: ProjectVersion, config: VersionConfigModel) -> Self:
+    def add_version_config(
+        self, version: ProjectVersion, config: VersionConfigModel, templates: DirectoryPath
+    ) -> Self:
         """Add a new version configuration to the project.
 
         Args:
@@ -510,7 +520,7 @@ class Config:
             raise SeretoValueError(f"version '{version}' already exists")
 
         self.version_configs[version] = VersionConfig.from_model(
-            model=config, version=version, project_path=self.path.parent
+            model=config, version=version, project_path=self.path.parent, templates=templates
         )
 
         return self

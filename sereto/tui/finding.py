@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Generic, TypeVar
 
 import frontmatter  # type: ignore
-from pydantic import ValidationError
+from pydantic import DirectoryPath, ValidationError
 from rapidfuzz import fuzz
 from rich.console import RenderableType
 from rich.syntax import Syntax
@@ -149,8 +149,9 @@ class AddFindingScreen(ModalScreen[None]):
     """
     BINDINGS = [("escape", "dismiss", "Dismiss finding")]
 
-    def __init__(self, finding: FindingMetadata, title: str) -> None:
+    def __init__(self, templates: DirectoryPath, finding: FindingMetadata, title: str) -> None:
         super().__init__()
+        self.templates = templates
         self.finding = finding
         self.title = title
 
@@ -190,7 +191,8 @@ class AddFindingScreen(ModalScreen[None]):
         target = matching_target[0]
 
         target.findings.add_from_template(
-            template=self.finding.path,
+            templates=self.templates,
+            template_path=self.finding.path,
             category=self.finding.category.lower(),
             name=name,
             risk=risk,
@@ -277,7 +279,7 @@ class ResultsWidget(Widget):
                         path=finding,
                         category=category,
                         name=data.name,
-                        variables={v.name: v.value_description for v in data.variables},
+                        variables={v.name: v.descriptive_value for v in data.variables},
                         keywords=data.keywords,
                     )
                 )
@@ -301,7 +303,13 @@ class ResultsWidget(Widget):
         if row_key.value is None:
             return
 
-        self.app.push_screen(AddFindingScreen(finding=self.findings[int(row_key.value)], title="Add finding"))
+        self.app.push_screen(
+            AddFindingScreen(
+                templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
+                finding=self.findings[int(row_key.value)],
+                title="Add finding",
+            )
+        )
 
 
 class SeretoApp(App[None]):

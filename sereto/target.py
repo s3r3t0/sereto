@@ -24,10 +24,10 @@ class Target:
 
     @classmethod
     @validate_call
-    def load(cls, data: TargetModel, path: DirectoryPath, version: ProjectVersion) -> Self:
+    def load(cls, data: TargetModel, path: DirectoryPath, version: ProjectVersion, templates: DirectoryPath) -> Self:
         return cls(
             data=data,
-            findings=Findings.load_from(path),
+            findings=Findings.load_from(target_dir=path, templates=templates),
             path=path,
             version=version,
         )
@@ -50,7 +50,7 @@ class Target:
         else:
             Console().log(f"No 'skel' directory found: '{category_templates}'")
 
-        return cls.load(data=data, path=target_path, version=version)
+        return cls.load(data=data, path=target_path, version=version, templates=templates)
 
     @validate_call
     def to_model(self) -> TargetModel:

@@ -22,4 +22,6 @@ def add_retest(project: Project) -> None:
     # Duplicate last version config
     last_config = deepcopy(project.config.last_config)
     last_config.version_description = "Retest"
-    project.config.add_version_config(version=retest_version, config=last_config.to_model()).save()
+    project.config.add_version_config(
+        version=retest_version, config=last_config.to_model(), templates=project.settings.templates_path
+    ).save()

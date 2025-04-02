@@ -42,7 +42,7 @@ class Project:
     @property
     def config(self) -> Config:
         if self._config is None:
-            self._config = Config.load_from(self.path / "config.json")
+            self._config = Config.load_from(self.path / "config.json", templates=self.settings.templates_path)
         return self._config
 
     @property

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Validate variables for sub-findings if the corresponding template can be found.
 - Print error if variable is missing for Jinja2 (optional variables now need to stricly check with `is defined`)
 
 ## [0.2.2] - 2025-04-01

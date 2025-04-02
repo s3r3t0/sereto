@@ -31,15 +31,17 @@ class SubFinding:
     risk: Risk
     vars: dict[str, Any]
     path: FilePath
+    template: FilePath | None = None
 
     @classmethod
     @validate_call
-    def load_from(cls, path: FilePath) -> Self:
+    def load_from(cls, path: FilePath, templates: DirectoryPath) -> Self:
         """
         Load a sub-finding from a file.
 
         Args:
             path: The path to the sub-finding file.
+            templates: The path to the templates directory.
 
         Returns:
             The loaded sub-finding object.
@@ -51,12 +53,62 @@ class SubFinding:
             risk=frontmatter.risk,
             vars=frontmatter.variables,
             path=path,
+            template=(templates / frontmatter.template_path) if frontmatter.template_path else None,
         )
 
     @property
     def uname(self) -> str:
         """Unique name of the finding."""
         return self.path.name.removesuffix(".md.j2")
+
+    @validate_call
+    def validate_vars(self) -> None:
+        """Validate the variables of the sub-finding against definition in the template.
+
+        Works only if there is a template path defined, otherwise no validation is done.
+
+        Raises:
+            SeretoValueError: If the variables are not valid.
+        """
+        if self.template is None:
+            # no template path, no validation
+            return
+
+        # read template frontmatter
+        template_frontmatter = FindingTemplateFrontmatterModel.load_from(self.template)
+
+        # report all errors at once
+        error = ""
+
+        for var in template_frontmatter.variables:
+            # check if variable is defined
+            if var.name not in self.vars:
+                if var.required:
+                    error += f"missing required variable '{var.name}' in finding '{self.name}'\n"
+                    error += f"  {var.name} = {var.descriptive_value}\n"
+                else:
+                    # TODO: logger
+                    print(
+                        f"optional variable '{var.name}' is not defined in finding '{self.name}'\n"
+                        f"  {var.name} = {var.descriptive_value}"
+                    )
+                continue
+
+            # variable should be a list and is not
+            if var.is_list and not isinstance(self.vars[var.name], list):
+                error += f"variable '{var.name}' must be a list in finding '{self.name}'\n"
+                error += f"  {var.name} = {var.descriptive_value}\n"
+                continue
+
+            # variable should not be a list and is
+            if not var.is_list and isinstance(self.vars[var.name], list):
+                error += f"variable '{var.name}' must not be a list in finding '{self.name}'\n"
+                error += f"  {var.name} = {var.descriptive_value}\n"
+                continue
+
+        # report all errors at once
+        if len(error) > 0:
+            raise SeretoValueError(f"invalid variables in finding '{self.name}'\n{error}")
 
 
 @dataclass
@@ -76,7 +128,9 @@ class FindingGroup:
 
     @classmethod
     @validate_call
-    def load(cls, name: str, group_desc: FindingGroupModel, findings_dir: DirectoryPath) -> Self:
+    def load(
+        cls, name: str, group_desc: FindingGroupModel, findings_dir: DirectoryPath, templates: DirectoryPath
+    ) -> Self:
         """
         Load a finding group.
 
@@ -84,11 +138,15 @@ class FindingGroup:
             name: The name of the finding group.
             group_desc: The description of the finding group.
             findings_dir: The path to the findings directory.
+            templates: The path to the templates directory.
 
         Returns:
             The loaded finding group object.
         """
-        sub_findings = [SubFinding.load_from(findings_dir / f"{name}.md.j2") for name in group_desc.findings]
+        sub_findings = [
+            SubFinding.load_from(path=findings_dir / f"{name}.md.j2", templates=templates)
+            for name in group_desc.findings
+        ]
 
         return cls(
             name=name,
@@ -144,12 +202,13 @@ class Findings:
 
     @classmethod
     @validate_call
-    def load_from(cls, target_dir: DirectoryPath) -> Self:
+    def load_from(cls, target_dir: DirectoryPath, templates: DirectoryPath) -> Self:
         """
         Load findings belonging to the same target.
 
         Args:
             target_dir: The path to the target directory.
+            templates: The path to the templates directory.
 
         Returns:
             The loaded findings object.
@@ -157,7 +216,7 @@ class Findings:
         config = FindingsConfigModel.load_from(target_dir / "findings.toml")
 
         groups = [
-            FindingGroup.load(name=name, group_desc=group, findings_dir=target_dir / "findings")
+            FindingGroup.load(name=name, group_desc=group, findings_dir=target_dir / "findings", templates=templates)
             for name, group in config.items()
         ]
 
@@ -171,7 +230,8 @@ class Findings:
     @validate_call
     def add_from_template(
         self,
-        template: FilePath,
+        templates: DirectoryPath,
+        template_path: FilePath,
         category: str,
         name: str | None = None,
         risk: Risk | None = None,
@@ -182,7 +242,8 @@ class Findings:
         This will create a new finding group with a single sub-finding.
 
         Args:
-            template: The path to the sub-finding template.
+            templates: The path to the templates directory.
+            template_path: The path to the sub-finding template.
             name: The name of the sub-finding. If not provided, the name will use the default value from the template.
             risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
         """
@@ -190,19 +251,23 @@ class Findings:
             variables = {}
 
         # read template
-        template_metadata = FindingTemplateFrontmatterModel.load_from(template)
-        _, content = frontmatter.parse(template.read_text(), encoding="utf-8")
+        template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
+        _, content = frontmatter.parse(template_path.read_text(), encoding="utf-8")
 
         # write sub-finding to findings directory
-        if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template.name}").is_file():
+        if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template_path.name}").is_file():
             raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
         sub_finding_metadata = FindingFrontmatterModel(
-            name=template_metadata.name, risk=template_metadata.risk, category=category, variables=variables
+            name=template_metadata.name,
+            risk=template_metadata.risk,
+            category=category,
+            variables=variables,
+            template_path=str(template_path.relative_to(templates)),
         )
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
 
         # load the created sub-finding
-        sub_finding = SubFinding.load_from(sub_finding_path)
+        sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
 
         # prepare finding group
         group = FindingGroup(
@@ -280,8 +345,8 @@ def render_subfinding_to_tex(
     render: Render,
     converter: str | None = None,
 ) -> str:
-    # # TODO: Ensure required variables are present
-    # finding.assert_required_vars(templates=templates, category=category)
+    # Validate variables
+    sub_finding.validate_vars()
 
     # Render Jinja2 template
     finding_content = render_jinja2(
