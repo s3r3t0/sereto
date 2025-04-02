@@ -514,3 +514,11 @@ class Config:
         )
 
         return self
+
+    @validate_call
+    def replace_version_config(self, version: ProjectVersion, config: VersionConfigModel) -> Self:
+        self.version_configs[version] = VersionConfig.from_model(
+            model=config, version=version, project_path=self.path.parent
+        )
+
+        return self
