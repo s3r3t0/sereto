@@ -524,3 +524,29 @@ class Config:
         )
 
         return self
+
+    @validate_call
+    def replace_version_config(
+        self, version: ProjectVersion, config: VersionConfigModel, templates: DirectoryPath
+    ) -> Self:
+        """Replace an existing version configuration.
+
+        Args:
+            version: The version of the configuration to replace.
+            config: The new configuration.
+            templates: The path to the templates directory.
+
+        Returns:
+            The updated configuration.
+
+        Raises:
+            SeretoValueError: If the specified version does not exist.
+        """
+        if version not in self.versions:
+            raise SeretoValueError(f"version '{version}' does not exist")
+
+        self.version_configs[version] = VersionConfig.from_model(
+            model=config, version=version, project_path=self.path.parent, templates=templates
+        )
+
+        return self
