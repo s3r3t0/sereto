@@ -21,9 +21,11 @@ class VarsMetadataModel(SeretoBaseModel):
     type: Literal["string", "integer", "boolean"] = "string"
 
     @property
-    def descriptive_value(self) -> str | list[str]:
-        description = f"({self.type}{', required' if self.required else ''}) {self.description}"
-        return [description] if self.is_list else description
+    def type_annotation(self) -> str:
+        """Get description of the variable type and required state."""
+        type_annotation = f"list[{self.type}]" if self.is_list else self.type
+        required = "required" if self.required else "optional"
+        return f"{type_annotation}, {required}"
 
 
 class FindingTemplateFrontmatterModel(SeretoBaseModel):

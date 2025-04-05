@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add method `Config.replace_version_config`
+
+### Changed
+
+- Update error messages for Jinja2 missing variables
+
+
 ### Fixed
 
 - Fix mismatch in the attached source archive name when embedding the archive vs. unpacking.

@@ -84,26 +84,26 @@ class SubFinding:
             # check if variable is defined
             if var.name not in self.vars:
                 if var.required:
-                    error += f"missing required variable '{var.name}' in finding '{self.name}'\n"
-                    error += f"  {var.name} = {var.descriptive_value}\n"
+                    error += f"{var.name}: {var.type_annotation} = {var.description}\n"
+                    error += f"  - missing required variable in finding '{self.name}'\n"
                 else:
                     # TODO: logger
                     print(
-                        f"optional variable '{var.name}' is not defined in finding '{self.name}'\n"
-                        f"  {var.name} = {var.descriptive_value}"
+                        f"{var.name}: {var.type_annotation} = {var.description}\n"
+                        f"  - optional variable is not defined in finding '{self.name}'\n"
                     )
                 continue
 
             # variable should be a list and is not
             if var.is_list and not isinstance(self.vars[var.name], list):
-                error += f"variable '{var.name}' must be a list in finding '{self.name}'\n"
-                error += f"  {var.name} = {var.descriptive_value}\n"
+                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
+                error += f"  - variable must be a list in finding '{self.name}'\n"
                 continue
 
             # variable should not be a list and is
             if not var.is_list and isinstance(self.vars[var.name], list):
-                error += f"variable '{var.name}' must not be a list in finding '{self.name}'\n"
-                error += f"  {var.name} = {var.descriptive_value}\n"
+                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
+                error += f"  - variable must not be a list in finding '{self.name}'\n"
                 continue
 
         # report all errors at once
