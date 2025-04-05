@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-04-05
+
 ### Added
 
 - Add method `Config.replace_version_config`
@@ -328,7 +330,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.3...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/s3r3t0/sereto/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/s3r3t0/sereto/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/s3r3t0/sereto/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/s3r3t0/sereto/compare/v0.2.0...v0.2.1
