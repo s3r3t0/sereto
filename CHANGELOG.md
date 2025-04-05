@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add method `Config.replace_version_config`
+- Configure variables from the `findings add` TUI
 
 ### Changed
 

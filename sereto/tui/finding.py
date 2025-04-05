@@ -1,12 +1,11 @@
-from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 import frontmatter  # type: ignore
 from pydantic import DirectoryPath, ValidationError
 from rapidfuzz import fuzz
-from rich.console import RenderableType
+from rich.markup import escape
 from rich.syntax import Syntax
 from textual import on
 from textual.app import App, ComposeResult
@@ -14,12 +13,13 @@ from textual.containers import Container, Horizontal, ScrollableContainer, Verti
 from textual.screen import ModalScreen
 from textual.types import NoSelection
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Footer, Header, Input, Label, Select, SelectionList, Static
+from textual.widgets import Button, DataTable, Footer, Header, Input, Rule, Select, SelectionList, Static
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
-from sereto.models.finding import FindingTemplateFrontmatterModel
+from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
 from sereto.project import Project
+from sereto.tui.widgets.input import InputWithLabel, ListInput, SelectWithLabel
 
 
 @dataclass
@@ -27,7 +27,7 @@ class FindingMetadata:
     path: Path
     category: str
     name: str
-    variables: dict[str, Any]
+    variables: list[VarsMetadataModel]
     keywords: list[str]
     search_similarity: float | None = None
 
@@ -72,81 +72,7 @@ class FindingPreviewScreen(ModalScreen[None]):
         self.app.query_one("#results", ResultsWidget).action_add_finding()
 
 
-class InputWithLabel(Widget):
-    """An input with a label."""
-
-    DEFAULT_CSS = """
-    InputWithLabel {
-        layout: horizontal;
-        height: auto;
-    }
-    InputWithLabel Label {
-        padding: 1;
-        width: 12;
-        text-align: right;
-    }
-    InputWithLabel Input {
-        width: 1fr;
-    }
-    """
-
-    def __init__(self, input_label: str, value: str | None = None, id: str | None = None) -> None:
-        super().__init__(id=id)
-        self.input_label = input_label
-        self.value = value
-
-    def compose(self) -> ComposeResult:
-        yield Label(self.input_label)
-        yield Input(value=self.value)
-
-
-T = TypeVar("T")
-
-
-class SelectWithLabel(Generic[T], Widget):
-    """A select with a label."""
-
-    DEFAULT_CSS = """
-    SelectWithLabel {
-        layout: horizontal;
-        height: auto;
-    }
-    SelectWithLabel Label {
-        padding: 1;
-        width: 12;
-        text-align: right;
-    }
-    SelectWithLabel Input {
-        width: 1fr;
-    }
-    """
-
-    def __init__(
-        self, options: Iterable[tuple[RenderableType, T]], label: str, id: str | None = None, allow_blank: bool = True
-    ) -> None:
-        super().__init__(id=id)
-        self.options = options
-        self.label = label
-        self.allow_blank = allow_blank
-
-    def compose(self) -> ComposeResult:
-        yield Label(self.label)
-        yield Select(options=self.options, allow_blank=self.allow_blank)
-
-
 class AddFindingScreen(ModalScreen[None]):
-    DEFAULT_CSS = """
-    AddFindingScreen {
-        #add-finding {
-            border: heavy $accent;
-            margin: 2 4;
-            scrollbar-gutter: stable;
-            Static {
-                width: auto;
-            }
-        }
-    }
-    """
     BINDINGS = [("escape", "dismiss", "Dismiss finding")]
 
     def __init__(self, templates: DirectoryPath, finding: FindingMetadata, title: str) -> None:
@@ -160,46 +86,113 @@ class AddFindingScreen(ModalScreen[None]):
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
 
         with ScrollableContainer(id="add-finding"):
-            yield InputWithLabel("Name", value=self.finding.name, id="name-input")
+            # Name
+            self.input_name = Input(value=self.finding.name)
+            yield InputWithLabel(self.input_name, label="Name")
+            # Risk
             risks = [r.capitalize() for r in Risk]
-            yield SelectWithLabel[str](options=[(r, r) for r in risks], label="Risk", id="risk-select")
-            yield SelectWithLabel[str](
+            self.select_risk = SelectWithLabel[str](options=[(r, r) for r in risks], label="Risk")
+            yield self.select_risk
+            # Target
+            self.select_target = SelectWithLabel[str](
                 options=[(t.uname, t.uname) for t in all_targets],
                 label="Target",
-                id="target-select",
                 allow_blank=False,
             )
-            yield Button.success("Save")
+            yield self.select_target
+
+            yield Static("[b]Variables", classes="section-header")
+            yield Rule()
+
+            for var in self.finding.variables:
+                yield Static(f"[b]{var.name}:[/b] {escape(var.type_annotation)}\n  {var.description}", classes="pl-1")
+                if var.is_list:
+                    yield ListInput(id=f"var-{var.name}")
+                else:
+                    yield Input(id=f"var-{var.name}", classes="m-1")
+
+                yield Rule()
+
+            self.btn_save_finding = Button.success("Save", id="save-finding", classes="m-1")
+            yield self.btn_save_finding
 
     def on_mount(self) -> None:
         add_finding = self.query_one("#add-finding")
         add_finding.border_title = self.title
         add_finding.border_subtitle = "Esc to close"
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        app: SeretoApp = self.app  # type: ignore[assignment]
-        name_input = self.query_one("#name-input Input", Input)
-        name = name_input.value.strip()
-        risk_select: Select[str] = self.query_one("#risk-select Select", Select)
-        risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
-        target_select: Select[str] = self.query_one("#target-select Select", Select)
+    def _load_variables(self) -> dict[str, Any]:
+        """Load variables from the inputs.
 
+        Returns:
+            A dictionary of variables with their values.
+
+        Raises:
+            SeretoValueError: If a required variable is not set.
+        """
+        variables: dict[str, Any] = {}
+
+        for var in self.finding.variables:
+            if var.is_list:
+                all_inputs = self.query_one(f"#var-{var.name}", ListInput).query(Input).results()
+                input_values = [input.value.strip() for input in all_inputs if len(input.value.strip()) > 0]
+                if var.required and len(input_values) == 0:
+                    raise SeretoValueError(f"variable '{var.name}' is required")
+                else:
+                    # always set list variables, even if empty
+                    variables[var.name] = input_values
+            else:
+                value = self.query_one(f"#var-{var.name}", Input).value.strip()
+                if len(value) == 0:
+                    if var.required:
+                        raise SeretoValueError(f"variable '{var.name}' is required")
+                    else:
+                        # don't set the variable if not required and empty
+                        continue
+                else:
+                    variables[var.name] = value
+
+        return variables
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle Save button press event."""
+        if event.button is not self.btn_save_finding:
+            return
+
+        app: SeretoApp = self.app  # type: ignore[assignment]
+
+        # Retrieve the values from the inputs
+        # - name
+        name = self.input_name.value  # TODO: check for None, report "Name is required"
+        # - risk
+        risk_select: Select[str] = self.select_risk.query_one(Select)
+        risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
+        # - target
+        target_select: Select[str] = self.select_target.query_one(Select)
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
         matching_target = [t for t in all_targets if t.uname == target_select.value]
         if len(matching_target) != 1:
             raise SeretoValueError(f"target with uname {target_select.value!r} not found")
         target = matching_target[0]
 
+        # - variables
+        try:
+            variables = self._load_variables()
+        except SeretoValueError as ex:
+            self.notify(title="Validation error", message=str(ex), severity="error")
+            return
+
+        # Create the sub-finding
         target.findings.add_from_template(
             templates=self.templates,
             template_path=self.finding.path,
             category=self.finding.category.lower(),
             name=name,
             risk=risk,
-            variables=self.finding.variables,
+            variables=variables,
         )
 
-        # navigate back, focus on the search input field
+        # Navigate back, focus on the search input field
         self.dismiss()
         self.notify(message=name, title="Finding successfully added")
         app.action_focus_search()
@@ -279,7 +272,7 @@ class ResultsWidget(Widget):
                         path=finding,
                         category=category,
                         name=data.name,
-                        variables={v.name: v.descriptive_value for v in data.variables},
+                        variables=data.variables,
                         keywords=data.keywords,
                     )
                 )
@@ -322,12 +315,10 @@ class SeretoApp(App[None]):
 
     def __init__(
         self,
-        #  settings: Settings,
         project: Project,
         categories: list[str],
     ) -> None:
         super().__init__()
-        # self.settings = settings
         self.project = project
         self.categories = categories
 

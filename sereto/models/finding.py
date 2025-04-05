@@ -106,7 +106,7 @@ class FindingFrontmatterModel(SeretoBaseModel):
             output += f'template_path = "{self.template_path}"'
 
         output += "\n\n[variables]\n"
-        output += "\n".join(f"#{k} = {v!r}" for k, v in self.variables.items())
+        output += "\n".join(f"{k} = {v!r}" for k, v in self.variables.items())
         return output + "\n"
 
     @classmethod
