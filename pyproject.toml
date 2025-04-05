@@ -77,6 +77,9 @@ docs = [
   "mkdocs-material",
   "mkdocstrings[python]",
 ]
+dev = [
+  "textual-dev",
+]
 
 [project.urls]
 Changelog = "https://github.com/s3r3t0/sereto/blob/main/CHANGELOG.md"
