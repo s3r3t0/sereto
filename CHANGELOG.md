@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update pydantic-settings requirement from ~=2.8.0 to ~=2.9.1
+- Update rapidfuzz requirement from ~=3.12.1 to ~=3.13.0
+- Update textual requirement from ~=3.0.0 to ~=3.1.0
 
 ## [0.2.4] - 2025-04-05
 
@@ -31,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update error messages for Jinja2 missing variables
-
 
 ### Fixed
 
