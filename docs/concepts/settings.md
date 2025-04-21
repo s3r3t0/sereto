@@ -178,7 +178,6 @@ Example:
             "-xelatex",
             "-interaction=batchmode",
             "-halt-on-error",
-            "--shell-escape",
             "%DOC%"
         ]
     }
@@ -193,7 +192,6 @@ Example:
             "-xelatex",
             "-interaction=batchmode",
             "-halt-on-error",
-            "--shell-escape",
             "%DOC%"
         ]
     )
