@@ -253,7 +253,7 @@ DEFAULT_RENDER_CONFIG = Render(
             name="pandoc-md",
             command="pandoc",
             args=[
-                "--from=markdown",
+                "--from=markdown-implicit_figures",
                 "--to=latex",
                 "--sandbox",
                 "--filter=%TEMPLATES%/pandocfilters/acronyms.py",

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Do not duplicate the `\figure` environment for images (turn off implicit figure generation)
+
+### Removed
+
+- Remove need for `--shell-escape` when rendering the TeX documents
+
 ## [0.2.4] - 2025-04-05
 
 ### Added
