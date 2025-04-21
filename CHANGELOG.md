@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-04-21
+
 ### Fixed
 
 - Do not duplicate the `\figure` environment for images (turn off implicit figure generation)
@@ -14,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove need for `--shell-escape` when rendering the TeX documents
+
+### Dependencies
+
+- Update pydantic-settings requirement from ~=2.8.0 to ~=2.9.1
 
 ## [0.2.4] - 2025-04-05
 
@@ -338,7 +344,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.4...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/s3r3t0/sereto/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/s3r3t0/sereto/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/s3r3t0/sereto/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/s3r3t0/sereto/compare/v0.2.1...v0.2.2
