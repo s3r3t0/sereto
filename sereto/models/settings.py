@@ -304,6 +304,7 @@ DEFAULT_CATEGORIES = {
     "portal",
     "cicd",
     "kubernetes",
+    "generic",
 }
 
 
