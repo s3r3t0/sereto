@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -338,8 +339,13 @@ class SeretoApp(App[None]):
         self.query_one("#search", SearchWidget).input_field.focus()
 
 
-if __name__ == "__main__":
-    project = Project()
+async def launch_finding_tui(project: Project | None = None) -> None:
+    if project is None:
+        project = Project()
     categories = sorted([c.upper() for c in project.settings.categories])
     app = SeretoApp(project=project, categories=categories)
-    app.run()
+    await app.run_async()
+
+
+if __name__ == "__main__":
+    asyncio.run(launch_finding_tui())

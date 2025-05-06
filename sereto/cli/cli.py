@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
@@ -38,7 +39,7 @@ from sereto.source_archive import (
     extract_source_archive,
     retrieve_source_archive,
 )
-from sereto.tui.finding import SeretoApp
+from sereto.tui.finding import launch_finding_tui
 from sereto.types import TypeProjectId
 from sereto.utils import copy_skel, replace_strings
 
@@ -459,9 +460,7 @@ def finding_add(ctx: Project) -> None:
     Args:
         ctx: Project's representation.
     """
-    categories = sorted([c.upper() for c in ctx.settings.categories])
-    app = SeretoApp(project=ctx, categories=categories)
-    app.run()
+    asyncio.run(launch_finding_tui())
 
 
 @findings.command(name="show")
