@@ -65,7 +65,7 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
             raise SeretoValueError(f"invalid template frontmatter in '{path}'") from ex
 
 
-class FindingFrontmatterModel(SeretoBaseModel):
+class SubFindingFrontmatterModel(SeretoBaseModel):
     """Representation of the frontmatter of a sub-finding included in project.
 
     Attributes:
@@ -74,6 +74,7 @@ class FindingFrontmatterModel(SeretoBaseModel):
         category: From which category the sub-finding originates.
         variables: A dictionary of variables used in the sub-finding.
         template_path: Relative path to the finding in templates directory.
+        locators: A list of locators used to find the sub-finding.
     """
 
     name: str
@@ -81,6 +82,7 @@ class FindingFrontmatterModel(SeretoBaseModel):
     category: TypeCategoryName
     variables: dict[str, Any] = {}
     template_path: str | None = None
+    locators: list[str] = Field(default_factory=list)
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -126,10 +128,12 @@ class FindingGroupModel(SeretoBaseModel):
     Attributes:
         risks: Explicit risks associated with the finding group for specific versions.
         findings: The list of sub-findings in the format of their unique name to include in the report.
+        locators: A list of locators used to find the finding group.
     """
 
     risk: Risk | None = None
     findings: list[str] = Field(min_length=1)
+    locators: list[str] = Field(default_factory=list)
 
     @field_validator("risk", mode="before")
     @classmethod

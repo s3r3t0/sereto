@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
@@ -10,10 +10,10 @@ from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.jinja import render_jinja2
 from sereto.models.finding import (
-    FindingFrontmatterModel,
     FindingGroupModel,
     FindingsConfigModel,
     FindingTemplateFrontmatterModel,
+    SubFindingFrontmatterModel,
 )
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
@@ -32,6 +32,7 @@ class SubFinding:
     vars: dict[str, Any]
     path: FilePath
     template: FilePath | None = None
+    locators: list[str] = field(default_factory=list)
 
     @classmethod
     @validate_call
@@ -46,7 +47,7 @@ class SubFinding:
         Returns:
             The loaded sub-finding object.
         """
-        frontmatter = FindingFrontmatterModel.load_from(path)
+        frontmatter = SubFindingFrontmatterModel.load_from(path)
 
         return cls(
             name=frontmatter.name,
@@ -54,6 +55,7 @@ class SubFinding:
             vars=frontmatter.variables,
             path=path,
             template=(templates / frontmatter.template_path) if frontmatter.template_path else None,
+            locators=frontmatter.locators,
         )
 
     @property
@@ -120,16 +122,24 @@ class FindingGroup:
         name: The name of the finding group.
         explicit_risk: Risk to be used for the group. Overrides the calculated risks from sub-findings.
         sub_findings: A list of sub-findings in the group.
+        target_locators: A list of locators used to find the target.
     """
 
     name: str
     explicit_risk: Risk | None
     sub_findings: list[SubFinding]
+    _target_locators: list[str]
+    _finding_group_locators: list[str]
 
     @classmethod
     @validate_call
     def load(
-        cls, name: str, group_desc: FindingGroupModel, findings_dir: DirectoryPath, templates: DirectoryPath
+        cls,
+        name: str,
+        group_desc: FindingGroupModel,
+        findings_dir: DirectoryPath,
+        target_locators: list[str],
+        templates: DirectoryPath,
     ) -> Self:
         """
         Load a finding group.
@@ -138,6 +148,7 @@ class FindingGroup:
             name: The name of the finding group.
             group_desc: The description of the finding group.
             findings_dir: The path to the findings directory.
+            target_locators: The locators used to find the target.
             templates: The path to the templates directory.
 
         Returns:
@@ -152,6 +163,8 @@ class FindingGroup:
             name=name,
             explicit_risk=group_desc.risk,
             sub_findings=sub_findings,
+            _target_locators=target_locators,
+            _finding_group_locators=group_desc.locators,
         )
 
     def dumps_toml(self) -> str:
@@ -181,6 +194,34 @@ class FindingGroup:
         return max([sf.risk for sf in self.sub_findings], key=lambda r: r.to_int())
 
     @property
+    def locators(self) -> list[str]:
+        """
+        Return a de-duplicated list of locators for the finding group.
+
+        Precedence (first non-empty wins):
+        1. Explicit locators defined on the finding group
+        2. All locators gathered from sub-findings
+        3. Locators inherited from the target
+        """
+
+        def _unique(seq: list[str]) -> list[str]:
+            """Preserve order while removing duplicates."""
+            seen: set[str] = set()
+            return [x for x in seq if not (x in seen or seen.add(x))]
+
+        # 1. Explicit locators on the group
+        if self._finding_group_locators:
+            return _unique(self._finding_group_locators)
+
+        # 2. Locators from sub-findings
+        sub_locators = _unique([loc for sf in self.sub_findings for loc in sf.locators])
+        if sub_locators:
+            return sub_locators
+
+        # 3. Fallback to target locators
+        return _unique(self._target_locators)
+
+    @property
     @validate_call
     def uname(self) -> str:
         """Unique name of the finding group."""
@@ -190,24 +231,27 @@ class FindingGroup:
 @dataclass
 class Findings:
     """
-    Represents a collection of findings.
+    Represents a collection of all finding groups inside a target.
 
     Attributes:
         groups: A list of finding groups.
         target_dir: The path to the target directory containing the findings.
+        target_locators: A list of locators used to find the target.
     """
 
     groups: list[FindingGroup]
     target_dir: FilePath
+    target_locators: list[str]
 
     @classmethod
     @validate_call
-    def load_from(cls, target_dir: DirectoryPath, templates: DirectoryPath) -> Self:
+    def load_from(cls, target_dir: DirectoryPath, target_locators: list[str], templates: DirectoryPath) -> Self:
         """
         Load findings belonging to the same target.
 
         Args:
             target_dir: The path to the target directory.
+            target_locators: The locators used to find the target.
             templates: The path to the templates directory.
 
         Returns:
@@ -216,7 +260,13 @@ class Findings:
         config = FindingsConfigModel.load_from(target_dir / "findings.toml")
 
         groups = [
-            FindingGroup.load(name=name, group_desc=group, findings_dir=target_dir / "findings", templates=templates)
+            FindingGroup.load(
+                name=name,
+                group_desc=group,
+                findings_dir=target_dir / "findings",
+                target_locators=target_locators,
+                templates=templates,
+            )
             for name, group in config.items()
         ]
 
@@ -225,7 +275,7 @@ class Findings:
         if len(unique_names) != len(set(unique_names)):
             raise SeretoValueError("finding group unique names must be unique")
 
-        return cls(groups=groups, target_dir=target_dir)
+        return cls(groups=groups, target_dir=target_dir, target_locators=target_locators)
 
     @validate_call
     def add_from_template(
@@ -257,7 +307,7 @@ class Findings:
         # write sub-finding to findings directory
         if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template_path.name}").is_file():
             raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
-        sub_finding_metadata = FindingFrontmatterModel(
+        sub_finding_metadata = SubFindingFrontmatterModel(
             name=template_metadata.name,
             risk=template_metadata.risk,
             category=category,
@@ -274,6 +324,8 @@ class Findings:
             name=name or sub_finding_metadata.name,
             explicit_risk=risk,
             sub_findings=[sub_finding],
+            _target_locators=self.target_locators,
+            _finding_group_locators=[],
         )
 
         # write the finding group to findings.toml

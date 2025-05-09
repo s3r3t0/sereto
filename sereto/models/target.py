@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import AnyUrl, IPvAnyAddress, IPvAnyNetwork, field_validator
+from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
 
 from sereto.enums import Environment
 from sereto.models.base import SeretoBaseModel
@@ -18,6 +18,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 
     category: str
     name: str
+    locators: list[str] = Field(default_factory=list)
 
     @field_validator("category")
     @classmethod
