@@ -206,8 +206,7 @@ class FindingGroup:
 
         def _unique(seq: list[str]) -> list[str]:
             """Preserve order while removing duplicates."""
-            seen: set[str] = set()
-            return [x for x in seq if not (x in seen or seen.add(x))]
+            return list(dict.fromkeys(seq))
 
         # 1. Explicit locators on the group
         if self._finding_group_locators:
