@@ -22,6 +22,7 @@ from sereto.cli.utils import Console
 from sereto.enums import FileFormat
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
+from sereto.models.person import Person
 from sereto.types import TypeCategories
 from sereto.utils import replace_strings
 
@@ -338,6 +339,7 @@ class Settings(SeretoBaseSettings):
 
     projects_path: DirectoryPath
     templates_path: DirectoryPath
+    default_people: list[Person] = Field(default_factory=list)
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
     plugins: Plugins = Field(default_factory=Plugins)

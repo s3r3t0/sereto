@@ -9,6 +9,7 @@ from typing_extensions import ParamSpec
 from sereto.cli.utils import Console
 from sereto.config import Config, VersionConfig
 from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.models.person import Person
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
@@ -146,7 +147,13 @@ def project_create_missing(project_path: DirectoryPath, version_config: VersionC
 
 
 @validate_call
-def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id: TypeProjectId, name: str) -> None:
+def new_project(
+    projects_path: DirectoryPath,
+    templates_path: DirectoryPath,
+    id: TypeProjectId,
+    name: str,
+    people: list[Person],
+) -> None:
     """Generates a new project with the specified ID.
 
     Args:
@@ -154,6 +161,7 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
         templates_path: The path to the templates directory.
         id: The ID of the new project. This should be a string that uniquely identifies the project.
         name: The name of the new project.
+        people: Initial list of people from global settings.
 
     Raises:
         SeretoValueError: If a project with the specified ID already exists in the `projects` directory.
@@ -181,6 +189,7 @@ def new_project(projects_path: DirectoryPath, templates_path: DirectoryPath, id:
                 id=id,
                 name=name,
                 version_description="Initial",
+                people=people,
             ),
         },
         path=config_path,

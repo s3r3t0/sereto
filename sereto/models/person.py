@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import EmailStr
+from pydantic import EmailStr, Field
 
 from sereto.models.base import SeretoBaseModel
 
@@ -19,7 +19,7 @@ class PersonType(str, Enum):
 class Person(SeretoBaseModel):
     """Model representing a person."""
 
-    type: PersonType
+    type: PersonType = Field(strict=False)  # `strict=False` allows coercion from string
     name: str | None = None
     business_unit: str | None = None
     email: EmailStr | None = None

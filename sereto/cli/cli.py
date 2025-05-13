@@ -77,7 +77,11 @@ def new(ctx: Project, project_id: TypeProjectId) -> None:
     Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
     name = prompt("Name of the project: ")
     new_project(
-        projects_path=ctx.settings.projects_path, templates_path=ctx.settings.templates_path, id=project_id, name=name
+        projects_path=ctx.settings.projects_path,
+        templates_path=ctx.settings.templates_path,
+        id=project_id,
+        name=name,
+        people=ctx.settings.default_people,
     )
 
 

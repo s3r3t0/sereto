@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add locators for findings and targets.
+- Specify `default_people` in settings.
+
+### Dependencies
+
+- Update pypdf requirement from ~=5.4.0 to ~=5.5.0
+
 ## [0.2.5] - 2025-04-21
 
 ### Fixed
