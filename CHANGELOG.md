@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add locators for findings and targets.
 - Specify `default_people` in settings.
+- Add option to `sereto pdf report` to specify report template.
 
 ### Dependencies
 

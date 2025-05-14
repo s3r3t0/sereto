@@ -636,27 +636,30 @@ def cli_pdf_target(
 @handle_exceptions
 @click.option("-c", "--convert-recipe", help="Convert finding recipe.")
 @click.option("-r", "--report-recipe", help="Build TeX report recipe.")
+@click.option("-t", "--template", default="report", help="Template for the report.")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 # @click.option("-l", "--layout", help="Alternative layout for the report.")
 @click.pass_obj
 @validate_call
 def cli_pdf_report(
     ctx: Project,
-    report_recipe: str | None,
     convert_recipe: str | None,
+    report_recipe: str | None,
+    template: str,
     version: ProjectVersion | None,
 ) -> None:
     """Generate a report PDF.\f
 
     Args:
         ctx: Project's representation.
-        report_recipe: The recipe for building the TeX report.
         convert_recipe: The recipe for converting the findings.
+        report_recipe: The recipe for building the TeX report.
+        template: The template for the report.
         version: The version of the configuration to use. If None, the last version is used.
     """
     # Create report PDF
     report_pdf = generate_pdf_report(
-        project=ctx, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
+        project=ctx, template=template, report_recipe=report_recipe, convert_recipe=convert_recipe, version=version
     )
 
     # Create and attach source archive

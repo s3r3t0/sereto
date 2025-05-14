@@ -115,12 +115,17 @@ def generate_pdf_finding_group(
 
 @validate_call
 def generate_pdf_report(
-    project: Project, report_recipe: str | None, convert_recipe: str | None, version: ProjectVersion | None
+    project: Project,
+    template: str,
+    report_recipe: str | None = None,
+    convert_recipe: str | None = None,
+    version: ProjectVersion | None = None,
 ) -> Path:
     """Generate a report PDF.
 
     Args:
         project: Project's representation.
+        template: The template used for generating the report.
         report_recipe: The recipe used for generating the report. If None, the first recipe is used.
         convert_recipe: The convert recipe used for file format transformations. If None, the first recipe is used.
         version: The version of the project to use. If None, the last version
@@ -136,7 +141,7 @@ def generate_pdf_report(
     project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
 
     # Build report to TeX
-    report_tex = build_report_to_tex(project=project, version=version, converter=convert_recipe)
+    report_tex = build_report_to_tex(project=project, template=template, version=version, converter=convert_recipe)
 
     # Render PDF
     recipe = project.settings.render.get_report_recipe(name=report_recipe)

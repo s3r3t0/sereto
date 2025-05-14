@@ -182,7 +182,9 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 
 
 @validate_call
-def build_report_to_tex(project: Project, version: ProjectVersion, converter: str | None = None) -> Path:
+def build_report_to_tex(
+    project: Project, template: str, version: ProjectVersion, converter: str | None = None
+) -> Path:
     # Process all targets and their dependencies
     for target in project.config.at_version(version).targets:
         build_target_dependencies(project=project, target=target, version=version, converter=converter)
@@ -191,7 +193,9 @@ def build_report_to_tex(project: Project, version: ProjectVersion, converter: st
     init_build_dir(project_path=project.path, version_config=project.config.at_version(version))
 
     # Render the report to TeX format
-    content = render_report_to_tex(project_path=project.path, config=project.config, version=version)
+    content = render_report_to_tex(
+        project_path=project.path, template=template, config=project.config, version=version
+    )
 
     # Write the report to the ".build" directory; do not overwrite the same content (preserve timestamps)
     destination = project.path / ".build" / f"report{version.path_suffix}.tex"
