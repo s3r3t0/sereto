@@ -14,6 +14,7 @@ class SeretoDate(RootModel[date]):
     """Date representation for Pydantic with format `%d-%b-%Y`.
 
     The `%d-%b-%Y` format string specifies the format of the date string as follows:
+
      - `%d`: Day of the month as a zero-padded decimal number (e.g. 01, 02, ..., 31).
      - `%b`: Month abbreviation in the current locale's abbreviated name (e.g. Jan, Feb, ..., Dec).
      - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ...).
@@ -34,6 +35,15 @@ class SeretoDate(RootModel[date]):
 
     @classmethod
     def from_str(cls, v: str, fmt: str = r"%d-%b-%Y") -> "SeretoDate":
+        """Create a SeretoDate instance from a string.
+
+        Args:
+            v (str): String to convert.
+            fmt (str): Format of the input string.
+
+        Returns:
+            SeretoDate: The resulting SeretoDate instance.
+        """
         date = datetime.strptime(v, fmt).date()
         return cls.model_construct(root=date)
 
