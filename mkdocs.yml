@@ -124,3 +124,6 @@ nav:
     - development/documentation.md
     - development/tests.md
     - development/code.md
+
+watch:
+  - sereto
