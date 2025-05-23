@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2025-05-23
+
 ### Added
 
 - Add locators for findings and targets.
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update pypdf requirement from ~=5.4.0 to ~=5.5.0
+- Update cryptography requirement from ~=44.0.0 to ~=45.0.2
 
 ## [0.2.5] - 2025-04-21
 
@@ -355,7 +358,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.5...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.6...HEAD
+[0.2.6]: https://github.com/s3r3t0/sereto/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/s3r3t0/sereto/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/s3r3t0/sereto/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/s3r3t0/sereto/compare/v0.2.2...v0.2.3
