@@ -1,11 +1,13 @@
 name: Tox
-permissions:
-  contents: read
+
 on:
   push:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

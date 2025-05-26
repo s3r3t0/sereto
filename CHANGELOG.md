@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- CI: Set job permissions
+
 ## [0.2.6] - 2025-05-23
 
 ### Added

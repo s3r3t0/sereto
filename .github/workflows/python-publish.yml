@@ -10,6 +10,10 @@ jobs:
     name: Build distribution 📦
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      actions: write   # upload-artifact
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
@@ -34,8 +38,10 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/sereto
+
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write   # OIDC for pypa/gh-action-pypi-publish
+      actions: read     # download-artifact
 
     steps:
     - name: Download all the dists
@@ -55,8 +61,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
+      contents: write   # create GitHub Release
+      id-token: write   # sigstore
+      actions: read     # download-artifact
 
     steps:
     - uses: actions/checkout@v4
