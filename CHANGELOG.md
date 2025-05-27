@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `VersionConfig.due_date_for(risk)` to calculate until when the finding with the given risk should be remediated.
+
 ## [0.2.7] - 2025-05-26
 
 ### Security

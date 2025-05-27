@@ -2,11 +2,13 @@ import operator
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from datetime import timedelta
 from functools import reduce
 from typing import Literal, Self, overload
 
 from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
 
+from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
@@ -23,6 +25,7 @@ class VersionConfig:
     id: str
     name: str
     version_description: str
+    risk_due_dates: dict[Risk, timedelta]
     targets: list[Target] = field(default_factory=list)
     dates: list[Date] = field(default_factory=list)
     people: list[Person] = field(default_factory=list)
@@ -46,6 +49,7 @@ class VersionConfig:
         version: ProjectVersion,
         project_path: DirectoryPath,
         templates: DirectoryPath,
+        risk_due_dates: dict[Risk, timedelta],
     ) -> Self:
         return cls(
             version=version,
@@ -63,7 +67,22 @@ class VersionConfig:
             ],
             dates=model.dates,
             people=model.people,
+            risk_due_dates=risk_due_dates,
         )
+
+    def due_date_for(self, risk: Risk) -> SeretoDate | None:
+        """Get the due date for a specific risk level."""
+        if risk not in self.risk_due_dates:
+            return None
+
+        report_sent_date = self.filter_dates(
+            type=[DateType.report_sent, DateType.review, DateType.pentest_ongoing], last_date=True
+        )
+        if report_sent_date is None:
+            return None
+
+        # Calculate the due date by adding the risk's due timedelta to the report sent date
+        return report_sent_date + self.risk_due_dates[risk]
 
     @validate_call
     def filter_targets(
@@ -428,21 +447,27 @@ class Config:
     sereto_version: SeretoVersion
     version_configs: dict[ProjectVersion, VersionConfig]
     path: FilePath
+    risk_due_dates: dict[Risk, timedelta]
 
     @classmethod
     @validate_call
-    def load_from(cls, path: FilePath, templates: DirectoryPath) -> Self:
+    def load_from(cls, path: FilePath, templates: DirectoryPath, risk_due_dates: dict[Risk, timedelta]) -> Self:
         config = ConfigModel.load_from(path)
 
         return cls(
             sereto_version=config.sereto_version,
             version_configs={
                 version: VersionConfig.from_model(
-                    model=version_config, version=version, project_path=path.parent, templates=templates
+                    model=version_config,
+                    version=version,
+                    project_path=path.parent,
+                    templates=templates,
+                    risk_due_dates=risk_due_dates,
                 )
                 for version, version_config in config.version_configs.items()
             },
             path=path,
+            risk_due_dates=risk_due_dates,
         )
 
     def to_model(self) -> ConfigModel:
@@ -520,7 +545,11 @@ class Config:
             raise SeretoValueError(f"version '{version}' already exists")
 
         self.version_configs[version] = VersionConfig.from_model(
-            model=config, version=version, project_path=self.path.parent, templates=templates
+            model=config,
+            version=version,
+            project_path=self.path.parent,
+            templates=templates,
+            risk_due_dates=self.risk_due_dates,
         )
 
         return self
@@ -546,7 +575,11 @@ class Config:
             raise SeretoValueError(f"version '{version}' does not exist")
 
         self.version_configs[version] = VersionConfig.from_model(
-            model=config, version=version, project_path=self.path.parent, templates=templates
+            model=config,
+            version=version,
+            project_path=self.path.parent,
+            templates=templates,
+            risk_due_dates=self.risk_due_dates,
         )
 
         return self

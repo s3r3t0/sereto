@@ -1,5 +1,6 @@
 import importlib.metadata
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 from typing import Self, TypeVar
 
@@ -8,6 +9,7 @@ from typing_extensions import ParamSpec
 
 from sereto.cli.utils import Console
 from sereto.config import Config, VersionConfig
+from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.person import Person
 from sereto.models.settings import Settings
@@ -43,7 +45,11 @@ class Project:
     @property
     def config(self) -> Config:
         if self._config is None:
-            self._config = Config.load_from(self.path / "config.json", templates=self.settings.templates_path)
+            self._config = Config.load_from(
+                self.path / "config.json",
+                templates=self.settings.templates_path,
+                risk_due_dates=self.settings.risk_due_dates,
+            )
         return self._config
 
     @property
@@ -150,6 +156,7 @@ def project_create_missing(project_path: DirectoryPath, version_config: VersionC
 def new_project(
     projects_path: DirectoryPath,
     templates_path: DirectoryPath,
+    risk_due_dates: dict[Risk, timedelta],
     id: TypeProjectId,
     name: str,
     people: list[Person],
@@ -159,6 +166,7 @@ def new_project(
     Args:
         projects_path: The path to the projects directory.
         templates_path: The path to the templates directory.
+        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta
         id: The ID of the new project. This should be a string that uniquely identifies the project.
         name: The name of the new project.
         people: Initial list of people from global settings.
@@ -189,8 +197,10 @@ def new_project(
                 id=id,
                 name=name,
                 version_description="Initial",
+                risk_due_dates=risk_due_dates,
                 people=people,
             ),
         },
         path=config_path,
+        risk_due_dates=risk_due_dates,
     ).save()

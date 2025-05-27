@@ -1,5 +1,6 @@
 import subprocess
 import time
+from datetime import timedelta
 from pathlib import Path
 from textwrap import dedent
 from typing import Annotated, Any, Self
@@ -19,7 +20,7 @@ from rich.markdown import Markdown
 from rich.markup import escape
 
 from sereto.cli.utils import Console
-from sereto.enums import FileFormat
+from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.models.person import Person
@@ -327,9 +328,11 @@ class Settings(SeretoBaseSettings):
     Attributes:
         projects_path: path to the directory containing all projects
         templates_path: path to the directory containing templates
+        default_people: list of default people to use in new projects
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
             possible in all positions except the first and last one)
+        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta
         plugins: plugins settings
 
     Raises:
@@ -342,6 +345,15 @@ class Settings(SeretoBaseSettings):
     default_people: list[Person] = Field(default_factory=list)
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
+    risk_due_dates: dict[Risk, timedelta] = Field(
+        default_factory=lambda: {
+            Risk.critical: timedelta(days=7),
+            Risk.high: timedelta(days=14),
+            Risk.medium: timedelta(days=30),
+            Risk.low: timedelta(days=90),
+        },
+        strict=False,
+    )
     plugins: Plugins = Field(default_factory=Plugins)
 
     @staticmethod

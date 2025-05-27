@@ -47,9 +47,11 @@ def edit_config(project: Project) -> None:
                     id="",
                     name="",
                     version_description="Initial",
+                    risk_due_dates=project.settings.risk_due_dates,
                 ),
             },
             path=project.config_path,
+            risk_due_dates=project.settings.risk_due_dates,
         ).save()
 
     # Open the config file in the default editor

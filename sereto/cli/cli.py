@@ -79,6 +79,7 @@ def new(ctx: Project, project_id: TypeProjectId) -> None:
     new_project(
         projects_path=ctx.settings.projects_path,
         templates_path=ctx.settings.templates_path,
+        risk_due_dates=ctx.settings.risk_due_dates,
         id=project_id,
         name=name,
         people=ctx.settings.default_people,

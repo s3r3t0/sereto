@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from enum import Enum
 from functools import total_ordering
 from typing import Any
@@ -53,6 +53,11 @@ class SeretoDate(RootModel[date]):
         if not isinstance(other, SeretoDate):
             raise SeretoValueError("comparing SeretoDate with unsupported type")
         return self.root == other.root
+
+    def __add__(self, other: Any) -> "SeretoDate":
+        if not isinstance(other, timedelta):
+            raise SeretoValueError("adding SeretoDate with unsupported type")
+        return SeretoDate.model_construct(root=self.root + other)
 
     def raw(self) -> date:
         return self.root
