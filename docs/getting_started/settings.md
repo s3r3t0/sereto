@@ -1,6 +1,6 @@
 # Settings
 
-To view the current settings, including defaults, use the command `sereto settings view`. To edit the settings in `EDITOR`, run `sereto settings edit`.
+To view the current settings, including defaults, use the command `sereto settings show`. To edit the settings in `EDITOR`, run `sereto settings edit`.
 
 ## Minimal settings
 
@@ -63,7 +63,7 @@ The `type` attribute of a person can have the following values:
 
 ## Rendering settings
 
-For rendering the documents, external commands, such as `latexmk`, are used. The sequence of the commands to be used is specified in recipes.
+For rendering the documents, external commands, such as `latexmk`, are used. The sequence of commands to be used is specified in recipes.
 
 ### `render`
 
@@ -93,7 +93,7 @@ List of rendering tools to be used in recipes. Each tool has the following attri
 
 #### `report_recipes`, `finding_group_recipes`, `sow_recipes`, `target_recipes`
 
-Lists of recipes to be used respectively for reports, finding groups, SoWs and targets. Each recipe has the following attributes.
+Lists of recipes to be used for reports, finding groups, SoWs and targets, respectively. Each recipe has the following attributes.
 
 ::: sereto.models.settings.RenderRecipe
     options:
@@ -257,6 +257,6 @@ List of finding categories.
     "high": "P14D",
     "medium": "P30D",
     "low": "P90D"
-  },
+  }
 }
 ```

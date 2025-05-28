@@ -38,11 +38,11 @@ class SeretoDate(RootModel[date]):
         """Create a SeretoDate instance from a string.
 
         Args:
-            v (str): String to convert.
-            fmt (str): Format of the input string.
+            v: String to convert.
+            fmt: Format of the input string.
 
         Returns:
-            SeretoDate: The resulting SeretoDate instance.
+            The resulting SeretoDate instance.
         """
         date = datetime.strptime(v, fmt).date()
         return cls.model_construct(root=date)
