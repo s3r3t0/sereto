@@ -44,6 +44,9 @@ plugins:
           options:
             show_root_heading: true
             docstring_style: google
+          inventories:
+           - https://docs.python.org/3/objects.inv
+           - https://docs.pydantic.dev/latest/objects.inv
   - search
   - privacy
 
@@ -107,6 +110,7 @@ nav:
     - reference/exceptions.md
     - reference/finding.md
     - reference/jinja.md
+    - reference/keyring.md
     - reference/pdf.md
     - reference/plot.md
     - reference/project.md
