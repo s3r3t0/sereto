@@ -252,5 +252,11 @@ List of finding categories.
     "generic",
     "kubernetes"
   ],
+  "risk_due_dates": {
+    "critical": "P7D",
+    "high": "P14D",
+    "medium": "P30D",
+    "low": "P90D"
+  },
 }
 ```
