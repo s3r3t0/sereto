@@ -120,11 +120,11 @@ List of recipes to be used for converting between file formats. Each recipe has 
         - attributes
 
 
-## Finding settings
+## Other settings
 
 ### `categories`
 
-List of finding categories.
+List of categories, such as DAST, SAST, infrastructure, etc.
 
 
 ## Full configuration example
