@@ -205,6 +205,7 @@ List of finding categories.
           "--to=latex",
           "--sandbox",
           "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
+          "--filter=%TEMPLATES%/pandocfilters/graphics.py",
           "--filter=%TEMPLATES%/pandocfilters/verbatim.py",
         ]
       },
