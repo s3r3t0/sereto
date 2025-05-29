@@ -34,7 +34,7 @@ Please note that the project identifier should meet the following requirements:
 
 For more information on the `new` command, you can refer to the [SeReTo CLI documentation](reference/cli/cli.md#sereto.cli.cli.new).
 
-![](assets/sereto-new.gif)
+![](assets/gifs/new-project.gif)
 
 
 ## List projects
@@ -45,7 +45,7 @@ You can see the list of all projects using the following command, which will sho
 sereto ls
 ```
 
-![](assets/sereto-ls.gif)
+![](assets/gifs/ls-projects.gif)
 
 
 ## Configuring the project's details
@@ -75,7 +75,7 @@ SeReTo will ask you which date you would like to configure:
 
 You then set the dates using the format DD-Mmm-YYYY, such as 18-Apr-2024.
 
-![](assets/sereto-c-d-a.gif)
+![](assets/gifs/config-dates-add.gif)
 
 Run this command multiple times for each type of date you would like to set.
 
@@ -89,7 +89,7 @@ sereto config targets add
 
 SeReTo will ask you about some details you would like to set. Make sure to include all necessary details, such as destination IP addresses (dst_ips), source IP addresses (src_ips), list of URLs etc.
 
-![](assets/sereto-c-t-a.gif)
+![](assets/gifs/config-targets-add.gif)
 
 Run this command multiple times for each target.
 
@@ -104,23 +104,25 @@ sereto config people add
 
 SeReTo will let you choose the role (type) and details of the person you are currently setting.
 
+![](assets/gifs/config-people-add.gif)
+
 Run this command multiple times for each person you would like to set.
 
 
 ## Adding Findings To A Target
 
-Find the directory of your target in your project's directory. The name of the target's directory should look like the following: `target_<category>_<target_unique_name>`. For example *target\_dast\_DBserver*. You will find a *findings.yaml* file in this directory. Open it in your editor.
+The findings TUI allows you to add findings for a target in an interactive way. To start it, run the following command:
 
-In the top of the findings.yaml file you can find an example of how to include a finding. Top level findings are called **Group Findings**. Each Group Finding has its name, in the following example the name is *Misconfigured HTTP Headers*. Each Group Finding also has one or more **Nested Findings**. In the following example these are *HSTS Header Not Set* (which has the ID "hsts_not_set") and *Weakly Configured CSP Header* ("weak_csp").
-
-```yaml
-report_include:
-- name: "Misconfigured HTTP Headers"
-  findings:
-  - "hsts_not_set"
-  - "weak_csp"
+```sh
+sereto findings add
 ```
 
-List all the Group Findings you would like to include in your report under the *report_include* directive. You can copy the identifiers of Nested Findings from the second section of findings.yaml (under "All discovered findings from the templates").
+To exit the TUI at any point, press `Ctrl+Q`.
 
-Individual Findings may require you to fill in extra information, such as screenshots, which will be used to customize the finding in automated way. Fill these in the second section of the *findings.yaml*. Manual editing of the findings is still possible.
+The TUI utilizes fuzzy search to help you effectively locate the desired finding templates. You can filter the list by selecting specific categories and by searching for a finding’s title and/or keywords.
+
+Once you select a finding, a scrollable preview is displayed. Pressing `A` opens a screen where the details of the findings can be filled in. It is required to enter the finding name, choose a target to which the finding will be added and specify the filenames of the images used as proof as they appear in the `pictures` directory. After confirmation, the finding will be added to the specified target.
+
+Once a finding is added, it is included in the *findings.toml* file of the target and a corresponding `.md.j2` file is created in the `findings` directory of the target. The `.md.j2` file is a Markdown Jinja template that should be edited to include specific details about the finding.
+
+![](assets/gifs/findings-add.gif)
