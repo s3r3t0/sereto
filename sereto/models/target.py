@@ -12,10 +12,13 @@ class TargetModel(SeretoBaseModel, extra="allow"):
     """Base class for model representing the details of a target.
 
     Attributes:
+        id: Unique identifier for the target, optional.
         category: The category of the target.
         name: The name of the target (e.g. DAST, SAST).
+        locators: List of locators for the target, such as URLs or IP addresses, source code files, etc.
     """
 
+    id: str | None = None
     category: str
     name: str
     locators: list[str] = Field(default_factory=list)

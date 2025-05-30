@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `VersionConfig.due_date_for(risk)` to calculate until when the finding with the given risk should be remediated.
 - Add *graphics* pandoc filter to the default settings.
+- Add optional `id` attribute for targets
 
 ### Changed
 
