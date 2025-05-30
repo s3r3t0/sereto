@@ -34,7 +34,7 @@ def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
         case _:
             target = TargetModel(category=category, name=name)
 
-    target_edited = click.edit(target.model_dump_json(indent=2))
+    target_edited = click.edit(target.model_dump_json(indent=2), extension='.json', require_save=False)
 
     if target_edited is None:
         raise SeretoRuntimeError("aborting, editor closed without saving")
