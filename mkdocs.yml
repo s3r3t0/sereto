@@ -131,3 +131,6 @@ nav:
 
 watch:
   - sereto
+
+exclude_docs: |
+  assets/gifs/vhs.Dockerfile
