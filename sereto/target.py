@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 class Target:
     data: TargetModel
     findings: Findings
-    locators: list[str]
     path: DirectoryPath
     version: ProjectVersion
 
@@ -29,7 +28,6 @@ class Target:
         return cls(
             data=data,
             findings=Findings.load_from(target_dir=path, target_locators=data.locators, templates=templates),
-            locators=data.locators,
             path=path,
             version=version,
         )

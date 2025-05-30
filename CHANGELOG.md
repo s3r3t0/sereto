@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `VersionConfig.filter_targets` now correctly returns `list[Target]`, instead of `list[TargetModel]`
+- Remove `locators` from the `Target` dataclass. This was included by mistake, as locators are already present in the `data` (`TargetModel`) attribute.
 
 ## [0.2.8] - 2025-05-30
 
