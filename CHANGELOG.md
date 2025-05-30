@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `VersionConfig.filter_targets` now correctly returns `list[Target]`, instead of `list[TargetModel]`
+
 ## [0.2.8] - 2025-05-30
 
 ### Added

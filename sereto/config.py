@@ -13,7 +13,6 @@ from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.risk import Risks
 from sereto.target import Target
@@ -90,7 +89,7 @@ class VersionConfig:
         category: str | Iterable[str] | None = None,
         name: str | None = None,
         inverse: bool = False,
-    ) -> list[TargetModel]:
+    ) -> list[Target]:
         """Filter targets based on specified criteria.
 
         The regular expressions support the syntax of Python's `re` module.
@@ -113,8 +112,8 @@ class VersionConfig:
         ]
 
         if inverse:
-            return [t.data for t in self.targets if t not in filtered_targets]
-        return [t.data for t in filtered_targets]
+            return [t for t in self.targets if t not in filtered_targets]
+        return [t for t in filtered_targets]
 
     @validate_call
     def select_target(
