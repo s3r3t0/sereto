@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2025-05-30
+
 ### Added
 
 - Add `VersionConfig.due_date_for(risk)` to calculate until when the finding with the given risk should be remediated.
@@ -374,7 +376,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.7...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.8...HEAD
+[0.2.8]: https://github.com/s3r3t0/sereto/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/s3r3t0/sereto/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/s3r3t0/sereto/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/s3r3t0/sereto/compare/v0.2.4...v0.2.5
