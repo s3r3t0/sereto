@@ -1,7 +1,7 @@
-
 # Usage
 
 SeReTo provides a *command line interface (CLI)* to help you create and manage your projects. After you have [set it up](getting_started/installation.md), you can continue with the following steps.
+
 
 ## Getting help
 
@@ -58,6 +58,12 @@ cd projects/TEST
 
 Now you can change the project's configuration. You should set up the **dates**, **targets** and **people** for the project.
 
+To view a summary of the current configuration, you can run:
+
+```sh
+sereto config show
+```
+
 ### Dates
 
 Run the following command:
@@ -109,7 +115,7 @@ SeReTo will let you choose the role (type) and details of the person you are cur
 Run this command multiple times for each person you would like to set.
 
 
-## Adding Findings To A Target
+## Adding findings to a target
 
 The findings TUI allows you to add findings for a target in an interactive way. To start it, run the following command:
 
@@ -126,3 +132,104 @@ Once you select a finding, a scrollable preview is displayed. Pressing `A` opens
 Once a finding is added, it is included in the *findings.toml* file of the target and a corresponding `.md.j2` file is created in the `findings` directory of the target. The `.md.j2` file is a Markdown Jinja template that should be edited to include specific details about the finding.
 
 ![](assets/gifs/findings-add.gif)
+
+
+### Editing the finding template
+
+#### *findings.toml*
+
+When you add a finding from the TUI, the file *findings.toml* in the target's directory, e.g. `target_dast_example_target`, is updated. It may look as follows:
+
+```toml
+["Remote code execution"]
+risk = "critical"
+findings = ["generic_test_finding"]
+```
+
+The `Remote code execution` is the name of the **finding group**, `risk` is the risk level of the finding group, and `findings` is a list of one or more nested findings that belong to the group. Specifying the risk for a group is optional. If not specified, it defaults to the highest risk within the finding group.
+
+#### Template file
+
+The entry `generic_test_finding` depends on the template chosen from the TUI. In this case, it refers to a generic finding template. The corresponding file, `generic_test_finding.md.j2`, is created in the `findings` directory of the target, e.g. `target_dast_web/findings`. This file is a Jinja template that will be used to generate the report section for the given finding.
+
+You can rename the template file to better reflect the nature of the finding, e.g. `rce.md.j2`. Remember to update the corresponding entry in the *findings.toml* file so that it matches the new file name, e.g.:
+
+```toml
+["Remote code execution"]
+risk = "critical"
+findings = ["rce"]
+```
+
+Individual findings may require you to fill in extra information, such as screenshots, which will be used to customize the finding in automated way. Specify these in the frontmatter of the template file, which is a section at the top of the file enclosed between `+++` lines.
+
+The finding template should be an extension of the base template named `_base.md.j2`. This template provides the following blocks that you can override to customize the content of the finding:
+
+- `description`
+- `likelihood`
+- `impact`
+- `recommendation`
+
+In its simplest form, the template may look like this:
+
+```jinja
++++
+name = "Remote code execution"
+risk = "critical"
+category = "generic"
+template_path = "categories/generic/findings/test_finding.md.j2"
+
+[variables]
+images = ['proof.png']
++++
+
+{% extends "_base.md" %}
+
+{% block description -%}
+A brief description of the finding.
+
+Image proof:
+{% for image in f.vars.images -%}
+  ![Screenshot showing proof of a vulnerability]({{ image }})
+{% endfor %}
+
+{%- endblock description %}
+
+{% block likelihood -%}
+Likelihood of the finding being exploited.
+{%- endblock likelihood %}
+
+{% block impact -%}
+Potential impact of the finding.
+{%- endblock impact %}
+
+{% block recommendation -%}
+Recommendations or fixes for the finding.
+{%- endblock recommendation %}
+
+{% block reference -%}
+References and links (e.g. to documentation) related to the finding.
+{%- endblock reference %}
+```
+
+
+## Report generation
+
+To generate the report PDF, you can use the `pdf` command:
+
+```sh
+sereto pdf report
+```
+
+To open the generated report, you can use the `open` command:
+
+```sh
+sereto open report
+```
+
+In case of an error, check the `.build/report.log` file in your project's directory. It contains the output of the report generation process, including any errors that may have occurred.
+
+To clean the auxiliary files generated during the report generation, delete the `.build` directory in the project's directory:
+
+```sh
+rm -r .build
+```

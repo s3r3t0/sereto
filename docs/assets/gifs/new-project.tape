@@ -1,3 +1,4 @@
+Output new-project.gif
 Source includes/style.tape
 
 Type "sereto new TEST"
