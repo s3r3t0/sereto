@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Introduce `clean` command to remove auxiliary files created during the PDF build.
+
 ### Fixed
 
 - `VersionConfig.filter_targets` now correctly returns `list[Target]`, instead of `list[TargetModel]`

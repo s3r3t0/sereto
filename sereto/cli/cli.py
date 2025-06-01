@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
+import shutil
 from contextlib import suppress
 from pathlib import Path
 
@@ -129,6 +130,14 @@ def unpack(ctx: Project, file: FilePath) -> None:
         source_tgz = retrieve_source_archive(pdf=file, name="source.tgz")
 
     extract_source_archive(file=source_tgz, output_dir=ctx.settings.projects_path, keep_original=False)
+
+
+@cli.command()
+@click.pass_obj
+def clean(ctx: Project) -> None:
+    """Delete auxilary files created during the PDF build."""
+    if (build_dir := ctx.path / ".build").is_dir():
+        shutil.rmtree(build_dir)
 
 
 # -------------

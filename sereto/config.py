@@ -113,7 +113,7 @@ class VersionConfig:
 
         if inverse:
             return [t for t in self.targets if t not in filtered_targets]
-        return [t for t in filtered_targets]
+        return filtered_targets
 
     @validate_call
     def select_target(
