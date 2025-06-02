@@ -228,8 +228,10 @@ sereto open report
 
 In case of an error, check the `.build/report.log` file in your project's directory. It contains the output of the report generation process, including any errors that may have occurred.
 
-To clean the auxiliary files generated during the report generation, delete the `.build` directory in the project's directory:
+To remove auxiliary files generated during the report build, run:
 
 ```sh
-rm -r .build
+sereto clean
 ```
+
+Alternatively, you can manually delete the `.build` directory from your project's root.
