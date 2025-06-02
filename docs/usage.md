@@ -146,13 +146,30 @@ risk = "critical"
 findings = ["generic_test_finding"]
 ```
 
-The `Remote code execution` is the name of the **finding group**, `risk` is the risk level of the finding group, and `findings` is a list of one or more nested findings that belong to the group. Specifying the risk for a group is optional. If not specified, it defaults to the highest risk within the finding group.
+The `Remote code execution` is the name of the **finding group**, `risk` is the risk level of the finding group, and `findings` is a list of one or more **nested findings** that belong to the group. Specifying the risk for a group is optional. If not specified, it defaults to the highest risk within the finding group.
 
-#### Template file
+#### Finding file
 
-The entry `generic_test_finding` depends on the template chosen from the TUI. In this case, it refers to a generic finding template. The corresponding file, `generic_test_finding.md.j2`, is created in the `findings` directory of the target, e.g. `target_dast_web/findings`. This file is a Jinja template that will be used to generate the report section for the given finding.
+The entry `generic_test_finding` depends on the template chosen from the TUI. In this case, it refers to a generic finding template.
 
-You can rename the template file to better reflect the nature of the finding, e.g. `rce.md.j2`. Remember to update the corresponding entry in the *findings.toml* file so that it matches the new file name, e.g.:
+The corresponding file is created in the `findings` directory of the target. The resulting project structure may look like this:
+```
+├── config.json
+├── includes
+├── layouts
+├── outputs
+├── pictures
+└── target_dast_example_target
+    ├── findings.toml
+    ├── findings
+    │   ├── _base.md
+    │   └── generic_test_finding.md.j2
+    ...
+```
+
+The file `generic_test_finding.md.j2` is a Jinja template that will be used to generate the report section for the given nested finding.
+
+You can rename the finding file to better reflect the nature of the finding, e.g. `rce.md.j2`. Remember to update the corresponding entry in the *findings.toml* file so that it matches the new filename, e.g.:
 
 ```toml
 ["Remote code execution"]
@@ -162,14 +179,53 @@ findings = ["rce"]
 
 Individual findings may require you to fill in extra information, such as screenshots, which will be used to customize the finding in automated way. Specify these in the frontmatter of the template file, which is a section at the top of the file enclosed between `+++` lines.
 
-The finding template should be an extension of the base template named `_base.md.j2`. This template provides the following blocks that you can override to customize the content of the finding:
+The frontmatter is written in TOML and contains the following fields:
+
+- `name` - name of the finding (only used if there are multiple findings in the group)
+- `risk` - risk level of the finding (`info`, `low`, `medium`, `high`, `critical`)
+- `category` - category of the finding (e.g. `generic`, `dast`, `sast`, etc.)
+- `template_path` - path to a template file that the nested finding file is based on (relative to the [`templates_path`](getting_started/settings.md#templates_path) setting)
+- `locators` - list of URLs or other locators that show the finding location within the target
+
+Lastly, the frontmatter contains a TOML table `variables`, where the variables required by the finding can be defined.
+
+Example frontmatter:
+
+```toml
++++
+name = "Remote code execution"
+risk = "critical"
+category = "generic"
+template_path = "categories/generic/findings/test_finding.md.j2"
+locators = ["https://example.com/vulnerable-endpoint"]
+
+[variables]
+images = ['proof.png']
++++
+```
+
+The main finding variables, such as `locators`, can be accessed in the template using the `f` object, e.g.:
+```jinja
+{% for locator in f.locators %}
+- <{{ locator }}>
+{% endfor %}
+```
+
+The `variables` table can be accessed using `f.vars`, e.g.:
+```jinja
+{% for image in f.vars.images %}
+  ![Screenshot showing proof of a vulnerability]({{ image }})
+{% endfor %}
+```
+
+The finding should be an extension of the base template named `_base.md.j2`. The base template provides the following blocks that you can override to customize the content of the finding:
 
 - `description`
 - `likelihood`
 - `impact`
 - `recommendation`
 
-In its simplest form, the template may look like this:
+In its simplest form, the finding file may look like this:
 
 ```jinja
 +++
@@ -177,6 +233,7 @@ name = "Remote code execution"
 risk = "critical"
 category = "generic"
 template_path = "categories/generic/findings/test_finding.md.j2"
+locators = ["https://example.com/vulnerable-endpoint"]
 
 [variables]
 images = ['proof.png']
@@ -187,7 +244,14 @@ images = ['proof.png']
 {% block description -%}
 A brief description of the finding.
 
+URLs:
+
+{% for locator in f.locators -%}
+- <{{ locator }}>
+{% endfor %}
+
 Image proof:
+
 {% for image in f.vars.images -%}
   ![Screenshot showing proof of a vulnerability]({{ image }})
 {% endfor %}
