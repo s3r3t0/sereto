@@ -126,6 +126,10 @@ List of recipes to be used for converting between file formats. Each recipe has 
 
 List of categories, such as DAST, SAST, infrastructure, etc.
 
+### `risk_due_dates`
+
+A dictionary of risk levels and time periods in which findings with given risk levels should be addressed. These values are used to set the recommended due dates for findings in the report. The values follow the [ISO 8601 format for durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., `P7D` for 7 days).
+
 
 ## Full configuration example
 
