@@ -259,6 +259,7 @@ DEFAULT_RENDER_CONFIG = Render(
                 "--to=latex",
                 "--sandbox",
                 "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
+                "--filter=%TEMPLATES%/pandocfilters/graphics.py",
                 "--filter=%TEMPLATES%/pandocfilters/verbatim.py",
             ],
         ),
