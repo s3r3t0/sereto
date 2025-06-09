@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Update documentation (usage, settings)
+- Update documentation (usage, settings).
+- Add (this time for real) *graphics* pandoc filter to the default settings.
 
 ### Dependencies
 

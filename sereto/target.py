@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
@@ -7,6 +8,7 @@ from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
 from sereto.finding import Findings
 from sereto.jinja import render_jinja2
+from sereto.models.locator import LocatorModel
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.utils import copy_skel
@@ -64,6 +66,21 @@ class Target:
             The unique name of the target.
         """
         return self.data.uname + self.version.path_suffix
+
+    @validate_call
+    def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:
+        """Filter locators by type.
+
+        Args:
+            type: The type of locators to filter by. Can be a single type or an iterable of types.
+
+        Returns:
+            A list of locators of the specified type.
+        """
+        if isinstance(type, str):
+            type = [type]
+
+        return [loc for loc in self.data.locators if loc.type in type]
 
 
 def render_target_to_tex(

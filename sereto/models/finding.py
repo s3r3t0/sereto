@@ -10,6 +10,7 @@ from pydantic import Field, FilePath, RootModel, ValidationError, field_validato
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
+from sereto.models.locator import LocatorModel
 from sereto.types import TypeCategoryName
 
 
@@ -82,7 +83,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     category: TypeCategoryName
     variables: dict[str, Any] = {}
     template_path: str | None = None
-    locators: list[str] = Field(default_factory=list)
+    locators: list[LocatorModel] = Field(default_factory=list)
 
     @field_validator("risk", mode="before")
     @classmethod
@@ -102,6 +103,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             name = "{self.name}"
             risk = "{self.risk.value}"
             category = "{self.category.lower()}"
+            locators = {self.locators!r}
         """)
 
         if self.template_path:
@@ -133,7 +135,7 @@ class FindingGroupModel(SeretoBaseModel):
 
     risk: Risk | None = None
     findings: list[str] = Field(min_length=1)
-    locators: list[str] = Field(default_factory=list)
+    locators: list[LocatorModel] = Field(default_factory=list)
 
     @field_validator("risk", mode="before")
     @classmethod

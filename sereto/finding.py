@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
@@ -15,6 +16,7 @@ from sereto.models.finding import (
     FindingTemplateFrontmatterModel,
     SubFindingFrontmatterModel,
 )
+from sereto.models.locator import LocatorModel
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
 from sereto.risk import Risks
@@ -32,13 +34,12 @@ class SubFinding:
     vars: dict[str, Any]
     path: FilePath
     template: FilePath | None = None
-    locators: list[str] = field(default_factory=list)
+    locators: list[LocatorModel] = field(default_factory=list)
 
     @classmethod
     @validate_call
     def load_from(cls, path: FilePath, templates: DirectoryPath) -> Self:
-        """
-        Load a sub-finding from a file.
+        """Load a sub-finding from a file.
 
         Args:
             path: The path to the sub-finding file.
@@ -62,6 +63,21 @@ class SubFinding:
     def uname(self) -> str:
         """Unique name of the finding."""
         return self.path.name.removesuffix(".md.j2")
+
+    @validate_call
+    def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:
+        """Filter locators by type.
+
+        Args:
+            type: The type of locators to filter by. Can be a single type or an iterable of types.
+
+        Returns:
+            A list of locators of the specified type.
+        """
+        if isinstance(type, str):
+            type = [type]
+
+        return [loc for loc in self.locators if loc.type in type]
 
     @validate_call
     def validate_vars(self) -> None:
@@ -115,21 +131,21 @@ class SubFinding:
 
 @dataclass
 class FindingGroup:
-    """
-    Represents a finding group.
+    """Represents a finding group.
 
     Attributes:
         name: The name of the finding group.
         explicit_risk: Risk to be used for the group. Overrides the calculated risks from sub-findings.
         sub_findings: A list of sub-findings in the group.
-        target_locators: A list of locators used to find the target.
+        _target_locators: A list of locators used to find the target.
+        _finding_group_locators: A list of locators defined on the finding group.
     """
 
     name: str
     explicit_risk: Risk | None
     sub_findings: list[SubFinding]
-    _target_locators: list[str]
-    _finding_group_locators: list[str]
+    _target_locators: list[LocatorModel]
+    _finding_group_locators: list[LocatorModel]
 
     @classmethod
     @validate_call
@@ -138,11 +154,10 @@ class FindingGroup:
         name: str,
         group_desc: FindingGroupModel,
         findings_dir: DirectoryPath,
-        target_locators: list[str],
+        target_locators: list[LocatorModel],
         templates: DirectoryPath,
     ) -> Self:
-        """
-        Load a finding group.
+        """Load a finding group.
 
         Args:
             name: The name of the finding group.
@@ -183,8 +198,7 @@ class FindingGroup:
 
     @property
     def risk(self) -> Risk:
-        """
-        Get the finding group risk.
+        """Get the finding group risk.
 
         Returns:
             The explicit risk if set, otherwise the highest risk from the sub-findings.
@@ -194,9 +208,8 @@ class FindingGroup:
         return max([sf.risk for sf in self.sub_findings], key=lambda r: r.to_int())
 
     @property
-    def locators(self) -> list[str]:
-        """
-        Return a de-duplicated list of locators for the finding group.
+    def locators(self) -> list[LocatorModel]:
+        """Return a de-duplicated list of locators for the finding group.
 
         Precedence (first non-empty wins):
         1. Explicit locators defined on the finding group
@@ -204,9 +217,16 @@ class FindingGroup:
         3. Locators inherited from the target
         """
 
-        def _unique(seq: list[str]) -> list[str]:
-            """Preserve order while removing duplicates."""
-            return list(dict.fromkeys(seq))
+        def _unique(seq: list[LocatorModel]) -> list[LocatorModel]:
+            """Preserve order while removing duplicates, ignoring 'description'."""
+            seen: set[tuple[Any, Any]] = set()
+            result: list[LocatorModel] = []
+            for loc in seq:
+                key = (loc.type, loc.value)
+                if key not in seen:
+                    seen.add(key)
+                    result.append(loc)
+            return result
 
         # 1. Explicit locators on the group
         if self._finding_group_locators:
@@ -220,6 +240,21 @@ class FindingGroup:
         # 3. Fallback to target locators
         return _unique(self._target_locators)
 
+    @validate_call
+    def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:
+        """Filter locators by type.
+
+        Args:
+            type: The type of locators to filter by. Can be a single type or an iterable of types.
+
+        Returns:
+            A list of locators of the specified type.
+        """
+        if isinstance(type, str):
+            type = [type]
+
+        return [loc for loc in self.locators if loc.type in type]
+
     @property
     @validate_call
     def uname(self) -> str:
@@ -229,8 +264,7 @@ class FindingGroup:
 
 @dataclass
 class Findings:
-    """
-    Represents a collection of all finding groups inside a target.
+    """Represents a collection of all finding groups inside a target.
 
     Attributes:
         groups: A list of finding groups.
@@ -240,13 +274,14 @@ class Findings:
 
     groups: list[FindingGroup]
     target_dir: FilePath
-    target_locators: list[str]
+    target_locators: list[LocatorModel]
 
     @classmethod
     @validate_call
-    def load_from(cls, target_dir: DirectoryPath, target_locators: list[str], templates: DirectoryPath) -> Self:
-        """
-        Load findings belonging to the same target.
+    def load_from(
+        cls, target_dir: DirectoryPath, target_locators: list[LocatorModel], templates: DirectoryPath
+    ) -> Self:
+        """Load findings belonging to the same target.
 
         Args:
             target_dir: The path to the target directory.

@@ -1,9 +1,10 @@
 from typing import Literal
 
-from pydantic import AnyUrl, Field, IPvAnyAddress, IPvAnyNetwork, field_validator
+from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, field_validator
 
 from sereto.enums import Environment
 from sereto.models.base import SeretoBaseModel
+from sereto.models.locator import LocatorModel
 from sereto.settings import load_settings_function
 from sereto.utils import lower_alphanum
 
@@ -21,7 +22,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
     id: str | None = None
     category: str
     name: str
-    locators: list[str] = Field(default_factory=list)
+    locators: list[LocatorModel] = Field(default_factory=list)
 
     @field_validator("category")
     @classmethod
@@ -51,7 +52,6 @@ class TargetDastModel(TargetModel):
     credentials_provided: bool | None = None
     internal: bool = False
     environment: Environment = Environment.acceptance
-    urls: list[AnyUrl] = []
     waf_present: bool = False
     waf_whitelisted: bool | None = None
     clickpath: str | None = None
