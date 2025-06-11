@@ -4,6 +4,13 @@
 
 The **location** where the configuration file is stored is determined by using [`click.get_app_dir`](https://click.palletsprojects.com/en/latest/api/#click.get_app_dir) function, to provide the most appropriate location for the specific operating system. For example, on *Linux*, the configuration file is stored in `~/.config/sereto/settings.json` and on *Windows*, it is likely stored in `C:\Users\<username>\AppData\Local\sereto\settings.json`.
 
+It is possible to override settings values by using environment variables. Each setting can be mapped to an environment variable by using the following naming convention: `SERETO_<SETTING_NAME>`. For example:
+
+- To override `projects_path`, set the environment variable `SERETO_PROJECTS_PATH`. For example `SERETO_PROJECTS_PATH=/tmp/projects`.
+- To override `categories`, set the environment variable `SERETO_CATEGORIES`. For example `SERETO_CATEGORIES='["generic", "dast"]'`.
+
+This behaviour is inherited from Pydantic Settings. Therefore check the [Settings Management](https://docs.pydantic.dev/latest/concepts/pydantic_settings) for more information about how to manage settings.
+
 Settings consist of the following fields:
 
 ## `projects_path`
