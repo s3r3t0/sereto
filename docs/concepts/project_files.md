@@ -1,5 +1,8 @@
 # Project Files
 
+!!! tip
+    If you are looking for explanation of the structure from the perspective of templates, please refer to the [template structure](../default_templates/structure.md) section in the documentation.
+
 ```text
 ├── .build/
 ├── includes/
