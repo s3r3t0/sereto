@@ -81,6 +81,7 @@ nav:
     - default_templates/structure.md
     - default_templates/building_blocks.md
     - default_templates/markdown_building_blocks.md
+    - default_templates/debugging.md
   - Reference:
     - CLI:
       - reference/cli/cli.md
