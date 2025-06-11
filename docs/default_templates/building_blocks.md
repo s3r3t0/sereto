@@ -1,4 +1,4 @@
-# Building blocks
+# Jinja building blocks
 
 This page provides an overview of the building blocks for creating your custom templates. See [Templating - Jinja2](../concepts/idea.md#templating-jinja2) for details on how the variables can be included in the templates.
 
