@@ -10,7 +10,7 @@ from pydantic import Field, FilePath, RootModel, ValidationError, field_validato
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.locator import LocatorModel
+from sereto.models.locator import LocatorModel, dump_locators_to_toml
 from sereto.types import TypeCategoryName
 
 
@@ -103,12 +103,12 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             name = "{self.name}"
             risk = "{self.risk.value}"
             category = "{self.category.lower()}"
-            locators = {self.locators!r}
         """)
 
         if self.template_path:
-            output += f'template_path = "{self.template_path}"'
+            output += f'template_path = "{self.template_path}"\n'
 
+        output += f"locators = {dump_locators_to_toml(self.locators)}"
         output += "\n\n[variables]\n"
         output += "\n".join(f"{k} = {v!r}" for k, v in self.variables.items())
         return output + "\n"

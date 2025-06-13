@@ -1,6 +1,7 @@
+from collections.abc import Iterable
 from typing import Annotated, Literal
 
-from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork
+from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork, validate_call
 
 from sereto.models.base import SeretoBaseModel
 
@@ -48,3 +49,23 @@ class FileLocatorModel(SeretoBaseModel):
 
 
 LocatorModel = Annotated[UrlLocatorModel | IpLocatorModel | FileLocatorModel, Discriminator("type")]
+
+
+@validate_call
+def dump_locators_to_toml(locators: Iterable[LocatorModel]) -> str:
+    """Dump locators to a TOML string.
+
+    Args:
+        locators: An iterable of LocatorModel instances.
+
+    Returns:
+        A TOML formatted string representing the locators.
+    """
+    if len(loc_list := list(locators)) == 0:
+        return "[]"
+
+    lines: list[str] = []
+    for loc in loc_list:
+        desc = f", description={loc.description!r}" if loc.description else ""
+        lines.append(f'{{type={loc.type!r}, value="{loc.value}"{desc}}},')
+    return "[\n    " + "\n    ".join(lines) + "\n]"
