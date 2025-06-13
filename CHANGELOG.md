@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-06-13
+
 ### Changed
 
-- Update documentation (usage, settings).
+- **Breaking:** Change format of locators from `str` to object with `type`, `value`, and `description` attributes.
+- Update documentation.
 - Add (this time for real) *graphics* pandoc filter to the default settings.
+- Make plugin loading error message more informative.
 
 ### Dependencies
 
@@ -397,7 +401,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.2.9...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.0...HEAD
+[0.2.9]: https://github.com/s3r3t0/sereto/compare/v0.2.9...v0.3.0
 [0.2.9]: https://github.com/s3r3t0/sereto/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/s3r3t0/sereto/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/s3r3t0/sereto/compare/v0.2.6...v0.2.7
