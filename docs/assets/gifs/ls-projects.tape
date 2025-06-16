@@ -1,16 +1,9 @@
 Output ls-projects.gif
-Set Height 400
-Source style.tape
+Set Height 350
+Source includes/style.tape
 
 Hide
-Type "sereto new TEST"
-Enter
-
-Wait /project:/
-Sleep 500ms
-
-Type "Test project"
-Enter
+Source includes/create-project.tape
 Type "clear"
 Enter
 Show

@@ -4,6 +4,12 @@ Source includes/style.tape
 
 Hide
 Source includes/create-project.tape
+
+Type "clear"
+Enter
+
+Type "cd /home/sereto/projects/TEST"
+Enter
 Show
 
 Type "sereto config dates add"

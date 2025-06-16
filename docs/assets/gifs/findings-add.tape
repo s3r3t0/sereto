@@ -4,7 +4,12 @@ Source includes/style.tape
 
 Hide
 Source includes/create-project.tape
+
+Type "cd /home/sereto/projects/TEST"
+Enter
+
 Source includes/add-target.tape
+
 Type "clear"
 Enter
 Show

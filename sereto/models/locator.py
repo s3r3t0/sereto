@@ -66,6 +66,6 @@ def dump_locators_to_toml(locators: Iterable[LocatorModel]) -> str:
 
     lines: list[str] = []
     for loc in loc_list:
-        desc = f", description={loc.description!r}" if loc.description else ""
-        lines.append(f'{{type={loc.type!r}, value="{loc.value}"{desc}}},')
+        desc = f', description="{loc.description}"' if loc.description else ""
+        lines.append(f'{{type="{loc.type}", value="{loc.value}"{desc}}},')
     return "[\n    " + "\n    ".join(lines) + "\n]"

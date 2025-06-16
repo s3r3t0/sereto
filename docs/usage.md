@@ -93,7 +93,16 @@ Run the following command:
 sereto config targets add
 ```
 
-SeReTo will ask you about some details you would like to set. Make sure to include all necessary details, such as destination IP addresses (dst_ips), source IP addresses (src_ips), list of URLs etc.
+SeReTo will ask you about some details you would like to set. Make sure to include all necessary details, such as target locators, source IP addresses (`src_ips`), etc.
+
+Example locators configuration:
+
+```json
+"locators": [
+  {"type": "url", "value": "https://example.com/"},
+  {"type": "ip", "value": "192.0.2.0", "description": "Example target IP address"},
+]
+```
 
 ![](assets/gifs/config-targets-add.gif)
 

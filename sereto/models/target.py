@@ -42,7 +42,6 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 class TargetDastModel(TargetModel):
     """Model representing a target which is characterized by IP address."""
 
-    dst_ips: list[IPvAnyAddress | IPvAnyNetwork] = []
     dst_ips_dynamic: bool = False
     dst_ips_dynamic_details: str | None = None
     src_ips: list[IPvAnyAddress | IPvAnyNetwork] = []
