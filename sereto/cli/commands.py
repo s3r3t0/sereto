@@ -13,7 +13,7 @@ from rich import box
 from rich.table import Table
 
 from sereto.cli.utils import Console
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir
 from sereto.singleton import Singleton
