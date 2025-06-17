@@ -105,6 +105,7 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
 
 
 @click.command(name="cd")
+@handle_exceptions
 @click.argument("project_id", type=str)
 @validate_call
 def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:

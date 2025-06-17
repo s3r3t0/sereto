@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `filter_locators` method, which incorrectly handled iterables on the input.
+- Handle exceptions in the REPL `cd` command.
 
 ### Dependencies
 
