@@ -77,9 +77,7 @@ class Target:
         Returns:
             A list of locators of the specified type.
         """
-        if isinstance(type, str):
-            type = [type]
-
+        type = [type] if isinstance(type, str) else list(type)
         return [loc for loc in self.data.locators if loc.type in type]
 
 

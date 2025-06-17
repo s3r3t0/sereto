@@ -74,9 +74,7 @@ class SubFinding:
         Returns:
             A list of locators of the specified type.
         """
-        if isinstance(type, str):
-            type = [type]
-
+        type = [type] if isinstance(type, str) else list(type)
         return [loc for loc in self.locators if loc.type in type]
 
     @validate_call
@@ -250,9 +248,7 @@ class FindingGroup:
         Returns:
             A list of locators of the specified type.
         """
-        if isinstance(type, str):
-            type = [type]
-
+        type = [type] if isinstance(type, str) else list(type)
         return [loc for loc in self.locators if loc.type in type]
 
     @property

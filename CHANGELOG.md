@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documentation: update usage GIFs
 
+### Fixed
+
+- Fix `filter_locators` method, which incorrectly handled iterables on the input.
+
+### Dependencies
+
+- Update textual requirement from ~=3.3.0 to ~=3.4.0
+
 ## [0.3.0] - 2025-06-13
 
 ### Changed
