@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-06-17
+
 ### Added
 
 - Add "hostname" and "domain" locator types.
@@ -418,8 +420,9 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.0...HEAD
-[0.2.9]: https://github.com/s3r3t0/sereto/compare/v0.2.9...v0.3.0
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/s3r3t0/sereto/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/s3r3t0/sereto/compare/v0.2.9...v0.3.0
 [0.2.9]: https://github.com/s3r3t0/sereto/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/s3r3t0/sereto/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/s3r3t0/sereto/compare/v0.2.6...v0.2.7
