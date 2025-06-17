@@ -20,6 +20,34 @@ class UrlLocatorModel(SeretoBaseModel):
     description: str | None = None
 
 
+class HostnameLocatorModel(SeretoBaseModel):
+    """Model representing a hostname locator.
+
+    Attributes:
+        type: The discriminator for the locator type, which is always "hostname".
+        value: The hostname of the locator.
+        description: Optional description of the hostname locator.
+    """
+
+    type: Literal["hostname"] = "hostname"
+    value: str  # Hostname as a string
+    description: str | None = None
+
+
+class DomainLocatorModel(SeretoBaseModel):
+    """Model representing a domain locator.
+
+    Attributes:
+        type: The discriminator for the locator type, which is always "domain".
+        value: The domain of the locator.
+        description: Optional description of the domain locator.
+    """
+
+    type: Literal["domain"] = "domain"
+    value: str  # Domain as a string
+    description: str | None = None
+
+
 class IpLocatorModel(SeretoBaseModel):
     """Model representing an IP locator.
 
@@ -48,7 +76,10 @@ class FileLocatorModel(SeretoBaseModel):
     description: str | None = None
 
 
-LocatorModel = Annotated[UrlLocatorModel | IpLocatorModel | FileLocatorModel, Discriminator("type")]
+LocatorModel = Annotated[
+    UrlLocatorModel | HostnameLocatorModel | DomainLocatorModel | IpLocatorModel | FileLocatorModel,
+    Discriminator("type"),
+]
 
 
 @validate_call
