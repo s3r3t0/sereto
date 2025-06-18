@@ -43,6 +43,7 @@ from sereto.source_archive import (
 from sereto.tui.finding import launch_finding_tui
 from sereto.types import TypeProjectId
 from sereto.utils import copy_skel, replace_strings
+from sereto.oxipng import oxipng
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
@@ -138,6 +139,15 @@ def clean(ctx: Project) -> None:
     """Delete auxilary files created during the PDF build."""
     if (build_dir := ctx.path / ".build").is_dir():
         shutil.rmtree(build_dir)
+
+
+@cli.command()
+@handle_exceptions
+@click.pass_obj
+@validate_call
+def optipng(ctx: Project) -> None:
+    """Lossless PNGs compression."""
+    oxipng(project_path=ctx.path)
 
 
 # -------------
