@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `sereto oxipng` command to optimize PNG images in the report.
+
 ## [0.3.1] - 2025-06-17
 
 ### Added

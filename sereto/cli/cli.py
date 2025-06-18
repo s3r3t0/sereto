@@ -30,6 +30,7 @@ from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError
 from sereto.keyring import get_password, set_password
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
+from sereto.oxipng import run_oxipng
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
@@ -138,6 +139,15 @@ def clean(ctx: Project) -> None:
     """Delete auxilary files created during the PDF build."""
     if (build_dir := ctx.path / ".build").is_dir():
         shutil.rmtree(build_dir)
+
+
+@cli.command()
+@handle_exceptions
+@click.pass_obj
+@validate_call
+def oxipng(ctx: Project) -> None:
+    """Lossless PNGs compression."""
+    run_oxipng(project_path=ctx.path)
 
 
 # -------------
