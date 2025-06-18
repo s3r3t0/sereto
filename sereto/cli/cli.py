@@ -30,6 +30,7 @@ from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError
 from sereto.keyring import get_password, set_password
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
+from sereto.oxipng import oxipng
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
@@ -43,7 +44,6 @@ from sereto.source_archive import (
 from sereto.tui.finding import launch_finding_tui
 from sereto.types import TypeProjectId
 from sereto.utils import copy_skel, replace_strings
-from sereto.oxipng import oxipng
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
