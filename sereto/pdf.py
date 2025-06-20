@@ -154,8 +154,8 @@ def generate_pdf_report(
         pdf_dir.mkdir()
 
     # Move the report PDF to the "pdf" directory
-    updated_filename=f"{project.path.name} - Report {version.path_suffix}.pdf"
-    report_pdf = report_pdf.rename(project.path / "pdf" / updated_filename)
+    version_config = project.config.at_version(version) if version else project.config.last_config
+    report_pdf = report_pdf.rename(project.path / "pdf" / version_config.report_name)
 
     return report_pdf
 
@@ -193,8 +193,8 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
         pdf_dir.mkdir()
 
     # Move the SoW PDF to the "pdf" directory
-    updated_filename=f"{project.path.name} - Statement of Work {version.path_suffix}.pdf"
-    sow_pdf = sow_pdf.rename(project.path / "pdf" / updated_filename)
+    version_config = project.config.at_version(version) if version else project.config.last_config
+    sow_pdf = sow_pdf.rename(project.path / "pdf" / version_config.sow_name)
 
     return sow_pdf
 
