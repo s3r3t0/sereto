@@ -440,6 +440,18 @@ class VersionConfig:
         """Get the sum of risks across all targets."""
         return reduce(operator.add, (t.findings.risks for t in self.targets))
 
+    @property
+    def report_name(self) -> str:
+        """Get the report file name based on the project ID and version."""
+        version = f" {self.version}" if self.version > ProjectVersion.from_str("v1.0") else ""
+        return f"{self.id} - Report{version}.pdf"
+
+    @property
+    def sow_name(self) -> str:
+        """Get the SoW file name based on the project ID and version."""
+        version = f" {self.version}" if self.version > ProjectVersion.from_str("v1.0") else ""
+        return f"{self.id} - Statement of Work{version}.pdf"
+
 
 @dataclass
 class Config:
