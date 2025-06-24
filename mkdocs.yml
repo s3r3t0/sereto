@@ -97,6 +97,7 @@ nav:
       - reference/models/config.md
       - reference/models/date.md
       - reference/models/finding.md
+      - reference/models/locator.md
       - reference/models/person.md
       - reference/models/settings.md
       - reference/models/target.md

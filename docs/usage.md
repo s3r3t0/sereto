@@ -194,7 +194,10 @@ The frontmatter is written in TOML and contains the following fields:
 - `risk` - risk level of the finding (`info`, `low`, `medium`, `high`, `critical`)
 - `category` - category of the finding (e.g. `generic`, `dast`, `sast`, etc.)
 - `template_path` - path to a template file that the nested finding file is based on (relative to the [`templates_path`](getting_started/settings.md#templates_path) setting)
-- `locators` - list of URLs or other locators that show the finding location within the target
+- `locators` - list of locators that indicate the location of the finding within the target, e.g. URLs, IP addresses, etc. Each locator is defined by an inline table with the following fields:
+    - `type` - type of the locator, e.g. `url`, `ip`, etc. List of all locator types can be found in the [model reference](reference/models/locator.md).
+    - `value` - value of the locator
+    - `description` (optional) - description of the locator
 
 Lastly, the frontmatter contains a TOML table `variables`, where the variables required by the finding can be defined.
 
@@ -206,7 +209,13 @@ name = "Remote code execution"
 risk = "critical"
 category = "generic"
 template_path = "categories/generic/findings/test_finding.md.j2"
-locators = ["https://example.com/vulnerable-endpoint"]
+locators = [
+  {
+    type = "url",
+    value = "https://example.com/vulnerable-endpoint",
+    description = "Vulnerable endpoint"
+  },
+]
 
 [variables]
 images = ['proof.png']
@@ -215,8 +224,15 @@ images = ['proof.png']
 
 The main finding variables, such as `locators`, can be accessed in the template using the `f` object, e.g.:
 ```jinja
-{% for locator in f.locators %}
-- <{{ locator }}>
+{% for loc in f.locators %}
+- {{ loc.value }}
+{% endfor %}
+```
+
+For getting only a specific locator type, you can use the `f.filter_locators` method, e.g.:
+```jinja
+{% for url in f.filter_locators("url") %}
+- <{{ url.value }}>
 {% endfor %}
 ```
 
@@ -242,7 +258,13 @@ name = "Remote code execution"
 risk = "critical"
 category = "generic"
 template_path = "categories/generic/findings/test_finding.md.j2"
-locators = ["https://example.com/vulnerable-endpoint"]
+locators = [
+  {
+    type = "url",
+    value = "https://example.com/vulnerable-endpoint",
+    description = "Vulnerable endpoint"
+  },
+]
 
 [variables]
 images = ['proof.png']
@@ -255,8 +277,8 @@ A brief description of the finding.
 
 URLs:
 
-{% for locator in f.locators -%}
-- <{{ locator }}>
+{% for url in f.filter_locators("url") -%}
+- <{{ url.value }}>
 {% endfor %}
 
 Image proof:
