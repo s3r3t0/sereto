@@ -205,7 +205,7 @@ A dictionary of risk levels and time periods in which findings with given risk l
         "name": "pandoc-md",
         "command": "pandoc",
         "args": [
-          "--from=markdown-implicit_figures",
+          "--from=markdown-implicit_figures+lists_without_preceding_blankline",
           "--to=latex",
           "--sandbox",
           "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
