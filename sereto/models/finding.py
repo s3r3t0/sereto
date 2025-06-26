@@ -1,16 +1,16 @@
 import tomllib
 from collections.abc import ItemsView
 from pathlib import Path
-from textwrap import dedent
 from typing import Any, Literal, Self
 
 import frontmatter  # type: ignore[import-untyped]
+import tomli_w
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.locator import LocatorModel, dump_locators_to_toml
+from sereto.models.locator import LocatorModel
 from sereto.types import TypeCategoryName
 
 
@@ -98,20 +98,21 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
                 raise ValueError("unsupported type for Risk")
 
     def dumps_toml(self) -> str:
-        """Dump the model to a TOML-formatted string."""
-        output = dedent(f"""\
-            name = "{self.name}"
-            risk = "{self.risk.value}"
-            category = "{self.category.lower()}"
-        """)
-
+        """Dump the model to a TOML-formatted string using a TOML library."""
+        # Prepare the data dict in the desired structure
+        data: dict[str, Any] = {
+            "name": self.name,
+            "risk": self.risk.value,
+            "category": self.category.lower(),
+            "locators": [locator.model_dump() for locator in self.locators],
+        }
         if self.template_path:
-            output += f'template_path = "{self.template_path}"\n'
+            data["template_path"] = self.template_path
+        if self.variables:
+            data["variables"] = {k: v for k, v in self.variables.items() if v is not None}
 
-        output += f"locators = {dump_locators_to_toml(self.locators)}"
-        output += "\n\n[variables]\n"
-        output += "\n".join(f"{k} = {v!r}" for k, v in self.variables.items())
-        return output + "\n"
+        # Dump to TOML string
+        return tomli_w.dumps(data)
 
     @classmethod
     @validate_call

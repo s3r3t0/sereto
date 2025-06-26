@@ -20,6 +20,26 @@ SearchWidget {
     }
 }
 
+RemovableWidget {
+    height: 5;
+    & > Horizontal {
+        & > .widget {
+            margin-top: 0;
+            width: 1fr;
+        }
+        & > Button {width: auto;}
+    }
+}
+
+ListWidget {
+    height: auto;
+    min-width: 50;
+    & > Vertical.widget-list {
+        background: $boost;
+        height: auto;
+    }
+}
+
 AddFindingScreen {
     #add-finding {
         border: heavy $accent;

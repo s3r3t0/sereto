@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `sereto oxipng` command to optimize PNG images in the report.
 
+### Changed
+
+- Rename output filenames for SoW and report (now they contain the project ID and version).
+- Update usage docs about locators
+
+### Fixed
+
+- Properly handle var types (boolean/integer,string) in `sereto findings add` TUI.
+
+### Dependencies
+
+- Add tomli-w to the dependencies to support writing TOML files.
+- Update pydantic-settings requirement from ~=2.9.1 to ~=2.10.0
+- Update textual requirement from ~=3.4.0 to ~=3.5.0
+
 ## [0.3.1] - 2025-06-17
 
 ### Added

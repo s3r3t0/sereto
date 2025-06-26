@@ -8,8 +8,7 @@ from sereto.exceptions import SeretoPathError
 
 @validate_call
 def run_oxipng(project_path: DirectoryPath) -> None:
-    """Compresses PNG images in the 'pictures' directory using oxipng.
-    """
+    """Compresses PNG images in the 'pictures' directory using oxipng."""
     # Check presence of oxipng utility
     oxipng_path = shutil.which("oxipng")
     if oxipng_path is None:

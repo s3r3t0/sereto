@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import Generic, TypeVar
 
 from rich.console import RenderableType
@@ -37,66 +37,65 @@ class InputWithLabel(Widget):
         yield self.input
 
 
-class RemovableInput(Widget):
-    """A removable input with a remove button."""
+W = TypeVar("W", bound=Widget)
 
-    DEFAULT_CSS = """
-    RemovableInput {
-        height: 5;
-        & > Horizontal {
-            & > Input {width: 1fr;}
-            & > Button {width: auto;}
-        }
-    }
-    """
 
-    def __init__(self, input: Input) -> None:
+class RemovableWidget(Generic[W], Widget):
+    """A removable widget (e.g., Input, Select) with a remove button."""
+
+    def __init__(self, widget: W, on_remove: Callable[["RemovableWidget[W]"], None] | None = None) -> None:
         super().__init__()
-        self.input = input
+        self.widget = widget
+        self.widget.add_class("widget")
+        self.on_remove = on_remove
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes="m-1"):
-            yield self.input
+            yield self.widget
             self.remove_button = Button("Remove")
             yield self.remove_button
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button is self.remove_button:
-            self.remove()
+            if self.on_remove:
+                self.on_remove(self)
+            else:
+                self.remove()
 
 
-class ListInput(Widget):
-    """A list of inputs with add and remove buttons."""
+class ListWidget(Generic[W], Widget):
+    """A list of widgets (e.g., Input, Select) with add and remove buttons."""
 
-    DEFAULT_CSS = """
-    ListInput {
-        height: 5;
-        margin: 1;
-        min-width: 50;
-        padding: 1;
-        & > Vertical.input-list {
-            background: $boost;
-            height: auto;
-        }
-    }
-    """
-
-    def __init__(self, id: str | None = None):
+    def __init__(
+        self,
+        widget_factory: Callable[[], W],
+        add_button_label: str = "Add item",
+        id: str | None = None,
+    ):
+        """
+        Args:
+            widget_factory: Callable that returns a new widget instance (e.g., Input, Select).
+            add_button_label: Label for the add button.
+            id: Optional widget id.
+        """
         super().__init__(id=id)
-        # self.input_values: list[Input] = []
+        self.widget_factory = widget_factory
+        self.add_button_label = add_button_label
 
     def compose(self) -> ComposeResult:
-        self.input_list = Vertical(classes="input-list")
-        yield self.input_list
-        self.btn_add_list_item = Button("Add item", classes="hover-bg-accent")
+        self.widget_list = Vertical(classes="widget-list")
+        yield self.widget_list
+        self.btn_add_list_item = Button(self.add_button_label, classes="hover-bg-accent")
         yield self.btn_add_list_item
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button is self.btn_add_list_item:
-            new_input = Input()
-            # self.input_values.append(new_input)
-            new_row = RemovableInput(input=new_input)
-            self.input_list.mount(new_row)
+            new_widget = self.widget_factory()
+            new_row = RemovableWidget(widget=new_widget, on_remove=self._remove_row)
+            self.widget_list.mount(new_row)
+
+    def _remove_row(self, row: RemovableWidget[W]) -> None:
+        row.remove()
 
 
 T = TypeVar("T")
