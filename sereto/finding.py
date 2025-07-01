@@ -422,11 +422,14 @@ class Findings:
 
 def render_subfinding_to_tex(
     sub_finding: SubFinding,
+    config: "Config",
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
     converter: str | None = None,
 ) -> str:
+    version_config = config.at_version(version=version)
+
     # Validate variables
     sub_finding.validate_vars()
 
@@ -436,6 +439,8 @@ def render_subfinding_to_tex(
         file=sub_finding.path,
         vars={
             "f": sub_finding,
+            "c": version_config,
+            "config": config,
             "version": version,
         },
     )
