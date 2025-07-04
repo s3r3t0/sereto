@@ -14,12 +14,13 @@ from textual.containers import Container, Horizontal, ScrollableContainer, Verti
 from textual.screen import ModalScreen
 from textual.types import NoSelection
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Footer, Header, Input, Rule, Select, SelectionList, Static
+from textual.widgets import Button, DataTable, Footer, Header, Input, Rule, Select, SelectionList, Static, Switch
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
 from sereto.project import Project
+from sereto.target import Target
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
 
 
@@ -102,6 +103,20 @@ class AddFindingScreen(ModalScreen[None]):
             )
             yield self.select_target
 
+            # Existing finding warning + overwrite switch
+            self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
+            self.overwrite_warning = Horizontal(
+                self.overwrite_switch,
+                Static(
+                    "[b red]Warning:[/b red] A finding with this name already exists in the selected target.\n"
+                    "  [b]Switch OFF:[/b] Keep the original and create a new one with a random suffix.\n"
+                    "  [b]Switch ON:[/b] Overwrite the existing finding."
+                ),
+                id="overwrite-warning",
+            )
+            self.overwrite_warning.display = False
+            yield self.overwrite_warning
+
             yield Static("[b]Variables", classes="section-header")
             yield Rule()
 
@@ -155,12 +170,26 @@ class AddFindingScreen(ModalScreen[None]):
         add_finding.border_title = self.title
         add_finding.border_subtitle = "Esc to close"
 
+    def on_select_changed(self, event: Select.Changed) -> None:
+        if event.select is self.select_target.query_one(Select):
+            self.update_overwrite_warning()
+
+    def update_overwrite_warning(self) -> None:
+        """Update the overwrite warning and switch dynamically."""
+        try:
+            target = self._retrieve_target()
+        except Exception:
+            self.overwrite_warning.display = False
+            return
+
+        finding_path = target.findings.get_path(
+            name=self.finding.path.name.removesuffix(".md.j2"),
+            category=self.finding.category.lower(),
+        )
+        self.overwrite_warning.display = finding_path.is_file()
+
     def _load_variables(self) -> dict[str, Any]:
         """Load variables from the inputs.
-
-        Returns:
-            A dictionary of variables with their values.
-
         Raises:
             SeretoValueError: If a required variable is not set.
         """
@@ -227,6 +256,26 @@ class AddFindingScreen(ModalScreen[None]):
 
         return variables
 
+    def _retrieve_target(self) -> Target:
+        """Retrieve the target from the select input.
+
+        Returns:
+            The target object corresponding to the selected value.
+
+        Raises:
+            SeretoValueError: If the target is not found.
+        """
+        app: SeretoApp = self.app  # type: ignore[assignment]
+
+        target_select: Select[str] = self.select_target.query_one(Select)
+        all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
+
+        matching_target = [t for t in all_targets if t.uname == target_select.value]
+        if len(matching_target) != 1:
+            raise SeretoValueError(f"target with uname {target_select.value!r} not found")
+
+        return matching_target[0]
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle Save button press event."""
         if event.button is not self.btn_save_finding:
@@ -236,17 +285,12 @@ class AddFindingScreen(ModalScreen[None]):
 
         # Retrieve the values from the inputs
         # - name
-        name = self.input_name.value  # TODO: check for None, report "Name is required"
+        name = self.input_name.value
         # - risk
         risk_select: Select[str] = self.select_risk.query_one(Select)
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
-        target_select: Select[str] = self.select_target.query_one(Select)
-        all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
-        matching_target = [t for t in all_targets if t.uname == target_select.value]
-        if len(matching_target) != 1:
-            raise SeretoValueError(f"target with uname {target_select.value!r} not found")
-        target = matching_target[0]
+        target = self._retrieve_target()
 
         # - variables
         try:
@@ -263,6 +307,7 @@ class AddFindingScreen(ModalScreen[None]):
             name=name,
             risk=risk,
             variables=variables,
+            overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
         )
 
         # Navigate back, focus on the search input field

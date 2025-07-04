@@ -5,6 +5,7 @@
 .pb-1 {padding-bottom: 1;}
 
 .m-1 {margin: 1;}
+.m-2 {margin: 2;}
 
 .hover-bg-accent:hover {
     background: $accent;
@@ -45,9 +46,13 @@ AddFindingScreen {
         border: heavy $accent;
         margin: 2 4;
         scrollbar-gutter: stable;
-        ListInput {
-            padding: 0 1;
+        #overwrite-warning {
             height: auto;
+            margin: 0 1;
+            border: solid red;
+            Static {
+                padding-left: 1;
+            }
         }
     }
     .section-header {

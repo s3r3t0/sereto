@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add warning to `sereto findings add` TUI when the finding already exists, and an option to overwrite it.
+
 ### Changed
 
 - Allow lists without preceeding newlines in Markdown.
