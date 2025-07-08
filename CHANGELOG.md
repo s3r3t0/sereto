@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow lists without preceeding newlines in Markdown.
 - Pass `Config` (`config`) and `VersionConfig` (`c`) as Jinja2 variables when rendering sub-findings.
 
+### Fixed
+
+- Fix Docker volume permissions for mounted directories.
+
 ### Dependencies
 
 - Update pypdf requirement from ~=5.6.0 to ~=5.7.0

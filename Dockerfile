@@ -8,23 +8,29 @@ USER root
 
 COPY . /usr/src/sereto
 
-# Install sereto and its dependencies, create user "sereto"
-RUN useradd -m sereto && \
+RUN \
+    # Add a low-privileged user to run the application
+    useradd -m sereto && \
+    # Install system dependencies and sereto
     apt-get -y update && \
-    apt-get install -y pandoc python3-pip pipx vim && \
+    apt-get install -y pandoc python3-pip pipx vim gosu && \
     pipx install --global /usr/src/sereto/ && \
+    # Prepare container entrypoint script
+    cp /usr/src/sereto/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    # Clean up apt cache and temporary files
     apt-get clean && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
     rm -rf /usr/src/sereto && \
+    # Create default settings
     mkdir -p /home/sereto/.config/sereto && \
     echo '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json && \
     chown -R sereto:sereto /home/sereto/.config
 
-# Switch to sereto user
-USER sereto
 WORKDIR /home/sereto
 
-# Default command
+# Entry point adjusts group permissions for mounted volumes and starts CMD as low-privileged user
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["/usr/local/bin/sereto", "repl"]
