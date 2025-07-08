@@ -13,8 +13,8 @@ RUN \
     useradd -m sereto && \
     # Install system dependencies and sereto
     apt-get -y update && \
-    apt-get install -y pandoc python3-pip pipx vim gosu && \
-    pipx install --global /usr/src/sereto/ && \
+    apt-get install -y pandoc python3-pip vim gosu && \
+    pip install --break-system-packages /usr/src/sereto/ && \
     # Prepare container entrypoint script
     cp /usr/src/sereto/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-entrypoint.sh && \

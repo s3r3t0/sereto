@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Docker: install `requirements.txt` from templates.
+
 ## [0.3.3] - 2025-07-08
 
 ### Added

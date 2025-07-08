@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 # Add sereto user to the group of /projects if it exists
@@ -17,6 +17,11 @@ if [ -d /templates ]; then
         groupadd -g "$TEMPLATES_GID" templatesgrp
     fi
     usermod -aG "$TEMPLATES_GID" sereto
+fi
+
+# Install requirements from /templates/requirements.txt if it exists
+if [ -f /templates/requirements.txt ]; then
+    pip install --break-system-packages -r /templates/requirements.txt
 fi
 
 exec gosu sereto "$@"
