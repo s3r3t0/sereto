@@ -22,7 +22,7 @@ def parse_query(query: str, keys: dict[str, str])->dict[str, list[str]]:
     parser=search_parser(keys)
     reverse_keys={v: k for k, v in keys.items()}
 
-    result = {key: [] for key in keys}
+    result: dict[str, list[str]]= {key: [] for key in keys}
 
     try:
         for token in parser.parseString(query):

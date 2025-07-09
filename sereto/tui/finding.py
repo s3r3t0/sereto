@@ -322,12 +322,12 @@ class FuzzyMatcher:
     def __init__(self, query:list[str])->None:
         self.query = [q.lower() for q in query]
 
-    def max_score(self, values: list[str]) -> int:
+    def max_score(self, values: list[str]) -> float:
         """
         Calculate the average fuzzy match score between the query and the given values.
         """
         if not self.query:
-            return 0
+            return 0.0
 
         combined = '; '.join(values)
         scores=[Matcher(q).match(combined) for q in self.query]
@@ -351,13 +351,13 @@ class FuzzyMatcher:
 
 class SearchWidget(Widget):
     BINDINGS = [("a", "add_finding", "Add finding")]
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__()
         self.findings: list[FindingMetadata] = []
         self.filtered_findings: list[FindingMetadata] = []
         self._load_findings()
 
-    def _load_findings(self):
+    def _load_findings(self)->None:
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         for category in app.categories:
@@ -439,7 +439,7 @@ class SearchWidget(Widget):
             key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
             reverse=True,
         ):
-            if f.search_similarity > 50:
+            if f.search_similarity is not None and f.search_similarity > 50:
                 self.result_list.index=0
                 self.result_list.append(ResultItem(f, matcher_dict))
 
@@ -455,15 +455,17 @@ class SearchWidget(Widget):
             )
 
     def action_add_finding(self) -> None:
-        item = self.result_list.children[self.result_list.index]
-        if isinstance(item, ResultItem):
-            self.app.push_screen(
-                AddFindingScreen(
-                    self.app.project.settings.templates_path,
-                    item.finding,
-                    'Add finding'
+        index=self.result_list.index
+        if index is not None:
+            item = self.result_list.children[index]
+            if isinstance(item, ResultItem):
+                self.app.push_screen(
+                    AddFindingScreen(
+                        templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
+                        finding=item.finding,
+                        title='Add finding'
+                    )
                 )
-            )
 
 
 class ResultItem(ListItem):
