@@ -5,20 +5,22 @@ from typing import Any
 
 import frontmatter  # type: ignore
 from pydantic import DirectoryPath, ValidationError
-from rapidfuzz import fuzz
 from rich.markup import escape
 from rich.syntax import Syntax
+from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
+from textual.fuzzy import Matcher
 from textual.screen import ModalScreen
 from textual.types import NoSelection
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Footer, Header, Input, Rule, Select, SelectionList, Static
+from textual.widgets import Button, Footer, Header, Input, ListItem, ListView, Rule, Select, SelectionList, Static
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
+from sereto.parsing import parse_query
 from sereto.project import Project
 from sereto.tui.widgets.input import InputWithLabel, ListInput, SelectWithLabel
 
@@ -70,7 +72,7 @@ class FindingPreviewScreen(ModalScreen[None]):
 
     def action_add_finding(self) -> None:
         self.dismiss()
-        self.app.query_one("#results", ResultsWidget).action_add_finding()
+        self.app.query_one("#search", SearchWidget).action_add_finding()
 
 
 class AddFindingScreen(ModalScreen[None]):
@@ -199,69 +201,54 @@ class AddFindingScreen(ModalScreen[None]):
         app.action_focus_search()
 
 
+class FuzzyMatcher:
+    def __init__(self, query:list[str])->None:
+        self.query = [q.lower() for q in query]
+
+    def max_score(self, values: list[str]) -> int:
+        """
+        Calculate the average fuzzy match score between the query and the given values.
+        """
+        if not self.query:
+            return 0
+
+        combined = '; '.join(values)
+        scores=[Matcher(q).match(combined) for q in self.query]
+        result_score=(sum(scores)/len(scores))*100 if scores else 0
+
+        return result_score
+
+    def highlight(self, text: list[str]) -> Text:
+        """
+        Highlight all fuzzy matches of the query in the given text.
+        """
+        combined = '; '.join(text)
+        result_text = Text(combined)
+
+        for q in self.query:
+            for span in Matcher(q).highlight(combined).spans:
+                result_text.stylize('bold yellow', span.start, span.end)
+
+        return result_text
+
+
 class SearchWidget(Widget):
-    def compose(self) -> ComposeResult:
-        app: SeretoApp = self.app  # type: ignore[assignment]
-        self.input_field = Input(placeholder="Type to search...")
-        self.category_filter = SelectionList[str](*[(category, category, True) for category in app.categories])
-
-        with Horizontal():
-            with Container(classes="input-field"):
-                yield self.input_field
-            with Container(classes="category-filter"):
-                yield self.category_filter
-
-    def on_mount(self) -> None:
-        self.input_field.focus()
-
-    @on(Input.Changed)
-    @on(SelectionList.SelectedChanged)
-    def update_results(self) -> None:
-        query = self.input_field.value.strip()
-        results_widget = self.app.query_one("#results", ResultsWidget)
-        results_table: DataTable[str] = results_widget.query_one("DataTable", DataTable)
-        results_table.clear()
-
-        selected_categories = [c.lower() for c in self.category_filter.selected]
-        filtered_findings = [f for f in results_widget.findings if f.category.lower() in selected_categories]
-
-        if len(query) == 0:
-            return
-
-        # compute search similarity
-        for f in filtered_findings:
-            name_score = fuzz.partial_ratio(query, f.name, processor=lambda x: x.lower())
-            keywords_scores = [
-                fuzz.partial_ratio(query, keyword, processor=lambda x: x.lower()) for keyword in f.keywords
-            ]
-            max_keywords_score = max(keywords_scores) if keywords_scores else 0
-            f.search_similarity = 0.7 * name_score + 0.3 * max_keywords_score
-
-        # display matching findings
-        for f in sorted(
-            filtered_findings,
-            key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
-            reverse=True,
-        ):
-            ix = results_widget.findings.index(f)  # index in the list of all findings
-            results_table.add_row(
-                f.category, f.name, "; ".join(f.keywords), label=f"{f.search_similarity:.2f}", key=str(ix)
-            )
-
-
-class ResultsWidget(Widget):
     BINDINGS = [("a", "add_finding", "Add finding")]
-
-    def compose(self) -> ComposeResult:
-        # load data
+    def __init__(self):
+        super().__init__()
         self.findings: list[FindingMetadata] = []
+        self.filtered_findings: list[FindingMetadata] = []
+        self._load_findings()
+
+    def _load_findings(self):
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         for category in app.categories:
             for finding in (app.project.settings.templates_path / "categories" / category.lower() / "findings").glob(
-                "*.md.j2"
+                    "*.md.j2"
             ):
-                metadata, _ = frontmatter.parse(finding.read_text())
+                file_text = finding.read_text()
+                metadata, _ = frontmatter.parse(file_text)
 
                 try:
                     data = FindingTemplateFrontmatterModel.model_validate(metadata)
@@ -278,32 +265,113 @@ class ResultsWidget(Widget):
                     )
                 )
 
-        # display results table
-        self.results_table: DataTable[str] = DataTable[str](cursor_type="row")
-        self.results_table.add_columns("Category", "Name", "Keywords")
+    def compose(self) -> ComposeResult:
+        app: SeretoApp = self.app  # type: ignore[assignment]
 
-        yield Vertical(self.results_table, classes="results")
+        self.input_field = Input(placeholder="Type to search...", classes='input-field')
+        self.category_filter = SelectionList[str](*[(category, category, True) for category in app.categories])
+        self.result_list=ListView(classes='search-result')
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        if event.row_key.value is None:
+        with Horizontal(classes="search-panel"):
+            with Vertical(), Container(classes="search-palette"):
+                    yield self.input_field
+                    yield self.result_list
+            with Container(classes="category-filter"):
+                yield self.category_filter
+
+    def on_mount(self) -> None:
+        self.input_field.focus()
+        self.update_results()
+
+    @on(Input.Changed)
+    @on(SelectionList.SelectedChanged)
+    def update_results(self) -> None:
+        query = self.input_field.value.strip()
+        keys={'name':'n', 'keyword':'k'}
+        parsed=parse_query(query, keys)
+
+        self.result_list.clear()
+
+        if len(query) == 0:
             return
-        self.selected_finding = self.findings[int(event.row_key.value)]
-        self.app.push_screen(FindingPreviewScreen("Finding preview", self.selected_finding.path.read_text()))
+
+        selected_categories = [c.lower() for c in self.category_filter.selected]
+        filtered_findings = [f for f in self.findings if f.category.lower() in selected_categories]
+
+        # reusable fuzzy matchers for scoring and highlighting
+        matcher_dict = {
+            key: FuzzyMatcher(parsed[key])
+            for key in keys
+        }
+
+        # compute search similarity
+        for f in filtered_findings:
+            scores=[]
+
+            if parsed['name']:
+                scores.append(matcher_dict['name'].max_score([f.name]))
+
+            if parsed['keyword']:
+                scores.append(matcher_dict['keyword'].max_score(f.keywords))
+
+            f.search_similarity=sum(scores)/len(scores) if scores else 0
+
+        # display matching findings
+        for f in sorted(
+            filtered_findings,
+            key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
+            reverse=True,
+        ):
+            if f.search_similarity > 50:
+                self.result_list.index=0
+                self.result_list.append(ResultItem(f, matcher_dict))
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        item = event.item
+        if isinstance(item, ResultItem):
+            self.selected_finding = item.finding
+            self.app.push_screen(
+                FindingPreviewScreen(
+                    'Finding preview',
+                    self.selected_finding.path.read_text()
+                )
+            )
 
     def action_add_finding(self) -> None:
-        # Get the keys for the row under the cursor.
-        row_key, _ = self.results_table.coordinate_to_cell_key(self.results_table.cursor_coordinate)
-
-        if row_key.value is None:
-            return
-
-        self.app.push_screen(
-            AddFindingScreen(
-                templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
-                finding=self.findings[int(row_key.value)],
-                title="Add finding",
+        item = self.result_list.children[self.result_list.index]
+        if isinstance(item, ResultItem):
+            self.app.push_screen(
+                AddFindingScreen(
+                    self.app.project.settings.templates_path,
+                    item.finding,
+                    'Add finding'
+                )
             )
+
+
+class ResultItem(ListItem):
+    def __init__(self, finding: FindingMetadata, matchers:dict[str, FuzzyMatcher]):
+        super().__init__(classes='result-item')
+        self.finding = finding
+        self.matchers = matchers
+
+    def compose(self) -> ComposeResult:
+        if self.matchers['name']:
+            name_text=self.matchers['name'].highlight([self.finding.name])
+        else:
+            name_text=Text(self.finding.name)
+
+        if self.matchers['keyword']:
+            keywords_text = self.matchers['keyword'].highlight(self.finding.keywords)
+        else:
+            keywords_text = Text(";".join(self.finding.keywords))
+
+
+        text=Text.assemble(
+            name_text+'\n',
+            Text(style='italic dim')+keywords_text
         )
+        yield Static(text, expand=True)
 
 
 class SeretoApp(App[None]):
@@ -329,9 +397,12 @@ class SeretoApp(App[None]):
         if len(self.project.config.last_config.targets) == 0:
             raise SeretoValueError("no targets found in the configuration")
 
+        search=SearchWidget()
+        search.id='search'
+        search.classes='dropdown'
+
         yield Header()
-        yield SearchWidget(id="search")
-        yield ResultsWidget(id="results")
+        yield search
         yield Footer()
 
     def action_focus_search(self) -> None:
