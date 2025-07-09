@@ -15,7 +15,7 @@ from textual.fuzzy import Matcher
 from textual.screen import ModalScreen
 from textual.types import NoSelection
 from textual.widget import Widget
-from textual.widgets import Button, Footer, Header, Input, ListItem, ListView, Rule, Select, SelectionList, Static
+from textual.widgets import Button, Footer, Header, Input, ListItem, ListView, Rule, Select, SelectionList, Static, Switch
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
