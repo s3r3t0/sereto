@@ -9,8 +9,6 @@ USER root
 COPY . /usr/src/sereto
 
 RUN \
-    # Add a low-privileged user to run the application
-    useradd -m sereto && \
     # Install system dependencies and sereto
     apt-get -y update && \
     apt-get install -y pandoc python3-pip vim gosu && \
@@ -26,8 +24,7 @@ RUN \
     rm -rf /usr/src/sereto && \
     # Create default settings
     mkdir -p /home/sereto/.config/sereto && \
-    echo '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json && \
-    chown -R sereto:sereto /home/sereto/.config
+    echo '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json
 
 WORKDIR /home/sereto
 

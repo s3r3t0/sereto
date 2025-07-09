@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Docker: install `requirements.txt` from templates.
+- Docker: use the same UID for the low-privileged user as the owner of the `/projects` directory
 
 ## [0.3.3] - 2025-07-08
 
