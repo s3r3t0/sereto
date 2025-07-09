@@ -7,9 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Docker: install `requirements.txt` from templates.
+
+## [0.3.3] - 2025-07-08
+
+### Added
+
+- Add warning to `sereto findings add` TUI when the finding already exists, and an option to overwrite it.
+
+### Changed
+
+- Allow lists without preceeding newlines in Markdown.
+- Pass `Config` (`config`) and `VersionConfig` (`c`) as Jinja2 variables when rendering sub-findings.
+
+### Fixed
+
+- Fix Docker volume permissions for mounted directories.
+
+### Dependencies
+
+- Update pypdf requirement from ~=5.6.0 to ~=5.7.0
+
+## [0.3.2] - 2025-06-26
+
 ### Added
 
 - Add `sereto oxipng` command to optimize PNG images in the report.
+
+### Changed
+
+- Rename output filenames for SoW and report (now they contain the project ID and version).
+- Update usage docs about locators
+
+### Fixed
+
+- Properly handle var types (boolean/integer/string) in `sereto findings add` TUI.
+
+### Dependencies
+
+- Add tomli-w to the dependencies to support writing TOML files.
+- Update pydantic-settings requirement from ~=2.9.1 to ~=2.10.0
+- Update textual requirement from ~=3.4.0 to ~=3.5.0
 
 ## [0.3.1] - 2025-06-17
 
@@ -424,7 +464,9 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.1...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/s3r3t0/sereto/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/s3r3t0/sereto/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/s3r3t0/sereto/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/s3r3t0/sereto/compare/v0.2.9...v0.3.0
 [0.2.9]: https://github.com/s3r3t0/sereto/compare/v0.2.8...v0.2.9

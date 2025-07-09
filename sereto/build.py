@@ -70,6 +70,7 @@ def build_subfinding_to_tex(
     # Process the finding
     content = render_subfinding_to_tex(
         sub_finding=sub_finding,
+        config=project.config,
         version=version,
         templates=project.settings.templates_path,
         render=project.settings.render,

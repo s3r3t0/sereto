@@ -539,10 +539,9 @@ def open_report(ctx: Project, version: ProjectVersion | None) -> None:
         ctx: Project's representation.
         version: The version of the report that is opened. If None, the last version is used.
     """
-    if version is None:
-        version = ctx.config.last_version
+    version_config = ctx.config.at_version(version) if version else ctx.config.last_config
 
-    if not (report_path := ctx.path / "pdf" / f"report{version.path_suffix}.pdf").is_file():
+    if not (report_path := ctx.path / "pdf" / version_config.report_name).is_file():
         raise SeretoPathError(f"File not found '{report_path}'")
 
     click.launch(str(report_path))
@@ -560,10 +559,9 @@ def open_sow(ctx: Project, version: ProjectVersion | None) -> None:
         ctx: Project's representation.
         version: The version of the SoW that is opened. If None, the last version is used.
     """
-    if version is None:
-        version = ctx.config.last_version
+    version_config = ctx.config.at_version(version) if version else ctx.config.last_config
 
-    if not (sow_path := ctx.path / "pdf" / f"sow{version.path_suffix}.pdf").is_file():
+    if not (sow_path := ctx.path / "pdf" / version_config.sow_name).is_file():
         raise SeretoPathError(f"File not found '{sow_path}'")
 
     click.launch(str(sow_path))

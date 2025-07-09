@@ -1,3 +1,5 @@
+import random
+import string
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -307,6 +309,18 @@ class Findings:
 
         return cls(groups=groups, target_dir=target_dir, target_locators=target_locators)
 
+    def get_path(self, category: str, name: str) -> FilePath:
+        """Get the path to a sub-finding by category and name.
+
+        Args:
+            category: The category of the sub-finding.
+            name: The name of the sub-finding.
+
+        Returns:
+            The path to the sub-finding file.
+        """
+        return self.findings_dir / f"{category.lower()}_{name}.md.j2"
+
     @validate_call
     def add_from_template(
         self,
@@ -316,6 +330,7 @@ class Findings:
         name: str | None = None,
         risk: Risk | None = None,
         variables: dict[str, Any] | None = None,
+        overwrite: bool = False,
     ) -> None:
         """Add a sub-finding from a template.
 
@@ -324,19 +339,40 @@ class Findings:
         Args:
             templates: The path to the templates directory.
             template_path: The path to the sub-finding template.
+            category: The category of the sub-finding.
             name: The name of the sub-finding. If not provided, the name will use the default value from the template.
             risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
+            variables: A dictionary of variables to be used in the sub-finding template.
+            overwrite: If False, existing sub-finding will not be overwritten and new sub-finding with a random suffix
+                will be created. Otherwise, if True, existing sub-finding will be overwritten.
         """
         if variables is None:
             variables = {}
+        overwriting = False
 
         # read template
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
+        template_name = template_path.name.removesuffix(".md.j2")
         _, content = frontmatter.parse(template_path.read_text(), encoding="utf-8")
 
         # write sub-finding to findings directory
-        if (sub_finding_path := self.findings_dir / f"{category.lower()}_{template_path.name}").is_file():
-            raise SeretoPathError(f"sub-finding already exists: {sub_finding_path}")
+        if (sub_finding_path := self.get_path(category=category, name=template_name)).is_file():
+            if overwrite:
+                sub_finding_path.unlink()
+                overwriting = True
+            else:
+                # Try up to 5 times to generate a unique random suffix
+                for _ in range(5):
+                    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+                    sub_finding_path = self.get_path(category=category, name=f"{template_name}_{suffix}")
+                    if not sub_finding_path.is_file():
+                        break
+                else:
+                    raise SeretoPathError(
+                        "sub-finding already exists and could not generate a unique filename after 5 attempts: "
+                        + str(sub_finding_path)
+                    )
+
         sub_finding_metadata = SubFindingFrontmatterModel(
             name=template_metadata.name,
             risk=template_metadata.risk,
@@ -345,6 +381,9 @@ class Findings:
             template_path=str(template_path.relative_to(templates)),
         )
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
+
+        if overwriting:
+            return
 
         # load the created sub-finding
         sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
@@ -422,11 +461,14 @@ class Findings:
 
 def render_subfinding_to_tex(
     sub_finding: SubFinding,
+    config: "Config",
     version: ProjectVersion,
     templates: DirectoryPath,
     render: Render,
     converter: str | None = None,
 ) -> str:
+    version_config = config.at_version(version=version)
+
     # Validate variables
     sub_finding.validate_vars()
 
@@ -436,6 +478,8 @@ def render_subfinding_to_tex(
         file=sub_finding.path,
         vars={
             "f": sub_finding,
+            "c": version_config,
+            "config": config,
             "version": version,
         },
     )

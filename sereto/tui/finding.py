@@ -22,7 +22,8 @@ from sereto.exceptions import SeretoValueError
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
 from sereto.parsing import parse_query
 from sereto.project import Project
-from sereto.tui.widgets.input import InputWithLabel, ListInput, SelectWithLabel
+from sereto.target import Target
+from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
 
 
 @dataclass
@@ -104,16 +105,63 @@ class AddFindingScreen(ModalScreen[None]):
             )
             yield self.select_target
 
+            # Existing finding warning + overwrite switch
+            self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
+            self.overwrite_warning = Horizontal(
+                self.overwrite_switch,
+                Static(
+                    "[b red]Warning:[/b red] A finding with this name already exists in the selected target.\n"
+                    "  [b]Switch OFF:[/b] Keep the original and create a new one with a random suffix.\n"
+                    "  [b]Switch ON:[/b] Overwrite the existing finding."
+                ),
+                id="overwrite-warning",
+            )
+            self.overwrite_warning.display = False
+            yield self.overwrite_warning
+
             yield Static("[b]Variables", classes="section-header")
             yield Rule()
 
             for var in self.finding.variables:
                 yield Static(f"[b]{var.name}:[/b] {escape(var.type_annotation)}\n  {var.description}", classes="pl-1")
                 if var.is_list:
-                    yield ListInput(id=f"var-{var.name}")
+                    match var.type:
+                        case "boolean":
+                            yield ListWidget(
+                                widget_factory=lambda var=var: Select(  # type: ignore[misc]
+                                    options=[
+                                        ("True", True),
+                                        ("False", False),
+                                    ],
+                                    allow_blank=not var.required,
+                                ),
+                                id=f"var-{var.name}",
+                            )
+                        case "integer":
+                            yield ListWidget(
+                                widget_factory=lambda: Input(type="integer", classes="m-1"),
+                                id=f"var-{var.name}",
+                            )
+                        case _:
+                            yield ListWidget(
+                                widget_factory=lambda: Input(classes="m-1"),
+                                id=f"var-{var.name}",
+                            )
                 else:
-                    yield Input(id=f"var-{var.name}", classes="m-1")
-
+                    match var.type:
+                        case "boolean":
+                            yield Select(
+                                options=[
+                                    ("True", True),
+                                    ("False", False),
+                                ],
+                                allow_blank=not var.required,
+                                id=f"var-{var.name}",
+                            )
+                        case "integer":
+                            yield Input(id=f"var-{var.name}", type="integer", classes="m-1")
+                        case _:
+                            yield Input(id=f"var-{var.name}", classes="m-1")
                 yield Rule()
 
             self.btn_save_finding = Button.success("Save", id="save-finding", classes="m-1")
@@ -124,12 +172,26 @@ class AddFindingScreen(ModalScreen[None]):
         add_finding.border_title = self.title
         add_finding.border_subtitle = "Esc to close"
 
+    def on_select_changed(self, event: Select.Changed) -> None:
+        if event.select is self.select_target.query_one(Select):
+            self.update_overwrite_warning()
+
+    def update_overwrite_warning(self) -> None:
+        """Update the overwrite warning and switch dynamically."""
+        try:
+            target = self._retrieve_target()
+        except Exception:
+            self.overwrite_warning.display = False
+            return
+
+        finding_path = target.findings.get_path(
+            name=self.finding.path.name.removesuffix(".md.j2"),
+            category=self.finding.category.lower(),
+        )
+        self.overwrite_warning.display = finding_path.is_file()
+
     def _load_variables(self) -> dict[str, Any]:
         """Load variables from the inputs.
-
-        Returns:
-            A dictionary of variables with their values.
-
         Raises:
             SeretoValueError: If a required variable is not set.
         """
@@ -137,25 +199,84 @@ class AddFindingScreen(ModalScreen[None]):
 
         for var in self.finding.variables:
             if var.is_list:
-                all_inputs = self.query_one(f"#var-{var.name}", ListInput).query(Input).results()
-                input_values = [input.value.strip() for input in all_inputs if len(input.value.strip()) > 0]
-                if var.required and len(input_values) == 0:
+                widgets = list(self.query_one(f"#var-{var.name}", ListWidget).query(".widget").results())
+
+                match var.type:
+                    case "boolean":
+                        # get values, filter out NoSelection
+                        values = [
+                            w.value for w in widgets if isinstance(w, Select) and not isinstance(w.value, NoSelection)
+                        ]
+                    case "integer":
+                        values_str = [
+                            w.value.strip() for w in widgets if isinstance(w, Input) and len(w.value.strip()) > 0
+                        ]
+                        try:
+                            values = [int(v) for v in values_str]
+                        except ValueError:
+                            raise SeretoValueError(f"variable '{var.name}' must be an integer") from None
+                    case _:
+                        values = [
+                            w.value.strip() for w in widgets if isinstance(w, Input) and len(w.value.strip()) > 0
+                        ]
+
+                if var.required and len(values) == 0:
                     raise SeretoValueError(f"variable '{var.name}' is required")
-                else:
-                    # always set list variables, even if empty
-                    variables[var.name] = input_values
+                elif len(values) == 0:
+                    # don't set the variable if not required and empty
+                    continue
+                # always set list variables, even if empty
+                variables[var.name] = values
+                continue
             else:
-                value = self.query_one(f"#var-{var.name}", Input).value.strip()
-                if len(value) == 0:
-                    if var.required:
-                        raise SeretoValueError(f"variable '{var.name}' is required")
-                    else:
-                        # don't set the variable if not required and empty
-                        continue
-                else:
-                    variables[var.name] = value
+                match var.type:
+                    case "boolean":
+                        value_select: Select[bool] = self.query_one(f"#var-{var.name}", Select)
+                        value: int | str | None = (
+                            value_select.value if not isinstance(value_select.value, NoSelection) else None
+                        )
+                    case "integer":
+                        value_str = self.query_one(f"#var-{var.name}", Input).value.strip()
+                        if len(value_str) == 0:
+                            if var.required:
+                                raise SeretoValueError(f"variable '{var.name}' is required")
+                            else:
+                                continue
+                        try:
+                            value = int(value_str)
+                        except ValueError:
+                            raise SeretoValueError(f"variable '{var.name}' must be an integer") from None
+                    case _:
+                        value = self.query_one(f"#var-{var.name}", Input).value.strip()
+                        if len(value) == 0:
+                            if var.required:
+                                raise SeretoValueError(f"variable '{var.name}' is required")
+                            else:
+                                # don't set the variable if not required and empty
+                                continue
+                variables[var.name] = value
 
         return variables
+
+    def _retrieve_target(self) -> Target:
+        """Retrieve the target from the select input.
+
+        Returns:
+            The target object corresponding to the selected value.
+
+        Raises:
+            SeretoValueError: If the target is not found.
+        """
+        app: SeretoApp = self.app  # type: ignore[assignment]
+
+        target_select: Select[str] = self.select_target.query_one(Select)
+        all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
+
+        matching_target = [t for t in all_targets if t.uname == target_select.value]
+        if len(matching_target) != 1:
+            raise SeretoValueError(f"target with uname {target_select.value!r} not found")
+
+        return matching_target[0]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle Save button press event."""
@@ -166,17 +287,12 @@ class AddFindingScreen(ModalScreen[None]):
 
         # Retrieve the values from the inputs
         # - name
-        name = self.input_name.value  # TODO: check for None, report "Name is required"
+        name = self.input_name.value
         # - risk
         risk_select: Select[str] = self.select_risk.query_one(Select)
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
-        target_select: Select[str] = self.select_target.query_one(Select)
-        all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
-        matching_target = [t for t in all_targets if t.uname == target_select.value]
-        if len(matching_target) != 1:
-            raise SeretoValueError(f"target with uname {target_select.value!r} not found")
-        target = matching_target[0]
+        target = self._retrieve_target()
 
         # - variables
         try:
@@ -193,6 +309,7 @@ class AddFindingScreen(ModalScreen[None]):
             name=name,
             risk=risk,
             variables=variables,
+            overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
         )
 
         # Navigate back, focus on the search input field
