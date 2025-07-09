@@ -26,7 +26,7 @@ from textual.widgets import (
     Select,
     SelectionList,
     Static,
-    Switch
+    Switch,
 )
 
 from sereto.enums import Risk
