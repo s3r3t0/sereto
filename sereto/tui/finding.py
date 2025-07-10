@@ -331,50 +331,49 @@ class AddFindingScreen(ModalScreen[None]):
 
 
 class FuzzyMatcher:
-    def __init__(self, query:list[str])->None:
+    def __init__(self, query: list[str]) -> None:
         self.query = [q.lower() for q in query]
 
     def max_score(self, values: list[str]) -> float:
-        """
-        Calculate the average fuzzy match score between the query and the given values.
+        """Calculate the average fuzzy match score between the query and the given values.
         """
         if not self.query:
             return 0.0
 
-        combined = '; '.join(values)
-        scores=[Matcher(q).match(combined) for q in self.query]
-        result_score=(sum(scores)/len(scores))*100 if scores else 0
+        combined = "; ".join(values)
+        scores = [Matcher(q).match(combined) for q in self.query]
+        result_score = (sum(scores) / len(scores)) * 100 if scores else 0
 
         return result_score
 
     def highlight(self, text: list[str]) -> Text:
+        """Highlight all fuzzy matches of the query in the given text.
         """
-        Highlight all fuzzy matches of the query in the given text.
-        """
-        combined = '; '.join(text)
+        combined = "; ".join(text)
         result_text = Text(combined)
 
         for q in self.query:
             for span in Matcher(q).highlight(combined).spans:
-                result_text.stylize('bold yellow', span.start, span.end)
+                result_text.stylize("bold yellow", span.start, span.end)
 
         return result_text
 
 
 class SearchWidget(Widget):
     BINDINGS = [("a", "add_finding", "Add finding")]
-    def __init__(self)->None:
+
+    def __init__(self) -> None:
         super().__init__()
         self.findings: list[FindingMetadata] = []
         self.filtered_findings: list[FindingMetadata] = []
         self._load_findings()
 
-    def _load_findings(self)->None:
+    def _load_findings(self) -> None:
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         for category in app.categories:
             for finding in (app.project.settings.templates_path / "categories" / category.lower() / "findings").glob(
-                    "*.md.j2"
+                "*.md.j2"
             ):
                 file_text = finding.read_text()
                 metadata, _ = frontmatter.parse(file_text)
@@ -397,14 +396,14 @@ class SearchWidget(Widget):
     def compose(self) -> ComposeResult:
         app: SeretoApp = self.app  # type: ignore[assignment]
 
-        self.input_field = Input(placeholder="Type to search...", classes='input-field')
+        self.input_field = Input(placeholder="Type to search...", classes="input-field")
         self.category_filter = SelectionList[str](*[(category, category, True) for category in app.categories])
-        self.result_list=ListView(classes='search-result')
+        self.result_list = ListView(classes="search-result")
 
         with Horizontal(classes="search-panel"):
             with Vertical(), Container(classes="search-palette"):
-                    yield self.input_field
-                    yield self.result_list
+                yield self.input_field
+                yield self.result_list
             with Container(classes="category-filter"):
                 yield self.category_filter
 
@@ -416,8 +415,8 @@ class SearchWidget(Widget):
     @on(SelectionList.SelectedChanged)
     def update_results(self) -> None:
         query = self.input_field.value.strip()
-        keys={'name':'n', 'keyword':'k'}
-        parsed=parse_query(query, keys)
+        keys = {"name": "n", "keyword": "k"}
+        parsed = parse_query(query, keys)
 
         self.result_list.clear()
 
@@ -428,22 +427,19 @@ class SearchWidget(Widget):
         filtered_findings = [f for f in self.findings if f.category.lower() in selected_categories]
 
         # reusable fuzzy matchers for scoring and highlighting
-        matcher_dict = {
-            key: FuzzyMatcher(parsed[key])
-            for key in keys
-        }
+        matcher_dict = {key: FuzzyMatcher(parsed[key]) for key in keys}
 
         # compute search similarity
         for f in filtered_findings:
-            scores=[]
+            scores = []
 
-            if parsed['name']:
-                scores.append(matcher_dict['name'].max_score([f.name]))
+            if parsed["name"]:
+                scores.append(matcher_dict["name"].max_score([f.name]))
 
-            if parsed['keyword']:
-                scores.append(matcher_dict['keyword'].max_score(f.keywords))
+            if parsed["keyword"]:
+                scores.append(matcher_dict["keyword"].max_score(f.keywords))
 
-            f.search_similarity=sum(scores)/len(scores) if scores else 0
+            f.search_similarity = sum(scores) / len(scores) if scores else 0
 
         # display matching findings
         for f in sorted(
@@ -452,22 +448,17 @@ class SearchWidget(Widget):
             reverse=True,
         ):
             if f.search_similarity is not None and f.search_similarity > 50:
-                self.result_list.index=0
+                self.result_list.index = 0
                 self.result_list.append(ResultItem(f, matcher_dict))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         item = event.item
         if isinstance(item, ResultItem):
             self.selected_finding = item.finding
-            self.app.push_screen(
-                FindingPreviewScreen(
-                    'Finding preview',
-                    self.selected_finding.path.read_text()
-                )
-            )
+            self.app.push_screen(FindingPreviewScreen("Finding preview", self.selected_finding.path.read_text()))
 
     def action_add_finding(self) -> None:
-        index=self.result_list.index
+        index = self.result_list.index
         if index is not None:
             item = self.result_list.children[index]
             if isinstance(item, ResultItem):
@@ -475,33 +466,29 @@ class SearchWidget(Widget):
                     AddFindingScreen(
                         templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
                         finding=item.finding,
-                        title='Add finding'
+                        title="Add finding",
                     )
                 )
 
 
 class ResultItem(ListItem):
-    def __init__(self, finding: FindingMetadata, matchers:dict[str, FuzzyMatcher]):
-        super().__init__(classes='result-item')
+    def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]):
+        super().__init__(classes="result-item")
         self.finding = finding
         self.matchers = matchers
 
     def compose(self) -> ComposeResult:
-        if self.matchers['name']:
-            name_text=self.matchers['name'].highlight([self.finding.name])
+        if self.matchers["name"]:
+            name_text = self.matchers["name"].highlight([self.finding.name])
         else:
-            name_text=Text(self.finding.name)
+            name_text = Text(self.finding.name)
 
-        if self.matchers['keyword']:
-            keywords_text = self.matchers['keyword'].highlight(self.finding.keywords)
+        if self.matchers["keyword"]:
+            keywords_text = self.matchers["keyword"].highlight(self.finding.keywords)
         else:
             keywords_text = Text(";".join(self.finding.keywords))
 
-
-        text=Text.assemble(
-            name_text+'\n',
-            Text(style='italic dim')+keywords_text
-        )
+        text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)
         yield Static(text, expand=True)
 
 
@@ -528,9 +515,9 @@ class SeretoApp(App[None]):
         if len(self.project.config.last_config.targets) == 0:
             raise SeretoValueError("no targets found in the configuration")
 
-        search=SearchWidget()
-        search.id='search'
-        search.classes='dropdown'
+        search = SearchWidget()
+        search.id = "search"
+        search.classes = "dropdown"
 
         yield Header()
         yield search
