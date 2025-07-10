@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+# Add a low-privileged user to run the application
+USER_ID=$(stat -c '%u' /projects 2>/dev/null || echo 1000)
+useradd -m -u "$USER_ID" --non-unique sereto
+
+# Change permissions
+chown -R sereto:sereto /home/sereto/
+
 # Add sereto user to the group of /projects if it exists
 if [ -d /projects ]; then
     PROJECTS_GID=$(stat -c '%g' /projects)

@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2025-07-09
+
 ### Fixed
 
 - Docker: install `requirements.txt` from templates.
+- Docker: use the same UID for the low-privileged user as the owner of the `/projects` directory
 
 ## [0.3.3] - 2025-07-08
 
@@ -464,7 +467,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.3...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/s3r3t0/sereto/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/s3r3t0/sereto/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/s3r3t0/sereto/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/s3r3t0/sereto/compare/v0.3.0...v0.3.1
