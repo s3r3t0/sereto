@@ -372,9 +372,8 @@ class SearchWidget(Widget):
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         for category in app.categories:
-            for finding in (app.project.settings.templates_path / "categories" / category.lower() / "findings").glob(
-                "*.md.j2"
-            ):
+            findings_path = app.project.settings.templates_path / "categories" / category.lower() / "findings"
+            for finding in findings_path.glob("*.md.j2"):
                 file_text = finding.read_text()
                 metadata, _ = frontmatter.parse(file_text)
 

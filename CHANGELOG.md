@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improve the TUI search for finding templates.
+
+### Dependencies
+
+- Remove rapidfuzz dependency, as it is not used anymore.
+
 ## [0.3.4] - 2025-07-09
 
 ### Fixed
