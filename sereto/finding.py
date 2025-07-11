@@ -332,36 +332,33 @@ class Findings:
         variables: dict[str, Any] | None = None,
         overwrite: bool = False,
     ) -> None:
-        """Add a sub-finding from a template.
-
-        This will create a new finding group with a single sub-finding.
+        """Add a sub-finding from a template, creating a new finding group.
 
         Args:
-            templates: The path to the templates directory.
-            template_path: The path to the sub-finding template.
-            category: The category of the sub-finding.
-            name: The name of the sub-finding. If not provided, the name will use the default value from the template.
-            risk: The risk of the sub-finding. If not provided, the risk will use the default value from the template.
-            variables: A dictionary of variables to be used in the sub-finding template.
-            overwrite: If False, existing sub-finding will not be overwritten and new sub-finding with a random suffix
-                will be created. Otherwise, if True, existing sub-finding will be overwritten.
+            templates: Path to the templates directory.
+            template_path: Path to the sub-finding template.
+            category: Category of the sub-finding.
+            name: Name of the sub-finding group. Defaults to template name.
+            risk: Risk of the sub-finding. Defaults to template risk.
+            variables: Variables for the sub-finding template.
+            overwrite: If True, overwrite existing sub-finding; otherwise, create with random suffix.
         """
-        if variables is None:
-            variables = {}
-        overwriting = False
+        variables = variables or {}
 
-        # read template
+        # Load template metadata and content
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
         template_name = template_path.name.removesuffix(".md.j2")
-        _, content = frontmatter.parse(template_path.read_text(), encoding="utf-8")
+        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"))
 
-        # write sub-finding to findings directory
-        if (sub_finding_path := self.get_path(category=category, name=template_name)).is_file():
+        # Determine sub-finding path
+        sub_finding_path = self.get_path(category=category, name=template_name)
+        suffix = None
+
+        if sub_finding_path.is_file():
             if overwrite:
                 sub_finding_path.unlink()
-                overwriting = True
             else:
-                # Try up to 5 times to generate a unique random suffix
+                # Try to generate a unique filename with random suffix
                 for _ in range(5):
                     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
                     sub_finding_path = self.get_path(category=category, name=f"{template_name}_{suffix}")
@@ -369,10 +366,10 @@ class Findings:
                         break
                 else:
                     raise SeretoPathError(
-                        "sub-finding already exists and could not generate a unique filename after 5 attempts: "
-                        + str(sub_finding_path)
+                        f"sub-finding already exists and could not generate a unique filename: {sub_finding_path}"
                     )
 
+        # Prepare sub-finding frontmatter
         sub_finding_metadata = SubFindingFrontmatterModel(
             name=template_metadata.name,
             risk=template_metadata.risk,
@@ -380,28 +377,36 @@ class Findings:
             variables=variables,
             template_path=str(template_path.relative_to(templates)),
         )
+
+        # Write sub-finding file
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
 
-        if overwriting:
+        # If overwriting, nothing else to do
+        if overwrite:
             return
 
-        # load the created sub-finding
+        # Load the created sub-finding
         sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
 
-        # prepare finding group
+        # Determine group name
+        group_name = name or sub_finding.name
+        if suffix:
+            group_name = f"{group_name} {suffix}"
+
+        # Create finding group
         group = FindingGroup(
-            name=name or sub_finding_metadata.name,
+            name=group_name,
             explicit_risk=risk,
             sub_findings=[sub_finding],
             _target_locators=self.target_locators,
             _finding_group_locators=[],
         )
 
-        # write the finding group to findings.toml
+        # Append to findings.toml
         with self.config_file.open("a", encoding="utf-8") as f:
             f.write(f"\n{group.dumps_toml()}\n")
 
-        # add to loaded finding groups
+        # Add to loaded groups
         self.groups.append(group)
 
     @validate_call
