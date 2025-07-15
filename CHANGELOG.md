@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for loading plugin modules.
+
 ### Fixed
 
 - Fix issue in `sereto findings add`, when the finding already exists, and the user chooses to create copy. The finding group name now adds a suffix to the name, so that it does not conflict with the existing finding group.
+
+### Dependencies
+
+- Update textual requirement from ~=3.5.0 to ~=3.6.0.
 
 ## [0.3.4] - 2025-07-09
 
