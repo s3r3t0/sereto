@@ -10,6 +10,7 @@ from rich.syntax import Syntax
 from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
 from textual.fuzzy import Matcher
 from textual.screen import ModalScreen
@@ -20,14 +21,14 @@ from textual.widgets import (
     Footer,
     Header,
     Input,
-    ListItem,
-    ListView,
+    OptionList,
     Rule,
     Select,
     SelectionList,
     Static,
     Switch,
 )
+from textual.widgets.option_list import Option
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
@@ -62,7 +63,7 @@ class FindingPreviewScreen(ModalScreen[None]):
     }
     """
     BINDINGS = [
-        ("a", "add_finding", "Add finding"),
+        ("ctrl+s", "add_finding", "Add finding"),
         ("escape", "dismiss", "Dismiss preview"),
     ]
 
@@ -81,7 +82,7 @@ class FindingPreviewScreen(ModalScreen[None]):
     def on_mount(self) -> None:
         code_widget = self.query_one("#code")
         code_widget.border_title = self.title
-        code_widget.border_subtitle = "A to add finding; Esc to close"
+        code_widget.border_subtitle = "^s to add finding; Esc to close"
 
     def action_add_finding(self) -> None:
         self.dismiss()
@@ -335,8 +336,7 @@ class FuzzyMatcher:
         self.query = [q.lower() for q in query]
 
     def max_score(self, values: list[str]) -> float:
-        """Calculate the average fuzzy match score between the query and the given values.
-        """
+        """Calculate the average fuzzy match score between the query and the given values."""
         if not self.query:
             return 0.0
 
@@ -347,8 +347,7 @@ class FuzzyMatcher:
         return result_score
 
     def highlight(self, text: list[str]) -> Text:
-        """Highlight all fuzzy matches of the query in the given text.
-        """
+        """Highlight all fuzzy matches of the query in the given text."""
         combined = "; ".join(text)
         result_text = Text(combined)
 
@@ -360,7 +359,12 @@ class FuzzyMatcher:
 
 
 class SearchWidget(Widget):
-    BINDINGS = [("a", "add_finding", "Add finding")]
+    BINDINGS = [
+        ("ctrl+s", "add_finding", "Add finding"),
+        ("down", "cursor_down", "Next result"),
+        ("up", "cursor_up", "Previous result"),
+        Binding("enter", "select_item", "Select item", priority=True, show=False),
+    ]
 
     def __init__(self) -> None:
         super().__init__()
@@ -397,7 +401,12 @@ class SearchWidget(Widget):
 
         self.input_field = Input(placeholder="Type to search...", classes="input-field")
         self.category_filter = SelectionList[str](*[(category, category, True) for category in app.categories])
-        self.result_list = ListView(classes="search-result")
+
+        class NoFocusOptionList(OptionList):
+            """An OptionList subclass whose items are not focusable."""
+            can_focus = False
+
+        self.result_list = NoFocusOptionList(classes="search-result")
 
         with Horizontal(classes="search-panel"):
             with Vertical(), Container(classes="search-palette"):
@@ -408,7 +417,6 @@ class SearchWidget(Widget):
 
     def on_mount(self) -> None:
         self.input_field.focus()
-        self.update_results()
 
     @on(Input.Changed)
     @on(SelectionList.SelectedChanged)
@@ -417,7 +425,7 @@ class SearchWidget(Widget):
         keys = {"name": "n", "keyword": "k"}
         parsed = parse_query(query, keys)
 
-        self.result_list.clear()
+        self.result_list.clear_options()
 
         if len(query) == 0:
             return
@@ -441,54 +449,99 @@ class SearchWidget(Widget):
             f.search_similarity = sum(scores) / len(scores) if scores else 0
 
         # display matching findings
-        for f in sorted(
-            filtered_findings,
-            key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
-            reverse=True,
-        ):
-            if f.search_similarity is not None and f.search_similarity > 50:
-                self.result_list.index = 0
-                self.result_list.append(ResultItem(f, matcher_dict))
+        result_item = [
+            f
+            for f in sorted(
+                filtered_findings,
+                key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
+                reverse=True,
+            )
+            if f.search_similarity is not None and f.search_similarity > 50
+        ]
 
-    def on_list_view_selected(self, event: ListView.Selected) -> None:
-        item = event.item
-        if isinstance(item, ResultItem):
-            self.selected_finding = item.finding
-            self.app.push_screen(FindingPreviewScreen("Finding preview", self.selected_finding.path.read_text()))
+        options = []
+        for f in result_item:
+            options.append(FindingOption(f, matcher_dict))
+            options.append(None)  # insert a separator line
+
+        self.result_list.clear_options()
+        self.result_list.add_options(options)
+
+        # highlight the first search result
+        if options:
+            self.result_list.highlighted = 0
+            self.result_list.scroll_to_highlight()
+
+    # up/down scrolling without focusing the OptionList
+    def action_cursor_down(self) -> None:
+        if len(self.result_list.options) == 0:
+            return
+
+        if self.result_list.highlighted < len(self.result_list.options) - 1:
+            self.result_list.highlighted += 1
+        self.result_list.scroll_to_highlight(top=True)
+
+    def action_cursor_up(self) -> None:
+        if len(self.result_list.options) == 0:
+            return
+
+        if self.result_list.highlighted > 0:
+            self.result_list.highlighted -= 1
+        self.result_list.scroll_to_highlight(top=True)
+
+    @on(OptionList.OptionSelected)
+    def select_item(self, event: OptionList.OptionSelected) -> None:
+        finding = event.option.finding
+        self.app.push_screen(
+            FindingPreviewScreen(
+                title="Finding preview",
+                code=finding.path.read_text(),
+            )
+        )
+
+    def action_select_item(self) -> None:
+        if self.result_list.highlighted is None:
+            return
+        option = self.result_list.get_option_at_index(self.result_list.highlighted)
+        if isinstance(option, FindingOption):
+            self.app.push_screen(
+                FindingPreviewScreen(
+                    title="Finding preview",
+                    code=option.finding.path.read_text(),
+                )
+            )
 
     def action_add_finding(self) -> None:
-        index = self.result_list.index
-        if index is not None:
-            item = self.result_list.children[index]
-            if isinstance(item, ResultItem):
-                self.app.push_screen(
-                    AddFindingScreen(
-                        templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
-                        finding=item.finding,
-                        title="Add finding",
-                    )
+        if self.result_list.highlighted is None:
+            return
+        option = self.result_list.get_option_at_index(self.result_list.highlighted)
+        if isinstance(option, FindingOption):
+            self.app.push_screen(
+                AddFindingScreen(
+                    templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
+                    finding=option.finding,
+                    title="Add finding",
                 )
+            )
 
 
-class ResultItem(ListItem):
-    def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]):
-        super().__init__(classes="result-item")
-        self.finding = finding
-        self.matchers = matchers
+class FindingOption(Option):
+    """An Option representing a finding, with name and keywords optionally highlighted."""
 
-    def compose(self) -> ComposeResult:
-        if self.matchers["name"]:
-            name_text = self.matchers["name"].highlight([self.finding.name])
+    def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]) -> None:
+        if matchers["name"]:
+            name_text = matchers["name"].highlight([finding.name])
         else:
-            name_text = Text(self.finding.name)
+            name_text = Text(finding.name)
 
-        if self.matchers["keyword"]:
-            keywords_text = self.matchers["keyword"].highlight(self.finding.keywords)
+        if matchers["keyword"]:
+            keywords_text = matchers["keyword"].highlight(finding.keywords)
         else:
-            keywords_text = Text(";".join(self.finding.keywords))
+            keywords_text = Text(";".join(finding.keywords))
 
         text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)
-        yield Static(text, expand=True)
+        super().__init__(text, id=str(finding.path))
+        self.finding = finding
 
 
 class SeretoApp(App[None]):
