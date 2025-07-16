@@ -46,7 +46,7 @@ class FindingMetadata:
     name: str
     variables: list[VarsMetadataModel]
     keywords: list[str]
-    search_similarity: float | None = None
+    search_similarity: float = 0.0
 
 
 class FindingPreviewScreen(ModalScreen[None]):
@@ -404,6 +404,7 @@ class SearchWidget(Widget):
 
         class NoFocusOptionList(OptionList):
             """An OptionList subclass whose items are not focusable."""
+
             can_focus = False
 
         self.result_list = NoFocusOptionList(classes="search-result")
@@ -438,28 +439,30 @@ class SearchWidget(Widget):
 
         # compute search similarity
         for f in filtered_findings:
-            scores = []
+            scores: list[float] = []
 
             if parsed["name"]:
-                scores.append(matcher_dict["name"].max_score([f.name]))
+                name_score = matcher_dict["name"].max_score([f.name]) or 0
+                scores.append(name_score)
 
             if parsed["keyword"]:
-                scores.append(matcher_dict["keyword"].max_score(f.keywords))
+                keyword_score = matcher_dict["keyword"].max_score([f.name]) or 0
+                scores.append(keyword_score)
 
-            f.search_similarity = sum(scores) / len(scores) if scores else 0
+            f.search_similarity = sum(scores) / len(scores) if scores else 0.0
 
         # display matching findings
         result_item = [
             f
             for f in sorted(
                 filtered_findings,
-                key=lambda f: f.search_similarity if f.search_similarity is not None else 0,
+                key=lambda f: f.search_similarity,
                 reverse=True,
             )
-            if f.search_similarity is not None and f.search_similarity > 50
+            if f.search_similarity > 50.0
         ]
 
-        options = []
+        options: list[FindingOption | None] = []
         for f in result_item:
             options.append(FindingOption(f, matcher_dict))
             options.append(None)  # insert a separator line
@@ -474,24 +477,33 @@ class SearchWidget(Widget):
 
     # up/down scrolling without focusing the OptionList
     def action_cursor_down(self) -> None:
-        if len(self.result_list.options) == 0:
+        if not self.result_list.options:
             return
 
-        if self.result_list.highlighted < len(self.result_list.options) - 1:
-            self.result_list.highlighted += 1
+        if self.result_list.highlighted is None:
+            self.result_list.highlighted = 0
+        else:
+            if self.result_list.highlighted < len(self.result_list.options) - 1:
+                self.result_list.highlighted += 1
         self.result_list.scroll_to_highlight(top=True)
 
     def action_cursor_up(self) -> None:
-        if len(self.result_list.options) == 0:
+        if not self.result_list.options:
             return
 
-        if self.result_list.highlighted > 0:
-            self.result_list.highlighted -= 1
+        if self.result_list.highlighted is None:
+            self.result_list.highlighted = 0
+        else:
+            if self.result_list.highlighted > 0:
+                self.result_list.highlighted -= 1
         self.result_list.scroll_to_highlight(top=True)
 
     @on(OptionList.OptionSelected)
     def select_item(self, event: OptionList.OptionSelected) -> None:
-        finding = event.option.finding
+        option = event.option
+        if not isinstance(option, FindingOption):
+            return
+        finding = option.finding
         self.app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
@@ -529,12 +541,12 @@ class FindingOption(Option):
     """An Option representing a finding, with name and keywords optionally highlighted."""
 
     def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]) -> None:
-        name_text = (
-            matchers["name"].highlight([finding.name]) if matchers["name"] else Text(finding.name)
-        )
+        name_text = matchers["name"].highlight([finding.name]) if matchers["name"] else Text(finding.name)
 
         keywords_text = (
-            matchers["keyword"].highlight(finding.keywords) if matchers["keyword"] else Text(", ".join(finding.keywords))
+            matchers["keyword"].highlight(finding.keywords)
+            if matchers["keyword"]
+            else Text(", ".join(finding.keywords))
         )
 
         text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)
