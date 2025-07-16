@@ -529,15 +529,13 @@ class FindingOption(Option):
     """An Option representing a finding, with name and keywords optionally highlighted."""
 
     def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]) -> None:
-        if matchers["name"]:
-            name_text = matchers["name"].highlight([finding.name])
-        else:
-            name_text = Text(finding.name)
+        name_text = (
+            matchers["name"].highlight([finding.name]) if matchers["name"] else Text(finding.name)
+        )
 
-        if matchers["keyword"]:
-            keywords_text = matchers["keyword"].highlight(finding.keywords)
-        else:
-            keywords_text = Text(";".join(finding.keywords))
+        keywords_text = (
+            matchers["keyword"].highlight(finding.keywords) if matchers["keyword"] else Text(", ".join(finding.keywords))
+        )
 
         text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)
         super().__init__(text, id=str(finding.path))
