@@ -8,9 +8,8 @@ from pydantic import DirectoryPath, ValidationError
 from rich.markup import escape
 from rich.syntax import Syntax
 from rich.text import Text
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
-from textual.binding import Binding
 from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
 from textual.fuzzy import Matcher
 from textual.screen import ModalScreen
@@ -363,7 +362,6 @@ class SearchWidget(Widget):
         ("ctrl+s", "add_finding", "Add finding"),
         ("down", "cursor_down", "Next result"),
         ("up", "cursor_up", "Previous result"),
-        Binding("enter", "select_item", "Select item", priority=True, show=False),
     ]
 
     def __init__(self) -> None:
@@ -475,6 +473,16 @@ class SearchWidget(Widget):
             self.result_list.highlighted = 0
             self.result_list.scroll_to_highlight()
 
+    def on_key(self, event: events.Key) -> None:
+        """Intercepts key presses and handles the Enter key."""
+        if event.key == "enter":
+            if self.category_filter.has_focus:
+                return
+
+            if self.input_field.has_focus:
+                self.action_select_item()
+            return
+
     # up/down scrolling without focusing the OptionList
     def action_cursor_down(self) -> None:
         if not self.result_list.options:
@@ -524,6 +532,9 @@ class SearchWidget(Widget):
             )
 
     def action_add_finding(self) -> None:
+        if not self.input_field.has_focus:
+            return
+
         if self.result_list.highlighted is None:
             return
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
