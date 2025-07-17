@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove rapidfuzz dependency, as it is not used anymore.
 - Update textual requirement from ~=3.5.0 to ~=3.6.0.
+- Update pypdf requirement from ~=5.7.0 to ~=5.8.0
 
 ## [0.3.4] - 2025-07-09
 
