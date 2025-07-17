@@ -11,12 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support for loading plugin modules.
 
+### Changed
+
+- Improve the TUI search for finding templates.
+
 ### Fixed
 
 - Fix issue in `sereto findings add`, when the finding already exists, and the user chooses to create copy. The finding group name now adds a suffix to the name, so that it does not conflict with the existing finding group.
 
 ### Dependencies
 
+- Remove rapidfuzz dependency, as it is not used anymore.
 - Update textual requirement from ~=3.5.0 to ~=3.6.0.
 
 ## [0.3.4] - 2025-07-09
