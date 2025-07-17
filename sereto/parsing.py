@@ -2,8 +2,7 @@ import pyparsing as pp
 
 
 def search_parser(keys: dict[str, str]) -> pp.ParserElement:
-    """Builds and returns a search query parser for simple key-value syntax.
-    """
+    """Builds and returns a search query parser for simple key-value syntax."""
     value = pp.Word(pp.alphanums + "-_.") | pp.QuotedString('"') | pp.QuotedString("'")
     key = pp.oneOf(list(keys.keys()) + list(keys.values()))
 
@@ -15,8 +14,7 @@ def search_parser(keys: dict[str, str]) -> pp.ParserElement:
 
 
 def parse_query(query: str, keys: dict[str, str]) -> dict[str, list[str]]:
-    """Parse a search query string into a structured dictionary.
-    """
+    """Parse a search query string into a structured dictionary."""
     parser = search_parser(keys)
     reverse_keys = {v: k for k, v in keys.items()}
 

@@ -3,6 +3,7 @@ import importlib
 import importlib.metadata
 import importlib.util
 import shutil
+import sys
 from contextlib import suppress
 from pathlib import Path
 
@@ -872,7 +873,6 @@ def load_plugins() -> None:
     # Check if plugins are enabled
     if not settings.plugins.enabled:
         return
-
     # Get plugins directory
     plugins_dir = Path(
         replace_strings(text=settings.plugins.directory, replacements={"%TEMPLATES%": str(settings.templates_path)})
@@ -880,17 +880,36 @@ def load_plugins() -> None:
     if not plugins_dir.is_dir():
         raise SeretoPathError(f"Plugins directory not found: '{plugins_dir}'")
 
+    # Ensure plugins directory is in sys.path and plugins is a package
+    if not (plugins_dir / "__init__.py").exists():
+        raise SeretoPathError(f"Plugins directory '{plugins_dir}' is not a package (missing __init__.py)")
+    if str(plugins_dir) not in sys.path:
+        sys.path.insert(0, str(plugins_dir))
+
     # Load plugins from the directory
-    for file in plugins_dir.glob(pattern="*.py"):
+    for file in plugins_dir.iterdir():
         # Skip dunder files like __init__.py
         if file.name.startswith("__"):
             continue
 
+        if file.is_dir() and (file / "__init__.py").exists():
+            # It's a package
+            module_name = f"plugins.{file.name}"
+            module_path = file / "__init__.py"
+            submodule_search_locations = [str(file)]
+        elif file.suffix == ".py":
+            module_name = f"plugins.{file.name[:-3]}"
+            module_path = file
+            submodule_search_locations = None
+        else:
+            continue
+
         # Register commands
-        module_name = f"plugins.{file.name[:-3]}"
         try:
             # Create a module specification
-            spec = importlib.util.spec_from_file_location(module_name, file)
+            spec = importlib.util.spec_from_file_location(
+                module_name, module_path, submodule_search_locations=submodule_search_locations
+            )
             if spec is None or spec.loader is None:
                 Console().log(f"Failed to load plugin: {file.name}")
                 continue

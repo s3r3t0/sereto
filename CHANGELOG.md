@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for loading plugin modules.
+
 ### Changed
 
 - Improve the TUI search for finding templates.
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Remove rapidfuzz dependency, as it is not used anymore.
+- Update textual requirement from ~=3.5.0 to ~=3.6.0.
 
 ## [0.3.4] - 2025-07-09
 
