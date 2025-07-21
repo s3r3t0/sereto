@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from functools import total_ordering
 from typing import Any
 
@@ -73,7 +73,7 @@ class SeretoDate(RootModel[date]):
         return self.root
 
 
-class DateType(str, Enum):
+class DateType(StrEnum):
     """Enum representing the event type for date."""
 
     sow_sent = "sow_sent"

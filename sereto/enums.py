@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from sereto.exceptions import SeretoValueError
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     """Enum representing the environment of a Target."""
 
     acceptance = "acceptance"
@@ -12,21 +12,21 @@ class Environment(str, Enum):
     testing = "testing"
 
 
-class FileFormat(str, Enum):
+class FileFormat(StrEnum):
     """Enum representing the file format."""
 
     md = "md"
     tex = "tex"
 
 
-class OutputFormat(str, Enum):
+class OutputFormat(StrEnum):
     """Enum representing the output format."""
 
     table = "table"
     json = "json"
 
 
-class Risk(str, Enum):
+class Risk(StrEnum):
     """Enum representing the risk level of a finding."""
 
     critical = "critical"
