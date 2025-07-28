@@ -9,7 +9,7 @@ def get_password(service_name: str, username: str) -> str | None:
         return keyring.get_password(service_name=service_name, username=username)
     except keyring.errors.InitError:
         keyring.set_keyring(PlaintextKeyring())
-        return keyring.get_password("sereto", "encrypt_attached_archive")
+        return keyring.get_password(service_name=service_name, username=username)
 
 
 def set_password(service_name: str, username: str, password: str) -> None:
@@ -18,4 +18,4 @@ def set_password(service_name: str, username: str, password: str) -> None:
         keyring.set_password(service_name=service_name, username=username, password=password)
     except keyring.errors.InitError:
         keyring.set_keyring(PlaintextKeyring())
-        keyring.set_password("sereto", "encrypt_attached_archive", password)
+        keyring.set_password(service_name=service_name, username=username, password=password)

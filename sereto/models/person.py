@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import EmailStr, Field
 
 from sereto.models.base import SeretoBaseModel
 
 
-class PersonType(str, Enum):
+class PersonType(StrEnum):
     """Enum representing a person's role in regards to the current assessment.
 
     Attributes:

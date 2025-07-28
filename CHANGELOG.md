@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2025-07-22
+
 ### Added
 
 - Add support for loading plugin modules.
@@ -18,11 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix issue in `sereto findings add`, when the finding already exists, and the user chooses to create copy. The finding group name now adds a suffix to the name, so that it does not conflict with the existing finding group.
+- Improve completion in several cases by leveraging `StrEnum` instead of `(str, Enum)`.
 
 ### Dependencies
 
 - Remove rapidfuzz dependency, as it is not used anymore.
 - Update textual requirement from ~=3.5.0 to ~=3.6.0.
+- Update pypdf requirement from ~=5.7.0 to ~=5.8.0
+- Update textual requirement from ~=3.7.1 to ~=4.0.0
 
 ## [0.3.4] - 2025-07-09
 
@@ -484,7 +489,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.4...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/s3r3t0/sereto/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/s3r3t0/sereto/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/s3r3t0/sereto/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/s3r3t0/sereto/compare/v0.3.1...v0.3.2
