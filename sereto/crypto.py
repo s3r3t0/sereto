@@ -10,7 +10,7 @@ from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, valida
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.keyring import get_password
-from sereto.types import TypeNonce12B, TypePassword, TypeSalt16B
+from sereto.sereto_types import TypeNonce12B, TypePassword, TypeSalt16B
 from sereto.utils import assert_file_size_within_range
 
 __all__ = [

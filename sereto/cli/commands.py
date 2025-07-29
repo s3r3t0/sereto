@@ -16,8 +16,8 @@ from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir
+from sereto.sereto_types import TypeProjectId
 from sereto.singleton import Singleton
-from sereto.types import TypeProjectId
 
 __all__ = ["sereto_ls", "sereto_repl"]
 

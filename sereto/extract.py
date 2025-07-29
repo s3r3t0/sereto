@@ -1,3 +1,5 @@
+import re
+
 from jinja2.nodes import Block, Node, Output, Template, TemplateData
 
 
@@ -8,31 +10,20 @@ def extract_block_from_jinja(content: str, name: str) -> tuple[str, int, int]:
     Returns:
         The full block content, start index and end index.
     """
-    start_tags = [f"{{% block {name} -%}}", f"{{% block {name} %}}"]
-    end_tags = [f"{{%- endblock {name} %}}", f"{{% endblock {name} %}}"]
+    pattern = re.compile(
+        r"""
+        \{%-?\s*block\s+(\w+)\s*-?%\}
+        (.*?)                            # content
+        \{%-?\s*endblock\s*(\w+)?\s*-?%\}
+    """,
+        re.DOTALL | re.VERBOSE,
+    )
 
-    start_idx = None
-    for tag in start_tags:
-        idx = content.find(tag)
-        if idx != -1:
-            start_idx = idx + len(tag)
-            break
+    match = pattern.search(content)
+    if match and match.group(1) == name:
+        return match.group(2), match.start(2), match.end(2)
 
-    if start_idx is None:
-        return "", 0, 0
-
-    end_idx = None
-    for tag in end_tags:
-        idx = content.find(tag, start_idx)
-        if idx != -1:
-            end_idx = idx
-            break
-
-    if end_idx is None:
-        return "", 0, 0
-
-    block = content[start_idx:end_idx]
-    return block, start_idx, end_idx
+    return "", 0, 0
 
 
 def extract_text_from_jinja(ast: Template) -> dict[str, str]:

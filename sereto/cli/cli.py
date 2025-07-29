@@ -35,6 +35,7 @@ from sereto.oxipng import run_oxipng
 from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
+from sereto.sereto_types import TypeProjectId
 from sereto.settings import load_settings_function
 from sereto.source_archive import (
     create_source_archive,
@@ -43,7 +44,6 @@ from sereto.source_archive import (
     retrieve_source_archive,
 )
 from sereto.tui.finding import launch_finding_tui
-from sereto.types import TypeProjectId
 from sereto.utils import copy_skel, replace_strings
 
 

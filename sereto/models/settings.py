@@ -24,7 +24,7 @@ from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.models.person import Person
-from sereto.types import TypeCategories
+from sereto.sereto_types import TypeCategories
 from sereto.utils import replace_strings
 
 
