@@ -137,15 +137,18 @@ To exit the TUI at any point, press `Ctrl+Q`.
 The TUI utilizes fuzzy search to help you effectively locate the desired finding templates. You can filter the list by selecting specific categories.
 
 It also supports advanced search with query operators, similar to Google Search. You can search across the following fields:
-* `name:` or `n:` = matches against the finding title (this is also the default field if no operator is used).
-* `keyword:` or `k:` = matches keywords.
+
+* `name:` or `n:` matches against the finding title (this is also the default field if no operator is used)
+* `keyword:` or `k:` matches keywords
 Matched results are immediately displayed in the option list.
 
 Additionally, you can search within the template content using:
-* `description:` or `d:` = matches content inside the description block of the template.
-* `likelihood:` or `l:` = matches content inside the likelihood block of the template.
-* `impact:` or `i:` = matches content inside the impact block of the template.
-* `recommendation:` or `r:` = matches content inside the recommendation block of the template.
+
+* `description:` or `d:` matches content inside the description block of the template
+* `likelihood:` or `l:` matches content inside the likelihood block of the template
+* `impact:` or `i:` matches content inside the impact block of the template
+* `recommendation:` or `r:` matches content inside the recommendation block of the template
+
 Matched text segments are highlighted when the finding is opened for preview.
 
 Once you select a finding, a scrollable preview is displayed. Pressing `Ctrl+S` opens a screen where the details of the findings can be filled in. It is required to enter the finding name, choose a target to which the finding will be added and specify all required variables from the template (e.g. image proof). After confirmation, the finding will be added to the specified target.
