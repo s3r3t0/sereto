@@ -110,9 +110,11 @@ nav:
     - reference/crypto.md
     - reference/enums.md
     - reference/exceptions.md
+    - reference/extract.md
     - reference/finding.md
     - reference/jinja.md
     - reference/keyring.md
+    - reference/parsing.md
     - reference/pdf.md
     - reference/plot.md
     - reference/project.md
@@ -124,7 +126,7 @@ nav:
     - reference/source_archive.md
     - reference/sow.md
     - reference/target.md
-    - reference/types.md
+    - reference/sereto_types.md
     - reference/utils.md
   - Development:
     - development/documentation.md

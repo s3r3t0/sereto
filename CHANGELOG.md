@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add operators to search within the template content in the `findings add` TUI search.
+
 ### Dependencies
 
 - Update textual requirement from ~=4.0.0 to ~=5.0.1

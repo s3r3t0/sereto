@@ -36,7 +36,8 @@ def parse_query(query: str, keys: dict[str, str]) -> dict[str, list[str]]:
                 if isinstance(value, str) and not value.strip():
                     continue
 
-                result["name"].append(value)
+                first_key = next(iter(keys))
+                result[first_key].append(value)
 
     except pp.ParseException:
         pass

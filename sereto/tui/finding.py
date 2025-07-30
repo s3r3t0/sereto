@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Any
 
 import frontmatter  # type: ignore
+from jinja2 import Environment
 from pydantic import DirectoryPath, ValidationError
+from rapidfuzz import fuzz
 from rich.markup import escape
 from rich.syntax import Syntax
 from rich.text import Text
@@ -31,6 +33,7 @@ from textual.widgets.option_list import Option
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
+from sereto.extract import extract_block_from_jinja, extract_text_from_jinja
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
 from sereto.parsing import parse_query
 from sereto.project import Project
@@ -45,6 +48,7 @@ class FindingMetadata:
     name: str
     variables: list[VarsMetadataModel]
     keywords: list[str]
+    text: dict[str, str]
     search_similarity: float = 0.0
 
 
@@ -66,17 +70,18 @@ class FindingPreviewScreen(ModalScreen[None]):
         ("escape", "dismiss", "Dismiss preview"),
     ]
 
-    def __init__(self, title: str, code: str) -> None:
+    def __init__(self, title: str, code: str | Text) -> None:
         super().__init__()
         self.code = code
         self.title = title
 
     def compose(self) -> ComposeResult:
         with ScrollableContainer(id="code"):
-            yield Static(
-                Syntax(self.code, lexer="markdown", indent_guides=True, line_numbers=True),
-                expand=True,
-            )
+            if isinstance(self.code, str):
+                syntax = Syntax(self.code, lexer="markdown", indent_guides=True, line_numbers=True)
+                yield Static(syntax, expand=True)
+            else:
+                yield Static(self.code, expand=True)
 
     def on_mount(self) -> None:
         code_widget = self.query_one("#code")
@@ -339,20 +344,37 @@ class FuzzyMatcher:
         if not self.query:
             return 0.0
 
-        combined = "; ".join(values)
-        scores = [Matcher(q).match(combined) for q in self.query]
-        result_score = (sum(scores) / len(scores)) * 100 if scores else 0
+        combined = "; ".join(values).lower()
+        scores: list[float] = []
 
-        return result_score
+        for q in self.query:
+            raw_score = fuzz.partial_ratio(q, combined)
+            # Bonus for matching first letter
+            bonus = 5 if combined and combined[0] == q[0] else 0
+            scores.append(raw_score + bonus)
+        return round(sum(scores) / len(scores), 2)
 
     def highlight(self, text: list[str]) -> Text:
-        """Highlight all fuzzy matches of the query in the given text."""
+        """Highlight all fuzzy matches of the query in the given text (used in names and keywords)."""
         combined = "; ".join(text)
+        combined_lower = combined.lower()
         result_text = Text(combined)
 
         for q in self.query:
-            for span in Matcher(q).highlight(combined).spans:
-                result_text.stylize("bold yellow", span.start, span.end)
+            if q in combined_lower:
+                start = 0
+                while True:
+                    idx = combined_lower.find(q, start)
+                    if idx == -1:
+                        break
+                    end = idx + len(q)
+                    result_text.stylize("bold yellow", idx, end)
+                    start = end
+            else:
+                for span in Matcher(q).highlight(combined).spans:
+                    span_text = combined[span.start : span.end]
+                    if len(span_text) <= len(q) + 2:
+                        result_text.stylize("bold yellow", span.start, span.end)
 
         return result_text
 
@@ -377,7 +399,11 @@ class SearchWidget(Widget):
             findings_path = app.project.settings.templates_path / "categories" / category.lower() / "findings"
             for finding in findings_path.glob("*.md.j2"):
                 file_text = finding.read_text()
-                metadata, _ = frontmatter.parse(file_text)
+                metadata, content = frontmatter.parse(file_text)
+                # Extract clean text from the template file
+                env = Environment()
+                ast = env.parse(content)
+                extracted_text = extract_text_from_jinja(ast)
 
                 try:
                     data = FindingTemplateFrontmatterModel.model_validate(metadata)
@@ -391,6 +417,7 @@ class SearchWidget(Widget):
                         name=data.name,
                         variables=data.variables,
                         keywords=data.keywords,
+                        text=extracted_text,
                     )
                 )
 
@@ -421,7 +448,14 @@ class SearchWidget(Widget):
     @on(SelectionList.SelectedChanged)
     def update_results(self) -> None:
         query = self.input_field.value.strip()
-        keys = {"name": "n", "keyword": "k"}
+        keys = {
+            "name": "n",
+            "keyword": "k",
+            "description": "d",
+            "likelihood": "l",
+            "impact": "i",
+            "recommendation": "r",
+        }
         parsed = parse_query(query, keys)
 
         self.result_list.clear_options()
@@ -433,19 +467,27 @@ class SearchWidget(Widget):
         filtered_findings = [f for f in self.findings if f.category.lower() in selected_categories]
 
         # reusable fuzzy matchers for scoring and highlighting
-        matcher_dict = {key: FuzzyMatcher(parsed[key]) for key in keys}
+        self.matcher_dict = {key: FuzzyMatcher(parsed[key]) for key in keys if parsed[key]}
+        if not self.matcher_dict:
+            return
 
         # compute search similarity
         for f in filtered_findings:
             scores: list[float] = []
 
-            if parsed["name"]:
-                name_score = matcher_dict["name"].max_score([f.name]) or 0
-                scores.append(name_score)
+            for key, _ in self.matcher_dict.items():
+                matcher = self.matcher_dict[key]
 
-            if parsed["keyword"]:
-                keyword_score = matcher_dict["keyword"].max_score([f.name]) or 0
-                scores.append(keyword_score)
+                if key == "name":
+                    name_score = matcher.max_score([f.name]) or 0
+                    scores.append(name_score)
+                elif key == "keyword":
+                    name_score = matcher.max_score(f.keywords) or 0
+                    scores.append(name_score)
+                else:
+                    if key in f.text:
+                        name_score = matcher.max_score([f.text[key]]) or 0
+                        scores.append(name_score)
 
             f.search_similarity = sum(scores) / len(scores) if scores else 0.0
 
@@ -457,12 +499,12 @@ class SearchWidget(Widget):
                 key=lambda f: f.search_similarity,
                 reverse=True,
             )
-            if f.search_similarity > 50.0
+            if f.search_similarity > 80.0
         ]
 
         options: list[FindingOption | None] = []
         for f in result_item:
-            options.append(FindingOption(f, matcher_dict))
+            options.append(FindingOption(f, self.matcher_dict))
             options.append(None)  # insert a separator line
 
         self.result_list.clear_options()
@@ -506,30 +548,56 @@ class SearchWidget(Widget):
                 self.result_list.highlighted -= 1
         self.result_list.scroll_to_highlight(top=True)
 
+    def assemble_template(self, file: str) -> str | Text:
+        """Highlight matching words in specific Jinja blocks and returns reconstructed template."""
+        code = Text(file)
+        found_match = False
+
+        for key in ("likelihood", "description", "impact", "recommendation"):
+            matcher = self.matcher_dict.get(key)
+            if not matcher:
+                continue
+            # extract the full content of the block
+            block_text, start, end = extract_block_from_jinja(file, key)
+            highlighted_block = matcher.highlight([block_text])
+            if highlighted_block.spans:
+                found_match = True
+                # reassemble template
+                code = code[:start] + highlighted_block + code[end:]
+
+        final_code = code if found_match else file
+        return final_code
+
     @on(OptionList.OptionSelected)
     def select_item(self, event: OptionList.OptionSelected) -> None:
         option = event.option
         if not isinstance(option, FindingOption):
             return
-        finding = option.finding
+        file = option.finding.path.read_text()
+        final_code = self.assemble_template(file)
+
         self.app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
-                code=finding.path.read_text(),
+                code=final_code,
             )
         )
 
     def action_select_item(self) -> None:
         if self.result_list.highlighted is None:
             return
+
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
-        if isinstance(option, FindingOption):
-            self.app.push_screen(
-                FindingPreviewScreen(
-                    title="Finding preview",
-                    code=option.finding.path.read_text(),
-                )
+        if not isinstance(option, FindingOption):
+            return
+        file = option.finding.path.read_text()
+        final_code = self.assemble_template(file)
+        self.app.push_screen(
+            FindingPreviewScreen(
+                title="Finding preview",
+                code=final_code,
             )
+        )
 
     def action_add_finding(self) -> None:
         if not self.input_field.has_focus:
@@ -552,12 +620,13 @@ class FindingOption(Option):
     """An Option representing a finding, with name and keywords optionally highlighted."""
 
     def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]) -> None:
-        name_text = matchers["name"].highlight([finding.name]) if matchers["name"] else Text(finding.name)
+        name_matcher = matchers.get("name")
+        keyword_matcher = matchers.get("keyword")
+
+        name_text = name_matcher.highlight([finding.name]) if name_matcher else Text(finding.name)
 
         keywords_text = (
-            matchers["keyword"].highlight(finding.keywords)
-            if matchers["keyword"]
-            else Text(", ".join(finding.keywords))
+            keyword_matcher.highlight(finding.keywords) if keyword_matcher else Text(", ".join(finding.keywords))
         )
 
         text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)

@@ -15,9 +15,9 @@ from sereto.models.person import Person
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.plot import risks_plot
+from sereto.sereto_types import TypeProjectId
 from sereto.settings import load_settings_function
 from sereto.target import Target
-from sereto.types import TypeProjectId
 from sereto.utils import copy_skel
 
 P = ParamSpec("P")

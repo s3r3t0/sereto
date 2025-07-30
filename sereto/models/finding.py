@@ -11,7 +11,7 @@ from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.locator import LocatorModel
-from sereto.types import TypeCategoryName
+from sereto.sereto_types import TypeCategoryName
 
 
 class VarsMetadataModel(SeretoBaseModel):

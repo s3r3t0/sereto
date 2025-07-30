@@ -11,7 +11,7 @@ from sereto.cli.utils import Console
 from sereto.config import Config
 from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
-from sereto.types import TypeProjectId
+from sereto.sereto_types import TypeProjectId
 from sereto.utils import assert_file_size_within_range
 
 
