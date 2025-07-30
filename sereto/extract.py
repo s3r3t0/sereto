@@ -4,8 +4,7 @@ from jinja2.nodes import Block, Node, Output, Template, TemplateData
 
 
 def extract_block_from_jinja(content: str, name: str) -> tuple[str, int, int]:
-    """
-    Extracts the full content of a Jinja block by name, including the tags.
+    """Extracts the full content of a Jinja block by name, including the tags.
 
     Returns:
         The full block content, start index and end index.
@@ -27,9 +26,7 @@ def extract_block_from_jinja(content: str, name: str) -> tuple[str, int, int]:
 
 
 def extract_text_from_jinja(ast: Template) -> dict[str, str]:
-    """
-    Extracts static text content from all blocks in a Jinja2 template.
-    """
+    """Extracts static text content from all blocks in a Jinja2 template."""
     blocks_text = {}
 
     for node in ast.body:
@@ -42,9 +39,7 @@ def extract_text_from_jinja(ast: Template) -> dict[str, str]:
 
 
 def extract_blocks(node_list: list[Node]) -> str:
-    """
-    Extracts static text from a list of nodes inside a block
-    """
+    """Extracts static text from a list of nodes inside a block."""
     result = []
     for node in node_list:
         if isinstance(node, Output):

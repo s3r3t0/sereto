@@ -549,9 +549,7 @@ class SearchWidget(Widget):
         self.result_list.scroll_to_highlight(top=True)
 
     def assemble_template(self, file: str) -> str | Text:
-        """
-        Highlight matching words in specific Jinja blocks and returns reconstructed template.
-        """
+        """Highlight matching words in specific Jinja blocks and returns reconstructed template."""
         code = Text(file)
         found_match = False
 
