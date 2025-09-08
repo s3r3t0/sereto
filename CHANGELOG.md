@@ -15,8 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update rich requirement from ~=14.0.0 to ~=14.1.0
 - Update pypdf requirement from ~=5.8.0 to ~=6.0.0
-- Update textual requirement from ~=4.0.0 to ~=5.3.0
+- Update textual requirement from ~=4.0.0 to ~=6.1.0
 - Update humanize requirement from ~=4.12.1 to ~=4.13.0
+- Update rapidfuzz requirement from ~=3.13.0 to ~=3.14.0
 
 ## [0.3.5] - 2025-07-22
 
