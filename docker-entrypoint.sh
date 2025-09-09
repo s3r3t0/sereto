@@ -28,7 +28,7 @@ fi
 
 # Install requirements from /templates/requirements.txt if it exists
 if [ -f /templates/requirements.txt ]; then
-    pip install --break-system-packages -r /templates/requirements.txt
+    /opt/venv/bin/pip install -r /templates/requirements.txt
 fi
 
 exec gosu sereto "$@"
