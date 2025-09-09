@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7] - 2025-09-09
+
+### Fixed
+
+- Docker: fix build by installing Python packages into virtual environment.
+
 ## [0.3.6] - 2025-09-08
 
 ### Added
@@ -503,7 +509,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.6...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.7...HEAD
+[0.3.7]: https://github.com/s3r3t0/sereto/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/s3r3t0/sereto/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/s3r3t0/sereto/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/s3r3t0/sereto/compare/v0.3.3...v0.3.4
