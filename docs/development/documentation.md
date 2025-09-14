@@ -1,18 +1,22 @@
 # Documentation
 
-To serve the documentation locally, you need to:
+## Serving the documentation locally
 
-1. Install the dependencies
-    ```sh
-    pip install "sereto[docs]"
-    ```
+Install dependencies and start the live preview server:
 
-2. Start a local client
-    ```sh
-    mkdocs serve
-    ```
+```sh
+uv run --with '.[docs]' mkdocs serve
+```
 
-3. Open the URL presented in the terminal as the output of the previous command, typically [http://127.0.0.1:8000](http://127.0.0.1:8000/).
+Then open the URL shown in the terminal output (typically [http://127.0.0.1:8000](http://127.0.0.1:8000)).
+
+The server auto-reloads when you edit Markdown or configuration files.
+
+Optional:
+
+- Change host/port: `uv run --with '.[docs]' mkdocs serve -a 0.0.0.0:8001`
+- Only build without starting the server: `uv run --with '.[docs]' mkdocs build` (outputs to the `site/` directory)
+- Clean previous build: remove the site/ directory before building if needed
 
 
 ## Writing documentation
