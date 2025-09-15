@@ -16,7 +16,7 @@ Optional:
 
 - Change host/port: `uv run --with '.[docs]' mkdocs serve -a 0.0.0.0:8001`
 - Only build without starting the server: `uv run --with '.[docs]' mkdocs build` (outputs to the `site/` directory)
-- Clean previous build: remove the site/ directory before building if needed
+- Clean previous build: remove the `site/` directory before building if needed
 
 
 ## Writing documentation

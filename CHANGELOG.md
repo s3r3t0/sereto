@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for Python 3.14 to Tox configuration.
+
+### Fixed
+
+- Fix `VersionConfig.report_sent_date` property to correctly select the `report_sent` date when set, even when other dates have later timestamps.
+
 ### Changed
 
 - Docs build improvements.
