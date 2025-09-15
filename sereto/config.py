@@ -426,9 +426,10 @@ class VersionConfig:
 
         It has fallback to the review date and last date of the pentest ongoing.
         """
-        return self.filter_dates(
-            type=[DateType.report_sent, DateType.review, DateType.pentest_ongoing], last_date=True
-        )
+        if (report_sent := self.filter_dates(type=DateType.report_sent, last_date=True)) is not None:
+            return report_sent
+        else:
+            return self.filter_dates(type=[DateType.review, DateType.pentest_ongoing], last_date=True)
 
     @property
     def total_open_risks(self) -> NonNegativeInt:
