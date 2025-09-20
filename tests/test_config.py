@@ -204,4 +204,138 @@ def test_report_sent_date_with_many_entries():
     assert vc.report_sent_date == SeretoDate("07-Feb-2025")
 
 
-# =============== VersionConfig.report_sent_date property tests ===============
+# -------------------- end report_sent_date property tests --------------------
+
+# --------------- VersionConfig.total_open_risks property tests ---------------
+
+
+class _StubRisks:
+    def __init__(self, sum_open: int):
+        self.sum_open = sum_open
+
+
+class _StubFindings:
+    def __init__(self, sum_open: int):
+        self.risks = _StubRisks(sum_open)
+        # noise attributes that must not affect total_open_risks
+        self.sum_closed = 999999  # should be ignored
+
+
+class _StubTarget:
+    def __init__(self, sum_open: int):
+        self.findings = _StubFindings(sum_open)
+
+
+def make_version_config_with_open_risks(open_counts: list[int]) -> VersionConfig:
+    return VersionConfig(
+        version=ProjectVersion.from_str("v1.0"),
+        id="PRJ",
+        name="Project",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[_StubTarget(c) for c in open_counts],
+        dates=[],
+        people=[],
+    )
+
+
+def test_total_open_risks_no_targets():
+    vc = make_version_config_with_open_risks([])
+    assert vc.total_open_risks == 0
+
+
+def test_total_open_risks_single_zero():
+    vc = make_version_config_with_open_risks([0])
+    assert vc.total_open_risks == 0
+
+
+def test_total_open_risks_single_nonzero():
+    vc = make_version_config_with_open_risks([7])
+    assert vc.total_open_risks == 7
+
+
+def test_total_open_risks_multiple_targets():
+    vc = make_version_config_with_open_risks([1, 3, 5, 0, 2])
+    assert vc.total_open_risks == 11
+
+
+def test_total_open_risks_large_numbers():
+    counts = [10_000, 250_000, 1_000_000]
+    vc = make_version_config_with_open_risks(counts)
+    assert vc.total_open_risks == sum(counts)
+
+
+def test_total_open_risks_mutation_reflected():
+    vc = make_version_config_with_open_risks([2, 3])
+    assert vc.total_open_risks == 5
+    # mutate underlying object
+    vc.targets[0].findings.risks.sum_open = 10
+    assert vc.total_open_risks == 13
+    vc.targets[1].findings.risks.sum_open = 0
+    assert vc.total_open_risks == 10
+
+
+def test_total_open_risks_add_target_manually():
+    vc = make_version_config_with_open_risks([4, 6])
+    assert vc.total_open_risks == 10
+    vc.targets.append(_StubTarget(9))  # bypass add_target to avoid pydantic validation
+    assert vc.total_open_risks == 19
+
+
+def test_total_open_risks_remove_target():
+    vc = make_version_config_with_open_risks([5, 8, 1])
+    assert vc.total_open_risks == 14
+    del vc.targets[1]
+    assert vc.total_open_risks == 6
+
+
+def test_total_open_risks_order_irrelevant():
+    counts_a = [4, 1, 7, 3]
+    counts_b = list(reversed(counts_a))
+    vc_a = make_version_config_with_open_risks(counts_a)
+    vc_b = make_version_config_with_open_risks(counts_b)
+    assert vc_a.total_open_risks == vc_b.total_open_risks == sum(counts_a)
+
+
+def test_total_open_risks_ignores_non_sum_open_fields():
+    vc = make_version_config_with_open_risks([2])
+    # Add misleading attribute at target level
+    vc.targets[0].findings.sum_open = 999  # should not be used (property drills to findings.risks.sum_open)
+    assert vc.total_open_risks == 2
+
+
+def test_total_open_risks_not_cached():
+    vc = make_version_config_with_open_risks([1])
+    first = vc.total_open_risks
+    vc.targets[0].findings.risks.sum_open = 5
+    second = vc.total_open_risks
+    assert first == 1 and second == 5
+
+
+@pytest.mark.parametrize(
+    "counts,expected",
+    [
+        ([], 0),
+        ([0], 0),
+        ([1], 1),
+        ([0, 0, 0], 0),
+        ([1, 2, 3], 6),
+        ([10, 0, 5, 5], 20),
+    ],
+)
+def test_total_open_risks_parametrized(counts, expected):
+    vc = make_version_config_with_open_risks(counts)
+    assert vc.total_open_risks == expected
+
+
+def test_total_open_risks_does_not_mutate_targets():
+    counts = [1, 2, 3]
+    vc = make_version_config_with_open_risks(counts)
+    before_ids = [id(t) for t in vc.targets]
+    _ = vc.total_open_risks
+    after_ids = [id(t) for t in vc.targets]
+    assert before_ids == after_ids
+    assert [t.findings.risks.sum_open for t in vc.targets] == counts
+
+
+# ------------------ end total_open_risks property tests ------------------
