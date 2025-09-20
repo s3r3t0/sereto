@@ -339,3 +339,208 @@ def test_total_open_risks_does_not_mutate_targets():
 
 
 # ------------------ end total_open_risks property tests ------------------
+
+# ---------------- VersionConfig.sum_risks property tests ---------------------
+
+
+class _SumRisksStub:
+    """Simple Risks-like object supporting addition for testing VersionConfig.sum_risks."""
+
+    __slots__ = ("critical", "high", "medium", "low", "info", "sum_open")
+
+    def __init__(self, critical=0, high=0, medium=0, low=0, info=0):
+        self.critical = critical
+        self.high = high
+        self.medium = medium
+        self.low = low
+        self.info = info
+        # emulate existing attribute accessed elsewhere (not required here, but consistent)
+        self.sum_open = critical + high + medium + low + info
+
+    def __add__(self, other):
+        if not isinstance(other, _SumRisksStub):
+            return NotImplemented
+        return _SumRisksStub(
+            self.critical + other.critical,
+            self.high + other.high,
+            self.medium + other.medium,
+            self.low + other.low,
+            self.info + other.info,
+        )
+
+    def as_tuple(self):
+        return (self.critical, self.high, self.medium, self.low, self.info)
+
+    def __repr__(self):
+        return f"_SumRisksStub(c={self.critical},h={self.high},m={self.medium},l={self.low},i={self.info})"
+
+
+class _SumRisksFindingsStub:
+    def __init__(self, risks: _SumRisksStub):
+        self.risks = risks
+
+
+class _SumRisksTargetStub:
+    """Mimics only the attributes VersionConfig needs (findings.risks)."""
+
+    def __init__(self, risks: _SumRisksStub):
+        self.findings = _SumRisksFindingsStub(risks)
+
+
+def make_version_config_with_risk_objects(risk_objs: list[_SumRisksStub]) -> VersionConfig:
+    return VersionConfig(
+        version=ProjectVersion.from_str("v1.0"),
+        id="PRJ",
+        name="Project",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[_SumRisksTargetStub(r) for r in risk_objs],
+        dates=[],
+        people=[],
+    )
+
+
+def _aggregate_manual(risk_objs: list[_SumRisksStub]) -> tuple[int, int, int, int, int]:
+    return tuple(sum(getattr(r, attr) for r in risk_objs) for attr in ("critical", "high", "medium", "low", "info"))
+
+
+def test_sum_risks_single_target_identity():
+    r = _SumRisksStub(critical=1, high=2, medium=3, low=4, info=5)
+    vc = make_version_config_with_risk_objects([r])
+    result = vc.sum_risks
+    assert result is r  # reduce should return the single element unchanged
+    assert result.as_tuple() == (1, 2, 3, 4, 5)
+
+
+def test_sum_risks_two_targets_addition():
+    a = _SumRisksStub(1, 0, 2, 0, 1)
+    b = _SumRisksStub(0, 3, 1, 4, 0)
+    vc = make_version_config_with_risk_objects([a, b])
+    res = vc.sum_risks
+    # Should be a new object (since a + b creates new)
+    assert res is not a and res is not b
+    assert res.as_tuple() == (1, 3, 3, 4, 1)
+
+
+def test_sum_risks_multiple_targets_order_independent():
+    objs = [
+        _SumRisksStub(1, 2, 0, 0, 1),
+        _SumRisksStub(0, 1, 3, 1, 0),
+        _SumRisksStub(2, 0, 1, 4, 2),
+    ]
+    vc_a = make_version_config_with_risk_objects(list(objs))
+    vc_b = make_version_config_with_risk_objects(list(reversed(objs)))
+    expected = _aggregate_manual(objs)
+    assert vc_a.sum_risks.as_tuple() == expected
+    assert vc_b.sum_risks.as_tuple() == expected
+
+
+def test_sum_risks_large_numbers():
+    a = _SumRisksStub(10_000, 20_000, 30_000, 40_000, 50_000)
+    b = _SumRisksStub(1, 2, 3, 4, 5)
+    c = _SumRisksStub(999_999, 0, 0, 0, 1)
+    vc = make_version_config_with_risk_objects([a, b, c])
+    res = vc.sum_risks
+    assert res.as_tuple() == (
+        10_000 + 1 + 999_999,
+        20_000 + 2 + 0,
+        30_000 + 3 + 0,
+        40_000 + 4 + 0,
+        50_000 + 5 + 1,
+    )
+
+
+def test_sum_risks_mutation_reflected_on_reaccess():
+    a = _SumRisksStub(1, 1, 1, 1, 1)
+    b = _SumRisksStub(2, 2, 2, 2, 2)
+    vc = make_version_config_with_risk_objects([a, b])
+    first = vc.sum_risks.as_tuple()
+    assert first == (3, 3, 3, 3, 3)
+    # mutate underlying risk object
+    a.high = 10
+    a.sum_open = a.critical + a.high + a.medium + a.low + a.info
+    second = vc.sum_risks.as_tuple()
+    assert second == (3, 12, 3, 3, 3)
+
+
+def test_sum_risks_result_does_not_mutate_underlying_for_multiple():
+    a = _SumRisksStub(1, 1, 1, 1, 1)
+    b = _SumRisksStub(2, 2, 2, 2, 2)
+    vc = make_version_config_with_risk_objects([a, b])
+    res = vc.sum_risks
+    # modify aggregated result
+    res.critical = 999
+    # underlying must remain unchanged
+    assert a.critical == 1 and b.critical == 2
+    # Recompute property -> unaffected by modification to previous aggregated object
+    again = vc.sum_risks
+    assert again.as_tuple() == (3, 3, 3, 3, 3)
+
+
+def test_sum_risks_does_not_reorder_targets():
+    objs = [
+        _SumRisksStub(1, 0, 0, 0, 0),
+        _SumRisksStub(0, 1, 0, 0, 0),
+        _SumRisksStub(0, 0, 1, 0, 0),
+    ]
+    vc = make_version_config_with_risk_objects(objs)
+    before_ids = [id(t) for t in vc.targets]
+    _ = vc.sum_risks
+    after_ids = [id(t) for t in vc.targets]
+    assert before_ids == after_ids
+
+
+def test_sum_risks_empty_returns_zero_object():
+    vc = make_version_config_with_risk_objects([])
+    res = vc.sum_risks  # desired: no exception
+    for attr in ("critical", "high", "medium", "low", "info"):
+        assert getattr(res, attr) == 0
+    assert res.sum_open == 0
+
+
+def test_sum_risks_empty_mutation_does_not_persist():
+    vc = make_version_config_with_risk_objects([])
+    first = vc.sum_risks
+    # Mutate returned object (should not affect future accesses once implemented)
+    if hasattr(first, "critical"):
+        first.critical = 999
+    second = vc.sum_risks
+    # Second access should still yield zeros
+    for attr in ("critical", "high", "medium", "low", "info"):
+        assert getattr(second, attr) == 0
+
+
+def test_sum_risks_empty_idempotent():
+    vc = make_version_config_with_risk_objects([])
+    a = vc.sum_risks
+    b = vc.sum_risks
+    # Both accesses should yield objects that (a) compare equal via attributes and
+    # (b) may or may not be the same identity (implementation choice). We assert attribute equality only.
+    for attr in ("critical", "high", "medium", "low", "info"):
+        assert getattr(a, attr) == getattr(b, attr) == 0
+
+
+@pytest.mark.parametrize(
+    "risk_sets,expected",
+    [
+        ([(0, 0, 0, 0, 0)], (0, 0, 0, 0, 0)),
+        ([(1, 2, 3, 4, 5)], (1, 2, 3, 4, 5)),
+        ([(1, 0, 0, 0, 0), (0, 1, 2, 0, 3)], (1, 1, 2, 0, 3)),
+        ([(2, 2, 2, 2, 2), (3, 1, 0, 4, 0), (0, 5, 1, 0, 6)], (5, 8, 3, 6, 8)),
+    ],
+)
+def test_sum_risks_parametrized(risk_sets, expected):
+    objs = [_SumRisksStub(*vals) for vals in risk_sets]
+    vc = make_version_config_with_risk_objects(objs)
+    assert vc.sum_risks.as_tuple() == expected
+
+
+def test_sum_risks_many_targets_scaling():
+    objs = [_SumRisksStub(i % 3, i % 5, i % 7, i % 11, i % 13) for i in range(1, 51)]
+    vc = make_version_config_with_risk_objects(objs)
+    res = vc.sum_risks.as_tuple()
+    manual = _aggregate_manual(objs)
+    assert res == manual
+
+
+# ------------------ end sum_risks property tests ------------------

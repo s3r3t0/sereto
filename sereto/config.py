@@ -439,6 +439,8 @@ class VersionConfig:
     @property
     def sum_risks(self) -> Risks:
         """Get the sum of risks across all targets."""
+        if not self.targets:
+            return Risks()
         return reduce(operator.add, (t.findings.risks for t in self.targets))
 
     @property
