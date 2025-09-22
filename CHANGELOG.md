@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Docs build improvements.
 
+### Dependencies
+
+- Update pypdf requirement from ~=6.0.0 to ~=6.1.0
+- Update cryptography requirement from ~=45.0.2 to ~=46.0.1
+
+
 ## [0.3.7] - 2025-09-09
 
 ### Fixed
