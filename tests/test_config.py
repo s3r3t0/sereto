@@ -544,3 +544,235 @@ def test_sum_risks_many_targets_scaling():
 
 
 # ------------------ end sum_risks property tests ------------------
+
+# --------------------- VersionConfig.report_name property tests ---------------------
+
+
+def _make_vc_from_id_ver(proj_id: str, version_str: str) -> VersionConfig:
+    return VersionConfig(
+        version=ProjectVersion.from_str(version_str),
+        id=proj_id,
+        name="Some Name",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[],
+        dates=[],
+        people=[],
+    )
+
+
+def test_report_name_initial_version_no_suffix():
+    vc = _make_vc_from_id_ver("PRJ", "v1.0")
+    assert vc.report_name == "PRJ - Report.pdf"
+
+
+def test_report_name_minor_version_included():
+    vc = _make_vc_from_id_ver("PRJ", "v1.1")
+    assert vc.report_name == "PRJ - Report v1.1.pdf"
+
+
+def test_report_name_major_version_included():
+    vc = _make_vc_from_id_ver("ABC", "v2.0")
+    assert vc.report_name == "ABC - Report v2.0.pdf"
+
+
+def test_report_name_id_with_spaces_and_symbols():
+    vc = _make_vc_from_id_ver("My Project-01", "v1.2")
+    assert vc.report_name == "My Project-01 - Report v1.2.pdf"
+
+
+def test_report_name_stability_multiple_access():
+    vc = _make_vc_from_id_ver("PRJ", "v1.3")
+    first = vc.report_name
+    second = vc.report_name
+    assert first == second == "PRJ - Report v1.3.pdf"
+
+
+def test_report_name_updates_when_version_changes():
+    vc = _make_vc_from_id_ver("PRJ", "v1.0")
+    assert vc.report_name == "PRJ - Report.pdf"
+    vc.version = ProjectVersion.from_str("v1.4")
+    assert vc.report_name == "PRJ - Report v1.4.pdf"
+    vc.version = ProjectVersion.from_str("v1.0")  # revert back to baseline
+    assert vc.report_name == "PRJ - Report.pdf"
+
+
+def test_report_name_no_trailing_or_leading_spaces():
+    vc = _make_vc_from_id_ver("PRJ", "v3.0")
+    name = vc.report_name
+    assert name == name.strip()
+    assert "  " not in name
+
+
+def test_report_name_different_ids_independent():
+    vc1 = _make_vc_from_id_ver("PRJ1", "v1.0")
+    vc2 = _make_vc_from_id_ver("PRJ2", "v1.5")
+    assert vc1.report_name == "PRJ1 - Report.pdf"
+    assert vc2.report_name == "PRJ2 - Report v1.5.pdf"
+
+
+def test_report_name_case_sensitivity_in_id():
+    vc = _make_vc_from_id_ver("prj", "v1.2")
+    assert vc.report_name == "prj - Report v1.2.pdf"
+
+
+def test_report_name_large_version_numbers():
+    vc = _make_vc_from_id_ver("PRJ", "v10.7")
+    assert vc.report_name == "PRJ - Report v10.7.pdf"
+
+
+def test_report_name_multiple_changes_sequence():
+    vc = _make_vc_from_id_ver("SEQ", "v1.0")
+    expected = [
+        ("v1.0", "SEQ - Report.pdf"),
+        ("v1.1", "SEQ - Report v1.1.pdf"),
+        ("v2.0", "SEQ - Report v2.0.pdf"),
+        ("v1.0", "SEQ - Report.pdf"),
+    ]
+    for ver, exp in expected:
+        vc.version = ProjectVersion.from_str(ver)
+        assert vc.report_name == exp
+
+
+@pytest.mark.parametrize(
+    "proj_id,version,expected",
+    [
+        ("PRJ", "v1.0", "PRJ - Report.pdf"),
+        ("PRJ", "v1.1", "PRJ - Report v1.1.pdf"),
+        ("ACME", "v2.0", "ACME - Report v2.0.pdf"),
+        ("X", "v9.9", "X - Report v9.9.pdf"),
+        ("Complex ID_123", "v1.2", "Complex ID_123 - Report v1.2.pdf"),
+    ],
+)
+def test_report_name_parametrized(proj_id, version, expected):
+    vc = _make_vc_from_id_ver(proj_id, version)
+    assert vc.report_name == expected
+
+
+def test_report_name_does_not_mutate_state():
+    vc = _make_vc_from_id_ver("IMMUT", "v1.2")
+    before_id = vc.id
+    before_version = vc.version
+    _ = vc.report_name
+    assert vc.id == before_id
+    assert vc.version == before_version
+
+
+# ------------------- end VersionConfig.report_name property tests -------------------
+
+# --------------------- VersionConfig.sow_name property tests ---------------------
+
+
+def test_sow_name_initial_version_no_suffix():
+    vc = _make_vc_from_id_ver("PRJ", "v1.0")
+    assert vc.sow_name == "PRJ - Statement of Work.pdf"
+
+
+def test_sow_name_minor_version_included():
+    vc = _make_vc_from_id_ver("PRJ", "v1.1")
+    assert vc.sow_name == "PRJ - Statement of Work v1.1.pdf"
+
+
+def test_sow_name_major_version_included():
+    vc = _make_vc_from_id_ver("ACME", "v2.0")
+    assert vc.sow_name == "ACME - Statement of Work v2.0.pdf"
+
+
+def test_sow_name_id_with_spaces_and_symbols():
+    vc = _make_vc_from_id_ver("My Project-01", "v1.2")
+    assert vc.sow_name == "My Project-01 - Statement of Work v1.2.pdf"
+
+
+def test_sow_name_stability_multiple_access():
+    vc = _make_vc_from_id_ver("PRJ", "v1.3")
+    first = vc.sow_name
+    second = vc.sow_name
+    assert first == second == "PRJ - Statement of Work v1.3.pdf"
+
+
+def test_sow_name_updates_when_version_changes():
+    vc = _make_vc_from_id_ver("PRJ", "v1.0")
+    assert vc.sow_name == "PRJ - Statement of Work.pdf"
+    vc.version = ProjectVersion.from_str("v1.4")
+    assert vc.sow_name == "PRJ - Statement of Work v1.4.pdf"
+    vc.version = ProjectVersion.from_str("v1.0")
+    assert vc.sow_name == "PRJ - Statement of Work.pdf"
+
+
+def test_sow_name_no_trailing_or_leading_spaces():
+    vc = _make_vc_from_id_ver("PRJ", "v3.0")
+    name = vc.sow_name
+    assert name == name.strip()
+    assert "  " not in name
+
+
+def test_sow_name_different_ids_independent():
+    vc1 = _make_vc_from_id_ver("PRJ1", "v1.0")
+    vc2 = _make_vc_from_id_ver("PRJ2", "v1.5")
+    assert vc1.sow_name == "PRJ1 - Statement of Work.pdf"
+    assert vc2.sow_name == "PRJ2 - Statement of Work v1.5.pdf"
+
+
+def test_sow_name_case_sensitivity_in_id():
+    vc = _make_vc_from_id_ver("prj", "v1.2")
+    assert vc.sow_name == "prj - Statement of Work v1.2.pdf"
+
+
+def test_sow_name_large_version_numbers():
+    vc = _make_vc_from_id_ver("PRJ", "v10.7")
+    assert vc.sow_name == "PRJ - Statement of Work v10.7.pdf"
+
+
+def test_sow_name_multiple_changes_sequence():
+    vc = _make_vc_from_id_ver("SEQ", "v1.0")
+    expected = [
+        ("v1.0", "SEQ - Statement of Work.pdf"),
+        ("v1.1", "SEQ - Statement of Work v1.1.pdf"),
+        ("v2.0", "SEQ - Statement of Work v2.0.pdf"),
+        ("v1.0", "SEQ - Statement of Work.pdf"),
+    ]
+    for ver, exp in expected:
+        vc.version = ProjectVersion.from_str(ver)
+        assert vc.sow_name == exp
+
+
+@pytest.mark.parametrize(
+    "proj_id,version,expected",
+    [
+        ("PRJ", "v1.0", "PRJ - Statement of Work.pdf"),
+        ("PRJ", "v1.1", "PRJ - Statement of Work v1.1.pdf"),
+        ("ACME", "v2.0", "ACME - Statement of Work v2.0.pdf"),
+        ("X", "v9.9", "X - Statement of Work v9.9.pdf"),
+        ("Complex ID_123", "v1.2", "Complex ID_123 - Statement of Work v1.2.pdf"),
+    ],
+)
+def test_sow_name_parametrized(proj_id, version, expected):
+    vc = _make_vc_from_id_ver(proj_id, version)
+    assert vc.sow_name == expected
+
+
+def test_sow_name_does_not_mutate_state():
+    vc = _make_vc_from_id_ver("IMMUT", "v1.2")
+    before_id = vc.id
+    before_version = vc.version
+    _ = vc.sow_name
+    assert vc.id == before_id
+    assert vc.version == before_version
+
+
+def test_sow_name_reversion_from_higher_version():
+    vc = _make_vc_from_id_ver("REV", "v2.0")
+    assert vc.sow_name == "REV - Statement of Work v2.0.pdf"
+    vc.version = ProjectVersion.from_str("v1.0")
+    assert vc.sow_name == "REV - Statement of Work.pdf"
+
+
+def test_sow_name_sequential_minor_versions():
+    vc = _make_vc_from_id_ver("MINOR", "v1.0")
+    for minor in range(1, 6):
+        ver = f"v1.{minor}"
+        vc.version = ProjectVersion.from_str(ver)
+        assert vc.sow_name == f"MINOR - Statement of Work {ver}.pdf"
+
+
+# ------------------- end VersionConfig.sow_name property tests -------------------
