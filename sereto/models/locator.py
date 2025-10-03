@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from typing import Annotated, Literal
 
-from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork, validate_call
+from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork, field_serializer, validate_call
 
 from sereto.models.base import SeretoBaseModel
 
@@ -18,6 +18,10 @@ class UrlLocatorModel(SeretoBaseModel):
     type: Literal["url"] = "url"
     value: AnyUrl
     description: str | None = None
+
+    @field_serializer("value")
+    def serialize_value(self, value: AnyUrl) -> str:
+        return str(value)
 
 
 class HostnameLocatorModel(SeretoBaseModel):
@@ -60,6 +64,10 @@ class IpLocatorModel(SeretoBaseModel):
     type: Literal["ip"] = "ip"
     value: IPvAnyAddress | IPvAnyNetwork
     description: str | None = None
+
+    @field_serializer("value")
+    def serialize_value(self, value: IPvAnyAddress | IPvAnyNetwork) -> str:
+        return str(value)
 
 
 class FileLocatorModel(SeretoBaseModel):

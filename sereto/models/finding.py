@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any, Literal, Self
 
 import frontmatter  # type: ignore[import-untyped]
-import tomli_w
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
+from tomlkit import dumps as toml_dumps
 
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -104,15 +104,15 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             "name": self.name,
             "risk": self.risk.value,
             "category": self.category.lower(),
-            "locators": [locator.model_dump() for locator in self.locators],
+            "locators": [locator.model_dump(exclude_none=True) for locator in self.locators],
         }
         if self.template_path:
             data["template_path"] = self.template_path
-        if self.variables:
+        if len(self.variables) > 0 and any(v is not None for v in self.variables.values()):
             data["variables"] = {k: v for k, v in self.variables.items() if v is not None}
 
         # Dump to TOML string
-        return tomli_w.dumps(data)
+        return toml_dumps(data)
 
     @classmethod
     @validate_call

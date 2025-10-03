@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Docs build improvements.
+- Replace `tomli-w` with `tomlkit` for writing TOML files with style preservation.
 
 ### Dependencies
 
