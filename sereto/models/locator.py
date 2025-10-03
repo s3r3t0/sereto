@@ -1,12 +1,26 @@
 from collections.abc import Iterable
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 
 from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork, field_serializer, validate_call
 
 from sereto.models.base import SeretoBaseModel
 
 
-class UrlLocatorModel(SeretoBaseModel):
+class BaseLocatorModel(SeretoBaseModel):
+    """Common base model for all locator types.
+
+    You should typically use `LocatorModel` instead of this class directly.
+
+    Attributes:
+        type: The type of locator (discriminator field).
+        description: An optional description of the locator.
+    """
+
+    type: str
+    description: str | None = None
+
+
+class UrlLocatorModel(BaseLocatorModel):
     """Model representing a URL locator.
 
     Attributes:
@@ -17,14 +31,13 @@ class UrlLocatorModel(SeretoBaseModel):
 
     type: Literal["url"] = "url"
     value: AnyUrl
-    description: str | None = None
 
     @field_serializer("value")
     def serialize_value(self, value: AnyUrl) -> str:
         return str(value)
 
 
-class HostnameLocatorModel(SeretoBaseModel):
+class HostnameLocatorModel(BaseLocatorModel):
     """Model representing a hostname locator.
 
     Attributes:
@@ -35,10 +48,9 @@ class HostnameLocatorModel(SeretoBaseModel):
 
     type: Literal["hostname"] = "hostname"
     value: str  # Hostname as a string
-    description: str | None = None
 
 
-class DomainLocatorModel(SeretoBaseModel):
+class DomainLocatorModel(BaseLocatorModel):
     """Model representing a domain locator.
 
     Attributes:
@@ -49,10 +61,9 @@ class DomainLocatorModel(SeretoBaseModel):
 
     type: Literal["domain"] = "domain"
     value: str  # Domain as a string
-    description: str | None = None
 
 
-class IpLocatorModel(SeretoBaseModel):
+class IpLocatorModel(BaseLocatorModel):
     """Model representing an IP locator.
 
     Attributes:
@@ -63,14 +74,13 @@ class IpLocatorModel(SeretoBaseModel):
 
     type: Literal["ip"] = "ip"
     value: IPvAnyAddress | IPvAnyNetwork
-    description: str | None = None
 
     @field_serializer("value")
     def serialize_value(self, value: IPvAnyAddress | IPvAnyNetwork) -> str:
         return str(value)
 
 
-class FileLocatorModel(SeretoBaseModel):
+class FileLocatorModel(BaseLocatorModel):
     """Model representing a file locator.
 
     Attributes:
@@ -81,9 +91,9 @@ class FileLocatorModel(SeretoBaseModel):
 
     type: Literal["file"] = "file"
     value: str  # Path to the file
-    description: str | None = None
 
 
+# For automatic subclass selection during validation
 LocatorModel = Annotated[
     UrlLocatorModel | HostnameLocatorModel | DomainLocatorModel | IpLocatorModel | FileLocatorModel,
     Discriminator("type"),
@@ -108,3 +118,10 @@ def dump_locators_to_toml(locators: Iterable[LocatorModel]) -> str:
         desc = f', description="{loc.description}"' if loc.description else ""
         lines.append(f'{{type="{loc.type}", value="{loc.value}"{desc}}},')
     return "[\n    " + "\n    ".join(lines) + "\n]"
+
+
+def get_locator_types() -> list[str]:
+    """Get all locator types defined in LocatorModel."""
+    union_type, *_ = get_args(LocatorModel)  # first arg is `UrlLocatorModel | HostnameLocatorModel | ...`
+    locator_classes = get_args(union_type)  # the individual model classes
+    return [cls.model_fields["type"].default for cls in locator_classes]

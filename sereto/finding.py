@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
+import tomlkit
 from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.convert import apply_convertor
@@ -18,7 +19,7 @@ from sereto.models.finding import (
     FindingTemplateFrontmatterModel,
     SubFindingFrontmatterModel,
 )
-from sereto.models.locator import LocatorModel
+from sereto.models.locator import LocatorModel, get_locator_types
 from sereto.models.settings import Render
 from sereto.models.version import ProjectVersion
 from sereto.risk import Risks
@@ -139,6 +140,7 @@ class FindingGroup:
         sub_findings: A list of sub-findings in the group.
         _target_locators: A list of locators used to find the target.
         _finding_group_locators: A list of locators defined on the finding group.
+        _show_locator_types: A list of locator types to return from the locators() property.
     """
 
     name: str
@@ -146,6 +148,7 @@ class FindingGroup:
     sub_findings: list[SubFinding]
     _target_locators: list[LocatorModel]
     _finding_group_locators: list[LocatorModel]
+    _show_locator_types: list[str]
 
     @classmethod
     @validate_call
@@ -180,21 +183,32 @@ class FindingGroup:
             sub_findings=sub_findings,
             _target_locators=target_locators,
             _finding_group_locators=group_desc.locators,
+            _show_locator_types=group_desc.show_locator_types,
         )
 
     def dumps_toml(self) -> str:
         """Dump the finding group to a TOML string."""
-        lines = [f'["{self.name}"]']
+        doc = tomlkit.document()
+        table = tomlkit.table()
+
         if self.explicit_risk is not None:
-            lines.append(f'risk = "{self.explicit_risk.value}"')
-        if len(self.sub_findings) == 1:
-            lines.append(f'findings = ["{self.sub_findings[0].uname}"]')
-        else:
-            lines.append("findings = [")
-            for sf in self.sub_findings:
-                lines.append(f'    "{sf.uname}",')
-            lines.append("]")
-        return "\n".join(lines)
+            table.add("risk", self.explicit_risk.value)
+
+        # show_locator_types (force inline)
+        slt_array = tomlkit.array()
+        slt_array.extend(self._show_locator_types)
+        table.add("show_locator_types", slt_array.multiline(False))
+
+        # findings (preserve order)
+        findings_array = tomlkit.array()
+        if len(self.sub_findings) > 1:
+            findings_array.multiline(True)
+        for sf in self.sub_findings:
+            findings_array.append(sf.uname)
+        table.add("findings", findings_array)
+
+        doc.add(self.name, table)
+        return tomlkit.dumps(doc).strip()
 
     @property
     def risk(self) -> Risk:
@@ -210,6 +224,8 @@ class FindingGroup:
     @property
     def locators(self) -> list[LocatorModel]:
         """Return a de-duplicated list of locators for the finding group.
+
+        Applies filtering from the `show_locator_types` attribute.
 
         Precedence (first non-empty wins):
         1. Explicit locators defined on the finding group
@@ -229,16 +245,19 @@ class FindingGroup:
             return result
 
         # 1. Explicit locators on the group
-        if self._finding_group_locators:
-            return _unique(self._finding_group_locators)
+        finding_group_locators = [loc for loc in self._finding_group_locators if loc.type in self._show_locator_types]
+        if len(finding_group_locators) > 0:
+            return _unique(finding_group_locators)
 
         # 2. Locators from sub-findings
-        sub_locators = _unique([loc for sf in self.sub_findings for loc in sf.locators])
-        if sub_locators:
-            return sub_locators
+        sub_finding_locators = _unique(
+            [loc for sf in self.sub_findings for loc in sf.locators if loc.type in self._show_locator_types]
+        )
+        if len(sub_finding_locators) > 0:
+            return sub_finding_locators
 
         # 3. Fallback to target locators
-        return _unique(self._target_locators)
+        return _unique([loc for loc in self._target_locators if loc.type in self._show_locator_types])
 
     @validate_call
     def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:
@@ -400,6 +419,7 @@ class Findings:
             sub_findings=[sub_finding],
             _target_locators=self.target_locators,
             _finding_group_locators=[],
+            _show_locator_types=get_locator_types(),
         )
 
         # Append to findings.toml

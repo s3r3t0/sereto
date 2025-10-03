@@ -10,7 +10,7 @@ from tomlkit import dumps as toml_dumps
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
-from sereto.models.locator import LocatorModel
+from sereto.models.locator import LocatorModel, get_locator_types
 from sereto.sereto_types import TypeCategoryName
 
 
@@ -132,11 +132,13 @@ class FindingGroupModel(SeretoBaseModel):
         risks: Explicit risks associated with the finding group for specific versions.
         findings: The list of sub-findings in the format of their unique name to include in the report.
         locators: A list of locators used to find the finding group.
+        show_locator_types: A list of locator types to return from the FindingGroup.locators() property.
     """
 
     risk: Risk | None = None
     findings: list[str] = Field(min_length=1)
     locators: list[LocatorModel] = Field(default_factory=list)
+    show_locator_types: list[str] = Field(default_factory=get_locator_types)
 
     @field_validator("risk", mode="before")
     @classmethod
