@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `show_locator_types` attribute to `FindingGroup` to filter locators shown in the report.
 - Add support for Python 3.14 to Tox configuration.
 - Add more tests for `VersionConfig`.
+- Add documentation versioning.
 
 ### Fixed
 

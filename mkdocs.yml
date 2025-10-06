@@ -35,6 +35,11 @@ theme:
     - navigation.tracking
     - navigation.tabs
     - navigation.top
+    - content.version
+
+extra:
+  version:
+    provider: mike
 
 plugins:
   - mkdocstrings:

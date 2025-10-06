@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*.*.*'
 
 permissions:
   actions: write
@@ -15,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for mike to work properly
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
@@ -29,5 +33,17 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material mkdocstrings[python]
-      - run: mkdocs gh-deploy --force
+      - name: Install dependencies
+        run: pip install mike mkdocs-material mkdocstrings[python]
+      - name: Deploy documentation
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Deploy versioned docs for tags
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"  # Remove 'v' prefix
+            mike deploy --push --update-aliases $VERSION latest
+            mike set-default --push latest
+          else
+            # Deploy dev docs for main branch
+            mike deploy --push dev
+          fi

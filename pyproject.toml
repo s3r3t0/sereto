@@ -75,6 +75,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
+  "mike",
   "mkdocs-material",
   "mkdocstrings[python]",
   "ruff",
