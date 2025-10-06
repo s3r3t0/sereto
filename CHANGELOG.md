@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docs: display version warning when not viewing the latest version of the documentation.
+
 ## [0.3.8] - 2025-10-06
 
 ### Added
