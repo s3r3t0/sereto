@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Docs: display version warning when not viewing the latest version of the documentation.
 
+### Dependencies
+
+- Update textual requirement from ~=6.1.0 to ~=6.2.1
+
 ## [0.3.8] - 2025-10-06
 
 ### Added
