@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow generating all finding groups with `sereto pdf finding-group --all`.
 - Docs: display version warning when not viewing the latest version of the documentation.
 
+### Changed
+
+- **Breaking:** Change minimum supported Python version to 3.12.
+
 ### Dependencies
 
 - Update textual requirement from ~=6.1.0 to ~=6.2.1
