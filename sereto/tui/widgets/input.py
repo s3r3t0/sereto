@@ -1,5 +1,4 @@
 from collections.abc import Callable, Iterable
-from typing import Generic, TypeVar
 
 from rich.console import RenderableType
 from textual.app import ComposeResult
@@ -37,10 +36,7 @@ class InputWithLabel(Widget):
         yield self.input
 
 
-W = TypeVar("W", bound=Widget)
-
-
-class RemovableWidget(Generic[W], Widget):
+class RemovableWidget[W: Widget](Widget):
     """A removable widget (e.g., Input, Select) with a remove button."""
 
     def __init__(self, widget: W, on_remove: Callable[["RemovableWidget[W]"], None] | None = None) -> None:
@@ -63,7 +59,7 @@ class RemovableWidget(Generic[W], Widget):
                 self.remove()
 
 
-class ListWidget(Generic[W], Widget):
+class ListWidget[W: Widget](Widget):
     """A list of widgets (e.g., Input, Select) with add and remove buttons."""
 
     def __init__(
@@ -98,10 +94,7 @@ class ListWidget(Generic[W], Widget):
         row.remove()
 
 
-T = TypeVar("T")
-
-
-class SelectWithLabel(Generic[T], Widget):
+class SelectWithLabel[T](Widget):
     """A select with a label."""
 
     DEFAULT_CSS = """

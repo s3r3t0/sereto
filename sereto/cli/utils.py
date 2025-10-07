@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import TypeVar
 
 import click
 from prompt_toolkit.shortcuts import radiolist_dialog
@@ -52,10 +51,7 @@ class AliasedGroup(click.Group):
         return cmd.name, cmd, args
 
 
-EnumType = TypeVar("EnumType", bound=Enum)
-
-
-def load_enum(enum: type[EnumType], message: str) -> EnumType:
+def load_enum[E: Enum](enum: type[E], message: str) -> E:
     """Let user select a value from enum."""
     choice = radiolist_dialog(
         title="Select value",

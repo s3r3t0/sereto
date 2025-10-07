@@ -3,7 +3,6 @@ import os
 import pathlib
 import sys
 from collections.abc import Callable
-from typing import ParamSpec, TypeVar
 
 import click
 import jinja2
@@ -43,12 +42,8 @@ class SeretoCalledProcessError(SeretoException):
     """Called process error."""
 
 
-P = ParamSpec("P")
-R = TypeVar("R")
-
-
-def handle_exceptions(func: Callable[P, R]) -> Callable[P, R]:
-    """Decorator for pretty printing SeReTo exceptions in debug mode.
+def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
+    """Decorator for pretty printing SeReTo exceptions in debug mode
 
     If the exception is a subclass of SeretoException and DEBUG environment variable is set to '1', the full exception
     traceback will be printed with local variables shown.
