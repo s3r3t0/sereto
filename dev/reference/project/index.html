@@ -3065,7 +3065,7 @@ found or 'dir_subtree' is reached.</p>
 
 
 <h3 id="sereto.project.init_build_dir" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">init_build_dir</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#sereto.project.init_build_dir" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3088,28 +3088,18 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_build_dir</span><span class="p">(</span>
-    <span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the build directory.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">version_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">version_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;either &#39;version_config&#39; or &#39;target&#39; must be specified&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Create &quot;.build&quot; directory</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">build_dir</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;.build&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="n">build_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># Create target directories</span>
+    <span class="c1"># Create target directories in .build/</span>
     <span class="n">targets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Target</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">version_config</span><span class="o">.</span><span class="n">targets</span>  <span class="c1"># type: ignore[union-attr]</span>
     <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">target_dir</span> <span class="o">:=</span> <span class="n">build_dir</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="n">target_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.build/</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3372,7 +3362,14 @@ found or 'dir_subtree' is reached.</p>
 
             <details class="quote">
               <summary>Source code in <code>sereto/project.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">190</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
@@ -3416,14 +3413,7 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">new_project</span><span class="p">(</span>
     <span class="n">projects_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
     <span class="n">templates_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
@@ -3485,7 +3475,7 @@ found or 'dir_subtree' is reached.</p>
 
 
 <h3 id="sereto.project.project_create_missing" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">project_create_missing</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">version_config</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="p">)</span></code>
 
 <a href="#sereto.project.project_create_missing" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3508,14 +3498,19 @@ found or 'dir_subtree' is reached.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>project_path</code>
+                <code>project</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="pydantic.DirectoryPath" href="https://docs.pydantic.dev/latest/api/types/#pydantic.types.DirectoryPath">DirectoryPath</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Project
+
+
+  
+      dataclass
+   (sereto.project.Project)" href="#sereto.project.Project">Project</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the project directory.</p>
+                <p>The project instance.</p>
               </div>
             </td>
             <td>
@@ -3549,7 +3544,12 @@ found or 'dir_subtree' is reached.</p>
 
             <details class="quote">
               <summary>Source code in <code>sereto/project.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
@@ -3559,31 +3559,22 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">project_create_missing</span><span class="p">(</span><span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates missing content in the project.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project_path: The path to the project directory.</span>
+<span class="sd">        project: The project instance.</span>
 <span class="sd">        version_config: Configuration for a specific project version.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialize the build directory</span>
-    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project_path</span><span class="o">=</span><span class="n">project_path</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">version_config</span><span class="p">)</span>
+    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">version_config</span><span class="p">)</span>
 
-    <span class="c1"># Make sure that &quot;layouts/generated&quot; directory exists</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layouts_generated</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts&quot;</span> <span class="o">/</span> <span class="s2">&quot;generated&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="n">layouts_generated</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">&quot;layouts/generated&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">version_config</span><span class="o">.</span><span class="n">targets</span><span class="p">:</span>
         <span class="c1"># Generate risks plot for the target</span>
-        <span class="n">risks_plot</span><span class="p">(</span><span class="n">risks</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;.build&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span> <span class="o">/</span> <span class="s2">&quot;risks.png&quot;</span><span class="p">)</span>
+        <span class="n">risks_plot</span><span class="p">(</span><span class="n">risks</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;.build&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span> <span class="o">/</span> <span class="s2">&quot;risks.png&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

@@ -2437,7 +2437,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process one finding into TeX format and write it to the &quot;.build&quot; directory.&quot;&quot;&quot;</span>
     <span class="c1"># Initialize the build directory</span>
-    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project_path</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
+    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 
     <span class="c1"># Process the finding</span>
     <span class="n">content</span> <span class="o">=</span> <span class="n">render_subfinding_to_tex</span><span class="p">(</span>
