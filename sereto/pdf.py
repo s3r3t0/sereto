@@ -86,7 +86,8 @@ def generate_pdf_finding_group(
 
     Console().log(f"Rendering partial report for finding group {fg.uname!r}")
 
-    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
+    project_create_missing(project=project, version_config=project.config.at_version(version))
+    pdf_dir = project.ensure_dir("pdf")
 
     # Build finding group to TeX
     build_finding_group_dependencies(
@@ -138,7 +139,7 @@ def generate_pdf_report(
 
     Console().log(f"Rendering report version: '{version}'")
 
-    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
+    project_create_missing(project=project, version_config=project.config.at_version(version))
 
     # Build report to TeX
     report_tex = build_report_to_tex(project=project, template=template, version=version, converter=convert_recipe)
@@ -177,7 +178,7 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
 
     Console().log(f"Rendering SoW version: '{version}'")
 
-    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
+    project_create_missing(project=project, version_config=project.config.at_version(version))
 
     # Build SoW to TeX
     sow_tex = build_sow_to_tex(project=project, version=version)
@@ -227,7 +228,7 @@ def generate_pdf_target(
 
     Console().log(f"Rendering partial report for target '{target.uname}'")
 
-    project_create_missing(project_path=project.path, version_config=project.config.at_version(version))
+    project_create_missing(project=project, version_config=project.config.at_version(version))
 
     # Build target to TeX
     build_target_dependencies(project=project, target=target, version=version, converter=convert_recipe)

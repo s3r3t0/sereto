@@ -150,41 +150,34 @@ def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: Dir
 
 @validate_call
 def init_build_dir(
-    project_path: DirectoryPath, version_config: VersionConfig | None = None, target: Target | None = None
+    project: Project, version_config: VersionConfig | None = None, target: Target | None = None
 ) -> None:
     """Initialize the build directory."""
     if (version_config is None and target is None) or (version_config is not None and target is not None):
         raise SeretoValueError("either 'version_config' or 'target' must be specified")
 
-    # Create ".build" directory
-    if not (build_dir := project_path / ".build").is_dir():
-        build_dir.mkdir(parents=True)
-
-    # Create target directories
+    # Create target directories in .build/
     targets: list[Target] = [target] if target is not None else version_config.targets  # type: ignore[union-attr]
     for target in targets:
-        if not (target_dir := build_dir / target.uname).is_dir():
-            target_dir.mkdir(parents=True)
+        project.ensure_dir(f".build/{target.uname}")
 
 
 @validate_call
-def project_create_missing(project_path: DirectoryPath, version_config: VersionConfig) -> None:
+def project_create_missing(project: Project, version_config: VersionConfig) -> None:
     """Creates missing content in the project.
 
     Args:
-        project_path: The path to the project directory.
+        project: The project instance.
         version_config: Configuration for a specific project version.
     """
     # Initialize the build directory
-    init_build_dir(project_path=project_path, version_config=version_config)
+    init_build_dir(project=project, version_config=version_config)
 
-    # Make sure that "layouts/generated" directory exists
-    if not (layouts_generated := project_path / "layouts" / "generated").is_dir():
-        layouts_generated.mkdir(parents=True)
+    project.ensure_dir("layouts/generated")
 
     for target in version_config.targets:
         # Generate risks plot for the target
-        risks_plot(risks=target.findings.risks, path=project_path / ".build" / target.uname / "risks.png")
+        risks_plot(risks=target.findings.risks, path=project.path / ".build" / target.uname / "risks.png")
 
 
 @validate_call

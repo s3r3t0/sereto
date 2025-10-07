@@ -65,7 +65,7 @@ def build_subfinding_to_tex(
 ) -> None:
     """Process one finding into TeX format and write it to the ".build" directory."""
     # Initialize the build directory
-    init_build_dir(project_path=project.path, target=target)
+    init_build_dir(project=project, target=target)
 
     # Process the finding
     content = render_subfinding_to_tex(
@@ -116,7 +116,7 @@ def build_finding_group_to_tex(
     version: ProjectVersion,
 ) -> Path:
     # Initialize the build directory
-    init_build_dir(project_path=project.path, target=target)
+    init_build_dir(project=project, target=target)
 
     # Determine the indexes for correct section numbering
     target_ix = project.config.at_version(version).targets.index(target)
@@ -162,7 +162,7 @@ def build_target_dependencies(
 @validate_call
 def build_target_to_tex(project: Project, target: Target, version: ProjectVersion) -> Path:
     # Initialize the build directory
-    init_build_dir(project_path=project.path, target=target)
+    init_build_dir(project=project, target=target)
 
     # Determine the index for correct section numbering
     target_ix = project.config.at_version(version).targets.index(target)
@@ -191,7 +191,7 @@ def build_report_to_tex(
         build_target_dependencies(project=project, target=target, version=version, converter=converter)
 
     # Initialize the build directory
-    init_build_dir(project_path=project.path, version_config=project.config.at_version(version))
+    init_build_dir(project=project, version_config=project.config.at_version(version))
 
     # Render the report to TeX format
     content = render_report_to_tex(
@@ -211,7 +211,7 @@ def build_report_to_tex(
 @validate_call
 def build_sow_to_tex(project: Project, version: ProjectVersion) -> Path:
     # Initialize the build directory
-    init_build_dir(project_path=project.path, version_config=project.config.at_version(version))
+    init_build_dir(project=project, version_config=project.config.at_version(version))
 
     # Render the SoW to TeX format
     content = render_sow_to_tex(project_path=project.path, config=project.config, version=version)
