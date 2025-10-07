@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add method `Project.ensure_dir`.
+- Allow generating all finding groups with `sereto pdf finding-group --all`.
 - Docs: display version warning when not viewing the latest version of the documentation.
 
 ### Dependencies

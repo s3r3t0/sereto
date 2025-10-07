@@ -12,9 +12,11 @@ from sereto.build import (
 )
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
+from sereto.finding import FindingGroup
 from sereto.models.settings import Render, RenderRecipe
 from sereto.models.version import ProjectVersion
 from sereto.project import Project, project_create_missing
+from sereto.target import Target
 
 
 @validate_call
@@ -54,40 +56,28 @@ def render_tex_to_pdf(
 @validate_call
 def generate_pdf_finding_group(
     project: Project,
-    target_selector: int | str | None,
-    finding_group_selector: int | str | None,
+    target: Target,
+    fg: FindingGroup,
     converter: str | None,
     renderer: str | None,
-    version: ProjectVersion | None,
-) -> Path:
+    version: ProjectVersion,
+) -> FilePath:
     """Generate a finding group PDF.
+
+    You should call `project_create_missing` before calling this function.
 
     Args:
         project: Project's representation.
-        target_selector: The target selector (1-based index or unique name). If None, the only target is selected.
-        finding_group_selector: The finding group selector (1-based index or unique name). If None, the only finding
-            group is selected.
+        target: The target containing the finding group.
+        fg: The finding group to generate.
         converter: The convert recipe used for file format transformations. If None, the first recipe is used.
         renderer: The recipe used for generating the finding group. If None, the first recipe is used.
-        version: The version of the project to use. If None, the last version
+        version: The version of the project to use.
 
     Returns:
         Path to the generated finding group PDF.
     """
-    if version is None:
-        version = project.config.last_version
-
-    # Select target and finding group
-    target = project.config.at_version(version).select_target(
-        categories=project.settings.categories, selector=target_selector
-    )
-
-    fg = target.findings.select_group(selector=finding_group_selector)
-
     Console().log(f"Rendering partial report for finding group {fg.uname!r}")
-
-    project_create_missing(project=project, version_config=project.config.at_version(version))
-    pdf_dir = project.ensure_dir("pdf")
 
     # Build finding group to TeX
     build_finding_group_dependencies(
@@ -104,14 +94,92 @@ def generate_pdf_finding_group(
         recipe=recipe,
     )
 
-    # Create directory for the PDF results if it does not exist
-    if not (pdf_dir := project.path / "pdf").is_dir():
-        pdf_dir.mkdir()
-
     # Move the finding group PDF to the "pdf" directory
-    finding_group_pdf = finding_group_pdf.rename(pdf_dir / f"{target.uname}_{finding_group_pdf.name}")
+    pdf_dir = project.ensure_dir("pdf")
+    return finding_group_pdf.replace(pdf_dir / f"{target.uname}_{finding_group_pdf.name}")
 
-    return finding_group_pdf
+
+@validate_call
+def find_and_generate_pdf_finding_group(
+    project: Project,
+    target_selector: int | str | None,
+    finding_group_selector: int | str | None,
+    converter: str | None,
+    renderer: str | None,
+    version: ProjectVersion | None,
+) -> FilePath:
+    """Generate a finding group PDF from given target and finding group selectors.
+
+    Args:
+        project: Project's representation.
+        target_selector: The target selector (1-based index or unique name). If None, the only target is selected.
+        finding_group_selector: The finding group selector (1-based index or unique name). If None, the only finding
+            group is selected.
+        converter: The convert recipe used for file format transformations. If None, the first recipe is used.
+        renderer: The recipe used for generating the finding group. If None, the first recipe is used.
+        version: The version of the project to use. If None, the last version is used.
+
+    Returns:
+        Path to the generated finding group PDF.
+    """
+    if version is None:
+        version = project.config.last_version
+
+    # Select target and finding group
+    target = project.config.at_version(version).select_target(
+        categories=project.settings.categories, selector=target_selector
+    )
+    fg = target.findings.select_group(selector=finding_group_selector)
+
+    # Create missing objects
+    project_create_missing(project=project, version_config=project.config.at_version(version))
+
+    return generate_pdf_finding_group(
+        project=project,
+        target=target,
+        fg=fg,
+        converter=converter,
+        renderer=renderer,
+        version=version,
+    )
+
+
+@validate_call
+def generate_all_pdf_finding_groups(
+    project: Project,
+    converter: str | None,
+    renderer: str | None,
+    version: ProjectVersion | None,
+) -> list[FilePath]:
+    """Generate all finding group PDFs.
+
+    Args:
+        project: Project's representation.
+        converter: The convert recipe used for file format transformations. If None, the first recipe is used.
+        renderer: The recipe used for generating the finding group. If None, the first recipe is used.
+        version: The version of the project to use. If None, the last version is used.
+
+    Returns:
+        List of paths to the generated finding group PDFs.
+    """
+    if version is None:
+        version = project.config.last_version
+
+    # Create missing objects
+    project_create_missing(project=project, version_config=project.config.at_version(version))
+
+    return [
+        generate_pdf_finding_group(
+            project=project,
+            target=target,
+            fg=fg,
+            converter=converter,
+            renderer=renderer,
+            version=version,
+        )
+        for target in project.config.at_version(version).targets
+        for fg in target.findings.groups
+    ]
 
 
 @validate_call

@@ -32,7 +32,13 @@ from sereto.keyring import get_password, set_password
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
-from sereto.pdf import generate_pdf_finding_group, generate_pdf_report, generate_pdf_sow, generate_pdf_target
+from sereto.pdf import (
+    find_and_generate_pdf_finding_group,
+    generate_all_pdf_finding_groups,
+    generate_pdf_report,
+    generate_pdf_sow,
+    generate_pdf_target,
+)
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
 from sereto.sereto_types import TypeProjectId
@@ -588,6 +594,13 @@ def pdf() -> None:
 @click.option("-c", "--converter", help="Convert finding recipe")
 @click.option("-r", "--renderer", help="Build TeX finding recipe")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
+@click.option(
+    "-a",
+    "--all",
+    is_flag=True,
+    default=False,
+    help="Render all finding groups (mutually exclusive with --target-selector / --finding-group-selector).",
+)
 @click.pass_obj
 @validate_call
 def cli_pdf_finding_group(
@@ -597,6 +610,7 @@ def cli_pdf_finding_group(
     converter: str | None,
     renderer: str | None,
     version: ProjectVersion | None,
+    all: bool,
 ) -> None:
     """Generate a finding group PDF.\f
 
@@ -605,17 +619,25 @@ def cli_pdf_finding_group(
         target_selector: The target for which the finding group is being generated.
         finding_group_selector: The finding group to be generated.
         converter: The recipe for converting the findings.
-        renderer: The recipe for building TeX..
+        renderer: The recipe for building TeX.
         version: The version of the configuration to use. If None, the last version is used.
+        all: Flag to render all finding groups (exclusive with selectors).
     """
-    generate_pdf_finding_group(
-        project=ctx,
-        target_selector=target_selector,
-        finding_group_selector=finding_group_selector,
-        converter=converter,
-        renderer=renderer,
-        version=version,
-    )
+    # Exclusivity checks
+    if all and (target_selector is not None or finding_group_selector is not None):
+        raise SeretoValueError("--all cannot be used together with --target-selector or --finding-group-selector")
+
+    if all:
+        generate_all_pdf_finding_groups(project=ctx, converter=converter, renderer=renderer, version=version)
+    else:
+        find_and_generate_pdf_finding_group(
+            project=ctx,
+            target_selector=target_selector,
+            finding_group_selector=finding_group_selector,
+            converter=converter,
+            renderer=renderer,
+            version=version,
+        )
 
 
 @pdf.command(name="target")
