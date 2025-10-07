@@ -52,6 +52,41 @@ class Project:
             )
         return self._config
 
+    @validate_call
+    def ensure_dir(self, relative_path: str | Path) -> Path:
+        """Ensure a directory inside the project exists, creating it if necessary.
+
+        Args:
+            relative_path: Path relative to the project root (e.g. "pdf" or "reports/html").
+
+        Returns:
+            Absolute Path to the ensured directory.
+
+        Raises:
+            SeretoValueError: If the path is absolute or escapes the project root.
+            SeretoPathError: If a non-directory object exists at the target path.
+        """
+        rel = Path(relative_path)
+        if rel == Path("") or rel == Path("."):
+            return self.path
+
+        if rel.is_absolute():
+            raise SeretoValueError("relative_path must be relative, not absolute")
+
+        dest = (self.path / rel).resolve()
+        project_root = self.path.resolve()
+
+        if not dest.is_relative_to(project_root):
+            raise SeretoValueError("relative_path points outside the project root")
+
+        if dest.exists() and not dest.is_dir():
+            raise SeretoPathError("a non-directory object already exists at the requested path")
+
+        if not dest.exists():
+            dest.mkdir(parents=True)
+
+        return dest
+
     @property
     def config_path(self) -> Path:
         """Get the path to the project configuration file."""

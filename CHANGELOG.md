@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add method `Project.ensure_dir`.
 - Docs: display version warning when not viewing the latest version of the documentation.
 
 ### Dependencies
