@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- Update textual requirement from ~=6.1.0 to ~=6.2.1
+- Update textual requirement from ~=6.1.0 to ~=6.2.1.
+- Update pydantic requirement from ~=2.11.1 to ~=2.12.0.
 
 ## [0.3.8] - 2025-10-06
 
