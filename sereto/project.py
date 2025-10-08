@@ -156,6 +156,9 @@ def init_build_dir(
     if (version_config is None and target is None) or (version_config is not None and target is not None):
         raise SeretoValueError("either 'version_config' or 'target' must be specified")
 
+    # Ensure .build/ directory exists even when there are no targets
+    project.ensure_dir(".build")
+
     # Create target directories in .build/
     targets: list[Target] = [target] if target is not None else version_config.targets  # type: ignore[union-attr]
     for target in targets:

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixes
+
+- Ensure `.build/` directory exists even when there are no targets.
+
 ## [0.4.0] - 2025-10-08
 
 ### Added
