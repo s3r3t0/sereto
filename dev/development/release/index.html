@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://sereto.s4n.cz/dev/development/documentation/">
+        <link rel="canonical" href="https://sereto.s4n.cz/dev/development/release/">
       
       
-        <link rel="prev" href="../../reference/utils/">
+        <link rel="prev" href="../code/">
       
-      
-        <link rel="next" href="../tests/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>Documentation - Security Reporting Tool</title>
+        <title>Release - Security Reporting Tool</title>
       
     
     
@@ -79,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#documentation" class="md-skip">
+        <a href="#release" class="md-skip">
           Skip to content
         </a>
       
@@ -128,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Documentation
+              Release
             
           </span>
         </div>
@@ -381,7 +379,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../documentation/" class="md-tabs__link">
           
   
   
@@ -2112,32 +2110,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Documentation
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
         
   
   
@@ -2148,59 +2124,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#serving-the-documentation-locally" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serving the documentation locally
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Writing documentation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Writing documentation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generating-gifs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generating GIFs
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2256,10 +2179,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../release/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2270,6 +2202,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -2302,47 +2235,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#serving-the-documentation-locally" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serving the documentation locally
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Writing documentation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Writing documentation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generating-gifs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generating GIFs
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -2360,32 +2252,18 @@
   
 
 
-<h1 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h1>
-<h2 id="serving-the-documentation-locally">Serving the documentation locally<a class="headerlink" href="#serving-the-documentation-locally" title="Permanent link">&para;</a></h2>
-<p>Install dependencies and start the live preview server:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>--with<span class="w"> </span><span class="s1">&#39;.[docs]&#39;</span><span class="w"> </span>mkdocs<span class="w"> </span>serve
-</code></pre></div>
-<p>Then open the URL shown in the terminal output (typically <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>).</p>
-<p>The server auto-reloads when you edit Markdown or configuration files.</p>
-<p>Optional:</p>
-<ul>
-<li>Change host/port: <code>uv run --with '.[docs]' mkdocs serve -a 0.0.0.0:8001</code></li>
-<li>Only build without starting the server: <code>uv run --with '.[docs]' mkdocs build</code> (outputs to the <code>site/</code> directory)</li>
-<li>Clean previous build: remove the <code>site/</code> directory before building if needed</li>
+<h1 id="release">Release<a class="headerlink" href="#release" title="Permanent link">&para;</a></h1>
+<ol>
+<li>Update the version in <code>pyproject.toml</code></li>
+<li>Update the changelog in <code>CHANGELOG.md</code><ul>
+<li>Add a new section for the new version below the "Unreleased" section</li>
+<li>At the bottom of the changelog, update the comparison link for the "Unreleased" and new versions</li>
 </ul>
-<h2 id="writing-documentation">Writing documentation<a class="headerlink" href="#writing-documentation" title="Permanent link">&para;</a></h2>
-<h3 id="generating-gifs">Generating GIFs<a class="headerlink" href="#generating-gifs" title="Permanent link">&para;</a></h3>
-<p>We use <a href="https://github.com/charmbracelet/vhs">VHS</a> to record GIFs for the documentation. A <code>Dockerfile</code> is provided in the <code>docs/assets/gifs/</code> directory to simplify the process of recording and generating GIFs.</p>
-<p>To build the Docker image, run:
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>docs/assets/gifs/
-docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>vhs<span class="w"> </span>-f<span class="w"> </span>vhs.Dockerfile<span class="w"> </span>.
-</code></pre></div></p>
-<p>With the following command, the GIF can be recorded based on the provided <code>.tape</code> file:
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/vhs&quot;</span><span class="w"> </span>vhs<span class="w"> </span>new-project.tape
-</code></pre></div></p>
-<p>Since the docker is running with a low-privileged user, <code>vhs</code> may have problems writing to the specified volume. On Linux, this can be fixed by adding extended permissions to the directory for user with UID 1001, e.g.:
-<div class="highlight"><pre><span></span><code>setfacl<span class="w"> </span>-m<span class="w"> </span>u:1001:rwx<span class="w"> </span>.
-</code></pre></div></p>
+</li>
+<li>Generate new <code>uv.lock</code> file with <code>uv lock</code></li>
+<li>With the changes, create commit with message "Bump SeReTo version to x.y.z"</li>
+<li>Create a new tag with <code>git tag vx.y.z</code></li>
+</ol>
 
 
 
