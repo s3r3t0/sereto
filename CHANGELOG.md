@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-08
+
 ### Added
 
 - Add method `Project.ensure_dir`.
@@ -548,7 +550,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.3.8...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/s3r3t0/sereto/compare/v0.3.8...v0.4.0
 [0.3.8]: https://github.com/s3r3t0/sereto/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/s3r3t0/sereto/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/s3r3t0/sereto/compare/v0.3.5...v0.3.6
