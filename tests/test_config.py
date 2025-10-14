@@ -3,6 +3,7 @@ import re
 import pytest
 
 from sereto.config import VersionConfig
+from sereto.exceptions import SeretoValueError
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.version import ProjectVersion
 
@@ -304,6 +305,301 @@ def test_filter_targets_complex_combination_multiple_categories_and_regex():
 
 
 # ----------------- end VersionConfig.filter_targets tests --------------------
+
+
+# -------------------- VersionConfig.filter_dates tests --------------------
+
+
+def _make_vc_with_dates(dates: list[Date]) -> VersionConfig:
+    return VersionConfig(
+        version=ProjectVersion.from_str("v1.0"),
+        id="PRJ",
+        name="Project",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[],
+        dates=dates,
+        people=[],
+    )
+
+
+def test_filter_dates_no_args_returns_all():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jan-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("05-Jan-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates()
+    assert res == dates
+
+
+def test_filter_dates_type_string():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jan-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jan-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(type="review")
+    assert len(res) == 1 and res[0].type == DateType.review
+
+
+def test_filter_dates_type_iterable_mixed():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jan-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jan-2024")),
+        Date(type=DateType.sow_sent, date=SeretoDate("03-Jan-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(type=[DateType.review, "report_sent"])
+    assert [d.type for d in res] == [DateType.review, DateType.report_sent]
+
+
+def test_filter_dates_type_generator():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jan-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jan-2024")),
+        Date(type=DateType.sow_sent, date=SeretoDate("03-Jan-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    gen = (t for t in ["review", "sow_sent"])
+    res = vc.filter_dates(type=gen)
+    assert [d.type for d in res] == [DateType.review, DateType.sow_sent]
+
+
+def test_filter_dates_start_end_inclusive_single_dates():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("10-Feb-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("15-Feb-2024")),
+        Date(type=DateType.sow_sent, date=SeretoDate("20-Feb-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(start=SeretoDate("10-Feb-2024"), end=SeretoDate("15-Feb-2024"))
+    assert [d.date for d in res] == [SeretoDate("10-Feb-2024"), SeretoDate("15-Feb-2024")]
+
+
+def test_filter_dates_ranges_fully_within_required():
+    rng_in = Date(
+        type=DateType.pentest_ongoing,
+        date=DateRange(start=SeretoDate("05-Mar-2024"), end=SeretoDate("07-Mar-2024")),
+    )
+    rng_partial = Date(
+        type=DateType.pentest_ongoing,
+        date=DateRange(start=SeretoDate("01-Mar-2024"), end=SeretoDate("06-Mar-2024")),
+    )  # starts before window
+    dates = [
+        rng_in,
+        rng_partial,
+        Date(type=DateType.review, date=SeretoDate("06-Mar-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(type="pentest_ongoing", start=SeretoDate("03-Mar-2024"), end=SeretoDate("08-Mar-2024"))
+    assert res == [rng_in]  # partial excluded
+
+
+def test_filter_dates_first_date_prefers_earliest_range_start():
+    dates = [
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("10-Apr-2024"), end=SeretoDate("12-Apr-2024")),
+        ),
+        Date(type=DateType.review, date=SeretoDate("09-Apr-2024")),
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("08-Apr-2024"), end=SeretoDate("11-Apr-2024")),
+        ),
+    ]
+    vc = _make_vc_with_dates(dates)
+    first = vc.filter_dates(type=["pentest_ongoing", "review"], first_date=True)
+    assert first == SeretoDate("08-Apr-2024")
+
+
+def test_filter_dates_last_date_uses_range_end():
+    dates = [
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("01-May-2024"), end=SeretoDate("05-May-2024")),
+        ),
+        Date(type=DateType.review, date=SeretoDate("07-May-2024")),
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("10-May-2024"), end=SeretoDate("15-May-2024")),
+        ),
+    ]
+    vc = _make_vc_with_dates(dates)
+    last = vc.filter_dates(type="pentest_ongoing", last_date=True)
+    assert last == SeretoDate("15-May-2024")
+
+
+def test_filter_dates_first_and_last_together_error():
+    vc = _make_vc_with_dates([])
+    with pytest.raises(SeretoValueError, match="cannot specify both first_date and last_date"):
+        vc.filter_dates(first_date=True, last_date=True)
+
+
+def test_filter_dates_inverse_with_first_date_error():
+    vc = _make_vc_with_dates([])
+    with pytest.raises(SeretoValueError, match="cannot specify inverse with first_date or last_date"):
+        vc.filter_dates(first_date=True, inverse=True)
+
+
+def test_filter_dates_inverse_basic():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jun-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jun-2024")),
+        Date(type=DateType.sow_sent, date=SeretoDate("03-Jun-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    inv = vc.filter_dates(type=["review", "report_sent"], inverse=True)
+    assert len(inv) == 1 and inv[0].type == DateType.sow_sent
+
+
+def test_filter_dates_inverse_all_selected_gives_empty():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jul-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jul-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    inv = vc.filter_dates(type=["review", "report_sent"], inverse=True)
+    assert inv == []
+
+
+def test_filter_dates_first_date_none_when_no_match():
+    vc = _make_vc_with_dates([Date(type=DateType.review, date=SeretoDate("01-Aug-2024"))])
+    assert vc.filter_dates(type="report_sent", first_date=True) is None
+
+
+def test_filter_dates_last_date_none_when_no_match():
+    vc = _make_vc_with_dates([Date(type=DateType.review, date=SeretoDate("01-Sep-2024"))])
+    assert vc.filter_dates(type="report_sent", last_date=True) is None
+
+
+def test_filter_dates_start_after_end_returns_empty():
+    dates = [Date(type=DateType.review, date=SeretoDate("10-Oct-2024"))]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(start=SeretoDate("11-Oct-2024"), end=SeretoDate("01-Oct-2024"))
+    assert res == []
+
+
+def test_filter_dates_invalid_type_string_raises():
+    vc = _make_vc_with_dates([])
+    with pytest.raises(ValueError):
+        vc.filter_dates(type="not_a_real_type")
+
+
+def test_filter_dates_order_preserved():
+    dates = [
+        Date(type=DateType.sow_sent, date=SeretoDate("01-Nov-2024")),
+        Date(type=DateType.review, date=SeretoDate("02-Nov-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("03-Nov-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(type=["sow_sent", "review", "report_sent"])
+    assert res == dates
+
+
+def test_filter_dates_multiple_calls_idempotent():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Dec-2024")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Dec-2024")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    a = vc.filter_dates(type="review")
+    b = vc.filter_dates(type="review")
+    assert a is not b
+    assert a[0] is b[0]
+
+
+def test_filter_dates_string_parsing_for_start_end():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("05-Jan-2025")),
+        Date(type=DateType.report_sent, date=SeretoDate("10-Jan-2025")),
+        Date(type=DateType.sow_sent, date=SeretoDate("15-Jan-2025")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(start="06-Jan-2025", end="15-Jan-2025")
+    assert [d.type for d in res] == [DateType.report_sent, DateType.sow_sent]
+
+
+def test_filter_dates_inverse_complement():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Feb-2025")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Feb-2025")),
+        Date(type=DateType.sow_sent, date=SeretoDate("03-Feb-2025")),
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("04-Feb-2025"), end=SeretoDate("06-Feb-2025")),
+        ),
+    ]
+    vc = _make_vc_with_dates(dates)
+    filt = vc.filter_dates(type=["review", "sow_sent"])
+    inv = vc.filter_dates(type=["review", "sow_sent"], inverse=True)
+    assert set(filt).isdisjoint(inv)
+    assert sorted(filt + inv, key=lambda d: (str(d.type), repr(d.date))) == sorted(
+        dates, key=lambda d: (str(d.type), repr(d.date))
+    )
+
+
+@pytest.mark.parametrize(
+    "start,end,expected_types",
+    [
+        (None, None, ["review", "report_sent", "sow_sent"]),
+        ("02-Mar-2025", None, ["report_sent", "sow_sent"]),
+        (None, "02-Mar-2025", ["review", "report_sent"]),
+        ("02-Mar-2025", "02-Mar-2025", ["report_sent"]),
+    ],
+)
+def test_filter_dates_parametrized_start_end(start, end, expected_types):
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Mar-2025")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Mar-2025")),
+        Date(type=DateType.sow_sent, date=SeretoDate("03-Mar-2025")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    res = vc.filter_dates(start=start, end=end)
+    assert [d.type.value for d in res] == expected_types
+
+
+def test_filter_dates_first_date_with_only_ranges():
+    dates = [
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("10-Apr-2025"), end=SeretoDate("12-Apr-2025")),
+        ),
+        Date(
+            type=DateType.pentest_ongoing,
+            date=DateRange(start=SeretoDate("05-Apr-2025"), end=SeretoDate("06-Apr-2025")),
+        ),
+    ]
+    vc = _make_vc_with_dates(dates)
+    first = vc.filter_dates(type="pentest_ongoing", first_date=True)
+    assert first == SeretoDate("05-Apr-2025")
+
+
+def test_filter_dates_last_date_with_only_single_dates():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-May-2025")),
+        Date(type=DateType.review, date=SeretoDate("03-May-2025")),
+        Date(type=DateType.review, date=SeretoDate("02-May-2025")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    last = vc.filter_dates(type="review", last_date=True)
+    assert last == SeretoDate("03-May-2025")
+
+
+def test_filter_dates_no_mutation_on_calls():
+    dates = [
+        Date(type=DateType.review, date=SeretoDate("01-Jun-2025")),
+        Date(type=DateType.report_sent, date=SeretoDate("02-Jun-2025")),
+    ]
+    vc = _make_vc_with_dates(dates)
+    before_ids = [id(d) for d in vc.dates]
+    _ = vc.filter_dates(type="review")
+    _ = vc.filter_dates(type="review", inverse=True)
+    after_ids = [id(d) for d in vc.dates]
+    assert before_ids == after_ids
+
+
+# ------------------ end VersionConfig.filter_dates tests -------------------
 
 
 # --------------- VersionConfig.report_sent_date property tests ---------------

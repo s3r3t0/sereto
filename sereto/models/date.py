@@ -69,6 +69,9 @@ class SeretoDate(RootModel[date]):
             raise SeretoValueError("adding SeretoDate with unsupported type")
         return SeretoDate.model_construct(root=self.root + other)
 
+    def __hash__(self) -> int:
+        return hash(self.root)
+
     def raw(self) -> date:
         return self.root
 
@@ -105,6 +108,9 @@ class DateRange(SeretoBaseModel):
             raise ValueError("DateRange type forbids start after or equal to end")
         return self
 
+    def __hash__(self) -> int:
+        return hash((self.start, self.end))
+
 
 class Date(SeretoBaseModel):
     """Model representing a date with its associated event.
@@ -129,3 +135,6 @@ class Date(SeretoBaseModel):
                 return str(self.date)
             case DateRange():
                 return f"{self.date.start} to {self.date.end}"
+
+    def __hash__(self) -> int:
+        return hash((self.type, self.date))
