@@ -102,13 +102,19 @@ class VersionConfig:
         Returns:
             A list of targets matching the criteria.
         """
-        if isinstance(category, str):
-            category = [category]
+        # Prepare categories for filtering
+        match category:
+            case str():
+                categories: list[str] | None = [category]
+            case Iterable():
+                categories = list(category)
+            case None:
+                categories = None
 
         filtered_targets = [
             t
             for t in self.targets
-            if (category is None or t.data.category in category) and (name is None or re.search(name, t.data.name))
+            if (categories is None or t.data.category in categories) and (name is None or re.search(name, t.data.name))
         ]
 
         if inverse:

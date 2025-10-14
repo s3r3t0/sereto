@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - Ensure `.build/` directory exists even when there are no targets.
+- Fix `VersionConfig.filter_targets` + add tests
 
 ### Dependencies
 

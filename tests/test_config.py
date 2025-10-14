@@ -1,8 +1,310 @@
+import re
+
 import pytest
 
 from sereto.config import VersionConfig
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.version import ProjectVersion
+
+# -------------------- VersionConfig.filter_targets tests ---------------------
+
+
+class _FT_DataStub:
+    __slots__ = ("category", "name")
+
+    def __init__(self, category: str, name: str):
+        self.category = category
+        self.name = name
+
+
+class _FT_TargetStub:
+    """Minimal Target-like stub exposing only .data.category and .data.name"""
+
+    __slots__ = ("data",)
+
+    def __init__(self, category: str, name: str):
+        self.data = _FT_DataStub(category, name)
+
+
+def _make_vc_with_targets(spec: list[tuple[str, str]]) -> VersionConfig:
+    return VersionConfig(
+        version=ProjectVersion.from_str("v1.0"),
+        id="PRJ",
+        name="Project",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[_FT_TargetStub(cat, nm) for cat, nm in spec],
+        dates=[],
+        people=[],
+    )
+
+
+def _names(targets):
+    return [t.data.name for t in targets]
+
+
+def test_filter_targets_no_targets_returns_empty():
+    vc = _make_vc_with_targets([])
+    assert vc.filter_targets() == []
+    assert vc.filter_targets(category="web") == []
+    assert vc.filter_targets(name=".*") == []
+
+
+def test_filter_targets_no_filters_returns_all():
+    spec = [("web", "App1"), ("api", "Service"), ("db", "Database")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets()
+    assert _names(res) == ["App1", "Service", "Database"]
+
+
+def test_filter_targets_single_category_string():
+    spec = [("web", "Front"), ("api", "Gateway"), ("web", "Portal")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category="web")
+    assert _names(res) == ["Front", "Portal"]
+
+
+def test_filter_targets_category_iterable_list():
+    spec = [("web", "F"), ("api", "G"), ("db", "D"), ("cache", "C")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=["api", "db"])
+    assert _names(res) == ["G", "D"]
+
+
+def test_filter_targets_category_iterable_tuple():
+    spec = [("web", "F"), ("api", "G"), ("db", "D")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=("db", "nope"))
+    assert _names(res) == ["D"]
+
+
+def test_filter_targets_category_with_duplicates():
+    spec = [("web", "F"), ("api", "G"), ("db", "D")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=["web", "web", "api"])
+    assert _names(res) == ["F", "G"]
+
+
+def test_filter_targets_name_regex_simple():
+    spec = [("web", "Frontend"), ("api", "Gateway"), ("web", "Frontdoor")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(name=r"Front.*")
+    assert _names(res) == ["Frontend", "Frontdoor"]
+
+
+def test_filter_targets_name_regex_middle_match():
+    spec = [("web", "my-awesome-app"), ("web", "core-module"), ("web", "util-lib")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(name=r"-module$")
+    assert _names(res) == ["core-module"]
+
+
+def test_filter_targets_name_regex_special_chars():
+    spec = [("web", "app[v1]"), ("web", "app(v2)"), ("web", "app{v3}")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(name=r"app\[v1]")
+    assert _names(res) == ["app[v1]"]
+
+
+def test_filter_targets_combined_category_and_name():
+    spec = [("web", "admin-ui"), ("web", "public-ui"), ("api", "admin-api"), ("api", "public-api")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category="api", name=r"admin")
+    assert _names(res) == ["admin-api"]
+
+
+def test_filter_targets_category_non_matching():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    assert vc.filter_targets(category="db") == []
+
+
+def test_filter_targets_name_non_matching():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    assert vc.filter_targets(name="Z$") == []
+
+
+def test_filter_targets_inverse_no_filters_returns_empty():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    assert vc.filter_targets(inverse=True) == []  # because filtered = all, inverse = none
+
+
+def test_filter_targets_inverse_category():
+    spec = [("web", "Front"), ("api", "Gateway"), ("db", "Data")]
+    vc = _make_vc_with_targets(spec)
+    inverse = vc.filter_targets(category=["web", "api"], inverse=True)
+    assert _names(inverse) == ["Data"]
+
+
+def test_filter_targets_inverse_name():
+    spec = [("web", "Front"), ("web", "Portal"), ("web", "Site")]
+    vc = _make_vc_with_targets(spec)
+    inverse = vc.filter_targets(name=r"^P", inverse=True)
+    assert _names(inverse) == ["Front", "Site"]
+
+
+def test_filter_targets_inverse_combination():
+    spec = [
+        ("web", "admin-ui"),
+        ("web", "public-ui"),
+        ("api", "admin-api"),
+        ("api", "public-api"),
+        ("db", "schema"),
+    ]
+    vc = _make_vc_with_targets(spec)
+    inverse = vc.filter_targets(category=["web", "api"], name="admin", inverse=True)
+    # filtered would be admin-ui + admin-api -> so inverse = others
+    assert _names(inverse) == ["public-ui", "public-api", "schema"]
+
+
+def test_filter_targets_order_preserved():
+    spec = [("web", f"App{i}") for i in range(5)]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category="web")
+    assert _names(res) == [f"App{i}" for i in range(5)]  # same order
+
+
+def test_filter_targets_does_not_mutate_targets():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    before_ids = [id(t) for t in vc.targets]
+    _ = vc.filter_targets(category="web")
+    after_ids = [id(t) for t in vc.targets]
+    assert before_ids == after_ids
+
+
+def test_filter_targets_multiple_calls_idempotent():
+    spec = [("web", "A"), ("api", "B"), ("db", "C")]
+    vc = _make_vc_with_targets(spec)
+    first = vc.filter_targets(category=["api", "db"])
+    second = vc.filter_targets(category=["api", "db"])
+    assert _names(first) == _names(second) == ["B", "C"]
+
+
+def test_filter_targets_unchanged_when_regex_compiled_reused():
+    spec = [("web", "Frontend"), ("api", "Gateway"), ("web", "Frontdoor")]
+    vc = _make_vc_with_targets(spec)
+    pattern = re.compile(r"Front.*")
+    res = vc.filter_targets(name=pattern.pattern)  # provide the string pattern
+    assert _names(res) == ["Frontend", "Frontdoor"]
+
+
+def test_filter_targets_all_filters_reduce_to_none_with_inverse():
+    spec = [("web", "A"), ("api", "B"), ("db", "C")]
+    vc = _make_vc_with_targets(spec)
+    # Filtering picks all (broad regex), inverse = empty
+    inverse = vc.filter_targets(category=["web", "api", "db"], name=".*", inverse=True)
+    assert inverse == []
+
+
+def test_filter_targets_partial_overlap_categories():
+    spec = [("web", "A"), ("api", "B"), ("db", "C")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=["web", "missing", "api"])
+    assert _names(res) == ["A", "B"]
+
+
+def test_filter_targets_large_dataset_performance_subset():
+    spec = [("type" + str(i % 5), f"name_{i}") for i in range(200)]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=["type1", "type3"], name=r"name_1\d{2}$")  # match 1xx numbers
+    # collect expected manually
+    expected = [f"name_{i}" for i in range(200) if (i % 5 in (1, 3)) and re.search(r"name_1\d{2}$", f"name_{i}")]
+    assert _names(res) == expected
+
+
+def test_filter_targets_category_generator():
+    spec = [("web", "A"), ("api", "B"), ("db", "C"), ("web", "D")]
+    vc = _make_vc_with_targets(spec)
+    gen = (c for c in ["api", "db"])
+    res = vc.filter_targets(category=gen)
+    assert _names(res) == ["B", "C"]
+
+
+def test_filter_targets_inverse_equals_complement():
+    spec = [("web", "A"), ("api", "B"), ("db", "C"), ("cache", "D")]
+    vc = _make_vc_with_targets(spec)
+    filtered = vc.filter_targets(category=["web", "db"])
+    inverse = vc.filter_targets(category=["web", "db"], inverse=True)
+    assert sorted(_names(filtered) + _names(inverse)) == sorted(["A", "B", "C", "D"])
+    assert set(_names(filtered)).isdisjoint(_names(inverse))
+
+
+def test_filter_targets_name_case_sensitivity():
+    spec = [("web", "Front"), ("web", "front"), ("web", "FRONT")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(name="^Front$")
+    assert _names(res) == ["Front"]
+
+
+@pytest.mark.parametrize(
+    "category_arg,expected",
+    [
+        ("web", ["A1", "A2"]),
+        (["web"], ["A1", "A2"]),
+        (["web", "api"], ["A1", "B1", "A2"]),
+        (("api", "db"), ["B1", "D1"]),
+        (["missing"], []),
+    ],
+)
+def test_filter_targets_parametrized_category_forms(category_arg, expected):
+    spec = [("web", "A1"), ("api", "B1"), ("cache", "C1"), ("db", "D1"), ("web", "A2")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=category_arg)
+    assert _names(res) == expected
+
+
+@pytest.mark.parametrize(
+    "regex,expected",
+    [
+        (r".*ui$", ["admin-ui", "public-ui"]),
+        (r"^admin", ["admin-ui", "admin-api"]),
+        (r"^public", ["public-ui", "public-api"]),
+        (r"api$", ["admin-api", "public-api"]),
+        (r"nomatch", []),
+    ],
+)
+def test_filter_targets_parametrized_name(regex, expected):
+    spec = [("web", "admin-ui"), ("web", "public-ui"), ("api", "admin-api"), ("api", "public-api")]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(name=regex)
+    assert sorted(_names(res)) == sorted(expected)
+
+
+def test_filter_targets_result_is_new_list_each_call():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    r1 = vc.filter_targets(category="web")
+    r2 = vc.filter_targets(category="web")
+    assert r1 is not r2
+    assert _names(r1) == _names(r2) == ["A"]
+
+
+def test_filter_targets_inverse_on_empty_selection_returns_all():
+    spec = [("web", "A"), ("api", "B")]
+    vc = _make_vc_with_targets(spec)
+    inverse = vc.filter_targets(category="db", inverse=True)
+    assert _names(inverse) == ["A", "B"]
+
+
+def test_filter_targets_complex_combination_multiple_categories_and_regex():
+    spec = [
+        ("web", "portal-ui"),
+        ("web", "admin-ui"),
+        ("api", "admin-api"),
+        ("api", "public-api"),
+        ("db", "db-admin"),
+        ("worker", "admin-worker"),
+    ]
+    vc = _make_vc_with_targets(spec)
+    res = vc.filter_targets(category=["web", "api", "worker"], name=r"admin")
+    assert _names(res) == ["admin-ui", "admin-api", "admin-worker"]
+
+
+# ----------------- end VersionConfig.filter_targets tests --------------------
+
 
 # --------------- VersionConfig.report_sent_date property tests ---------------
 
