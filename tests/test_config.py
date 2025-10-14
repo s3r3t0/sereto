@@ -5,6 +5,7 @@ import pytest
 from sereto.config import VersionConfig
 from sereto.exceptions import SeretoValueError
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
+from sereto.models.person import PersonType
 from sereto.models.version import ProjectVersion
 
 # -------------------- VersionConfig.filter_targets tests ---------------------
@@ -40,7 +41,7 @@ def _make_vc_with_targets(spec: list[tuple[str, str]]) -> VersionConfig:
     )
 
 
-def _names(targets):
+def _target_names(targets):
     return [t.data.name for t in targets]
 
 
@@ -55,63 +56,63 @@ def test_filter_targets_no_filters_returns_all():
     spec = [("web", "App1"), ("api", "Service"), ("db", "Database")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets()
-    assert _names(res) == ["App1", "Service", "Database"]
+    assert _target_names(res) == ["App1", "Service", "Database"]
 
 
 def test_filter_targets_single_category_string():
     spec = [("web", "Front"), ("api", "Gateway"), ("web", "Portal")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category="web")
-    assert _names(res) == ["Front", "Portal"]
+    assert _target_names(res) == ["Front", "Portal"]
 
 
 def test_filter_targets_category_iterable_list():
     spec = [("web", "F"), ("api", "G"), ("db", "D"), ("cache", "C")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=["api", "db"])
-    assert _names(res) == ["G", "D"]
+    assert _target_names(res) == ["G", "D"]
 
 
 def test_filter_targets_category_iterable_tuple():
     spec = [("web", "F"), ("api", "G"), ("db", "D")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=("db", "nope"))
-    assert _names(res) == ["D"]
+    assert _target_names(res) == ["D"]
 
 
 def test_filter_targets_category_with_duplicates():
     spec = [("web", "F"), ("api", "G"), ("db", "D")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=["web", "web", "api"])
-    assert _names(res) == ["F", "G"]
+    assert _target_names(res) == ["F", "G"]
 
 
 def test_filter_targets_name_regex_simple():
     spec = [("web", "Frontend"), ("api", "Gateway"), ("web", "Frontdoor")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(name=r"Front.*")
-    assert _names(res) == ["Frontend", "Frontdoor"]
+    assert _target_names(res) == ["Frontend", "Frontdoor"]
 
 
 def test_filter_targets_name_regex_middle_match():
     spec = [("web", "my-awesome-app"), ("web", "core-module"), ("web", "util-lib")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(name=r"-module$")
-    assert _names(res) == ["core-module"]
+    assert _target_names(res) == ["core-module"]
 
 
 def test_filter_targets_name_regex_special_chars():
     spec = [("web", "app[v1]"), ("web", "app(v2)"), ("web", "app{v3}")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(name=r"app\[v1]")
-    assert _names(res) == ["app[v1]"]
+    assert _target_names(res) == ["app[v1]"]
 
 
 def test_filter_targets_combined_category_and_name():
     spec = [("web", "admin-ui"), ("web", "public-ui"), ("api", "admin-api"), ("api", "public-api")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category="api", name=r"admin")
-    assert _names(res) == ["admin-api"]
+    assert _target_names(res) == ["admin-api"]
 
 
 def test_filter_targets_category_non_matching():
@@ -136,14 +137,14 @@ def test_filter_targets_inverse_category():
     spec = [("web", "Front"), ("api", "Gateway"), ("db", "Data")]
     vc = _make_vc_with_targets(spec)
     inverse = vc.filter_targets(category=["web", "api"], inverse=True)
-    assert _names(inverse) == ["Data"]
+    assert _target_names(inverse) == ["Data"]
 
 
 def test_filter_targets_inverse_name():
     spec = [("web", "Front"), ("web", "Portal"), ("web", "Site")]
     vc = _make_vc_with_targets(spec)
     inverse = vc.filter_targets(name=r"^P", inverse=True)
-    assert _names(inverse) == ["Front", "Site"]
+    assert _target_names(inverse) == ["Front", "Site"]
 
 
 def test_filter_targets_inverse_combination():
@@ -157,14 +158,14 @@ def test_filter_targets_inverse_combination():
     vc = _make_vc_with_targets(spec)
     inverse = vc.filter_targets(category=["web", "api"], name="admin", inverse=True)
     # filtered would be admin-ui + admin-api -> so inverse = others
-    assert _names(inverse) == ["public-ui", "public-api", "schema"]
+    assert _target_names(inverse) == ["public-ui", "public-api", "schema"]
 
 
 def test_filter_targets_order_preserved():
     spec = [("web", f"App{i}") for i in range(5)]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category="web")
-    assert _names(res) == [f"App{i}" for i in range(5)]  # same order
+    assert _target_names(res) == [f"App{i}" for i in range(5)]  # same order
 
 
 def test_filter_targets_does_not_mutate_targets():
@@ -181,7 +182,7 @@ def test_filter_targets_multiple_calls_idempotent():
     vc = _make_vc_with_targets(spec)
     first = vc.filter_targets(category=["api", "db"])
     second = vc.filter_targets(category=["api", "db"])
-    assert _names(first) == _names(second) == ["B", "C"]
+    assert _target_names(first) == _target_names(second) == ["B", "C"]
 
 
 def test_filter_targets_unchanged_when_regex_compiled_reused():
@@ -189,7 +190,7 @@ def test_filter_targets_unchanged_when_regex_compiled_reused():
     vc = _make_vc_with_targets(spec)
     pattern = re.compile(r"Front.*")
     res = vc.filter_targets(name=pattern.pattern)  # provide the string pattern
-    assert _names(res) == ["Frontend", "Frontdoor"]
+    assert _target_names(res) == ["Frontend", "Frontdoor"]
 
 
 def test_filter_targets_all_filters_reduce_to_none_with_inverse():
@@ -204,7 +205,7 @@ def test_filter_targets_partial_overlap_categories():
     spec = [("web", "A"), ("api", "B"), ("db", "C")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=["web", "missing", "api"])
-    assert _names(res) == ["A", "B"]
+    assert _target_names(res) == ["A", "B"]
 
 
 def test_filter_targets_large_dataset_performance_subset():
@@ -213,7 +214,7 @@ def test_filter_targets_large_dataset_performance_subset():
     res = vc.filter_targets(category=["type1", "type3"], name=r"name_1\d{2}$")  # match 1xx numbers
     # collect expected manually
     expected = [f"name_{i}" for i in range(200) if (i % 5 in (1, 3)) and re.search(r"name_1\d{2}$", f"name_{i}")]
-    assert _names(res) == expected
+    assert _target_names(res) == expected
 
 
 def test_filter_targets_category_generator():
@@ -221,7 +222,7 @@ def test_filter_targets_category_generator():
     vc = _make_vc_with_targets(spec)
     gen = (c for c in ["api", "db"])
     res = vc.filter_targets(category=gen)
-    assert _names(res) == ["B", "C"]
+    assert _target_names(res) == ["B", "C"]
 
 
 def test_filter_targets_inverse_equals_complement():
@@ -229,15 +230,15 @@ def test_filter_targets_inverse_equals_complement():
     vc = _make_vc_with_targets(spec)
     filtered = vc.filter_targets(category=["web", "db"])
     inverse = vc.filter_targets(category=["web", "db"], inverse=True)
-    assert sorted(_names(filtered) + _names(inverse)) == sorted(["A", "B", "C", "D"])
-    assert set(_names(filtered)).isdisjoint(_names(inverse))
+    assert sorted(_target_names(filtered) + _target_names(inverse)) == sorted(["A", "B", "C", "D"])
+    assert set(_target_names(filtered)).isdisjoint(_target_names(inverse))
 
 
 def test_filter_targets_name_case_sensitivity():
     spec = [("web", "Front"), ("web", "front"), ("web", "FRONT")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(name="^Front$")
-    assert _names(res) == ["Front"]
+    assert _target_names(res) == ["Front"]
 
 
 @pytest.mark.parametrize(
@@ -254,7 +255,7 @@ def test_filter_targets_parametrized_category_forms(category_arg, expected):
     spec = [("web", "A1"), ("api", "B1"), ("cache", "C1"), ("db", "D1"), ("web", "A2")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=category_arg)
-    assert _names(res) == expected
+    assert _target_names(res) == expected
 
 
 @pytest.mark.parametrize(
@@ -271,7 +272,7 @@ def test_filter_targets_parametrized_name(regex, expected):
     spec = [("web", "admin-ui"), ("web", "public-ui"), ("api", "admin-api"), ("api", "public-api")]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(name=regex)
-    assert sorted(_names(res)) == sorted(expected)
+    assert sorted(_target_names(res)) == sorted(expected)
 
 
 def test_filter_targets_result_is_new_list_each_call():
@@ -280,14 +281,14 @@ def test_filter_targets_result_is_new_list_each_call():
     r1 = vc.filter_targets(category="web")
     r2 = vc.filter_targets(category="web")
     assert r1 is not r2
-    assert _names(r1) == _names(r2) == ["A"]
+    assert _target_names(r1) == _target_names(r2) == ["A"]
 
 
 def test_filter_targets_inverse_on_empty_selection_returns_all():
     spec = [("web", "A"), ("api", "B")]
     vc = _make_vc_with_targets(spec)
     inverse = vc.filter_targets(category="db", inverse=True)
-    assert _names(inverse) == ["A", "B"]
+    assert _target_names(inverse) == ["A", "B"]
 
 
 def test_filter_targets_complex_combination_multiple_categories_and_regex():
@@ -301,7 +302,7 @@ def test_filter_targets_complex_combination_multiple_categories_and_regex():
     ]
     vc = _make_vc_with_targets(spec)
     res = vc.filter_targets(category=["web", "api", "worker"], name=r"admin")
-    assert _names(res) == ["admin-ui", "admin-api", "admin-worker"]
+    assert _target_names(res) == ["admin-ui", "admin-api", "admin-worker"]
 
 
 # ----------------- end VersionConfig.filter_targets tests --------------------
@@ -600,6 +601,378 @@ def test_filter_dates_no_mutation_on_calls():
 
 
 # ------------------ end VersionConfig.filter_dates tests -------------------
+
+
+# -------------------- VersionConfig.filter_people tests ---------------------
+
+
+class _FP_PersonStub:
+    """Minimal stub exposing attributes used by filter_people."""
+
+    __slots__ = ("type", "name", "business_unit", "email", "role")
+
+    def __init__(self, type, name=None, business_unit=None, email=None, role=None):
+        self.type = type
+        self.name = name
+        self.business_unit = business_unit
+        self.email = email
+        self.role = role
+
+
+def _make_vc_with_people(people):
+    return VersionConfig(
+        version=ProjectVersion.from_str("v1.0"),
+        id="PRJ",
+        name="Project",
+        version_description="Desc",
+        risk_due_dates={},
+        targets=[],
+        dates=[],
+        people=people,
+    )
+
+
+def _people_names(people):
+    return [p.name for p in people]
+
+
+def test_filter_people_no_people_returns_empty():
+    vc = _make_vc_with_people([])
+    assert vc.filter_people() == []
+    assert vc.filter_people(name=".*") == []
+
+
+def test_filter_people_no_filters_returns_all():
+    types = list(PersonType)
+    t1 = types[0]
+    people = [
+        _FP_PersonStub(t1, "Alice", "Eng", "alice@example.org", "Developer"),
+        _FP_PersonStub(t1, "Bob", "Ops", "bob@example.org", "Admin"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people()
+    assert res == people
+
+
+def test_filter_people_order_preserved():
+    types = list(PersonType)
+    t1 = types[0]
+    people = [_FP_PersonStub(t1, f"User{i}", f"BU{i % 2}", f"user{i}@ex.org", "Role") for i in range(6)]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name=r"User[0-5]")
+    assert res == people
+
+
+def test_filter_people_type_string():
+    types = list(PersonType)
+    if len(types) < 2:
+        pytest.skip("Need at least two PersonType members")
+    t1, t2 = types[:2]
+    people = [
+        _FP_PersonStub(t1, "Alice"),
+        _FP_PersonStub(t2, "Bob"),
+        _FP_PersonStub(t1, "Aaron"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(type=t1.value)
+    assert _people_names(res) == ["Alice", "Aaron"]
+
+
+def test_filter_people_type_iterable_list():
+    types = list(PersonType)
+    if len(types) < 3:
+        pytest.skip("Need at least three PersonType members")
+    t1, t2, t3 = types[:3]
+    people = [
+        _FP_PersonStub(t1, "Alice"),
+        _FP_PersonStub(t2, "Bob"),
+        _FP_PersonStub(t3, "Charlie"),
+        _FP_PersonStub(t1, "Aaron"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(type=[t2.value, t3.value])
+    assert _people_names(res) == ["Bob", "Charlie"]
+
+
+def test_filter_people_type_generator():
+    types = list(PersonType)
+    if len(types) < 2:
+        pytest.skip("Need at least two PersonType members")
+    t1, t2 = types[:2]
+    people = [
+        _FP_PersonStub(t1, "Alice"),
+        _FP_PersonStub(t2, "Bob"),
+        _FP_PersonStub(t1, "Aaron"),
+    ]
+    vc = _make_vc_with_people(people)
+    gen = (x for x in [t1.value])
+    res = vc.filter_people(type=gen)
+    assert _people_names(res) == ["Alice", "Aaron"]
+
+
+def test_filter_people_type_with_duplicates_in_iterable():
+    types = list(PersonType)
+    t1 = types[0]
+    people = [
+        _FP_PersonStub(t1, "Alice"),
+        _FP_PersonStub(t1, "Aaron"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(type=[t1.value, t1.value, t1.value])
+    assert _people_names(res) == ["Alice", "Aaron"]
+
+
+def test_filter_people_name_regex_simple():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "Bob"),
+        _FP_PersonStub(t, "Alicia"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name=r"^Ali")
+    assert _people_names(res) == ["Alice", "Alicia"]
+
+
+def test_filter_people_name_regex_case_sensitivity():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "alice"),
+        _FP_PersonStub(t, "ALICE"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name=r"^Alice$")
+    assert _people_names(res) == ["Alice"]
+
+
+def test_filter_people_business_unit_regex():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice", "Engineering"),
+        _FP_PersonStub(t, "Bob", "Operations"),
+        _FP_PersonStub(t, "Charlie", "Eng-Platform"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(business_unit=r"^Eng")
+    assert _people_names(res) == ["Alice", "Charlie"]
+
+
+def test_filter_people_email_regex_special_chars():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice", email="alice+dev@example.org"),
+        _FP_PersonStub(t, "Bob", email="bob@example.org"),
+        _FP_PersonStub(t, "Charlie", email="charlie.test@example.org"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(email=r"\+dev@")
+    assert _people_names(res) == ["Alice"]
+
+
+def test_filter_people_role_regex():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice", role="Lead Developer"),
+        _FP_PersonStub(t, "Bob", role="Developer"),
+        _FP_PersonStub(t, "Charlie", role="Security Analyst"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(role=r"Developer$")
+    assert _people_names(res) == ["Alice", "Bob"]
+
+
+def test_filter_people_combined_filters():
+    types = list(PersonType)
+    if len(types) < 2:
+        pytest.skip("Need at least two PersonType members")
+    t1, t2 = types[:2]
+    people = [
+        _FP_PersonStub(t1, "Alice", "Engineering", "alice@example.org", "Developer"),
+        _FP_PersonStub(t2, "Bob", "Engineering", "bob@example.org", "Developer"),
+        _FP_PersonStub(t1, "Aaron", "Engineering", "aaron@example.org", "Manager"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(type=t1.value, name=r"^A", role="Developer")
+    assert _people_names(res) == ["Alice"]
+
+
+def test_filter_people_ignores_none_attributes():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, None, None, None, None),
+        _FP_PersonStub(t, "Alice", "Eng", "alice@example.org", "Dev"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name="Alice", business_unit="Eng", email="alice@", role="Dev")
+    assert _people_names(res) == ["Alice"]
+
+
+def test_filter_people_name_non_matching():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "Bob"),
+    ]
+    vc = _make_vc_with_people(people)
+    assert vc.filter_people(name="^Z") == []
+
+
+def test_filter_people_inverse_basic():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "Aaron"),
+        _FP_PersonStub(t, "Bob"),
+    ]
+    vc = _make_vc_with_people(people)
+    inv = vc.filter_people(name="^A", inverse=True)
+    assert _people_names(inv) == ["Bob"]
+
+
+def test_filter_people_inverse_all_selected_empty():
+    t = list(PersonType)[0]
+    people = [_FP_PersonStub(t, "Alice"), _FP_PersonStub(t, "Bob")]
+    vc = _make_vc_with_people(people)
+    inv = vc.filter_people(name=r".*", inverse=True)
+    assert inv == []
+
+
+def test_filter_people_inverse_on_empty_selection_returns_all():
+    t = list(PersonType)[0]
+    people = [_FP_PersonStub(t, "Alice"), _FP_PersonStub(t, "Bob")]
+    vc = _make_vc_with_people(people)
+    inv = vc.filter_people(name="^Z", inverse=True)
+    assert _people_names(inv) == ["Alice", "Bob"]
+
+
+def test_filter_people_inverse_complement():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "Aaron"),
+        _FP_PersonStub(t, "Bob"),
+        _FP_PersonStub(t, "Charlie"),
+    ]
+    vc = _make_vc_with_people(people)
+    filt = vc.filter_people(name="^A")
+    inv = vc.filter_people(name="^A", inverse=True)
+    assert set(filt).isdisjoint(inv)
+    assert sorted(_people_names(filt) + _people_names(inv)) == sorted(["Alice", "Aaron", "Bob", "Charlie"])
+
+
+def test_filter_people_multiple_calls_idempotent():
+    t = list(PersonType)[0]
+    people = [_FP_PersonStub(t, "Alice"), _FP_PersonStub(t, "Aaron"), _FP_PersonStub(t, "Bob")]
+    vc = _make_vc_with_people(people)
+    r1 = vc.filter_people(name="^A")
+    r2 = vc.filter_people(name="^A")
+    assert _people_names(r1) == _people_names(r2) == ["Alice", "Aaron"]
+    assert r1 is not r2
+
+
+def test_filter_people_does_not_mutate_people():
+    t = list(PersonType)[0]
+    people = [_FP_PersonStub(t, "Alice"), _FP_PersonStub(t, "Bob")]
+    vc = _make_vc_with_people(people)
+    before_ids = [id(p) for p in vc.people]
+    _ = vc.filter_people(name="Alice")
+    after_ids = [id(p) for p in vc.people]
+    assert before_ids == after_ids
+
+
+def test_filter_people_result_is_new_list_each_call():
+    t = list(PersonType)[0]
+    people = [_FP_PersonStub(t, "Alice"), _FP_PersonStub(t, "Aaron")]
+    vc = _make_vc_with_people(people)
+    a = vc.filter_people(name="^A")
+    b = vc.filter_people(name="^A")
+    assert a is not b
+    assert a[0] is b[0]
+
+
+@pytest.mark.parametrize(
+    "regex,expected",
+    [
+        (r"^Al", ["Alice"]),
+        (r"a", ["Charlie"]),  # case sensitive
+        (r".*", ["Alice", "Bob", "Charlie"]),
+        (r"nomatch", []),
+    ],
+)
+def test_filter_people_parametrized_name(regex, expected):
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(t, "Alice"),
+        _FP_PersonStub(t, "Bob"),
+        _FP_PersonStub(t, "Charlie"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name=regex)
+    assert sorted(_people_names(res)) == sorted(expected)
+
+
+def test_filter_people_type_parametrized_forms():
+    types = list(PersonType)
+    if len(types) < 2:
+        pytest.skip("Need at least two PersonType members")
+    t1, t2 = types[:2]
+    people = [
+        _FP_PersonStub(t1, "Alice"),
+        _FP_PersonStub(t2, "Bob"),
+        _FP_PersonStub(t1, "Aaron"),
+    ]
+    vc = _make_vc_with_people(people)
+
+    # str
+    r_str = vc.filter_people(type=t1.value)
+    assert _people_names(r_str) == ["Alice", "Aaron"]
+
+    # list
+    r_list = vc.filter_people(type=[t2.value])
+    assert _people_names(r_list) == ["Bob"]
+
+    # tuple (multiple)
+    r_tuple = vc.filter_people(type=(t1.value, t2.value))
+    assert _people_names(r_tuple) == ["Alice", "Bob", "Aaron"]
+
+
+def test_filter_people_large_dataset_subset():
+    t = list(PersonType)[0]
+    people = [
+        _FP_PersonStub(
+            t,
+            f"User{i}",
+            business_unit="Engineering" if i % 3 == 0 else "Ops",
+            email=f"user{i}@example.org",
+            role="Dev" if i % 5 else "Lead",
+        )
+        for i in range(200)
+    ]
+    vc = _make_vc_with_people(people)
+    # Select engineering dev users with id ending in 0
+    res = vc.filter_people(business_unit="Eng", role="Dev", name=r"0$")
+    expected = [
+        p.name for p in people if p.business_unit.startswith("Eng") and p.role == "Dev" and re.search(r"0$", p.name)
+    ]
+    assert _people_names(res) == expected
+
+
+def test_filter_people_complex_combination_multiple_criteria():
+    types = list(PersonType)
+    t1 = types[0]
+    people = [
+        _FP_PersonStub(t1, "Alice Smith", "Engineering", "alice.smith@example.org", "Lead Developer"),
+        _FP_PersonStub(t1, "Alice Jones", "Engineering", "alice.j@example.org", "Developer"),
+        _FP_PersonStub(t1, "Bob Stone", "Operations", "bob.stone@example.org", "Developer"),
+        _FP_PersonStub(t1, "Charlie", "Engineering", "charlie@example.org", "QA"),
+    ]
+    vc = _make_vc_with_people(people)
+    res = vc.filter_people(name=r"Alice", business_unit=r"Engineering", email=r"@example\.org$", role="Developer$")
+    assert _people_names(res) == ["Alice Smith", "Alice Jones"]
+
+
+# ------------------ end VersionConfig.filter_people tests -------------------
 
 
 # --------------- VersionConfig.report_sent_date property tests ---------------
