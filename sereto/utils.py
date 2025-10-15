@@ -152,9 +152,6 @@ def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = Fa
         SeretoPathError: If the destination directory already exists and `overwrite` is `False`.
     """
     skel_path: Path = templates / "skel"
-    if not skel_path.exists() or not skel_path.is_dir():
-        dst.rmdir()
-        raise SeretoPathError(f"Directory '{skel_path}' does not exist")
 
     Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
 

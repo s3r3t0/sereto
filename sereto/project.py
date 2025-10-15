@@ -209,6 +209,8 @@ def new_project(
 
     if (new_path := projects_path / id).exists():
         raise SeretoPathError("project with specified ID already exists")
+    elif not (skel_path := templates_path / 'skel').is_dir():
+        raise SeretoPathError(f"skel path '{skel_path}' does not exist or is not a directory")
     else:
         new_path.mkdir()
 
