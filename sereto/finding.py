@@ -3,16 +3,14 @@ import string
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import Any, Self
 
 import frontmatter  # type: ignore[import-untyped]
 import tomlkit
 from pydantic import DirectoryPath, FilePath, validate_call
 
-from sereto.convert import apply_convertor
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.jinja import render_jinja2
 from sereto.models.finding import (
     FindingGroupModel,
     FindingsConfigModel,
@@ -20,14 +18,8 @@ from sereto.models.finding import (
     SubFindingFrontmatterModel,
 )
 from sereto.models.locator import LocatorModel, get_locator_types
-from sereto.models.settings import Render
-from sereto.models.version import ProjectVersion
 from sereto.risk import Risks
 from sereto.utils import lower_alphanum
-
-if TYPE_CHECKING:
-    from sereto.config import Config
-    from sereto.target import Target
 
 
 @dataclass
@@ -38,6 +30,7 @@ class SubFinding:
     path: FilePath
     template: FilePath | None = None
     locators: list[LocatorModel] = field(default_factory=list)
+    format: FileFormat = FileFormat.md
 
     @classmethod
     @validate_call
@@ -60,6 +53,7 @@ class SubFinding:
             path=path,
             template=(templates / frontmatter.template_path) if frontmatter.template_path else None,
             locators=frontmatter.locators,
+            format=frontmatter.format,
         )
 
     @property
@@ -482,82 +476,3 @@ class Findings:
             info=len([g for g in self.groups if g.risk == Risk.info]),
             closed=len([g for g in self.groups if g.risk == Risk.closed]),
         )
-
-
-def render_subfinding_to_tex(
-    sub_finding: SubFinding,
-    config: "Config",
-    version: ProjectVersion,
-    templates: DirectoryPath,
-    render: Render,
-    converter: str | None = None,
-) -> str:
-    version_config = config.at_version(version=version)
-
-    # Validate variables
-    sub_finding.validate_vars()
-
-    # Render Jinja2 template
-    finding_content = render_jinja2(
-        templates=[sub_finding.path.parent],
-        file=sub_finding.path,
-        vars={
-            "f": sub_finding,
-            "c": version_config,
-            "config": config,
-            "version": version,
-        },
-    )
-
-    # Convert to TeX
-    content = apply_convertor(
-        input=finding_content,
-        input_format=FileFormat.md,
-        output_format=FileFormat.tex,
-        render=render,
-        recipe=converter,
-        replacements={
-            "%TEMPLATES%": str(templates),
-        },
-    )
-
-    return content
-
-
-def render_finding_group_to_tex(
-    config: "Config",
-    project_path: DirectoryPath,
-    target: "Target",
-    target_ix: int,
-    finding_group: FindingGroup,
-    finding_group_ix: int,
-    version: ProjectVersion,
-) -> str:
-    """Render selected finding group (top-level document) to TeX format."""
-    version_config = config.at_version(version=version)
-
-    # Construct path to finding group template
-    template = project_path / "layouts/finding_group.tex.j2"
-    if not template.is_file():
-        raise SeretoPathError(f"template not found: '{template}'")
-
-    # Render Jinja2 template
-    return render_jinja2(
-        templates=[
-            project_path / "layouts/generated",
-            project_path / "layouts",
-            project_path / "includes",
-            project_path,
-        ],
-        file=template,
-        vars={
-            "finding_group": finding_group,
-            "finding_group_index": finding_group_ix,
-            "target": target,
-            "target_index": target_ix,
-            "c": version_config,
-            "config": config,
-            "version": version,
-            "project_path": project_path,
-        },
-    )

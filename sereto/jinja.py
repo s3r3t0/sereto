@@ -140,6 +140,33 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
     return env
 
 
+@validate_call
+def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Environment:
+    """Creates a Jinja2 environment object for rendering Typst templates.
+
+    Args:
+        templates: The directory/directories containing the Typst template files.
+
+    Returns:
+        A Jinja2 environment object that is configured for rendering Typst templates.
+    """
+    env: Environment = Environment(
+        block_start_string="((*",
+        block_end_string="*))",
+        variable_start_string="(((",
+        variable_end_string=")))",
+        comment_start_string="((=",
+        comment_end_string="=))",
+        autoescape=False,
+        loader=FileSystemLoader(templates),
+        undefined=StrictUndefined,
+    )
+
+    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
+    env.add_extension("jinja2.ext.debug")
+    return env
+
+
 def strip_toml_frontmatter(source: str) -> str:
     # Example: frontmatter delimited by '+++'
     if source.startswith("+++"):
@@ -163,6 +190,8 @@ def render_jinja2(file: FilePath, templates: DirectoryPath | Sequence[DirectoryP
     """
     if file.name.endswith(".tex.j2"):
         env: Environment = get_tex_jinja_env(templates=templates)
+    elif file.name.endswith(".typ.j2"):
+        env = get_typst_jinja_env(templates=templates)
     elif file.name.endswith(".j2"):
         env = get_generic_jinja_env(templates=templates)
     else:

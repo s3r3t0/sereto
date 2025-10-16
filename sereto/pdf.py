@@ -4,11 +4,11 @@ from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.build import (
     build_finding_group_dependencies,
-    build_finding_group_to_tex,
-    build_report_to_tex,
-    build_sow_to_tex,
+    build_finding_group_to_format,
+    build_report_to_format,
+    build_sow_to_format,
     build_target_dependencies,
-    build_target_to_tex,
+    build_target_to_format,
 )
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
@@ -20,7 +20,7 @@ from sereto.target import Target
 
 
 @validate_call
-def render_tex_to_pdf(
+def render_to_pdf(
     file: FilePath,
     templates: DirectoryPath,
     render: Render,
@@ -78,17 +78,19 @@ def generate_pdf_finding_group(
         Path to the generated finding group PDF.
     """
     Console().log(f"Rendering partial report for finding group {fg.uname!r}")
+    recipe = project.settings.render.get_finding_group_recipe(name=renderer)
 
-    # Build finding group to TeX
+    # Build finding group to intermediate format
     build_finding_group_dependencies(
-        project=project, target=target, finding_group=fg, version=version, converter=converter
+        project=project, target=target, finding_group=fg, version=version, format=recipe.format, converter=converter
     )
-    finding_group_tex = build_finding_group_to_tex(project=project, target=target, finding_group=fg, version=version)
+    finding_group_intermediate = build_finding_group_to_format(
+        project=project, target=target, finding_group=fg, format=recipe.format, version=version
+    )
 
     # Render PDF
-    recipe = project.settings.render.get_finding_group_recipe(name=renderer)
-    finding_group_pdf = render_tex_to_pdf(
-        file=finding_group_tex,
+    finding_group_pdf = render_to_pdf(
+        file=finding_group_intermediate,
         templates=project.settings.templates_path,
         render=project.settings.render,
         recipe=recipe,
@@ -208,14 +210,19 @@ def generate_pdf_report(
     Console().log(f"Rendering report version: '{version}'")
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
+    recipe = project.settings.render.get_report_recipe(name=report_recipe)
 
-    # Build report to TeX
-    report_tex = build_report_to_tex(project=project, template=template, version=version, converter=convert_recipe)
+    # Build report to intermediate format
+    report_intermediate = build_report_to_format(
+        project=project, template=template, version=version, format=recipe.format, converter=convert_recipe
+    )
 
     # Render PDF
-    recipe = project.settings.render.get_report_recipe(name=report_recipe)
-    report_pdf = render_tex_to_pdf(
-        file=report_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    report_pdf = render_to_pdf(
+        file=report_intermediate,
+        templates=project.settings.templates_path,
+        render=project.settings.render,
+        recipe=recipe,
     )
 
     # Create directory for the PDF results if it does not exist
@@ -247,14 +254,14 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
     Console().log(f"Rendering SoW version: '{version}'")
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
+    recipe = project.settings.render.get_sow_recipe(name=sow_recipe)
 
-    # Build SoW to TeX
-    sow_tex = build_sow_to_tex(project=project, version=version)
+    # Build SoW to intermediate format
+    sow_intermediate = build_sow_to_format(project=project, version=version, format=recipe.format)
 
     # Render PDF
-    recipe = project.settings.render.get_sow_recipe(name=sow_recipe)
-    sow_pdf = render_tex_to_pdf(
-        file=sow_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    sow_pdf = render_to_pdf(
+        file=sow_intermediate, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
     )
 
     # Create directory for the PDF results if it does not exist
@@ -297,15 +304,20 @@ def generate_pdf_target(
     Console().log(f"Rendering partial report for target '{target.uname}'")
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
+    recipe = project.settings.render.get_target_recipe(name=target_recipe)
 
-    # Build target to TeX
-    build_target_dependencies(project=project, target=target, version=version, converter=convert_recipe)
-    target_tex = build_target_to_tex(project=project, target=target, version=version)
+    # Build target to intermediate format
+    build_target_dependencies(
+        project=project, target=target, version=version, format=recipe.format, converter=convert_recipe
+    )
+    target_intermediate = build_target_to_format(project=project, target=target, format=recipe.format, version=version)
 
     # Render PDF
-    recipe = project.settings.render.get_target_recipe(name=target_recipe)
-    target_pdf = render_tex_to_pdf(
-        file=target_tex, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+    target_pdf = render_to_pdf(
+        file=target_intermediate,
+        templates=project.settings.templates_path,
+        render=project.settings.render,
+        recipe=recipe,
     )
 
     # Create directory for the PDF results if it does not exist

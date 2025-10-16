@@ -7,7 +7,7 @@ import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
 from tomlkit import dumps as toml_dumps
 
-from sereto.enums import Risk
+from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.locator import LocatorModel, get_locator_types
@@ -76,6 +76,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
         variables: A dictionary of variables used in the sub-finding.
         template_path: Relative path to the finding in templates directory.
         locators: A list of locators used to find the sub-finding.
+        format: The file format of the sub-finding (default: markdown).
     """
 
     name: str
@@ -84,6 +85,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     variables: dict[str, Any] = {}
     template_path: str | None = None
     locators: list[LocatorModel] = Field(default_factory=list)
+    format: FileFormat = Field(default=FileFormat.md)
 
     @field_validator("risk", mode="before")
     @classmethod

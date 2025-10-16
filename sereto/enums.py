@@ -13,10 +13,17 @@ class Environment(StrEnum):
 
 
 class FileFormat(StrEnum):
-    """Enum representing the file format."""
+    """Enum representing the file format.
+
+    Attributes:
+        md: Markdown file format ('.md')
+        tex: TeX file format ('.tex')
+        typ: Typst file format ('.typ')
+    """
 
     md = "md"
     tex = "tex"
+    typ = "typ"
 
 
 class OutputFormat(StrEnum):

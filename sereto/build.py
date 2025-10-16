@@ -1,85 +1,76 @@
 from pathlib import Path
 from shutil import copy2
 
-from pydantic import DirectoryPath, validate_call
+from pydantic import validate_call
 
+from sereto.convert import apply_convertor
+from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError
-from sereto.finding import FindingGroup, SubFinding, render_finding_group_to_tex, render_subfinding_to_tex
+from sereto.finding import FindingGroup, SubFinding
+from sereto.jinja import render_jinja2
 from sereto.models.version import ProjectVersion
 from sereto.project import Project, init_build_dir
-from sereto.report import render_report_to_tex
-from sereto.sow import render_sow_to_tex
-from sereto.target import Target, render_target_to_tex
+from sereto.target import Target
 from sereto.utils import write_if_different
 
 
 @validate_call
-def ensure_finding_group_layout(
-    project_path: DirectoryPath,
-    templates: DirectoryPath,
-    target: Target,
-    finding_group: FindingGroup,
-    version: ProjectVersion,
-) -> None:
-    """Ensures that a template exists for the specified finding group.
-
-    Does not overwrite existing template.
-    """
-    # Make sure that "layouts/generated" directory exists
-    if not (layouts_generated := project_path / "layouts/generated").is_dir():
-        layouts_generated.mkdir(parents=True)
-
-    # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.tex.j2"
-    if not template_dst.is_file():  # do not overwrite existing templates
-        template_src = templates / "categories" / target.data.category / "finding_group.tex.j2"
-        copy2(template_src, template_dst, follow_symlinks=False)
-
-
-@validate_call
-def ensure_target_layout(
-    project_path: DirectoryPath, templates: DirectoryPath, target: Target, version: ProjectVersion
-) -> None:
-    """Ensures that a template exists for the specified target.
-
-    Does not overwrite existing template.
-    """
-    # Make sure that "layouts/generated" directory exists
-    if not (layouts_generated := project_path / "layouts/generated").is_dir():
-        layouts_generated.mkdir(parents=True)
-
-    # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}.tex.j2"
-    if not template_dst.is_file():  # do not overwrite existing templates
-        template_src = templates / "categories" / target.data.category / "target.tex.j2"
-        copy2(template_src, template_dst, follow_symlinks=False)
-
-
-@validate_call
-def build_subfinding_to_tex(
+def build_subfinding(
     project: Project,
     target: Target,
     sub_finding: SubFinding,
     version: ProjectVersion,
+    output_format: FileFormat,
     converter: str | None = None,
 ) -> None:
-    """Process one finding into TeX format and write it to the ".build" directory."""
+    """Process a sub-finding into the specified format and write it to the ".build" directory.
+
+    The sub-finding is first rendered as a Jinja2 template, then converted to the desired format.
+    If the output file already exists and has the same content, it is not overwritten (to preserve timestamps).
+
+    Args:
+        project: Project's representation.
+        target: The target containing the sub-finding.
+        sub_finding: The sub-finding to process.
+        version: The project version to use for rendering.
+        output_format: The desired output format (e.g., FileFormat.tex).
+        converter: The convert recipe used for file format transformations. If None, the first recipe is used.
+    """
     # Initialize the build directory
     init_build_dir(project=project, target=target)
 
-    # Process the finding
-    content = render_subfinding_to_tex(
-        sub_finding=sub_finding,
-        config=project.config,
-        version=version,
-        templates=project.settings.templates_path,
+    version_config = project.config.at_version(version=version)
+
+    # Render Jinja2 template
+    finding_content = render_jinja2(
+        templates=[sub_finding.path.parent],
+        file=sub_finding.path,
+        vars={
+            "f": sub_finding,
+            "c": version_config,
+            "config": project.config,
+            "version": version,
+        },
+    )
+
+    # Convert to desired format
+    content = apply_convertor(
+        input=finding_content,
+        input_format=sub_finding.format,
+        output_format=output_format,
         render=project.settings.render,
-        converter=converter,
+        recipe=converter,
+        replacements={
+            "%TEMPLATES%": str(project.settings.templates_path),
+        },
     )
 
     # Write the finding to the ".build" directory; do not overwrite the same content (preserve timestamps)
     write_if_different(
-        file=project.path / ".build" / target.uname / f"{sub_finding.path.name.removesuffix('.md.j2')}.tex",
+        file=project.path
+        / ".build"
+        / target.uname
+        / f"{sub_finding.path.name.removesuffix(f'.{sub_finding.format.value}.j2')}.{output_format.value}",
         content=content,
     )
 
@@ -90,29 +81,37 @@ def build_finding_group_dependencies(
     target: Target,
     finding_group: FindingGroup,
     version: ProjectVersion,
+    format: FileFormat,
     converter: str | None = None,
 ) -> None:
-    # Render included findings to TeX format
+    # Render included findings to the desired format
     for sub_finding in finding_group.sub_findings:
-        build_subfinding_to_tex(
-            project=project, target=target, sub_finding=sub_finding, version=version, converter=converter
+        build_subfinding(
+            project=project,
+            target=target,
+            sub_finding=sub_finding,
+            version=version,
+            output_format=format,
+            converter=converter,
         )
 
-    # Ensure that finding group "inner" template exists
-    ensure_finding_group_layout(
-        project_path=project.path,
-        templates=project.settings.templates_path,
-        target=target,
-        finding_group=finding_group,
-        version=version,
-    )
+    layouts_generated = project.ensure_dir("layouts/generated")
+
+    # Create template in "layouts/generated" directory
+    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.{format.value}.j2"
+    if not template_dst.is_file():  # do not overwrite existing templates
+        template_src = (
+            project.settings.templates_path / "categories" / target.data.category / f"finding_group.{format.value}.j2"
+        )
+        copy2(template_src, template_dst, follow_symlinks=False)
 
 
 @validate_call
-def build_finding_group_to_tex(
+def build_finding_group_to_format(
     project: Project,
     target: Target,
     finding_group: FindingGroup,
+    format: FileFormat,
     version: ProjectVersion,
 ) -> Path:
     # Initialize the build directory
@@ -122,19 +121,32 @@ def build_finding_group_to_tex(
     target_ix = project.config.at_version(version).targets.index(target)
     fg_ix = target.findings.groups.index(finding_group)
 
-    # Render the finding group to TeX format
-    content = render_finding_group_to_tex(
-        config=project.config,
-        project_path=project.path,
-        target=target,
-        target_ix=target_ix,
-        finding_group=finding_group,
-        finding_group_ix=fg_ix,
-        version=version,
+    # Construct path to finding group template
+    if not (template := project.path / f"layouts/finding_group.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template}'")
+
+    content = render_jinja2(
+        templates=[
+            project.path / "layouts/generated",
+            project.path / "layouts",
+            project.path / "includes",
+            project.path,
+        ],
+        file=template,
+        vars={
+            "finding_group": finding_group,
+            "finding_group_index": fg_ix,
+            "target": target,
+            "target_index": target_ix,
+            "c": project.config.at_version(version),
+            "config": project.config,
+            "version": version,
+            "project_path": project.path,
+        },
     )
 
     # Write the finding group to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{finding_group.uname}.tex"
+    destination = project.path / ".build" / target.uname / f"{finding_group.uname}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered finding group
@@ -145,35 +157,61 @@ def build_finding_group_to_tex(
 
 @validate_call
 def build_target_dependencies(
-    project: Project, target: Target, version: ProjectVersion, converter: str | None = None
+    project: Project, target: Target, version: ProjectVersion, format: FileFormat, converter: str | None = None
 ) -> None:
     # Finding group dependencies
     for finding_group in target.findings.groups:
         build_finding_group_dependencies(
-            project=project, target=target, finding_group=finding_group, version=version, converter=converter
+            project=project,
+            target=target,
+            finding_group=finding_group,
+            version=version,
+            format=format,
+            converter=converter,
         )
 
-    # Ensure that target "inner" template exists
-    ensure_target_layout(
-        project_path=project.path, templates=project.settings.templates_path, target=target, version=version
-    )
+    # Create template in "layouts/generated" directory
+    template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{format.value}.j2"
+    if not template_dst.is_file():  # do not overwrite existing templates
+        template_src = (
+            project.settings.templates_path / "categories" / target.data.category / f"target.{format.value}.j2"
+        )
+        copy2(template_src, template_dst, follow_symlinks=False)
 
 
 @validate_call
-def build_target_to_tex(project: Project, target: Target, version: ProjectVersion) -> Path:
+def build_target_to_format(project: Project, target: Target, format: FileFormat, version: ProjectVersion) -> Path:
     # Initialize the build directory
     init_build_dir(project=project, target=target)
 
     # Determine the index for correct section numbering
     target_ix = project.config.at_version(version).targets.index(target)
 
-    # Render the target to TeX format
-    content = render_target_to_tex(
-        target=target, config=project.config, version=version, target_ix=target_ix, project_path=project.path
+    # Construct path to target template
+    if not (template := project.path / f"layouts/target.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template}'")
+
+    # Render Jinja2 template
+    content = render_jinja2(
+        templates=[
+            project.path / "layouts/generated",
+            project.path / "layouts",
+            project.path / "includes",
+            project.path,
+        ],
+        file=template,
+        vars={
+            "target": target,
+            "target_index": target_ix,
+            "c": project.config.at_version(version),
+            "config": project.config,
+            "version": version,
+            "project_path": project.path,
+        },
     )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{target.uname}.tex"
+    destination = project.path / ".build" / target.uname / f"{target.uname}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered target
@@ -183,23 +221,39 @@ def build_target_to_tex(project: Project, target: Target, version: ProjectVersio
 
 
 @validate_call
-def build_report_to_tex(
-    project: Project, template: str, version: ProjectVersion, converter: str | None = None
+def build_report_to_format(
+    project: Project, template: str, version: ProjectVersion, format: FileFormat, converter: str | None = None
 ) -> Path:
     # Process all targets and their dependencies
     for target in project.config.at_version(version).targets:
-        build_target_dependencies(project=project, target=target, version=version, converter=converter)
+        build_target_dependencies(project=project, target=target, version=version, format=format, converter=converter)
 
     # Initialize the build directory
     init_build_dir(project=project, version_config=project.config.at_version(version))
 
-    # Render the report to TeX format
-    content = render_report_to_tex(
-        project_path=project.path, template=template, config=project.config, version=version
+    # Construct path to report template
+    if not (template_path := project.path / f"layouts/{template}.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template_path}'")
+
+    # Render Jinja2 template
+    content = render_jinja2(
+        templates=[
+            project.path / "layouts/generated",
+            project.path / "layouts",
+            project.path / "includes",
+            project.path,
+        ],
+        file=template_path,
+        vars={
+            "c": project.config.at_version(version=version),
+            "config": project.config,
+            "version": version,
+            "project_path": project.path,
+        },
     )
 
     # Write the report to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / f"report{version.path_suffix}.tex"
+    destination = project.path / ".build" / f"report{version.path_suffix}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered report
@@ -209,15 +263,33 @@ def build_report_to_tex(
 
 
 @validate_call
-def build_sow_to_tex(project: Project, version: ProjectVersion) -> Path:
+def build_sow_to_format(project: Project, version: ProjectVersion, format: FileFormat) -> Path:
     # Initialize the build directory
     init_build_dir(project=project, version_config=project.config.at_version(version))
 
-    # Render the SoW to TeX format
-    content = render_sow_to_tex(project_path=project.path, config=project.config, version=version)
+    # Construct path to SoW template
+    if not (template := project.path / f"layouts/sow.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template}'")
+
+    # Render the Jinja template
+    content = render_jinja2(
+        templates=[
+            project.path / "layouts/generated",
+            project.path / "layouts",
+            project.path / "includes",
+            project.path,
+        ],
+        file=template,
+        vars={
+            "c": project.config.at_version(version),
+            "config": project.config,
+            "version": version,
+            "project_path": project.path,
+        },
+    )
 
     # Write the SoW to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / f"sow{version.path_suffix}.tex"
+    destination = project.path / ".build" / f"sow{version.path_suffix}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered SoW

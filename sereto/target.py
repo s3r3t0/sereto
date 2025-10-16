@@ -1,20 +1,15 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from pydantic import DirectoryPath, validate_call
 
 from sereto.cli.utils import Console
-from sereto.exceptions import SeretoPathError
 from sereto.finding import Findings
-from sereto.jinja import render_jinja2
 from sereto.models.locator import LocatorModel
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
 from sereto.utils import copy_skel
-
-if TYPE_CHECKING:
-    from sereto.config import Config
 
 
 @dataclass
@@ -79,32 +74,3 @@ class Target:
         """
         type = [type] if isinstance(type, str) else list(type)
         return [loc for loc in self.data.locators if loc.type in type]
-
-
-def render_target_to_tex(
-    target: Target, config: "Config", version: ProjectVersion, target_ix: int, project_path: DirectoryPath
-) -> str:
-    """Render selected target (top-level document) to TeX format."""
-    # Construct path to target template
-    template = project_path / "layouts/target.tex.j2"
-    if not template.is_file():
-        raise SeretoPathError(f"template not found: '{template}'")
-
-    # Render Jinja2 template
-    return render_jinja2(
-        templates=[
-            project_path / "layouts/generated",
-            project_path / "layouts",
-            project_path / "includes",
-            project_path,
-        ],
-        file=template,
-        vars={
-            "target": target,
-            "target_index": target_ix,
-            "c": config.at_version(version),
-            "config": config,
-            "version": version,
-            "project_path": project_path,
-        },
-    )
