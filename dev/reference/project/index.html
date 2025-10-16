@@ -3470,7 +3470,7 @@ found or 'dir_subtree' is reached.</p>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">new_path</span> <span class="o">:=</span> <span class="n">projects_path</span> <span class="o">/</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;project with specified ID already exists&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">skel_path</span> <span class="o">:=</span> <span class="n">templates_path</span> <span class="o">/</span> <span class="s1">&#39;skel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">skel_path</span> <span class="o">:=</span> <span class="n">templates_path</span> <span class="o">/</span> <span class="s2">&quot;skel&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skel path &#39;</span><span class="si">{</span><span class="n">skel_path</span><span class="si">}</span><span class="s2">&#39; does not exist or is not a directory&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">new_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
