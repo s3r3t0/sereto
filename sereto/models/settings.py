@@ -86,8 +86,8 @@ Command failed ({result.returncode}):
         return result.stdout
 
 
-class RenderRecipe(SeretoBaseModel):
-    """Recipe for rendering and converting files using `RenderTool`s.
+class BaseRecipe(SeretoBaseModel):
+    """Base recipe for rendering and converting files using `RenderTool`s.
 
     Attributes:
         name: name of the recipe
@@ -98,7 +98,19 @@ class RenderRecipe(SeretoBaseModel):
     tools: Annotated[list[str], MinLen(1)]
 
 
-class ConvertRecipe(RenderRecipe):
+class RenderRecipe(BaseRecipe):
+    """Recipe for rendering files using `RenderTool`s.
+
+    Attributes:
+        name: name of the recipe
+        tools: list of `RenderTool` names to run
+        format: supported `FileFormat`
+    """
+
+    format: FileFormat
+
+
+class ConvertRecipe(BaseRecipe):
     """Recipe for converting between file formats using `RenderTool`s.
 
     Attributes:
@@ -241,10 +253,10 @@ class Render(SeretoBaseModel):
 
 
 DEFAULT_RENDER_CONFIG = Render(
-    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"])],
-    finding_group_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"])],
-    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"])],
-    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"])],
+    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"], format=FileFormat.tex)],
+    finding_group_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"], format=FileFormat.tex)],
+    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"], format=FileFormat.tex)],
+    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"], format=FileFormat.tex)],
     convert_recipes=[
         ConvertRecipe(
             name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]
