@@ -162,6 +162,7 @@ def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> E
         undefined=StrictUndefined,
     )
 
+    env.filters["yesno"] = yesno_filter
     env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
     env.add_extension("jinja2.ext.debug")
     return env
