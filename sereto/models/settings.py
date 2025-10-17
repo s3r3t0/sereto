@@ -107,7 +107,7 @@ class RenderRecipe(BaseRecipe):
         format: supported `FileFormat`
     """
 
-    format: FileFormat
+    format: FileFormat = Field(strict=False)
 
 
 class ConvertRecipe(BaseRecipe):
@@ -120,19 +120,8 @@ class ConvertRecipe(BaseRecipe):
         output_format: output file format
     """
 
-    input_format: FileFormat
-    output_format: FileFormat
-
-    @field_validator("input_format", "output_format", mode="before")
-    @classmethod
-    def load_file_format(cls, v: Any) -> FileFormat:
-        match v:
-            case FileFormat():
-                return v
-            case str():
-                return FileFormat(v)
-            case _:
-                raise ValueError("invalid type for FileFormat")
+    input_format: FileFormat = Field(strict=False)
+    output_format: FileFormat = Field(strict=False)
 
 
 class Render(SeretoBaseModel):
