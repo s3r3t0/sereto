@@ -3,7 +3,7 @@ import time
 from datetime import timedelta
 from pathlib import Path
 from textwrap import dedent
-from typing import Annotated, Any, Self
+from typing import Annotated, Self
 
 from annotated_types import MinLen
 from click import get_app_dir
@@ -12,7 +12,6 @@ from pydantic import (
     Field,
     FilePath,
     ValidationError,
-    field_validator,
     model_validator,
     validate_call,
 )
