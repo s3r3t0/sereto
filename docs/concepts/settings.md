@@ -173,6 +173,7 @@ The following variables are always available and will be automatically substitut
  - `%DOCFILE_EXT%`: filename with extensions
  - `%DIR%`: path to the directory, where the current file is located
  - `%TEMPLATES%`: path to the directory, where the templates are located
+ - `%PROJECT%`: path to the project directory
 
 Example:
 

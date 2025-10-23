@@ -23,6 +23,7 @@ from sereto.target import Target
 def render_to_pdf(
     file: FilePath,
     templates: DirectoryPath,
+    project_path: DirectoryPath,
     render: Render,
     recipe: RenderRecipe,
     replacements: dict[str, str] | None = None,
@@ -42,6 +43,7 @@ def render_to_pdf(
                 "%DOCFILE_EXT%": file.name,
                 "%DIR%": str(file.parent),
                 "%TEMPLATES%": str(templates),
+                "%PROJECT%": str(project_path),
             }
             | replacements,
         )
@@ -92,6 +94,7 @@ def generate_pdf_finding_group(
     finding_group_pdf = render_to_pdf(
         file=finding_group_intermediate,
         templates=project.settings.templates_path,
+        project_path=project.path,
         render=project.settings.render,
         recipe=recipe,
     )
@@ -221,6 +224,7 @@ def generate_pdf_report(
     report_pdf = render_to_pdf(
         file=report_intermediate,
         templates=project.settings.templates_path,
+        project_path=project.path,
         render=project.settings.render,
         recipe=recipe,
     )
@@ -261,7 +265,11 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
 
     # Render PDF
     sow_pdf = render_to_pdf(
-        file=sow_intermediate, templates=project.settings.templates_path, render=project.settings.render, recipe=recipe
+        file=sow_intermediate,
+        templates=project.settings.templates_path,
+        project_path=project.path,
+        render=project.settings.render,
+        recipe=recipe,
     )
 
     # Create directory for the PDF results if it does not exist
@@ -316,6 +324,7 @@ def generate_pdf_target(
     target_pdf = render_to_pdf(
         file=target_intermediate,
         templates=project.settings.templates_path,
+        project_path=project.path,
         render=project.settings.render,
         recipe=recipe,
     )
