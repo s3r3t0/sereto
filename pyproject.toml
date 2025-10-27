@@ -68,7 +68,7 @@ dependencies = [
   "rich~=14.2.0",
   "semver~=3.0.2",
   "sereto-repl~=0.3.1",
-  "textual~=6.3.0",
+  "textual~=6.4.0",
   "toml>=0.10.2",
   "tomlkit~=0.13.3",
 ]
