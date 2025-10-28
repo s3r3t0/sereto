@@ -12,13 +12,14 @@
 
 ## Getting Started
 
+Install SeReTo using `uv`, which creates an isolated environment for the tool and its dependencies:
+
 ```bash
-uv tool install sereto
+uv tool install sereto@latest --with-requirements <path>/templates/requirements.txt
 ```
 
-> Instead of `uv` you can use can use alternative package manager, e.g. `pip install sereto`.
+This command installs SeReTo along with all template dependencies, ensuring that custom plugins and templates work correctly. You can specify a version (e.g., `sereto@x.y.z`) or use `@latest` for the newest release.
 
-For more information, please visit the [documentation](https://sereto.s4n.cz/getting_started/installation/).
-
+For detailed setup instructions, visit the [documentation](https://sereto.s4n.cz/latest/getting_started/installation/).
 
 > Created with support of [NN Management Services, s.r.o.](https://www.nn.cz/kariera/en/nn-digital-hub/)
