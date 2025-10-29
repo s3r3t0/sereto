@@ -297,7 +297,7 @@ DEFAULT_RENDER_CONFIG = Render(
 )
 
 
-DEFAULT_CATEGORIES = {
+DEFAULT_CATEGORIES = [
     "dast",
     "sast",
     "mobile",
@@ -308,7 +308,7 @@ DEFAULT_CATEGORIES = {
     "cicd",
     "kubernetes",
     "generic",
-}
+]
 
 
 class Plugins(SeretoBaseModel):
