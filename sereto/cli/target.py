@@ -22,7 +22,7 @@ def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
     category = radiolist_dialog(
         title="New target",
         text="Category:",
-        values=[(c, c.upper()) for c in sorted(categories)],
+        values=[(c, c.upper()) for c in categories],
     ).run()
     name = prompt("Name: ")
 
