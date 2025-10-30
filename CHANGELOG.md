@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixes
+
+- Categories order is now preserved as defined in settings.
+
 ### Dependencies
 
 - Update textual requirement from ~=6.3.0 to ~=6.4.0
