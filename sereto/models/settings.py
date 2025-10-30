@@ -297,7 +297,7 @@ DEFAULT_RENDER_CONFIG = Render(
 )
 
 
-DEFAULT_CATEGORIES = {
+DEFAULT_CATEGORIES = [
     "dast",
     "sast",
     "mobile",
@@ -308,7 +308,7 @@ DEFAULT_CATEGORIES = {
     "cicd",
     "kubernetes",
     "generic",
-}
+]
 
 
 class Plugins(SeretoBaseModel):
@@ -356,6 +356,22 @@ class Settings(SeretoBaseSettings):
         strict=False,
     )
     plugins: Plugins = Field(default_factory=Plugins)
+
+    @field_validator("categories", mode="after")
+    @classmethod
+    def unique_categories(cls, categories: TypeCategories) -> TypeCategories:
+        """Ensure that all category names are unique and preserves their original order."""
+
+        if not categories:
+            return []
+        seen: set[str] = set()
+        unique: TypeCategories = []
+        for category in categories:
+            if category is None or category in seen:
+                continue
+            seen.add(category)
+            unique.append(category)
+        return unique
 
     @staticmethod
     def get_path() -> Path:

@@ -44,7 +44,7 @@ The value should meet the following requirements:
 """
 
 
-TypeCategories = set[TypeCategoryName]
+TypeCategories = list[TypeCategoryName]
 """Type for set of categories.
 
 The values should meet the following requirements:
