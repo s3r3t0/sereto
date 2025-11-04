@@ -89,6 +89,7 @@ class ListWidget[W: Widget](Widget):
             new_widget = self.widget_factory()
             new_row = RemovableWidget(widget=new_widget, on_remove=self._remove_row)
             self.widget_list.mount(new_row)
+            new_widget.focus()
 
     def _remove_row(self, row: RemovableWidget[W]) -> None:
         row.remove()
