@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2025-11-05
+
+Bugfix release.
+
 ### Fixes
 
 - Categories order is now preserved as defined in settings.
@@ -15,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update textual requirement from ~=6.3.0 to ~=6.5.0
+- Update pydantic requirement from ~=2.12.0 to ~=2.12.4 to address bug with `serialize_as_any`
 
 ## [0.4.1] - 2025-10-20
 
@@ -578,7 +583,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.4.1...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/s3r3t0/sereto/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/s3r3t0/sereto/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/s3r3t0/sereto/compare/v0.3.8...v0.4.0
 [0.3.8]: https://github.com/s3r3t0/sereto/compare/v0.3.7...v0.3.8
