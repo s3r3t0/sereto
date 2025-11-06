@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixes
+
+- Strip the frontmatter before processing Jinja2 templates.
+
 ## [0.4.2] - 2025-11-05
 
 Bugfix release.
