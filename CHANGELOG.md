@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Added
+
+- Add support for Typst as an alternative intermediate format to LaTeX for report generation.
+
 ### Fixes
 
 - Strip the frontmatter before processing Jinja2 templates.

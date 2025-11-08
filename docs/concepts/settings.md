@@ -39,7 +39,8 @@ Example:
         "name": "default-report",
         "tools": [
             "latexmk"
-        ]
+        ],
+        "intermediate_format": "tex"
     }
     ```
 
@@ -49,7 +50,8 @@ Example:
         name="default-report",
         tools=[
             "latexmk"
-        ]
+        ],
+        intermediate_format=FileFormat.tex
     )
     ```
 
@@ -65,7 +67,8 @@ Example:
         "name": "default-finding",
         "tools": [
             "latexmk-finding"
-        ]
+        ],
+        "intermediate_format": "tex"
     }
     ```
 
@@ -75,7 +78,8 @@ Example:
         name="default-finding",
         tools=[
             "latexmk-finding"
-        ]
+        ],
+        intermediate_format=FileFormat.tex
     )
     ```
 
@@ -91,7 +95,8 @@ Example:
         "name": "default-sow",
         "tools": [
             "latexmk"
-        ]
+        ],
+        "intermediate_format": "tex"
     }
     ```
 
@@ -101,7 +106,8 @@ Example:
         name="default-sow",
         tools=[
             "latexmk"
-        ]
+        ],
+        intermediate_format=FileFormat.tex
     )
     ```
 
@@ -117,7 +123,8 @@ Example:
         "name": "default-target",
         "tools": [
             "latexmk-target"
-        ]
+        ],
+        "intermediate_format": "tex"
     }
     ```
 
@@ -127,7 +134,8 @@ Example:
         name="default-target",
         tools=[
             "latexmk-target"
-        ]
+        ],
+        intermediate_format=FileFormat.tex
     )
     ```
 

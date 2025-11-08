@@ -158,7 +158,7 @@ def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> E
         comment_start_string="((=",
         comment_end_string="=))",
         autoescape=False,
-        loader=FileSystemLoader(templates),
+        loader=FrontMatterStrippingLoader(templates),
         undefined=StrictUndefined,
     )
 

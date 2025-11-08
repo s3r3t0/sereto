@@ -242,12 +242,10 @@ class Render(SeretoBaseModel):
 
 
 DEFAULT_RENDER_CONFIG = Render(
-    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"], intermediate_format=FileFormat.tex)],
-    finding_group_recipes=[
-        RenderRecipe(name="default-finding", tools=["latexmk-finding"], intermediate_format=FileFormat.tex)
-    ],
-    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"], intermediate_format=FileFormat.tex)],
-    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"], intermediate_format=FileFormat.tex)],
+    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"])],
+    finding_group_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"])],
+    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"])],
+    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"])],
     convert_recipes=[
         ConvertRecipe(
             name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]

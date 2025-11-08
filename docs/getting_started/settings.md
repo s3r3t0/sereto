@@ -163,7 +163,8 @@ A dictionary of risk levels and time periods in which findings with given risk l
         "name": "default-report",
         "tools": [
           "latexmk"
-        ]
+        ],
+        "intermediate_format": "tex"
       }
     ],
     "finding_group_recipes": [
@@ -171,7 +172,8 @@ A dictionary of risk levels and time periods in which findings with given risk l
         "name": "default-finding",
         "tools": [
           "latexmk-finding"
-        ]
+        ],
+        "intermediate_format": "tex"
       }
     ],
     "sow_recipes": [
@@ -179,7 +181,8 @@ A dictionary of risk levels and time periods in which findings with given risk l
         "name": "default-sow",
         "tools": [
           "latexmk"
-        ]
+        ],
+        "intermediate_format": "tex"
       }
     ],
     "target_recipes": [
@@ -187,7 +190,8 @@ A dictionary of risk levels and time periods in which findings with given risk l
         "name": "default-target",
         "tools": [
           "latexmk-target"
-        ]
+        ],
+        "intermediate_format": "tex"
       }
     ],
     "convert_recipes": [
