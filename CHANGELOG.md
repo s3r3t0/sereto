@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Added
+## [0.5.0] - 2025-11-08
+
+Initial **Typst** support. You can specify Typst as your preferred intermediate format in the settings. The default intermediate format remains TeX. Keep in mind that you also need to prepare Typst templates.
+
+Example of configuring Typst as an intermediate format in the settings for `report_recipes`:
+
+```json
+  "render": {
+    "report_recipes": [
+      {
+        "name": "default-report",
+        "tools": [
+          "latexmk"
+        ],
+        "intermediate_format": "typ"
+      }
+    ],
+    ...
+  }
+```
+
+### Added
 
 - Add support for Typst as an alternative intermediate format to LaTeX for report generation.
 
@@ -591,7 +612,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.4.2...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/s3r3t0/sereto/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/s3r3t0/sereto/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/s3r3t0/sereto/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/s3r3t0/sereto/compare/v0.3.8...v0.4.0
