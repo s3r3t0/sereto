@@ -1573,27 +1573,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sereto.build.build_subfinding_to_tex" class="md-nav__link">
+  <a href="#sereto.build.build_subfinding" class="md-nav__link">
     <span class="md-ellipsis">
-      build_subfinding_to_tex
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sereto.build.ensure_finding_group_layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      ensure_finding_group_layout
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sereto.build.ensure_target_layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      ensure_target_layout
+      build_subfinding
     </span>
   </a>
   
@@ -1919,29 +1901,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../retest/" class="md-nav__link">
         
   
@@ -2040,29 +1999,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -2324,27 +2260,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sereto.build.build_subfinding_to_tex" class="md-nav__link">
+  <a href="#sereto.build.build_subfinding" class="md-nav__link">
     <span class="md-ellipsis">
-      build_subfinding_to_tex
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sereto.build.ensure_finding_group_layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      ensure_finding_group_layout
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sereto.build.ensure_target_layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      ensure_target_layout
+      build_subfinding
     </span>
   </a>
   
@@ -2411,97 +2329,148 @@
 <div class="doc doc-object doc-function">
 
 
-<h3 id="sereto.build.build_subfinding_to_tex" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">build_subfinding_to_tex</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sub_finding</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h3 id="sereto.build.build_subfinding" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">build_subfinding</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sub_finding</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">intermediate_format</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#sereto.build.build_subfinding_to_tex" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Process one finding into TeX format and write it to the ".build" directory.</p>
-
-
-            <details class="quote">
-              <summary>Source code in <code>sereto/build.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_subfinding_to_tex</span><span class="p">(</span>
-    <span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span>
-    <span class="n">sub_finding</span><span class="p">:</span> <span class="n">SubFinding</span><span class="p">,</span>
-    <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span>
-    <span class="n">converter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process one finding into TeX format and write it to the &quot;.build&quot; directory.&quot;&quot;&quot;</span>
-    <span class="c1"># Initialize the build directory</span>
-    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
-
-    <span class="c1"># Process the finding</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">render_subfinding_to_tex</span><span class="p">(</span>
-        <span class="n">sub_finding</span><span class="o">=</span><span class="n">sub_finding</span><span class="p">,</span>
-        <span class="n">config</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
-        <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
-        <span class="n">templates</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
-        <span class="n">render</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="p">,</span>
-        <span class="n">converter</span><span class="o">=</span><span class="n">converter</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Write the finding to the &quot;.build&quot; directory; do not overwrite the same content (preserve timestamps)</span>
-    <span class="n">write_if_different</span><span class="p">(</span>
-        <span class="n">file</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;.build&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s1">&#39;.md.j2&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.tex&quot;</span><span class="p">,</span>
-        <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="sereto.build.ensure_finding_group_layout" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">ensure_finding_group_layout</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">finding_group</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span></code>
-
-<a href="#sereto.build.ensure_finding_group_layout" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#sereto.build.build_subfinding" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Ensures that a template exists for the specified finding group.</p>
-<p>Does not overwrite existing template.</p>
+        <p>Process a sub-finding into the specified format and write it to the ".build" directory.</p>
+<p>The sub-finding is first rendered as a Jinja2 template, then converted to the desired format.
+If the output file already exists and has the same content, it is not overwritten (to preserve timestamps).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>project</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Project
+
+
+  
+      dataclass
+   (sereto.project.Project)" href="../project/#sereto.project.Project">Project</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Project's representation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Target
+
+
+  
+      dataclass
+   (sereto.target.Target)" href="../target/#sereto.target.Target">Target</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The target containing the sub-finding.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sub_finding</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="SubFinding
+
+
+  
+      dataclass
+   (sereto.finding.SubFinding)" href="../finding/#sereto.finding.SubFinding">SubFinding</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sub-finding to process.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>version</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ProjectVersion (sereto.models.version.ProjectVersion)" href="../models/version/#sereto.models.version.ProjectVersion">ProjectVersion</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The project version to use for rendering.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>intermediate_format</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FileFormat (sereto.enums.FileFormat)" href="../enums/#sereto.enums.FileFormat">FileFormat</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The desired output format (e.g., FileFormat.tex).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>converter</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The convert recipe used for file format transformations. If None, the first recipe is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
             <details class="quote">
               <summary>Source code in <code>sereto/build.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
-<span class="normal">17</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
@@ -2520,51 +2489,10 @@
 <span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
-<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ensure_finding_group_layout</span><span class="p">(</span>
-    <span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
-    <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span>
-    <span class="n">finding_group</span><span class="p">:</span> <span class="n">FindingGroup</span><span class="p">,</span>
-    <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensures that a template exists for the specified finding group.</span>
-
-<span class="sd">    Does not overwrite existing template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Make sure that &quot;layouts/generated&quot; directory exists</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layouts_generated</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts/generated&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="n">layouts_generated</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="c1"># Create template in &quot;layouts/generated&quot; directory</span>
-    <span class="n">template_dst</span> <span class="o">=</span> <span class="n">layouts_generated</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">finding_group</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">.tex.j2&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">template_dst</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>  <span class="c1"># do not overwrite existing templates</span>
-        <span class="n">template_src</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">&quot;categories&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">category</span> <span class="o">/</span> <span class="s2">&quot;finding_group.tex.j2&quot;</span>
-        <span class="n">copy2</span><span class="p">(</span><span class="n">template_src</span><span class="p">,</span> <span class="n">template_dst</span><span class="p">,</span> <span class="n">follow_symlinks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="sereto.build.ensure_target_layout" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">ensure_target_layout</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span></code>
-
-<a href="#sereto.build.ensure_target_layout" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Ensures that a template exists for the specified target.</p>
-<p>Does not overwrite existing template.</p>
-
-
-            <details class="quote">
-              <summary>Source code in <code>sereto/build.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
@@ -2580,23 +2508,85 @@
 <span class="normal">52</span>
 <span class="normal">53</span>
 <span class="normal">54</span>
-<span class="normal">55</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">ensure_target_layout</span><span class="p">(</span>
-    <span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_subfinding</span><span class="p">(</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span>
+    <span class="n">sub_finding</span><span class="p">:</span> <span class="n">SubFinding</span><span class="p">,</span>
+    <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span>
+    <span class="n">intermediate_format</span><span class="p">:</span> <span class="n">FileFormat</span><span class="p">,</span>
+    <span class="n">converter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensures that a template exists for the specified target.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a sub-finding into the specified format and write it to the &quot;.build&quot; directory.</span>
 
-<span class="sd">    Does not overwrite existing template.</span>
+<span class="sd">    The sub-finding is first rendered as a Jinja2 template, then converted to the desired format.</span>
+<span class="sd">    If the output file already exists and has the same content, it is not overwritten (to preserve timestamps).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        target: The target containing the sub-finding.</span>
+<span class="sd">        sub_finding: The sub-finding to process.</span>
+<span class="sd">        version: The project version to use for rendering.</span>
+<span class="sd">        intermediate_format: The desired output format (e.g., FileFormat.tex).</span>
+<span class="sd">        converter: The convert recipe used for file format transformations. If None, the first recipe is used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Make sure that &quot;layouts/generated&quot; directory exists</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layouts_generated</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts/generated&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="n">layouts_generated</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Initialize the build directory</span>
+    <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 
-    <span class="c1"># Create template in &quot;layouts/generated&quot; directory</span>
-    <span class="n">template_dst</span> <span class="o">=</span> <span class="n">layouts_generated</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">.tex.j2&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">template_dst</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>  <span class="c1"># do not overwrite existing templates</span>
-        <span class="n">template_src</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">&quot;categories&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">category</span> <span class="o">/</span> <span class="s2">&quot;target.tex.j2&quot;</span>
-        <span class="n">copy2</span><span class="p">(</span><span class="n">template_src</span><span class="p">,</span> <span class="n">template_dst</span><span class="p">,</span> <span class="n">follow_symlinks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+
+    <span class="c1"># Render Jinja2 template</span>
+    <span class="n">finding_content</span> <span class="o">=</span> <span class="n">render_jinja2</span><span class="p">(</span>
+        <span class="n">templates</span><span class="o">=</span><span class="p">[</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">],</span>
+        <span class="n">file</span><span class="o">=</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+        <span class="nb">vars</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="n">sub_finding</span><span class="p">,</span>
+            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">version_config</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Convert to desired format</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">apply_convertor</span><span class="p">(</span>
+        <span class="nb">input</span><span class="o">=</span><span class="n">finding_content</span><span class="p">,</span>
+        <span class="n">input_format</span><span class="o">=</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+        <span class="n">output_format</span><span class="o">=</span><span class="n">intermediate_format</span><span class="p">,</span>
+        <span class="n">render</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="p">,</span>
+        <span class="n">recipe</span><span class="o">=</span><span class="n">converter</span><span class="p">,</span>
+        <span class="n">replacements</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;%TEMPLATES%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Write the finding to the &quot;.build&quot; directory; do not overwrite the same content (preserve timestamps)</span>
+    <span class="n">write_if_different</span><span class="p">(</span>
+        <span class="n">file</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span>
+        <span class="o">/</span> <span class="s2">&quot;.build&quot;</span>
+        <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span>
+        <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1">.j2&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">intermediate_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

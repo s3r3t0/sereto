@@ -1426,6 +1426,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.models.settings.BaseRecipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseRecipe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.models.settings.ConvertRecipe" class="md-nav__link">
     <span class="md-ellipsis">
       ConvertRecipe
@@ -2014,29 +2023,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../retest/" class="md-nav__link">
         
   
@@ -2135,29 +2121,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -2419,6 +2382,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.models.settings.BaseRecipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseRecipe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.models.settings.ConvertRecipe" class="md-nav__link">
     <span class="md-ellipsis">
       ConvertRecipe
@@ -2599,6 +2571,112 @@
 
 
 
+<h3 id="sereto.models.settings.BaseRecipe" class="doc doc-heading">
+            <code>BaseRecipe</code>
+
+
+<a href="#sereto.models.settings.BaseRecipe" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="SeretoBaseModel (sereto.models.base.SeretoBaseModel)" href="../base/#sereto.models.base.SeretoBaseModel">SeretoBaseModel</a></code></p>
+
+
+        <p>Base recipe for rendering and converting files using <code>RenderTool</code>s.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="sereto.models.settings.BaseRecipe.name">name</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>name of the recipe</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="sereto.models.settings.BaseRecipe.tools">tools</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="typing.Annotated" href="https://docs.python.org/3/library/typing.html#typing.Annotated">Annotated</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>], <span title="annotated_types.MinLen">MinLen</span>(1)]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list of <code>RenderTool</code> names to run</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>sereto/models/settings.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseRecipe</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base recipe for rendering and converting files using `RenderTool`s.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: name of the recipe</span>
+<span class="sd">        tools: list of `RenderTool` names to run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tools</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h3 id="sereto.models.settings.ConvertRecipe" class="doc doc-heading">
             <code>ConvertRecipe</code>
 
@@ -2608,7 +2686,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="RenderRecipe (sereto.models.settings.RenderRecipe)" href="#sereto.models.settings.RenderRecipe">RenderRecipe</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="BaseRecipe (sereto.models.settings.BaseRecipe)" href="#sereto.models.settings.BaseRecipe">BaseRecipe</a></code></p>
 
 
         <p>Recipe for converting between file formats using <code>RenderTool</code>s.</p>
@@ -2680,19 +2758,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>sereto/models/settings.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
@@ -2702,7 +2768,8 @@
 <span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
-<span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConvertRecipe</span><span class="p">(</span><span class="n">RenderRecipe</span><span class="p">):</span>
+<span class="normal">123</span>
+<span class="normal">124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConvertRecipe</span><span class="p">(</span><span class="n">BaseRecipe</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipe for converting between file formats using `RenderTool`s.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2712,19 +2779,8 @@
 <span class="sd">        output_format: output file format</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span>
-    <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span>
-
-    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;input_format&quot;</span><span class="p">,</span> <span class="s2">&quot;output_format&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_file_format</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileFormat</span><span class="p">:</span>
-        <span class="k">match</span> <span class="n">v</span><span class="p">:</span>
-            <span class="k">case</span> <span class="n">FileFormat</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">v</span>
-            <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">FileFormat</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid type for FileFormat&quot;</span><span class="p">)</span>
+    <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2812,8 +2868,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>sereto/models/settings.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">314</span>
-<span class="normal">315</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">315</span>
 <span class="normal">316</span>
 <span class="normal">317</span>
 <span class="normal">318</span>
@@ -2821,7 +2876,8 @@
 <span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span>
-<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Plugins</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">323</span>
+<span class="normal">324</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Plugins</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugins settings.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2962,8 +3018,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>sereto/models/settings.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">126</span>
-<span class="normal">127</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
@@ -3076,7 +3131,8 @@
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
-<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Render</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">240</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Render</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rendering settings.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3286,8 +3342,7 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
-<span class="normal">216</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
@@ -3311,7 +3366,8 @@
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
-<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">240</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_convert_recipe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvertRecipe</span><span class="p">:</span>
@@ -3390,8 +3446,7 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
-<span class="normal">171</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -3403,7 +3458,8 @@
 <span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">183</span>
+<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_finding_group_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a finding group recipe by name.</span>
 
@@ -3470,8 +3526,7 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
-<span class="normal">156</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
@@ -3483,7 +3538,8 @@
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">168</span>
+<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_report_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a report recipe by name.</span>
 
@@ -3550,8 +3606,7 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
-<span class="normal">186</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
 <span class="normal">189</span>
@@ -3563,7 +3618,8 @@
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sow_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a SoW recipe by name.</span>
 
@@ -3630,8 +3686,7 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -3643,7 +3698,8 @@
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
-<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_target_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a target recipe by name.</span>
 
@@ -3684,10 +3740,10 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="SeretoBaseModel (sereto.models.base.SeretoBaseModel)" href="../base/#sereto.models.base.SeretoBaseModel">SeretoBaseModel</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="BaseRecipe (sereto.models.settings.BaseRecipe)" href="#sereto.models.settings.BaseRecipe">BaseRecipe</a></code></p>
 
 
-        <p>Recipe for rendering and converting files using <code>RenderTool</code>s.</p>
+        <p>Recipe for rendering files using <code>RenderTool</code>s.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3722,6 +3778,17 @@
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="sereto.models.settings.RenderRecipe.intermediate_format">intermediate_format</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FileFormat (sereto.enums.FileFormat)" href="../../enums/#sereto.enums.FileFormat">FileFormat</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>supported <code>FileFormat</code></p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -3734,25 +3801,25 @@
 
               <details class="quote">
                 <summary>Source code in <code>sereto/models/settings.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span>
-<span class="normal">97</span>
-<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RenderRecipe</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipe for rendering and converting files using `RenderTool`s.</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RenderRecipe</span><span class="p">(</span><span class="n">BaseRecipe</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipe for rendering files using `RenderTool`s.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: name of the recipe</span>
 <span class="sd">        tools: list of `RenderTool` names to run</span>
+<span class="sd">        intermediate_format: supported `FileFormat`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">tools</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">intermediate_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4142,8 +4209,7 @@ possible in all positions except the first and last one)</p>
 
               <details class="quote">
                 <summary>Source code in <code>sereto/models/settings.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
-<span class="normal">327</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
@@ -4205,7 +4271,8 @@ possible in all positions except the first and last one)</p>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
-<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">SeretoBaseSettings</span><span class="p">):</span>
+<span class="normal">389</span>
+<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">SeretoBaseSettings</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Global settings:</span>
 
 <span class="sd">    Attributes:</span>
@@ -4305,8 +4372,7 @@ possible in all positions except the first and last one)</p>
 
             <details class="quote">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">360</span>
-<span class="normal">361</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">361</span>
 <span class="normal">362</span>
 <span class="normal">363</span>
 <span class="normal">364</span>
@@ -4319,7 +4385,8 @@ possible in all positions except the first and last one)</p>
 <span class="normal">371</span>
 <span class="normal">372</span>
 <span class="normal">373</span>
-<span class="normal">374</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+<span class="normal">374</span>
+<span class="normal">375</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
 <span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">unique_categories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">TypeCategories</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeCategories</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that all category names are unique and preserves their original order.&quot;&quot;&quot;</span>

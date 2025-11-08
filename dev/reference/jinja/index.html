@@ -1784,6 +1784,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.jinja.get_typst_jinja_env" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_typst_jinja_env
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.jinja.render_jinja2" class="md-nav__link">
     <span class="md-ellipsis">
       render_jinja2
@@ -1946,29 +1955,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../retest/" class="md-nav__link">
         
   
@@ -2067,29 +2053,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -2372,6 +2335,15 @@
   <a href="#sereto.jinja.get_tex_jinja_env" class="md-nav__link">
     <span class="md-ellipsis">
       get_tex_jinja_env
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sereto.jinja.get_typst_jinja_env" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_typst_jinja_env
     </span>
   </a>
   
@@ -2777,6 +2749,133 @@
 <div class="doc doc-object doc-function">
 
 
+<h3 id="sereto.jinja.get_typst_jinja_env" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_typst_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="p">)</span></code>
+
+<a href="#sereto.jinja.get_typst_jinja_env" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Creates a Jinja2 environment object for rendering Typst templates.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>templates</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="pydantic.DirectoryPath" href="https://docs.pydantic.dev/latest/api/types/#pydantic.types.DirectoryPath">DirectoryPath</a> | <a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" title="pydantic.DirectoryPath" href="https://docs.pydantic.dev/latest/api/types/#pydantic.types.DirectoryPath">DirectoryPath</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The directory/directories containing the Typst template files.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="jinja2.Environment">Environment</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Jinja2 environment object that is configured for rendering Typst templates.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>sereto/jinja.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_typst_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a Jinja2 environment object for rendering Typst templates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        templates: The directory/directories containing the Typst template files.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A Jinja2 environment object that is configured for rendering Typst templates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
+        <span class="n">block_start_string</span><span class="o">=</span><span class="s2">&quot;((*&quot;</span><span class="p">,</span>
+        <span class="n">block_end_string</span><span class="o">=</span><span class="s2">&quot;*))&quot;</span><span class="p">,</span>
+        <span class="n">variable_start_string</span><span class="o">=</span><span class="s2">&quot;(((&quot;</span><span class="p">,</span>
+        <span class="n">variable_end_string</span><span class="o">=</span><span class="s2">&quot;)))&quot;</span><span class="p">,</span>
+        <span class="n">comment_start_string</span><span class="o">=</span><span class="s2">&quot;((=&quot;</span><span class="p">,</span>
+        <span class="n">comment_end_string</span><span class="o">=</span><span class="s2">&quot;=))&quot;</span><span class="p">,</span>
+        <span class="n">autoescape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">loader</span><span class="o">=</span><span class="n">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
+        <span class="n">undefined</span><span class="o">=</span><span class="n">StrictUndefined</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;yesno&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">env</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="sereto.jinja.render_jinja2" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">render_jinja2</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="nb">vars</span><span class="p">)</span></code>
 
@@ -2876,34 +2975,36 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/jinja.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">render_jinja2</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">],</span> <span class="nb">vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders a Jinja2 template.</span>
 
@@ -2917,6 +3018,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tex.j2&quot;</span><span class="p">):</span>
         <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">get_tex_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.typ.j2&quot;</span><span class="p">):</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">get_typst_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.j2&quot;</span><span class="p">):</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">get_generic_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>

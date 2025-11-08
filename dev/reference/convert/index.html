@@ -1615,21 +1615,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="convert">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sereto.convert.convert_subfinding_to_tex" class="md-nav__link">
-    <span class="md-ellipsis">
-      convert_subfinding_to_tex
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -1901,29 +1886,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../retest/" class="md-nav__link">
         
   
@@ -2022,29 +1984,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -2302,21 +2241,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="convert">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sereto.convert.convert_subfinding_to_tex" class="md-nav__link">
-    <span class="md-ellipsis">
-      convert_subfinding_to_tex
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -2371,230 +2295,6 @@
 
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="sereto.convert.convert_subfinding_to_tex" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">convert_subfinding_to_tex</span><span class="p">(</span><span class="n">sub_finding</span><span class="p">,</span> <span class="n">render</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">recipe</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
-
-<a href="#sereto.convert.convert_subfinding_to_tex" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Convert a sub-finding to TeX format.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>sub_finding</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="SubFinding
-
-
-  
-      dataclass
-   (sereto.finding.SubFinding)" href="../finding/#sereto.finding.SubFinding">SubFinding</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The sub-finding object.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>render</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Render (sereto.models.settings.Render)" href="../models/settings/#sereto.models.settings.Render">Render</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The render object containing convert_recipes and tools for the conversion.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>templates</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" title="pydantic.DirectoryPath" href="https://docs.pydantic.dev/latest/api/types/#pydantic.types.DirectoryPath">DirectoryPath</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The path to the templates directory.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>recipe</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The name of the recipe to use for conversion. Defaults to None.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="SeretoValueError">SeretoValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If no converter is found for the specified file format or if the specified recipe is not
-found.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code>None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>None</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>sereto/convert.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">convert_subfinding_to_tex</span><span class="p">(</span>
-    <span class="n">sub_finding</span><span class="p">:</span> <span class="s2">&quot;SubFinding&quot;</span><span class="p">,</span>
-    <span class="n">render</span><span class="p">:</span> <span class="n">Render</span><span class="p">,</span>
-    <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
-    <span class="n">recipe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a sub-finding to TeX format.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        sub_finding: The sub-finding object.</span>
-<span class="sd">        render: The render object containing convert_recipes and tools for the conversion.</span>
-<span class="sd">        templates: The path to the templates directory.</span>
-<span class="sd">        recipe: The name of the recipe to use for conversion. Defaults to None.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        SeretoValueError: If no converter is found for the specified file format or if the specified recipe is not</span>
-<span class="sd">            found.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">convert_recipe</span> <span class="o">=</span> <span class="n">render</span><span class="o">.</span><span class="n">get_convert_recipe</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">recipe</span><span class="p">,</span> <span class="n">input_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">md</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">convert_recipe</span><span class="o">.</span><span class="n">tools</span><span class="p">:</span>
-        <span class="n">tool</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">render</span><span class="o">.</span><span class="n">tools</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">tool_name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">tool</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-            <span class="n">cwd</span><span class="o">=</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-            <span class="n">replacements</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;%DOC%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)),</span>
-                <span class="s2">&quot;%DOC_EXT%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()),</span>
-                <span class="s2">&quot;%DOCFILE%&quot;</span><span class="p">:</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
-                <span class="s2">&quot;%DOCFILE_EXT%&quot;</span><span class="p">:</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s2">&quot;%DIR%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()),</span>
-                <span class="s2">&quot;%TEMPLATES%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
-            <span class="p">},</span>
-        <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
 
 
 

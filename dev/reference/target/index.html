@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://sereto.s4n.cz/dev/reference/target/">
       
       
-        <link rel="prev" href="../sow/">
+        <link rel="prev" href="../source_archive/">
       
       
         <link rel="next" href="../sereto_types/">
@@ -1839,29 +1839,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../retest/" class="md-nav__link">
         
   
@@ -1974,29 +1951,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2085,15 +2039,6 @@
         
       </ul>
     </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sereto.target.render_target_to_tex" class="md-nav__link">
-    <span class="md-ellipsis">
-      render_target_to_tex
-    </span>
-  </a>
   
 </li>
         
@@ -2371,15 +2316,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#sereto.target.render_target_to_tex" class="md-nav__link">
-    <span class="md-ellipsis">
-      render_target_to_tex
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2464,7 +2400,12 @@
 
               <details class="quote">
                 <summary>Source code in <code>sereto/target.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">20</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
@@ -2520,12 +2461,7 @@
 <span class="normal">73</span>
 <span class="normal">74</span>
 <span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Target</span><span class="p">:</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">TargetModel</span>
     <span class="n">findings</span><span class="p">:</span> <span class="n">Findings</span>
@@ -2718,18 +2654,18 @@
 
             <details class="quote">
               <summary>Source code in <code>sereto/target.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
 <span class="normal">73</span>
 <span class="normal">74</span>
 <span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
 
@@ -2755,81 +2691,6 @@
 
 </div>
 
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="sereto.target.render_target_to_tex" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">render_target_to_tex</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">target_ix</span><span class="p">,</span> <span class="n">project_path</span><span class="p">)</span></code>
-
-<a href="#sereto.target.render_target_to_tex" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Render selected target (top-level document) to TeX format.</p>
-
-
-            <details class="quote">
-              <summary>Source code in <code>sereto/target.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render_target_to_tex</span><span class="p">(</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="s2">&quot;Config&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">target_ix</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render selected target (top-level document) to TeX format.&quot;&quot;&quot;</span>
-    <span class="c1"># Construct path to target template</span>
-    <span class="n">template</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts/target.tex.j2&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">template</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;template not found: &#39;</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Render Jinja2 template</span>
-    <span class="k">return</span> <span class="n">render_jinja2</span><span class="p">(</span>
-        <span class="n">templates</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts/generated&quot;</span><span class="p">,</span>
-            <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;layouts&quot;</span><span class="p">,</span>
-            <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;includes&quot;</span><span class="p">,</span>
-            <span class="n">project_path</span><span class="p">,</span>
-        <span class="p">],</span>
-        <span class="n">file</span><span class="o">=</span><span class="n">template</span><span class="p">,</span>
-        <span class="nb">vars</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
-            <span class="s2">&quot;target_index&quot;</span><span class="p">:</span> <span class="n">target_ix</span><span class="p">,</span>
-            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">),</span>
-            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">,</span>
-            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
-            <span class="s2">&quot;project_path&quot;</span><span class="p">:</span> <span class="n">project_path</span><span class="p">,</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
 
 
 

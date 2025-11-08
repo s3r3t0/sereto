@@ -2044,29 +2044,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../reference/retest/" class="md-nav__link">
         
   
@@ -2165,29 +2142,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reference/sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -3166,6 +3120,17 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="sereto.models.settings.RenderRecipe.intermediate_format">intermediate_format</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FileFormat (sereto.enums.FileFormat)" href="../../reference/enums/#sereto.enums.FileFormat">FileFormat</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>supported <code>FileFormat</code></p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -3329,7 +3294,8 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk&quot;</span>
-<span class="w">        </span><span class="p">]</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;finding_group_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -3337,7 +3303,8 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk-finding&quot;</span>
-<span class="w">        </span><span class="p">]</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;sow_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -3345,7 +3312,8 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk&quot;</span>
-<span class="w">        </span><span class="p">]</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;target_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -3353,7 +3321,8 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk-target&quot;</span>
-<span class="w">        </span><span class="p">]</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;convert_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>

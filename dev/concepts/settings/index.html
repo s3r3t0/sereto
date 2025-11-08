@@ -1975,29 +1975,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/report/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Report
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../reference/retest/" class="md-nav__link">
         
   
@@ -2096,29 +2073,6 @@
   
   <span class="md-ellipsis">
     Source archive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../reference/sow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Sow
     
   </span>
   
@@ -2513,7 +2467,8 @@
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;latexmk&quot;</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
@@ -2522,7 +2477,8 @@
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
         <span class="s2">&quot;latexmk&quot;</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2538,7 +2494,8 @@
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;latexmk-finding&quot;</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
@@ -2547,7 +2504,8 @@
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
         <span class="s2">&quot;latexmk-finding&quot;</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2563,7 +2521,8 @@
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;latexmk&quot;</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
@@ -2572,7 +2531,8 @@
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
         <span class="s2">&quot;latexmk&quot;</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2588,7 +2548,8 @@
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;latexmk-target&quot;</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
@@ -2597,7 +2558,8 @@
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
         <span class="s2">&quot;latexmk-target&quot;</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2642,6 +2604,7 @@
 <li><code>%DOCFILE_EXT%</code>: filename with extensions</li>
 <li><code>%DIR%</code>: path to the directory, where the current file is located</li>
 <li><code>%TEMPLATES%</code>: path to the directory, where the templates are located</li>
+<li><code>%PROJECT%</code>: path to the project directory</li>
 </ul>
 <p>Example:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">JSON</label><label for="__tabbed_6_2">Python</label></div>
