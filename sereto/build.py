@@ -20,7 +20,7 @@ def build_subfinding(
     target: Target,
     sub_finding: SubFinding,
     version: ProjectVersion,
-    output_format: FileFormat,
+    intermediate_format: FileFormat,
     converter: str | None = None,
 ) -> None:
     """Process a sub-finding into the specified format and write it to the ".build" directory.
@@ -33,7 +33,7 @@ def build_subfinding(
         target: The target containing the sub-finding.
         sub_finding: The sub-finding to process.
         version: The project version to use for rendering.
-        output_format: The desired output format (e.g., FileFormat.tex).
+        intermediate_format: The desired output format (e.g., FileFormat.tex).
         converter: The convert recipe used for file format transformations. If None, the first recipe is used.
     """
     # Initialize the build directory
@@ -57,7 +57,7 @@ def build_subfinding(
     content = apply_convertor(
         input=finding_content,
         input_format=sub_finding.format,
-        output_format=output_format,
+        output_format=intermediate_format,
         render=project.settings.render,
         recipe=converter,
         replacements={
@@ -70,7 +70,7 @@ def build_subfinding(
         file=project.path
         / ".build"
         / target.uname
-        / f"{sub_finding.path.name.removesuffix(f'.{sub_finding.format.value}.j2')}.{output_format.value}",
+        / f"{sub_finding.path.name.removesuffix(f'.{sub_finding.format.value}.j2')}.{intermediate_format.value}",
         content=content,
     )
 
@@ -81,7 +81,7 @@ def build_finding_group_dependencies(
     target: Target,
     finding_group: FindingGroup,
     version: ProjectVersion,
-    format: FileFormat,
+    intermediate_format: FileFormat,
     converter: str | None = None,
 ) -> None:
     # Render included findings to the desired format
@@ -91,17 +91,20 @@ def build_finding_group_dependencies(
             target=target,
             sub_finding=sub_finding,
             version=version,
-            output_format=format,
+            intermediate_format=intermediate_format,
             converter=converter,
         )
 
     layouts_generated = project.ensure_dir("layouts/generated")
 
     # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.{format.value}.j2"
+    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.{intermediate_format.value}.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = (
-            project.settings.templates_path / "categories" / target.data.category / f"finding_group.{format.value}.j2"
+            project.settings.templates_path
+            / "categories"
+            / target.data.category
+            / f"finding_group.{intermediate_format.value}.j2"
         )
         copy2(template_src, template_dst, follow_symlinks=False)
 
@@ -157,7 +160,11 @@ def build_finding_group_to_format(
 
 @validate_call
 def build_target_dependencies(
-    project: Project, target: Target, version: ProjectVersion, format: FileFormat, converter: str | None = None
+    project: Project,
+    target: Target,
+    version: ProjectVersion,
+    intermediate_format: FileFormat,
+    converter: str | None = None,
 ) -> None:
     # Finding group dependencies
     for finding_group in target.findings.groups:
@@ -166,15 +173,18 @@ def build_target_dependencies(
             target=target,
             finding_group=finding_group,
             version=version,
-            format=format,
+            intermediate_format=intermediate_format,
             converter=converter,
         )
 
     # Create template in "layouts/generated" directory
-    template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{format.value}.j2"
+    template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{intermediate_format.value}.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = (
-            project.settings.templates_path / "categories" / target.data.category / f"target.{format.value}.j2"
+            project.settings.templates_path
+            / "categories"
+            / target.data.category
+            / f"target.{intermediate_format.value}.j2"
         )
         copy2(template_src, template_dst, follow_symlinks=False)
 
@@ -226,7 +236,9 @@ def build_report_to_format(
 ) -> Path:
     # Process all targets and their dependencies
     for target in project.config.at_version(version).targets:
-        build_target_dependencies(project=project, target=target, version=version, format=format, converter=converter)
+        build_target_dependencies(
+            project=project, target=target, version=version, intermediate_format=format, converter=converter
+        )
 
     # Initialize the build directory
     init_build_dir(project=project, version_config=project.config.at_version(version))

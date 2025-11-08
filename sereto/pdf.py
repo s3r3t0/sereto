@@ -84,10 +84,15 @@ def generate_pdf_finding_group(
 
     # Build finding group to intermediate format
     build_finding_group_dependencies(
-        project=project, target=target, finding_group=fg, version=version, format=recipe.format, converter=converter
+        project=project,
+        target=target,
+        finding_group=fg,
+        version=version,
+        intermediate_format=recipe.intermediate_format,
+        converter=converter,
     )
     finding_group_intermediate = build_finding_group_to_format(
-        project=project, target=target, finding_group=fg, format=recipe.format, version=version
+        project=project, target=target, finding_group=fg, format=recipe.intermediate_format, version=version
     )
 
     # Render PDF
@@ -217,7 +222,11 @@ def generate_pdf_report(
 
     # Build report to intermediate format
     report_intermediate = build_report_to_format(
-        project=project, template=template, version=version, format=recipe.format, converter=convert_recipe
+        project=project,
+        template=template,
+        version=version,
+        format=recipe.intermediate_format,
+        converter=convert_recipe,
     )
 
     # Render PDF
@@ -261,7 +270,7 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
     recipe = project.settings.render.get_sow_recipe(name=sow_recipe)
 
     # Build SoW to intermediate format
-    sow_intermediate = build_sow_to_format(project=project, version=version, format=recipe.format)
+    sow_intermediate = build_sow_to_format(project=project, version=version, format=recipe.intermediate_format)
 
     # Render PDF
     sow_pdf = render_to_pdf(
@@ -316,9 +325,15 @@ def generate_pdf_target(
 
     # Build target to intermediate format
     build_target_dependencies(
-        project=project, target=target, version=version, format=recipe.format, converter=convert_recipe
+        project=project,
+        target=target,
+        version=version,
+        intermediate_format=recipe.intermediate_format,
+        converter=convert_recipe,
     )
-    target_intermediate = build_target_to_format(project=project, target=target, format=recipe.format, version=version)
+    target_intermediate = build_target_to_format(
+        project=project, target=target, format=recipe.intermediate_format, version=version
+    )
 
     # Render PDF
     target_pdf = render_to_pdf(

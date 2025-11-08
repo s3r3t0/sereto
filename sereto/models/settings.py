@@ -104,10 +104,10 @@ class RenderRecipe(BaseRecipe):
     Attributes:
         name: name of the recipe
         tools: list of `RenderTool` names to run
-        format: supported `FileFormat`
+        intermediate_format: supported `FileFormat`
     """
 
-    format: FileFormat = Field(strict=False)
+    intermediate_format: FileFormat = Field(strict=False, default=FileFormat.tex)
 
 
 class ConvertRecipe(BaseRecipe):
@@ -242,10 +242,12 @@ class Render(SeretoBaseModel):
 
 
 DEFAULT_RENDER_CONFIG = Render(
-    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"], format=FileFormat.tex)],
-    finding_group_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"], format=FileFormat.tex)],
-    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"], format=FileFormat.tex)],
-    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"], format=FileFormat.tex)],
+    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"], intermediate_format=FileFormat.tex)],
+    finding_group_recipes=[
+        RenderRecipe(name="default-finding", tools=["latexmk-finding"], intermediate_format=FileFormat.tex)
+    ],
+    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"], intermediate_format=FileFormat.tex)],
+    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"], intermediate_format=FileFormat.tex)],
     convert_recipes=[
         ConvertRecipe(
             name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]
