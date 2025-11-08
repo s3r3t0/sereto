@@ -12,6 +12,7 @@ from pydantic import (
     Field,
     FilePath,
     ValidationError,
+    field_validator,
     model_validator,
     validate_call,
 )
