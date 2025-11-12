@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Update pypdf requirement from ~=6.1.0 to ~=6.2.0
+
 ## [0.5.0] - 2025-11-08
 
 Initial **Typst** support. You can specify Typst as your preferred intermediate format in the settings. The default intermediate format remains TeX. Keep in mind that you also need to prepare Typst templates.
