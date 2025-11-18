@@ -902,11 +902,17 @@ def load_plugins() -> None:
     if not plugins_dir.is_dir():
         raise SeretoPathError(f"Plugins directory not found: '{plugins_dir}'")
 
-    # Ensure plugins directory is in sys.path and plugins is a package
+    # Ensure plugins directory is in a package-importable location
+    plugins_parent = plugins_dir.parent
+    if not plugins_parent.is_dir():
+        raise SeretoPathError(f"Plugins parent directory not found: '{plugins_parent}'")
     if not (plugins_dir / "__init__.py").exists():
         raise SeretoPathError(f"Plugins directory '{plugins_dir}' is not a package (missing __init__.py)")
+    if str(plugins_parent) not in sys.path:
+        sys.path.insert(0, str(plugins_parent))
+    # Compatibility for older SeReTo plugins; add plugins directory at the end of sys.path
     if str(plugins_dir) not in sys.path:
-        sys.path.insert(0, str(plugins_dir))
+        sys.path.append(str(plugins_dir))
 
     # Load plugins from the directory
     for file in plugins_dir.iterdir():

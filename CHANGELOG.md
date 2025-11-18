@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improve logic for loading plugins, which allows us to have also tests for plugins.
+
 ### Dependencies
 
 - Update pypdf requirement from ~=6.1.0 to ~=6.2.0
