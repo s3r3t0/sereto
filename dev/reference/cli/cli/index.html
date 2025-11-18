@@ -6478,7 +6478,13 @@ support needs to be enabled in the settings.</p>
 <span class="normal">948</span>
 <span class="normal">949</span>
 <span class="normal">950</span>
-<span class="normal">951</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_plugins</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_plugins</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load plugins from the plugins directory.</span>
 
 <span class="sd">    This function loads plugins from the configured directory and registers their commands with the CLI. The plugin</span>
@@ -6496,11 +6502,17 @@ support needs to be enabled in the settings.</p>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">plugins_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plugins directory not found: &#39;</span><span class="si">{</span><span class="n">plugins_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Ensure plugins directory is in sys.path and plugins is a package</span>
+    <span class="c1"># Ensure plugins directory is in a package-importable location</span>
+    <span class="n">plugins_parent</span> <span class="o">=</span> <span class="n">plugins_dir</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">plugins_parent</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plugins parent directory not found: &#39;</span><span class="si">{</span><span class="n">plugins_parent</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">plugins_dir</span> <span class="o">/</span> <span class="s2">&quot;__init__.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plugins directory &#39;</span><span class="si">{</span><span class="n">plugins_dir</span><span class="si">}</span><span class="s2">&#39; is not a package (missing __init__.py)&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">plugins_parent</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">plugins_parent</span><span class="p">))</span>
+    <span class="c1"># Compatibility for older SeReTo plugins; add plugins directory at the end of sys.path</span>
     <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">plugins_dir</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">plugins_dir</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">plugins_dir</span><span class="p">))</span>
 
     <span class="c1"># Load plugins from the directory</span>
     <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">plugins_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
