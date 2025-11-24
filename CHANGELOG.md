@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Update pypdf requirement from ~=6.2.0 to ~=6.4.0
+- Update textual requirement from ~=6.5.0 to ~=6.6.0
+- Update pydantic-settings requirement from ~=2.11.0 to ~=2.12.0
+- Update keyring requirement from ~=25.6.0 to ~=25.7.0
+
 ## [0.5.1] - 2025-11-18
 
 ### Changed
