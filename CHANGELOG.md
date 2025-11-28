@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Due dates calculation improvements:
+  - Due date is not extended during retest
+  - It is possible to add finding in retest and define `reported_on` variable, to correctly calculate the due date for this case
+
 ### Dependencies
 
 - Update pypdf requirement from ~=6.2.0 to ~=6.4.0

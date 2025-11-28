@@ -11,6 +11,7 @@ from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.models.date import SeretoDate
 from sereto.models.finding import (
     FindingGroupModel,
     FindingsConfigModel,
@@ -31,6 +32,7 @@ class SubFinding:
     template: FilePath | None = None
     locators: list[LocatorModel] = field(default_factory=list)
     format: FileFormat = FileFormat.md
+    reported_on: SeretoDate | None = None
 
     @classmethod
     @validate_call
@@ -54,6 +56,7 @@ class SubFinding:
             template=(templates / frontmatter.template_path) if frontmatter.template_path else None,
             locators=frontmatter.locators,
             format=frontmatter.format,
+            reported_on=frontmatter.reported_on,
         )
 
     @property
@@ -252,6 +255,16 @@ class FindingGroup:
 
         # 3. Fallback to target locators
         return _unique([loc for loc in self._target_locators if loc.type in self._show_locator_types])
+
+    @property
+    def reported_on(self) -> SeretoDate | None:
+        """Get the reported_on date from sub-findings, if available.
+
+        Returns:
+            The reported_on date if any sub-finding has it set, otherwise None.
+        """
+        reported_dates = [sf.reported_on for sf in self.sub_findings if sf.reported_on is not None]
+        return min(reported_dates) if len(reported_dates) > 0 else None
 
     @validate_call
     def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:

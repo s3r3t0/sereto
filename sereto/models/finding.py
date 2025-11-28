@@ -10,6 +10,7 @@ from tomlkit import dumps as toml_dumps
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
+from sereto.models.date import SeretoDate
 from sereto.models.locator import LocatorModel, get_locator_types
 from sereto.sereto_types import TypeCategoryName
 
@@ -67,16 +68,17 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
 
 
 class SubFindingFrontmatterModel(SeretoBaseModel):
-    """Representation of the frontmatter of a sub-finding included in project.
+    """Frontmatter metadata for a sub-finding included in a project.
 
     Attributes:
-        name: The name of the sub-finding.
-        risk: The risk level of the sub-finding.
-        category: From which category the sub-finding originates.
-        variables: A dictionary of variables used in the sub-finding.
-        template_path: Relative path to the finding in templates directory.
+        name: Sub-finding display name.
+        risk: Risk classification of the sub-finding.
+        category: Category from which the sub-finding originates.
+        variables: Variable values injected into the sub-finding.
+        template_path: Relative path to the sub-finding template file.
         locators: A list of locators used to find the sub-finding.
-        format: The file format of the sub-finding (default: markdown).
+        format: The file format of the sub-finding (defaults to markdown).
+        reported_on: Date the finding was first reported. Only useful if introduced later.
     """
 
     name: str
@@ -86,6 +88,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     template_path: str | None = None
     locators: list[LocatorModel] = Field(default_factory=list)
     format: FileFormat = Field(default=FileFormat.md)
+    reported_on: SeretoDate | None = None
 
     @field_validator("risk", mode="before")
     @classmethod

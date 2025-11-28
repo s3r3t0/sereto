@@ -545,6 +545,27 @@ class Config:
         """Get the configuration for the last project version."""
         return self.at_version(self.last_version)
 
+    def due_date(self, risk: Risk, reported_on: SeretoDate | None = None) -> SeretoDate | None:
+        """Get the due date for a specific risk level.
+
+        For findings discovered during a retest, the `reported_on` date can be specified.
+        """
+        if risk not in self.risk_due_dates:
+            return None
+
+        report_sent_date = (
+            self.first_config.filter_dates(
+                type=[DateType.report_sent, DateType.review, DateType.pentest_ongoing], last_date=True
+            )
+            if reported_on is None
+            else reported_on
+        )
+        if report_sent_date is None:
+            return None
+
+        # Calculate the due date by adding the risk's due timedelta to the report sent date
+        return report_sent_date + self.risk_due_dates[risk]
+
     @validate_call
     def add_version_config(
         self, version: ProjectVersion, config: VersionConfigModel, templates: DirectoryPath
