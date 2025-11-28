@@ -1927,6 +1927,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.config.Config.due_date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        due_date
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.config.Config.replace_version_config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3000,6 +3011,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.config.Config.due_date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        due_date
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.config.Config.replace_version_config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3423,7 +3445,28 @@
 <span class="normal">602</span>
 <span class="normal">603</span>
 <span class="normal">604</span>
-<span class="normal">605</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
     <span class="n">sereto_version</span><span class="p">:</span> <span class="n">SeretoVersion</span>
     <span class="n">version_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">VersionConfig</span><span class="p">]</span>
@@ -3505,6 +3548,27 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">last_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionConfig</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the configuration for the last project version.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_version</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">due_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="n">Risk</span><span class="p">,</span> <span class="n">reported_on</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level.</span>
+
+<span class="sd">        For findings discovered during a retest, the `reported_on` date can be specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">risk</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">report_sent_date</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_config</span><span class="o">.</span><span class="n">filter_dates</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="p">[</span><span class="n">DateType</span><span class="o">.</span><span class="n">report_sent</span><span class="p">,</span> <span class="n">DateType</span><span class="o">.</span><span class="n">review</span><span class="p">,</span> <span class="n">DateType</span><span class="o">.</span><span class="n">pentest_ongoing</span><span class="p">],</span> <span class="n">last_date</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">reported_on</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">reported_on</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+        <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_version_config</span><span class="p">(</span>
@@ -3799,34 +3863,34 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
 <span class="normal">573</span>
 <span class="normal">574</span>
-<span class="normal">575</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_version_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
@@ -4006,6 +4070,68 @@
 <div class="doc doc-object doc-function">
 
 
+<h4 id="sereto.config.Config.due_date" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">due_date</span><span class="p">(</span><span class="n">risk</span><span class="p">,</span> <span class="n">reported_on</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#sereto.config.Config.due_date" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the due date for a specific risk level.</p>
+<p>For findings discovered during a retest, the <code>reported_on</code> date can be specified.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/config.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">due_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="n">Risk</span><span class="p">,</span> <span class="n">reported_on</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level.</span>
+
+<span class="sd">    For findings discovered during a retest, the `reported_on` date can be specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">risk</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">report_sent_date</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_config</span><span class="o">.</span><span class="n">filter_dates</span><span class="p">(</span>
+            <span class="nb">type</span><span class="o">=</span><span class="p">[</span><span class="n">DateType</span><span class="o">.</span><span class="n">report_sent</span><span class="p">,</span> <span class="n">DateType</span><span class="o">.</span><span class="n">review</span><span class="p">,</span> <span class="n">DateType</span><span class="o">.</span><span class="n">pentest_ongoing</span><span class="p">],</span> <span class="n">last_date</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">reported_on</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="n">reported_on</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+    <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="sereto.config.Config.replace_version_config" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">replace_version_config</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">templates</span><span class="p">)</span></code>
 
@@ -4128,35 +4254,35 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">598</span>
 <span class="normal">599</span>
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
 <span class="normal">603</span>
 <span class="normal">604</span>
-<span class="normal">605</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">replace_version_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
