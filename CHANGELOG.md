@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-12-01
+
 ### Fixed
 
 - Due dates calculation improvements:
@@ -16,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update pypdf requirement from ~=6.2.0 to ~=6.4.0
-- Update textual requirement from ~=6.5.0 to ~=6.6.0
+- Update textual requirement from ~=6.5.0 to ~=6.7.0
 - Update pydantic-settings requirement from ~=2.11.0 to ~=2.12.0
 - Update keyring requirement from ~=25.6.0 to ~=25.7.0
 
@@ -635,7 +637,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.1...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/s3r3t0/sereto/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/s3r3t0/sereto/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/s3r3t0/sereto/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/s3r3t0/sereto/compare/v0.4.1...v0.4.2
