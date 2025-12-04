@@ -226,8 +226,11 @@ class FindingGroup:
 
         Precedence (first non-empty wins):
         1. Explicit locators defined on the finding group
-        2. All locators gathered from sub-findings
-        3. Locators inherited from the target
+        2. If every sub-finding has at least one locator, return the unique union of all
+           sub-finding locators (permitted types only)
+        3. If only some sub-findings define locators, merge their locators with the target
+           locators and return the unique union
+        4. Locators inherited from the target
         """
 
         def _unique(seq: list[LocatorModel]) -> list[LocatorModel]:
@@ -241,20 +244,31 @@ class FindingGroup:
                     result.append(loc)
             return result
 
+        def _filter_by_type(seq: Iterable[LocatorModel]) -> list[LocatorModel]:
+            return [loc for loc in seq if loc.type in self._show_locator_types]
+
         # 1. Explicit locators on the group
-        finding_group_locators = [loc for loc in self._finding_group_locators if loc.type in self._show_locator_types]
+        finding_group_locators = _filter_by_type(self._finding_group_locators)
         if len(finding_group_locators) > 0:
             return _unique(finding_group_locators)
 
-        # 2. Locators from sub-findings
-        sub_finding_locators = _unique(
-            [loc for sf in self.sub_findings for loc in sf.locators if loc.type in self._show_locator_types]
-        )
-        if len(sub_finding_locators) > 0:
-            return sub_finding_locators
+        has_sub_findings = len(self.sub_findings) > 0
+        all_sub_have_locators = has_sub_findings and all(len(sf.locators) > 0 for sf in self.sub_findings)
+        any_sub_has_locators = has_sub_findings and any(len(sf.locators) > 0 for sf in self.sub_findings)
 
-        # 3. Fallback to target locators
-        return _unique([loc for loc in self._target_locators if loc.type in self._show_locator_types])
+        sub_finding_locators = _filter_by_type(loc for sf in self.sub_findings for loc in sf.locators)
+        filtered_target_locators = _filter_by_type(self._target_locators)
+
+        # 2. All sub-findings define locators -> report only their union
+        if all_sub_have_locators and len(sub_finding_locators) > 0:
+            return _unique(sub_finding_locators)
+
+        # 3. Mixed coverage -> append target locators after sub-finding ones
+        if any_sub_has_locators and len(sub_finding_locators) > 0:
+            return _unique(sub_finding_locators + filtered_target_locators)
+
+        # 4. Fallback to target locators
+        return _unique(filtered_target_locators)
 
     @property
     def reported_on(self) -> SeretoDate | None:

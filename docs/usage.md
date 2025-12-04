@@ -251,6 +251,18 @@ For getting only a specific locator type, you can use the `f.filter_locators` me
 {% endfor %}
 ```
 
+### Locator precedence
+
+- Target locators are exactly what you defined in the target configuration.
+- Finding group locators behave as follows (first non-empty outcome wins):
+    1. Explicit locators configured on the group.
+    2. When every sub-finding carries a non-empty `locators` list, the report shows the unique union of those sub-finding locators.
+    3. When only some sub-findings define locators, the report shows the unique union of their locators plus the target locators (so gaps inherit the target context).
+    4. If nothing else matches, the group falls back to the target locators.
+- Sub-finding locators are always exactly what you define in the frontmatter (empty lists stay empty).
+
+---
+
 The `variables` table can be accessed using `f.vars`, e.g.:
 ```jinja
 {% for image in f.vars.images %}
