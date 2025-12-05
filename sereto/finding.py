@@ -23,6 +23,37 @@ from sereto.risk import Risks
 from sereto.utils import lower_alphanum
 
 
+def _unique_locators(seq: Iterable[LocatorModel]) -> list[LocatorModel]:
+    """Preserve locator order while removing duplicates (ignoring description)."""
+    seen: set[tuple[Any, Any]] = set()
+    result: list[LocatorModel] = []
+    for loc in seq:
+        key = (loc.type, loc.value)
+        if key not in seen:
+            seen.add(key)
+            result.append(loc)
+    return result
+
+
+def _filter_locators_by_type(seq: Iterable[LocatorModel], show_types: Iterable[str]) -> list[LocatorModel]:
+    allowed = set(show_types)
+    if len(allowed) == 0:
+        return []
+    return [loc for loc in seq if loc.type in allowed]
+
+
+def _locators_equal(
+    first: Iterable[LocatorModel],
+    second: Iterable[LocatorModel],
+) -> bool:
+    """Check if two locator sequences are equal, ignoring order and description."""
+
+    def key_set(seq: Iterable[LocatorModel]) -> set[tuple[Any, Any]]:
+        return {(loc.type, loc.value) for loc in seq}
+
+    return key_set(first) == key_set(second)
+
+
 @dataclass
 class SubFinding:
     name: str
@@ -233,42 +264,71 @@ class FindingGroup:
         4. Locators inherited from the target
         """
 
-        def _unique(seq: list[LocatorModel]) -> list[LocatorModel]:
-            """Preserve order while removing duplicates, ignoring 'description'."""
-            seen: set[tuple[Any, Any]] = set()
-            result: list[LocatorModel] = []
-            for loc in seq:
-                key = (loc.type, loc.value)
-                if key not in seen:
-                    seen.add(key)
-                    result.append(loc)
-            return result
-
-        def _filter_by_type(seq: Iterable[LocatorModel]) -> list[LocatorModel]:
-            return [loc for loc in seq if loc.type in self._show_locator_types]
-
         # 1. Explicit locators on the group
-        finding_group_locators = _filter_by_type(self._finding_group_locators)
+        finding_group_locators = _filter_locators_by_type(self._finding_group_locators, self._show_locator_types)
         if len(finding_group_locators) > 0:
-            return _unique(finding_group_locators)
+            return _unique_locators(finding_group_locators)
 
         has_sub_findings = len(self.sub_findings) > 0
         all_sub_have_locators = has_sub_findings and all(len(sf.locators) > 0 for sf in self.sub_findings)
         any_sub_has_locators = has_sub_findings and any(len(sf.locators) > 0 for sf in self.sub_findings)
 
-        sub_finding_locators = _filter_by_type(loc for sf in self.sub_findings for loc in sf.locators)
-        filtered_target_locators = _filter_by_type(self._target_locators)
+        sub_finding_locators = _filter_locators_by_type(
+            (loc for sf in self.sub_findings for loc in sf.locators),
+            self._show_locator_types,
+        )
+        filtered_target_locators = _filter_locators_by_type(self._target_locators, self._show_locator_types)
 
         # 2. All sub-findings define locators -> report only their union
         if all_sub_have_locators and len(sub_finding_locators) > 0:
-            return _unique(sub_finding_locators)
+            return _unique_locators(sub_finding_locators)
 
         # 3. Mixed coverage -> append target locators after sub-finding ones
         if any_sub_has_locators and len(sub_finding_locators) > 0:
-            return _unique(sub_finding_locators + filtered_target_locators)
+            return _unique_locators(sub_finding_locators + filtered_target_locators)
 
         # 4. Fallback to target locators
-        return _unique(filtered_target_locators)
+        return _unique_locators(filtered_target_locators)
+
+    @validate_call
+    def subfinding_locators(self, sub_finding: SubFinding) -> list[LocatorModel]:
+        """Return locators that add information beyond what the group already surfaces.
+
+        Resolution order:
+            1. Sub-finding locators when they introduce new locators.
+            2. Explicit group locators if they differ from the effective group view.
+            3. Fall back to target locators (already filtered by show_locator_types).
+
+        Returns:
+            A list of locators relevant for the given sub-finding, possibly empty.
+        """
+        sub_locators = _unique_locators(_filter_locators_by_type(sub_finding.locators, self._show_locator_types))
+        group_locators = self.locators
+
+        # Group exposes nothing → pass through whatever the sub-finding provides.
+        if not group_locators:
+            return sub_locators
+
+        # Sub-finding adds no new locators.
+        if _locators_equal(sub_locators, group_locators):
+            return []
+
+        # Sub-finding introduces additional context → return it.
+        if sub_locators:
+            return sub_locators
+
+        # Sub-finding empty: check if explicit group locators differ from the derived view.
+        explicit_group_locators = _unique_locators(
+            _filter_locators_by_type(self._finding_group_locators, self._show_locator_types)
+        )
+        if _locators_equal(explicit_group_locators, group_locators):
+            return []
+
+        if explicit_group_locators:
+            return explicit_group_locators
+
+        # Nothing explicit either → fall back to filtered target locators.
+        return _filter_locators_by_type(self._target_locators, self._show_locator_types)
 
     @property
     def reported_on(self) -> SeretoDate | None:
