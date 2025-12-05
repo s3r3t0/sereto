@@ -1004,6 +1004,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#locator-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator precedence
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2877,6 +2888,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#locator-precedence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator precedence
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3076,6 +3098,19 @@ Matched results are immediately displayed in the option list.</li>
 <span class="x">- &lt;</span><span class="cp">{{</span> <span class="nv">url.value</span> <span class="cp">}}</span><span class="x">&gt;</span>
 <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
 </code></pre></div></p>
+<h3 id="locator-precedence">Locator precedence<a class="headerlink" href="#locator-precedence" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Target locators are exactly what you defined in the target configuration.</li>
+<li>Finding group locators behave as follows (first non-empty outcome wins):<ol>
+<li>Explicit locators configured on the group.</li>
+<li>When every sub-finding carries a non-empty <code>locators</code> list, the report shows the unique union of those sub-finding locators.</li>
+<li>When only some sub-findings define locators, the report shows the unique union of their locators plus the target locators (so gaps inherit the target context).</li>
+<li>If nothing else matches, the group falls back to the target locators.</li>
+</ol>
+</li>
+<li>Sub-finding locators are always exactly what you define in the frontmatter (empty lists stay empty).</li>
+</ul>
+<hr />
 <p>The <code>variables</code> table can be accessed using <code>f.vars</code>, e.g.:
 <div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">for</span> <span class="nv">image</span> <span class="k">in</span> <span class="nv">f.vars.images</span> <span class="cp">%}</span>
 <span class="x">  ![Screenshot showing proof of a vulnerability](</span><span class="cp">{{</span> <span class="nv">image</span> <span class="cp">}}</span><span class="x">)</span>
