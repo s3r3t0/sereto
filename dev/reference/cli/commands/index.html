@@ -3256,7 +3256,8 @@
 <span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
-<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cd&quot;</span><span class="p">)</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cd&quot;</span><span class="p">)</span>
 <span class="nd">@handle_exceptions</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 <span class="nd">@validate_call</span>
@@ -3278,11 +3279,12 @@
         <span class="n">wd</span><span class="o">.</span><span class="n">go_back</span><span class="p">()</span>
         <span class="k">return</span>
 
-    <span class="c1"># Check if the project&#39;s location exists</span>
-    <span class="c1"># TODO: Should we iterate over all projects and read the config to get the correct path?</span>
-    <span class="n">project_path</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">projects_path</span> <span class="o">/</span> <span class="n">project_id</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_project_dir</span><span class="p">(</span><span class="n">project_path</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;project &#39;</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">&#39; does not exist. Use &#39;ls&#39; to list all projects&quot;</span><span class="p">)</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span>
+    <span class="n">project_path</span> <span class="o">=</span> <span class="n">resolve_project_directory</span><span class="p">(</span>
+        <span class="n">projects_path</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">projects_path</span><span class="p">,</span>
+        <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span>
+        <span class="n">templates_path</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># Change the current working directory to the new location</span>
     <span class="n">wd</span><span class="o">.</span><span class="n">change</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
@@ -3308,10 +3310,10 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
-<span class="normal">140</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
+<span class="normal">142</span>
+<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_exit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit from the Read-Eval-Print Loop (REPL).&quot;&quot;&quot;</span>
     <span class="n">click_repl_exit</span><span class="p">()</span>
@@ -3337,13 +3339,13 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
-<span class="normal">146</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
-<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;debug&quot;</span><span class="p">)</span>
+<span class="normal">151</span>
+<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;debug&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_toggle_debug</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Toggle the debug mode.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
@@ -3498,8 +3500,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
-<span class="normal">155</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
@@ -3539,7 +3540,8 @@
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
-<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sereto_repl</span><span class="p">(</span><span class="n">cli</span><span class="p">:</span> <span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">195</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sereto_repl</span><span class="p">(</span><span class="n">cli</span><span class="p">:</span> <span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an interactive Read-Eval-Print Loop (REPL) session.</span>
 
 <span class="sd">    Args:</span>
