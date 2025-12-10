@@ -3,6 +3,7 @@ from ipaddress import ip_address
 from pathlib import Path
 from typing import cast
 
+import pytest
 from pydantic import AnyUrl
 
 from sereto.enums import Risk
@@ -244,6 +245,125 @@ def test_subfinding_locators_returns_empty_when_only_explicit_group_locators_exi
         sub_findings=[sub],
         _target_locators=_loc_list(IpLocatorModel(value=ip_address("192.0.2.5"))),
         _finding_group_locators=_loc_list(UrlLocatorModel(value=_url("https://explicit"))),
+        _show_locator_types=["url", "ip"],
+    )
+
+    assert group.subfinding_locators(sub) == []
+
+
+@pytest.mark.parametrize(
+    "show_types, sub_locators, sub_peer_locators, group_locators, target_locators, expected",
+    [
+        pytest.param(
+            [],
+            _loc_list(
+                UrlLocatorModel(value=_url("https://hidden")),
+                IpLocatorModel(value=ip_address("198.51.100.1")),
+            ),
+            [],
+            _loc_list(),
+            _loc_list(),
+            [],
+            id="no-visible-types",
+        ),
+        pytest.param(
+            ["url"],
+            _loc_list(),
+            [],
+            _loc_list(IpLocatorModel(value=ip_address("203.0.113.5"))),
+            _loc_list(UrlLocatorModel(value=_url("https://target-only"))),
+            [("url", "https://target-only/")],
+            id="hidden-explicit-fallback",
+        ),
+        pytest.param(
+            ["url"],
+            _loc_list(IpLocatorModel(value=ip_address("10.0.0.11"))),
+            [],
+            _loc_list(),
+            _loc_list(
+                UrlLocatorModel(value=_url("https://visible-target")),
+                IpLocatorModel(value=ip_address("192.168.1.2")),
+            ),
+            [("url", "https://visible-target/")],
+            id="sub-hidden-type-fallback",
+        ),
+        pytest.param(
+            ["url"],
+            _loc_list(),
+            [_loc_list(UrlLocatorModel(value=_url("https://peer-context")))],
+            _loc_list(),
+            _loc_list(),
+            [],
+            id="peer-context-only",
+        ),
+        pytest.param(
+            ["url"],
+            _loc_list(),
+            [_loc_list(UrlLocatorModel(value=_url("https://peer-context")))],
+            _loc_list(),
+            _loc_list(
+                UrlLocatorModel(value=_url("https://visible-target")),
+                IpLocatorModel(value=ip_address("198.51.100.1")),
+            ),
+            [("url", "https://visible-target/")],
+            id="peer-context-with-visible-fallback",
+        ),
+    ],
+)
+def test_subfinding_locators_handles_filtered_types_and_fallbacks(
+    show_types: list[str],
+    sub_locators: list[LocatorModel],
+    sub_peer_locators: list[list[LocatorModel]],
+    group_locators: list[LocatorModel],
+    target_locators: list[LocatorModel],
+    expected: list[tuple[str, str]],
+) -> None:
+    sub = _sf("primary", sub_locators)
+    peers = [_sf(f"peer-{idx}", locs) for idx, locs in enumerate(sub_peer_locators, start=1)]
+    group = FindingGroup(
+        name="filtered",
+        explicit_risk=None,
+        sub_findings=[sub, *peers],
+        _target_locators=target_locators,
+        _finding_group_locators=group_locators,
+        _show_locator_types=show_types,
+    )
+
+    assert _serialize(group.subfinding_locators(sub)) == expected
+
+
+def test_subfinding_locators_returns_empty_when_peer_already_exposes_context():
+    empty = _sf("empty", [])
+    peer = _sf("peer", [UrlLocatorModel(value=_url("https://peer-only"))])
+    group = FindingGroup(
+        name="peer-coverage",
+        explicit_risk=None,
+        sub_findings=[empty, peer],
+        _target_locators=_loc_list(),
+        _finding_group_locators=_loc_list(),
+        _show_locator_types=["url"],
+    )
+
+    assert group.subfinding_locators(empty) == []
+
+
+def test_subfinding_locators_ignore_description_mismatches():
+    sub = _sf(
+        "described",
+        [
+            UrlLocatorModel(value=_url("https://same"), description="sub detail"),
+            IpLocatorModel(value=ip_address("10.0.0.42")),
+        ],
+    )
+    group = FindingGroup(
+        name="descriptions",
+        explicit_risk=None,
+        sub_findings=[sub],
+        _target_locators=_loc_list(),
+        _finding_group_locators=_loc_list(
+            UrlLocatorModel(value=_url("https://same"), description="group detail"),
+            IpLocatorModel(value=ip_address("10.0.0.42"), description="group detail"),
+        ),
         _show_locator_types=["url", "ip"],
     )
 
