@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified logic how locators are determined for finding groups and sub-findings.
 - To access dynamically computed sub-finding locators, use the new method `FindingGroup.subfinding_locators`.
 
+### Dependencies
+
+- Update textual requirement from ~=6.7.0 to ~=6.8.0
+
 ## [0.5.2] - 2025-12-01
 
 ### Fixed
