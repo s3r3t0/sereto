@@ -15,7 +15,7 @@ from rich.table import Table
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.models.settings import Settings
-from sereto.project import Project, is_project_dir
+from sereto.project import Project, is_project_dir, resolve_project_directory
 from sereto.sereto_types import TypeProjectId
 from sereto.singleton import Singleton
 
@@ -126,11 +126,12 @@ def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
         wd.go_back()
         return
 
-    # Check if the project's location exists
-    # TODO: Should we iterate over all projects and read the config to get the correct path?
-    project_path = project.settings.projects_path / project_id
-    if not is_project_dir(project_path):
-        raise SeretoPathError(f"project '{project_id}' does not exist. Use 'ls' to list all projects")
+    settings = project.settings
+    project_path = resolve_project_directory(
+        projects_path=settings.projects_path,
+        project_id=project_id,
+        templates_path=settings.templates_path,
+    )
 
     # Change the current working directory to the new location
     wd.change(project_path)

@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -5,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.project import Project
+from sereto.project import Project, resolve_project_directory
 
 
 @pytest.fixture
@@ -19,6 +20,20 @@ def project_root(tmp_path: Path) -> Path:
 @pytest.fixture
 def project(project_root: Path) -> Project:
     return Project(_project_path=project_root)  # bypass path discovery
+
+
+@pytest.fixture
+def projects_root(tmp_path: Path) -> Path:
+    root = tmp_path / "projects"
+    root.mkdir()
+    return root
+
+
+@pytest.fixture
+def templates_dir(tmp_path: Path) -> Path:
+    templates = tmp_path / "templates"
+    templates.mkdir()
+    return templates
 
 
 @pytest.mark.parametrize("rel", ["", ".", Path(""), Path(".")])
@@ -209,3 +224,59 @@ def test_ensure_dir_root_not_changed_on_root_requests(project: Project, project_
     project.ensure_dir(".")
     inode_after = os.stat(project_root).st_ino
     assert inode_before == inode_after
+
+
+def _write_minimal_project(root: Path, folder_name: str, config_id: str) -> Path:
+    project_dir = root / folder_name
+    project_dir.mkdir()
+    (project_dir / ".sereto").write_text("")
+    config_payload = {
+        "sereto_version": "1.0.0",
+        "version_configs": {
+            "v1.0": {
+                "id": config_id,
+                "name": f"{config_id}-name",
+                "version_description": "Initial",
+                "targets": [],
+                "dates": [],
+                "people": [],
+            }
+        },
+    }
+    (project_dir / "config.json").write_text(json.dumps(config_payload))
+    return project_dir
+
+
+def test_resolve_project_directory_prefers_directory_name(projects_root: Path, templates_dir: Path):
+    expected = _write_minimal_project(projects_root, "alpha-folder", "DIFF-123")
+
+    result = resolve_project_directory(
+        projects_path=projects_root,
+        project_id="alpha-folder",
+        templates_path=templates_dir,
+    )
+
+    assert result == expected
+
+
+def test_resolve_project_directory_matches_config_id(projects_root: Path, templates_dir: Path):
+    expected = _write_minimal_project(projects_root, "renamed-dir", "ID-2024")
+
+    result = resolve_project_directory(
+        projects_path=projects_root,
+        project_id="ID-2024",
+        templates_path=templates_dir,
+    )
+
+    assert result == expected
+
+
+def test_resolve_project_directory_unknown_id(projects_root: Path, templates_dir: Path):
+    _write_minimal_project(projects_root, "existing", "KNOWN")
+
+    with pytest.raises(SeretoPathError, match="project 'missing' does not exist"):
+        resolve_project_directory(
+            projects_path=projects_root,
+            project_id="missing",
+            templates_path=templates_dir,
+        )

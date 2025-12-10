@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Allow `cd` to a project's directory name with a fallback to searching for the project ID (for all versions).
+
 ## [0.5.3] - 2025-12-10
 
 ### Changed

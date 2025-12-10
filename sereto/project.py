@@ -115,6 +115,41 @@ def is_project_dir(path: Path) -> bool:
 
 
 @validate_call
+def resolve_project_directory(
+    projects_path: DirectoryPath,
+    project_id: TypeProjectId,
+    *,
+    templates_path: DirectoryPath,
+) -> Path:
+    """Resolve a project identifier to an on-disk path.
+
+    First match wins: if a directory with the exact name of `project_id` exists, it is returned.
+    Otherwise, all project directories are scanned and their configurations loaded to find a matching project ID.
+    """
+    direct_candidate = projects_path / project_id
+    if is_project_dir(direct_candidate):
+        return direct_candidate
+
+    for entry in projects_path.iterdir():
+        if not is_project_dir(entry) or entry == direct_candidate:
+            continue
+
+        try:
+            config = Config.load_from(
+                entry / "config.json",
+                templates=templates_path,
+                risk_due_dates={},
+            )
+        except (SeretoValueError, SeretoPathError):
+            continue
+
+        if any([config.at_version(ver).id == project_id for ver in config.versions]):
+            return entry
+
+    raise SeretoPathError(f"project '{project_id}' does not exist. Use 'ls' to list all projects")
+
+
+@validate_call
 def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: DirectoryPath = Path("/")) -> Path:
     """Get the path to the project directory.
 
