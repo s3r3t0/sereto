@@ -71,7 +71,11 @@ def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
                 relative_path = item.relative_to(project_path)
 
                 if not item.is_file() or item.is_symlink():
-                    logger.info("[yellow]-[/yellow] Skipping directory or symlink: '{}'", escape(str(relative_path)), markup=True)
+                    logger.info(
+                        "[yellow]-[/yellow] Skipping directory or symlink: '{}'",
+                        escape(str(relative_path)),
+                        markup=True,
+                    )
                     continue
 
                 if _is_ignored(str(relative_path), ignore_lines):
@@ -113,7 +117,12 @@ def embed_attachment_to_pdf(
     # Write the output PDF
     with pdf.open("wb") as output_pdf:
         writer.write(output_pdf)
-        logger.info("[green]+[/green] Embedded attachment '{}' into '{}'", escape(attachment.name), escape(str(pdf)), markup=True)
+        logger.info(
+            "[green]+[/green] Embedded attachment '{}' into '{}'",
+            escape(attachment.name),
+            escape(str(pdf)),
+            markup=True,
+        )
 
     # Delete the source archive if `keep_original=False`
     if not keep_original:
