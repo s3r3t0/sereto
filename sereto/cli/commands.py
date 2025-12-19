@@ -14,6 +14,7 @@ from rich.table import Table
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
+from sereto.logging import logger
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir, resolve_project_directory
 from sereto.sereto_types import TypeProjectId
@@ -158,7 +159,8 @@ def sereto_repl(cli: Group) -> None:
     Args:
         cli: The main CLI group.
     """
-    Console().log(r"""
+    logger.info(
+        r"""
   ____       ____     _____
  / ___|  ___|  _ \ __|_   _|__
  \___ \ / _ \ |_) / _ \| |/ _ \
@@ -166,11 +168,13 @@ def sereto_repl(cli: Group) -> None:
  |____/ \___|_| \_\___||_|\___/
 
 Welcome to [blue]SeReTo Interactive Mode[/blue]!
--------------------------------------------
+---------------------------------------------
 Type 'exit' or press 'Ctrl+D' to quit.
 Use 'cd <ID>' to change the active project.
 Type '-h'/'--help' to see available commands.
-    """)
+    """,
+        markup=True,
+    )
 
     # Add REPL specific commands
     cli.add_command(repl_cd)

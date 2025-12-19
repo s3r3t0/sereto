@@ -7,9 +7,10 @@ from typing import overload
 import click
 from humanize import naturalsize
 from pydantic import DirectoryPath, FilePath, validate_call
+from rich.markup import escape
 
-from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.logging import logger
 
 
 @overload
@@ -120,9 +121,12 @@ def assert_file_size_within_range(
 
     # File size is not within the range
 
-    Console().log(
-        f"[yellow]File '{file}' size is {naturalsize(size, binary=True)}, which is not within the allowed range "
-        f"{naturalsize(min_bytes, binary=True)} - {naturalsize(max_bytes, binary=True)}"
+    logger.warning(
+        "File '{}' size is {}, which is outside the allowed range {} - {}",
+        file,
+        naturalsize(size, binary=True),
+        naturalsize(min_bytes, binary=True),
+        naturalsize(max_bytes, binary=True),
     )
 
     # In interactive mode, user can choose to continue
@@ -153,15 +157,15 @@ def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = Fa
     """
     skel_path: Path = templates / "skel"
 
-    Console().log(f"Copying 'skel' directory: '{skel_path}' -> '{dst}'")
+    logger.info("Copying 'skel' directory: '{}' -> '{}'", skel_path, dst)
 
     for item in skel_path.iterdir():
         dst_item: Path = dst / (item.relative_to(skel_path))
         if not overwrite and dst_item.exists():
             raise SeretoPathError("Destination already exists")
         if item.is_file():
-            Console().log(f" [green]+[/green] copy file: '{item.relative_to(skel_path)}'")
+            logger.info("[green]+[/green] copy file: '{}'", escape(str(item.relative_to(skel_path))), markup=True)
             copy2(item, dst_item, follow_symlinks=False)
         if item.is_dir():
-            Console().log(f" [green]+[/green] copy dir: '{item.relative_to(skel_path)}'")
+            logger.info("[green]+[/green] copy dir: '{}'", escape(str(item.relative_to(skel_path))), markup=True)
             copytree(item, dst_item, dirs_exist_ok=overwrite)

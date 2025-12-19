@@ -6,11 +6,12 @@ from tempfile import NamedTemporaryFile
 from pathspec.gitignore import GitIgnoreSpec
 from pydantic import DirectoryPath, FilePath, TypeAdapter, ValidationError, validate_call
 from pypdf import PdfReader, PdfWriter
+from rich.markup import escape
 
-from sereto.cli.utils import Console
 from sereto.config import Config
 from sereto.crypto import encrypt_file
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
+from sereto.logging import logger
 from sereto.sereto_types import TypeProjectId
 from sereto.utils import assert_file_size_within_range
 
@@ -52,14 +53,14 @@ def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
         with seretoignore_path.open("r") as seretoignore:
             ignore_lines = seretoignore.readlines()
     else:
-        Console().log(f"File '{seretoignore_path}' does not exist'")
+        logger.warning("File '{}' does not exist", seretoignore_path)
         ignore_lines = []
 
     # Create a temporary file to store the source archive
     with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:
         archive_path = Path(tmp.name)
 
-        Console().log(f"Creating source archive: '{archive_path}'")
+        logger.info("Creating source archive at '{}'", archive_path)
 
         # Determine the original project ID (store the project always with the original ID)
         original_id = config.first_config.id
@@ -70,14 +71,14 @@ def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
                 relative_path = item.relative_to(project_path)
 
                 if not item.is_file() or item.is_symlink():
-                    Console().log(f"[yellow]-[/yellow] Skipping directory or symlink: '{relative_path}'")
+                    logger.info("[yellow]-[/yellow] Skipping directory or symlink: '{}'", escape(str(relative_path)), markup=True)
                     continue
 
                 if _is_ignored(str(relative_path), ignore_lines):
-                    Console().log(f"[yellow]-[/yellow] Skipping item: '{relative_path}'")
+                    logger.info("[yellow]-[/yellow] Skipping item: '{}'", escape(str(relative_path)), markup=True)
                     continue
 
-                Console().log(f"[green]+[/green] Adding item: '{relative_path}'")
+                logger.info("[green]+[/green] Adding item: '{}'", escape(str(relative_path)), markup=True)
                 tar.add(item, arcname=str(Path(original_id) / item.relative_to(project_path)))
 
     try:
@@ -112,12 +113,12 @@ def embed_attachment_to_pdf(
     # Write the output PDF
     with pdf.open("wb") as output_pdf:
         writer.write(output_pdf)
-        Console().log(f"[green]+[/green] Embedded attachment '{attachment.name}' into '{pdf}'")
+        logger.info("[green]+[/green] Embedded attachment '{}' into '{}'", escape(attachment.name), escape(str(pdf)), markup=True)
 
     # Delete the source archive if `keep_original=False`
     if not keep_original:
         attachment.unlink()
-        Console().log(f"[red]-[/red] Deleted original file: '{attachment}'")
+        logger.info("[red]-[/red] Deleted original file: '{}'", escape(str(attachment)), markup=True)
 
 
 @validate_call
@@ -142,14 +143,14 @@ def retrieve_source_archive(pdf: FilePath, name: str) -> Path:
 
     # Check if the attachment is present
     if name not in reader.attachments:
-        Console().log(f"No '{name}' attachment found in '{pdf}'")
-        Console().log(f"[blue]Manually inspect the file to make sure the attachment '{name}' is present")
+        logger.error("No '{}' attachment found in '{}'", name, pdf)
+        logger.info("Manually inspect the file to make sure the attachment '{}' is present", name)
         raise SeretoValueError(f"no '{name}' attachment found in '{pdf}'")
 
     # PDF attachment names are not unique; check if there is only one attachment with the expected name
     if len(reader.attachments[name]) != 1:
-        Console().log(f"[yellow]Only single '{name}' attachment should be present")
-        Console().log("[blue]Manually extract the correct file and use `sereto decrypt` command instead")
+        logger.warning("Only a single '{}' attachment should be present", name)
+        logger.info("Manually extract the correct file and use `sereto decrypt` command instead")
         raise SeretoValueError(f"multiple '{name}' attachments found")
 
     # Extract the attachment's content
@@ -160,7 +161,13 @@ def retrieve_source_archive(pdf: FilePath, name: str) -> Path:
         output_file = Path(tmp.name)
         output_file.write_bytes(content)
 
-    Console().log(f"[green]+[/green] Extracted attachment '{name}' from '{pdf}' to '{output_file}'")
+    logger.info(
+        "[green]+[/green] Extracted attachment '{}' from '{}' to '{}'",
+        escape(name),
+        escape(str(pdf)),
+        escape(str(output_file)),
+        markup=True,
+    )
 
     return output_file
 
@@ -176,12 +183,12 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
         output_dir: The directory where the sources will be extracted.
         keep_original: If True, the original tarball file is kept. Defaults to True.
     """
-    Console().log("Extracting archive ...")
+    logger.info("Extracting archive ...")
 
     with tarfile.open(file, "r:gz") as tar:
         # Check for empty source archive
         if len(tar.getmembers()) == 0:
-            Console().log(f"[yellow]![/yellow] Empty source archive: '{file}'")
+            logger.warning("Empty source archive: '{}'", file)
             return
 
         # Get the common directory in the tar archive
@@ -205,7 +212,7 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
         except KeyError:
             raise SeretoValueError("corrupted source archive (missing core project files)") from None
 
-        Console().log(f"[blue]i[/blue] Detected project with ID: {project_id}")
+        logger.info("Detected project with ID: {}", project_id)
 
         # Make sure the project directory does not already exist
         if (output_dir / project_id).exists():
@@ -213,9 +220,14 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
 
         # Extract the source archive
         tar.extractall(path=output_dir, filter="data")
-        Console().log(f"[green]+[/green] Extracted sources from '{file}' to '{output_dir / project_id}'")
+        logger.info(
+            "[green]+[/green] Extracted sources from '{}' to '{}'",
+            escape(str(file)),
+            escape(str(output_dir / project_id)),
+            markup=True,
+        )
 
     # Delete the original tarball
     if not keep_original:
         file.unlink()
-        Console().log(f"[red]-[/red] Deleted tarball: '{file}'")
+        logger.info("[red]-[/red] Deleted tarball: '{}'", escape(str(file)), markup=True)

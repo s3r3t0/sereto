@@ -4,8 +4,8 @@ from typing import Self
 
 from pydantic import DirectoryPath, validate_call
 
-from sereto.cli.utils import Console
 from sereto.finding import Findings
+from sereto.logging import logger
 from sereto.models.locator import LocatorModel
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
@@ -36,16 +36,16 @@ class Target:
     ) -> Self:
         target_path = project_path / (data.uname + version.path_suffix)
 
-        Console().log(f"Creating target directory: '{target_path}'")
+        logger.info("Creating target directory: '{}'", target_path)
         target_path.mkdir()
 
         category_templates = templates / "categories" / data.category
 
         if (category_templates / "skel").is_dir():
-            Console().log(f"""Populating new target directory from: '{category_templates / "skel"}'""")
+            logger.info("Populating new target directory from: '{}'", category_templates / "skel")
             copy_skel(templates=category_templates, dst=target_path)
         else:
-            Console().log(f"No 'skel' directory found: '{category_templates}'")
+            logger.warning("No 'skel' directory found: '{}'", category_templates)
 
         return cls.load(data=data, path=target_path, version=version, templates=templates)
 

@@ -11,8 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allow `cd` to a project's directory name with a fallback to searching for the project ID (for all versions).
 
+### Changed
+
+- Complete refactoring of logging, which now supports log levels.
+
 ### Dependencies
 
+- Add loguru as a logging library.
 - Update textual requirement from ~=6.8.0 to ~=6.9.0
 
 ## [0.5.3] - 2025-12-10

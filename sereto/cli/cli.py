@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
+import os
 import shutil
 import sys
 from contextlib import suppress
@@ -29,6 +30,7 @@ from sereto.crypto import decrypt_file
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.keyring import get_password, set_password
+from sereto.logging import LogLevel, logger, setup_logging
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
@@ -55,12 +57,21 @@ from sereto.utils import copy_skel, replace_strings
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=importlib.metadata.version("sereto"))
+@click.option(
+    "--log-level",
+    "log_level",
+    default=os.getenv("SERETO_LOG_LEVEL", LogLevel.INFO),
+    type=click.Choice([level.value for level in LogLevel], case_sensitive=False),
+    show_default=True,
+    help="Set log verbosity for terminal output.",
+)
 @click.pass_context
-def cli(ctx: click.Context) -> None:
+def cli(ctx: click.Context, log_level: LogLevel) -> None:
     """Security Reporting Tool.
 
     This tool provides various commands for managing and generating security reports.
     """
+    setup_logging(log_level)
     ctx.obj = Project()
 
 
@@ -939,7 +950,7 @@ def load_plugins() -> None:
                 module_name, module_path, submodule_search_locations=submodule_search_locations
             )
             if spec is None or spec.loader is None:
-                Console().log(f"Failed to load plugin: {file.name}")
+                logger.error("Failed to load plugin: {}", file.name)
                 continue
 
             # Create a new module based on the specification
@@ -948,16 +959,17 @@ def load_plugins() -> None:
             # Execute the module to initialize it
             spec.loader.exec_module(module)
         except ModuleNotFoundError as e:
-            Console().log(f"[red]Error:[/red] Module '{e.name}' referenced in plugin '{file.name}' not found.")
+            logger.error("Module '{}' referenced in plugin '{}' not found.", e.name, file.name)
             continue
 
         # Run the plugin's register_commands function
         if hasattr(module, "register_commands"):
             module.register_commands(cli)
-            Console().log(f"Plugin registered: '{file.name}'")
+            logger.debug("Plugin registered: '{}'", file.name)
 
 
 def entry_point() -> None:
+    setup_logging()
     with suppress(SeretoException):
         load_plugins()
 

@@ -7,10 +7,10 @@ from typing import Self, TypeVar
 from pydantic import DirectoryPath, validate_call
 from typing_extensions import ParamSpec
 
-from sereto.cli.utils import Console
 from sereto.config import Config, VersionConfig
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.logging import logger
 from sereto.models.person import Person
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion, SeretoVersion
@@ -180,7 +180,7 @@ def get_project_path_from_dir(dir: DirectoryPath | None = None, dir_subtree: Dir
             # stop the search before leaving the subtree
             break
 
-    raise SeretoPathError("not inside project's (sub)directory")
+    raise SeretoPathError("Not inside project's (sub)directory")
 
 
 @validate_call
@@ -240,7 +240,7 @@ def new_project(
     Raises:
         SeretoValueError: If a project with the specified ID already exists in the `projects` directory.
     """
-    Console().log(f"Generating a new project with ID {id!r}")
+    logger.info("Generating a new project with ID '{}'", id)
 
     if (new_path := projects_path / id).exists():
         raise SeretoPathError("project with specified ID already exists")
@@ -251,12 +251,12 @@ def new_project(
 
     sereto_ver = importlib.metadata.version("sereto")
 
-    Console().log("Copy project skeleton")
+    logger.info("Copying project skeleton")
     copy_skel(templates=templates_path, dst=new_path)
 
     config_path = new_path / "config.json"
 
-    Console().log(f"Writing the config '{config_path}'")
+    logger.info("Writing the config '{}'", config_path)
     Config(
         sereto_version=SeretoVersion.from_str(sereto_ver),
         version_configs={

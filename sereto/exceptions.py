@@ -1,17 +1,11 @@
 import functools
 import os
-import pathlib
 import sys
 from collections.abc import Callable
 
-import click
-import jinja2
-import pydantic
-import pypdf
 from pydantic import ValidationError
-from rich.markup import escape
 
-from sereto.cli.utils import Console
+from sereto.logging import logger
 
 
 class SeretoException(Exception):
@@ -55,11 +49,14 @@ def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
             return func(*args, **kwargs)
         except Exception as e:
             if isinstance(e, SeretoException | ValidationError):
-                Console().print(f"[red]Error:[/red] {escape(str(e))}")
-            if os.environ.get("DEBUG", "0") == "1":
-                Console().print_exception(show_locals=True, suppress=[click, jinja2, pathlib, pydantic, pypdf])
+                logger.error(str(e))
             else:
-                Console().print("\n[yellow]Set environment variable [blue]DEBUG=1[/blue] for more details.")
+                logger.error("Unexpected error occurred")
+
+            if os.environ.get("DEBUG", "0") == "1":
+                logger.opt(exception=e).exception("Debug traceback")
+            else:
+                logger.info("Set environment variable [blue]DEBUG=1[/] for more details.", markup=True)
             sys.exit(1)
 
     return outer_function

@@ -2,7 +2,6 @@ import subprocess
 import time
 from datetime import timedelta
 from pathlib import Path
-from textwrap import dedent
 from typing import Annotated, Self
 
 from annotated_types import MinLen
@@ -16,12 +15,11 @@ from pydantic import (
     model_validator,
     validate_call,
 )
-from rich.markdown import Markdown
 from rich.markup import escape
 
-from sereto.cli.utils import Console
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
+from sereto.logging import logger
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.models.person import Person
 from sereto.sereto_types import TypeCategories
@@ -49,17 +47,9 @@ class RenderTool(SeretoBaseModel):
         command = [self.command] + self.args
         if replacements is not None:
             command = replace_strings(text=command, replacements=replacements)
-        Console().log(
-            Markdown(
-                dedent(f"""\
-                    Running command:
-                    ```bash
-                    {escape(" ".join(command))}
-                    ```
-                """)
-            )
-        )
-        Console().line()
+        logger.info("Running command: {}", " ".join(command))
+        command_preview = escape(" ".join(command))
+        logger.info("[bold bright_cyan]▶ Running command[/]: [italic dim]{}[/]", command_preview, markup=True)
 
         # Run the command and measure the execution time
         start_time = time.time()
@@ -68,19 +58,22 @@ class RenderTool(SeretoBaseModel):
 
         # Check if the command failed
         if result.returncode != 0:
-            Console().log(
-                Markdown(f"""\
-Command failed ({result.returncode}):
-```text
-{escape(result.stderr.decode("utf-8"))}
-```
-""")
+            stderr_raw = result.stderr.decode("utf-8", errors="replace").rstrip()
+            stderr = escape(stderr_raw) if stderr_raw else "no stderr output"
+            logger.error(
+                "[bold bright_red]✖ Command failed[/] (exit code {}): [italic dim]{}[/]\n"
+                "[bright_black]┌─ stderr ────────────────────────────────────────────[/]\n"
+                "[bright_black]│[/] [red]{}[/]\n"
+                "[bright_black]└──────────────────────────────────────────────────────[/]",
+                result.returncode,
+                command_preview,
+                stderr,
+                markup=True,
             )
-            Console().line()
             raise SeretoCalledProcessError("command execution failed")
 
         # Report success
-        Console().log(f"Command finished in {end_time - start_time:.2f} s")
+        logger.info("Command finished in {:.2f} s", end_time - start_time)
 
         # Return the command output
         return result.stdout

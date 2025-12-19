@@ -3,6 +3,7 @@ from rich.table import Table
 
 from sereto.cli.utils import Console
 from sereto.config import VersionConfig
+from sereto.logging import logger
 
 
 @validate_call
@@ -12,7 +13,7 @@ def show_findings(version_config: VersionConfig) -> None:
     Args:
         version_config: The project configuration for specific version.
     """
-    Console().log(f"Showing findings for version {version_config.version}")
+    logger.info("Showing findings for version {}", version_config.version)
 
     for target in version_config.targets:
         Console().line()

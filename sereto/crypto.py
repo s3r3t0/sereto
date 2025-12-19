@@ -7,9 +7,9 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, validate_call
 
-from sereto.cli.utils import Console
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.keyring import get_password
+from sereto.logging import logger
 from sereto.sereto_types import TypeNonce12B, TypePassword, TypeSalt16B
 from sereto.utils import assert_file_size_within_range
 
@@ -95,12 +95,12 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
         ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
         password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
-        Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
+        logger.warning("Invalid password for archive encryption: {}", e.errors()[0]["msg"])
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
 
     assert_file_size_within_range(file=file, max_bytes=1_073_741_824, interactive=True)
 
-    Console().log(":locked: Found password for archive encryption.\nEncrypting archive...")
+    logger.info(":locked: Found password for archive encryption. Encrypting archive...", markup=True)
 
     # Read the file content
     data = file.read_bytes()
@@ -130,7 +130,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
     if not keep_original:
         file.unlink()
 
-    Console().log("[green]Archive successfully encrypted")
+    logger.success("Archive successfully encrypted")
 
     # Return the path to the encrypted file
     return encrypted_path
@@ -166,10 +166,10 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
         ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
         password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
-        Console().log(f"[yellow]Invalid password for archive encryption: {e.errors()[0]['msg']}")
+        logger.warning("Invalid password for archive encryption: {}", e.errors()[0]["msg"])
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
 
-    Console().log(":locked: Found password for archive decryption.\nDecrypting archive...")
+    logger.success(":locked: Found password for archive decryption. Decrypting archive...", markup=True)
 
     assert_file_size_within_range(file=file, min_bytes=65, max_bytes=1_073_741_824, interactive=True)
 
@@ -203,10 +203,10 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:
         (output := Path(tmp.name)).write_bytes(decrypted_data)
 
-    Console().log(f"[green]+[/green] Decrypted archive to '{output}'")
+    logger.info("Decrypted archive to '{}'", output)
 
     if not keep_original:
         file.unlink()
-        Console().log(f"[red]-[/red] Deleted encrypted archive: '{file}'")
+        logger.debug("Deleted encrypted archive: '{}'", file)
 
     return output

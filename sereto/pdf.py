@@ -10,9 +10,9 @@ from sereto.build import (
     build_target_dependencies,
     build_target_to_format,
 )
-from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError
 from sereto.finding import FindingGroup
+from sereto.logging import logger
 from sereto.models.settings import Render, RenderRecipe
 from sereto.models.version import ProjectVersion
 from sereto.project import Project, project_create_missing
@@ -79,7 +79,7 @@ def generate_pdf_finding_group(
     Returns:
         Path to the generated finding group PDF.
     """
-    Console().log(f"Rendering partial report for finding group {fg.uname!r}")
+    logger.info("Rendering partial report for finding group '{}'", fg.uname)
     recipe = project.settings.render.get_finding_group_recipe(name=renderer)
 
     # Build finding group to intermediate format
@@ -215,7 +215,7 @@ def generate_pdf_report(
     if version is None:
         version = project.config.last_version
 
-    Console().log(f"Rendering report version: '{version}'")
+    logger.info("Rendering report version: '{}'", version)
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
     recipe = project.settings.render.get_report_recipe(name=report_recipe)
@@ -264,7 +264,7 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
     if version is None:
         version = project.config.last_version
 
-    Console().log(f"Rendering SoW version: '{version}'")
+    logger.info("Rendering SoW version: '{}'", version)
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
     recipe = project.settings.render.get_sow_recipe(name=sow_recipe)
@@ -318,7 +318,7 @@ def generate_pdf_target(
     # Select target
     target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
 
-    Console().log(f"Rendering partial report for target '{target.uname}'")
+    logger.info("Rendering partial report for target '{}'", target.uname)
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
     recipe = project.settings.render.get_target_recipe(name=target_recipe)
