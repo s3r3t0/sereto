@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -3460,7 +3460,7 @@ found or 'dir_subtree' is reached.</p>
             <span class="c1"># stop the search before leaving the subtree</span>
             <span class="k">break</span>
 
-    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;not inside project&#39;s (sub)directory&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;Not inside project&#39;s (sub)directory&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3849,7 +3849,7 @@ found or 'dir_subtree' is reached.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If a project with the specified ID already exists in the `projects` directory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating a new project with ID </span><span class="si">{</span><span class="nb">id</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generating a new project with ID &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">new_path</span> <span class="o">:=</span> <span class="n">projects_path</span> <span class="o">/</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;project with specified ID already exists&quot;</span><span class="p">)</span>
@@ -3860,12 +3860,12 @@ found or 'dir_subtree' is reached.</p>
 
     <span class="n">sereto_ver</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;sereto&quot;</span><span class="p">)</span>
 
-    <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Copy project skeleton&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Copying project skeleton&quot;</span><span class="p">)</span>
     <span class="n">copy_skel</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates_path</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">new_path</span><span class="p">)</span>
 
     <span class="n">config_path</span> <span class="o">=</span> <span class="n">new_path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span>
 
-    <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing the config &#39;</span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the config &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
     <span class="n">Config</span><span class="p">(</span>
         <span class="n">sereto_version</span><span class="o">=</span><span class="n">SeretoVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">sereto_ver</span><span class="p">),</span>
         <span class="n">version_configs</span><span class="o">=</span><span class="p">{</span>
@@ -4148,10 +4148,10 @@ Otherwise, all project directories are scanned and their configurations loaded t
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.top", "content.version"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.top", "content.version"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
