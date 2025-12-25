@@ -2,11 +2,11 @@ import re
 import unicodedata
 from pathlib import Path
 from shutil import copy2, copytree
-from typing import overload
+from typing import Annotated, overload
 
 import click
 from humanize import naturalsize
-from pydantic import DirectoryPath, FilePath, validate_call
+from pydantic import DirectoryPath, Field, FilePath, validate_call
 from rich.markup import escape
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -34,15 +34,88 @@ def replace_strings(text: str | list[str], replacements: dict[str, str]) -> str 
         String (or list of strings, depending on the input value) obtained by applying the replacements from the
             `replacements` dictionary.
     """
-    if len(text) == 0 or len(replacements) == 0:
+
+    @validate_call
+    def _clip(value: str, max_chars: Annotated[int, Field(ge=3)] = 120) -> str:
+        return value if len(value) <= max_chars else f"{value[: max_chars - 3]}..."
+
+    @validate_call
+    def _preview_text(
+        value: str | list[str],
+        max_chars: Annotated[int, Field(ge=1)] = 120,
+        max_items: Annotated[int, Field(ge=1)] = 5,
+    ) -> str:
+        if isinstance(value, str):
+            return _clip(value, max_chars=max_chars)
+        items: list[str] = []
+        for idx, item in enumerate(value):
+            if idx >= max_items:
+                items.append(f"... (+{len(value) - max_items} more)")
+                break
+            items.append(_clip(item, max_chars=max_chars))
+        return f"[{', '.join(items)}]"
+
+    @validate_call
+    def _preview_replacements(
+        max_items: Annotated[int, Field(ge=1)] = 5, max_chars: Annotated[int, Field(ge=3)] = 80
+    ) -> str:
+        pairs: list[str] = []
+        for idx, (pattern_key, pattern_value) in enumerate(replacements.items()):
+            if idx >= max_items:
+                pairs.append(f"... (+{len(replacements) - max_items} more)")
+                break
+            pairs.append(f"{_clip(pattern_key, max_chars=max_chars)}->{_clip(pattern_value, max_chars=max_chars)}")
+        return ", ".join(pairs)
+
+    text_len = len(text)
+    replacements_count = len(replacements)
+
+    logger.trace(
+        "replace_strings called (text_type={}, text_len={}, replacements_count={}, text_preview='{}', "
+        "replacements_preview={})",
+        type(text).__name__,
+        text_len,
+        replacements_count,
+        _preview_text(text),
+        _preview_replacements(),
+    )
+
+    if text_len == 0 or replacements_count == 0:
+        logger.debug(
+            "replace_strings returning input unchanged (text_len={}, replacements={})",
+            text_len,
+            replacements_count,
+        )
         return text
 
-    pattern = re.compile("|".join([re.escape(rep) for rep in replacements]))
+    pattern_source = "|".join([re.escape(rep) for rep in replacements])
+    pattern = re.compile(pattern_source)
 
     if isinstance(text, str):
-        return pattern.sub(lambda match: replacements[match.group(0)], text)
-    else:
-        return [pattern.sub(lambda match: replacements[match.group(0)], item) for item in text]
+        result = pattern.sub(lambda match: replacements[match.group(0)], text)
+        logger.trace(
+            "replace_strings applied to string (before_len={}, after_len={}, replacements={}, before_preview='{}', "
+            "after_preview='{}')",
+            len(text),
+            len(result),
+            replacements_count,
+            _preview_text(text),
+            _preview_text(result),
+        )
+        return result
+
+    result_list = [pattern.sub(lambda match: replacements[match.group(0)], item) for item in text]
+    changed = sum(1 for original, updated in zip(text, result_list, strict=True) if original != updated)
+    logger.debug(
+        "replace_strings applied to list[str] (items={}, changed={}, replacements={}, before_preview={}, "
+        "after_preview={})",
+        len(result_list),
+        changed,
+        replacements_count,
+        _preview_text(text),
+        _preview_text(result_list),
+    )
+    return result_list
 
 
 @validate_call

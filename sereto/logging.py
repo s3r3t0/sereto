@@ -29,7 +29,7 @@ class LogLevel(StrEnum):
 
 DEFAULT_LOG_LEVEL = LogLevel.INFO
 LEVEL_STYLES = {
-    LogLevel.TRACE: "dim",
+    LogLevel.TRACE: "bright_black",
     LogLevel.DEBUG: "cyan",
     LogLevel.INFO: "white",
     LogLevel.SUCCESS: "green",
