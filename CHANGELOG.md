@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Add loguru as a logging library.
-- Update textual requirement from ~=6.8.0 to ~=6.11.0
+- Update textual requirement from ~=6.8.0 to ~=7.0.0
 - Update humanize requirement from ~=4.14.0 to ~=4.15.0
 - Update pypdf requirement from ~=6.4.0 to ~=6.5.0
 
