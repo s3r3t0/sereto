@@ -71,3 +71,24 @@ class TargetSastModel(TargetModel):
     code_origin_name: str | None = None
     code_integrity: dict[str, str] = {}
     source_code_analyzer_files: list[str] = []
+
+
+class TargetMobileModel(TargetModel):
+    """Model representing the details of the 'mobile' category."""
+
+    class MobilePlatform(SeretoBaseModel):
+        file_integrity: dict[str, str] = {}
+
+    class AndroidMobilePlatform(MobilePlatform):
+        package_name: str | None = None
+        version_name: str | None = None
+        version_code: str | None = None
+
+    class iOSMobilePlatform(MobilePlatform):
+        bundle_id: str | None = None
+        short_version_string: str | None = None
+        version: str | None = None
+
+    clickpath: str | None = None
+    android: AndroidMobilePlatform | None = AndroidMobilePlatform()
+    ios: iOSMobilePlatform | None = iOSMobilePlatform()
