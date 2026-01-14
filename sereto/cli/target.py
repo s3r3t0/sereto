@@ -6,7 +6,7 @@ from prompt_toolkit.shortcuts import radiolist_dialog
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
-from sereto.models.target import TargetDastModel, TargetModel, TargetSastModel, TargetMobileModel
+from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 
 
 def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
