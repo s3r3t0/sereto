@@ -6,7 +6,7 @@ from prompt_toolkit.shortcuts import radiolist_dialog
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
-from sereto.models.target import TargetDastModel, TargetModel, TargetSastModel
+from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 
 
 def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
@@ -31,6 +31,8 @@ def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
             target: TargetModel = TargetDastModel(category=category, name=name)
         case "sast":
             target = TargetSastModel(category=category, name=name)
+        case "mobile":
+            target = TargetMobileModel(category=category, name=name)
         case _:
             target = TargetModel(category=category, name=name)
 
