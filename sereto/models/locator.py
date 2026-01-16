@@ -93,9 +93,27 @@ class FileLocatorModel(BaseLocatorModel):
     value: str  # Path to the file
 
 
+class PlatformLocatorModel(BaseLocatorModel):
+    """Model representing a platform locator.
+
+    Attributes:
+        type: The discriminator for the locator type, which is always "platform".
+        value: The platform name.
+        description: Optional description of the platform locator.
+    """
+
+    type: Literal["platform"] = "platform"
+    value: str
+
+
 # For automatic subclass selection during validation
 LocatorModel = Annotated[
-    UrlLocatorModel | HostnameLocatorModel | DomainLocatorModel | IpLocatorModel | FileLocatorModel,
+    UrlLocatorModel
+    | HostnameLocatorModel
+    | DomainLocatorModel
+    | IpLocatorModel
+    | FileLocatorModel
+    | PlatformLocatorModel,
     Discriminator("type"),
 ]
 
