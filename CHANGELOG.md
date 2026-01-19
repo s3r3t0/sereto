@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Allow `cd` to a project's directory name with a fallback to searching for the project ID (for all versions).
+- Add target for mobile category.
 
 ### Changed
 
@@ -18,9 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Add loguru as a logging library.
-- Update textual requirement from ~=6.8.0 to ~=7.2.0
+- Update textual requirement from ~=6.8.0 to ~=7.3.0
 - Update humanize requirement from ~=4.14.0 to ~=4.15.0
 - Update pypdf requirement from ~=6.4.0 to ~=6.6.0
+- Update tomlkit requirement from ~=0.13.3 to ~=0.14.0
 
 ## [0.5.3] - 2025-12-10
 

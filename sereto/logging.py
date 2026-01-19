@@ -70,7 +70,7 @@ def setup_logging(level: LogLevel | None = None) -> None:
         level_style = LEVEL_STYLES.get(log_level, "white")
         rendered_message = escape(record["message"]) if not markup else record["message"]
         decorated = f"[{level_style}]{rendered_message}[/]"
-        _console.log(decorated, markup=True)
+        _console.log(decorated, markup=True, _stack_offset=6)  # TODO: cleaner solution for stack offset?
 
         if (exc := record["exception"]) is not None:
             exc_type, exc_value, exc_traceback = exc.type, exc.value, exc.traceback
