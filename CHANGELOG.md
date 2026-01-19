@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- uv.lock: Bump aiohttp from 3.13.0 to 3.13.3
+- uv.lock: Bump urllib3 from 2.5.0 to 2.6.3
+- uv.lock: Bump fonttools from 4.60.1 to 4.60.2
+
 ## [0.5.4] - 2026-01-19
 
 ### Added
