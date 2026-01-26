@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - uv.lock: Bump urllib3 from 2.5.0 to 2.6.3
 - uv.lock: Bump fonttools from 4.60.1 to 4.60.2
 
+### Dependencies
+
+- Update rich requirement from ~=14.2.0 to ~=14.3.1
+- Update textual requirement from ~=7.3.0 to ~=7.4.0
+
 ## [0.5.4] - 2026-01-19
 
 ### Added
