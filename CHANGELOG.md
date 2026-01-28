@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-01-28
+
+Security release (update dependencies).
+
 ### Security
 
 - uv.lock: Bump aiohttp from 3.13.0 to 3.13.3
@@ -679,7 +683,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.4...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.5...HEAD
+[0.5.5]: https://github.com/s3r3t0/sereto/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/s3r3t0/sereto/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/s3r3t0/sereto/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/s3r3t0/sereto/compare/v0.5.1...v0.5.2
