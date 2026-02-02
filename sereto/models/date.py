@@ -1,79 +1,98 @@
-from datetime import date, datetime, timedelta
+from __future__ import annotations
+
+from collections.abc import Callable
+from datetime import date, datetime
 from enum import StrEnum
-from functools import total_ordering
 from typing import Any
 
-from pydantic import FieldSerializationInfo, RootModel, field_serializer, field_validator, model_validator
+from pydantic import GetJsonSchemaHandler, model_validator
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import core_schema
 
-from sereto.exceptions import SeretoValueError
 from sereto.models.base import SeretoBaseModel
 
+# Date format used for parsing and serialization: "01-Jan-2024"
+SERETO_DATE_FORMAT = r"%d-%b-%Y"
 
-@total_ordering
-class SeretoDate(RootModel[date]):
-    """Date representation for Pydantic with format `%d-%b-%Y`.
 
-    The `%d-%b-%Y` format string specifies the format of the date string as follows:
+class SeretoDate(date):
+    """Date subclass with format `%d-%b-%Y` (e.g., "01-Jan-2024").
 
+    This is a `datetime.date` subclass with:
+     - Custom `__new__` that accepts strings in `%d-%b-%Y` format
+     - Custom `__str__` that formats as `%d-%b-%Y`
+     - All standard date operations (comparison, arithmetic, hashing) work natively
+
+    The format string specifies:
      - `%d`: Day of the month as a zero-padded decimal number (e.g. 01, 02, ..., 31).
      - `%b`: Month abbreviation in the current locale's abbreviated name (e.g. Jan, Feb, ..., Dec).
      - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ...).
     """
 
-    root: date
-
-    @field_validator("root", mode="before")
-    @classmethod
-    def convert_date(cls, v: Any) -> date:
-        match v:
-            case SeretoDate():
-                return v.root
-            case str():
-                return datetime.strptime(v, r"%d-%b-%Y").date()
-            case _:
-                raise ValueError("invalid type, use string or date")
-
-    @classmethod
-    def from_str(cls, v: str, fmt: str = r"%d-%b-%Y") -> "SeretoDate":
-        """Create a SeretoDate instance from a string.
+    def __new__(cls, value: Any) -> SeretoDate:
+        """Create a SeretoDate from a string or date.
 
         Args:
-            v: String to convert.
-            fmt: Format of the input string.
+            value: Either a string in `%d-%b-%Y` format, a date object, or a SeretoDate.
 
         Returns:
-            The resulting SeretoDate instance.
-        """
-        date = datetime.strptime(v, fmt).date()
-        return cls.model_construct(root=date)
+            A new SeretoDate instance.
 
-    @field_serializer("root")
-    def serialize_root(self, root: date, info: FieldSerializationInfo) -> str:
-        return self.__str__()
+        Raises:
+            ValueError: If the string format is invalid or type is unsupported.
+        """
+        match value:
+            case SeretoDate():
+                return value
+            case date():
+                return super().__new__(cls, value.year, value.month, value.day)
+            case str():
+                d = datetime.strptime(value, SERETO_DATE_FORMAT).date()
+                return super().__new__(cls, d.year, d.month, d.day)
+            case _:
+                raise ValueError(f"invalid type for SeretoDate: {type(value).__name__}")
 
     def __str__(self) -> str:
-        return self.root.strftime(r"%d-%b-%Y")
+        return self.strftime(SERETO_DATE_FORMAT)
 
-    def __lt__(self, other: Any) -> bool:
-        if not isinstance(other, SeretoDate):
-            raise SeretoValueError("comparing SeretoDate with unsupported type")
-        return self.root < other.root
+    def __repr__(self) -> str:
+        return f"SeretoDate('{self!s}')"
 
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, SeretoDate):
-            raise SeretoValueError("comparing SeretoDate with unsupported type")
-        return self.root == other.root
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls,
+        _source_type: Any,
+        _handler: Callable[[Any], core_schema.CoreSchema],
+    ) -> core_schema.CoreSchema:
+        def validate(value: Any) -> SeretoDate:
+            if not isinstance(value, str | date):
+                raise ValueError(f"invalid type for SeretoDate: {type(value)}")
+            return cls(value)
 
-    def __add__(self, other: Any) -> "SeretoDate":
-        if not isinstance(other, timedelta):
-            raise SeretoValueError("adding SeretoDate with unsupported type")
-        return SeretoDate.model_construct(root=self.root + other)
+        def serialize(value: SeretoDate) -> str:
+            return str(value)
 
-    def __hash__(self) -> int:
-        return hash(self.root)
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.chain_schema(
+                [
+                    core_schema.str_schema(),
+                    core_schema.no_info_plain_validator_function(validate),
+                ]
+            ),
+            python_schema=core_schema.union_schema(
+                [
+                    core_schema.is_instance_schema(cls),
+                    core_schema.no_info_plain_validator_function(validate),
+                ]
+            ),
+            serialization=core_schema.plain_serializer_function_ser_schema(serialize),
+        )
 
-    def raw(self) -> date:
-        return self.root
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, _core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        return handler(core_schema.str_schema())
 
 
 class DateType(StrEnum):
@@ -103,7 +122,7 @@ class DateRange(SeretoBaseModel):
     end: SeretoDate
 
     @model_validator(mode="after")
-    def chronological_order(self) -> "DateRange":
+    def chronological_order(self) -> DateRange:
         if self.start >= self.end:
             raise ValueError("DateRange type forbids start after or equal to end")
         return self
@@ -124,7 +143,7 @@ class Date(SeretoBaseModel):
     date: SeretoDate | DateRange
 
     @model_validator(mode="after")
-    def range_allowed(self) -> "Date":
+    def range_allowed(self) -> Date:
         if isinstance(self.date, DateRange) and self.type not in TYPES_WITH_ALLOWED_RANGE:
             raise ValueError(f"type {self.type} does not have allowed date range, only single date")
         return self

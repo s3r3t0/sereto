@@ -242,9 +242,9 @@ class VersionConfig:
                 pass
 
         if isinstance(start, str):
-            start = SeretoDate.from_str(start)
+            start = SeretoDate(start)
         if isinstance(end, str):
-            end = SeretoDate.from_str(end)
+            end = SeretoDate(end)
 
         filtered_dates = [
             d
@@ -252,13 +252,13 @@ class VersionConfig:
             if (type is None or d.type in type)
             and (
                 start is None
-                or (isinstance(d.date, SeretoDate) and d.date >= start)
                 or (isinstance(d.date, DateRange) and d.date.start >= start)
+                or (not isinstance(d.date, DateRange) and d.date >= start)
             )
             and (
                 end is None
-                or (isinstance(d.date, SeretoDate) and d.date <= end)
                 or (isinstance(d.date, DateRange) and d.date.end <= end)
+                or (not isinstance(d.date, DateRange) and d.date <= end)
             )
         ]
 

@@ -6,8 +6,8 @@ from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateTy
 class TestSeretoDate:
     @pytest.mark.parametrize("input", ["01-Jan-2024", "29-Feb-2024", "31-Dec-2024"])
     def test_construct_valid(self, input):
-        date = SeretoDate(input)
-        assert str(date) == input
+        d = SeretoDate(input)
+        assert str(d) == input
 
     @pytest.mark.parametrize("input", ["2024-01-01", "20240101", "31-Apr-2024", "29-Feb-2025", 1709840746, "", None])
     def test_construct_invalid(self, input):

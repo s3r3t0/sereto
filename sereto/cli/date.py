@@ -19,7 +19,7 @@ def _prompt_date(message: str, default: SeretoDate | None = None) -> SeretoDate 
     user_input = prompt(message) if default is None else prompt(message, default=str(default))
 
     try:
-        return SeretoDate.from_str(user_input)
+        return SeretoDate(user_input)
     except (ValueError, TypeError):
         return None
 
