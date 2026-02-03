@@ -29,11 +29,13 @@ class SeretoDate(date):
      - `%Y`: Year with century as a decimal number (e.g. 2021, 2022, ...).
     """
 
-    def __new__(cls, value: Any) -> SeretoDate:
-        """Create a SeretoDate from a string or date.
+    def __new__(cls, value: Any = None, month: int | None = None, day: int | None = None) -> SeretoDate:
+        """Create a SeretoDate from a string, date, or year/month/day components.
 
         Args:
-            value: Either a string in `%d-%b-%Y` format, a date object, or a SeretoDate.
+            value: Either a string in `%d-%b-%Y` format, a date object, a SeretoDate, or year (int).
+            month: Month (1-12), required when value is year.
+            day: Day (1-31), required when value is year.
 
         Returns:
             A new SeretoDate instance.
@@ -41,6 +43,10 @@ class SeretoDate(date):
         Raises:
             ValueError: If the string format is invalid or type is unsupported.
         """
+        # Handle (year, month, day) calling convention used by date.today(), date.fromtimestamp(), etc.
+        if isinstance(value, int) and month is not None and day is not None:
+            return super().__new__(cls, value, month, day)
+
         match value:
             case SeretoDate():
                 return value
