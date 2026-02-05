@@ -2436,6 +2436,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.sereto_types.TypeRisk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeRisk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sereto.sereto_types.TypeRiskOptional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeRiskOptional
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.sereto_types.TypeSalt16B" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2767,6 +2789,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.sereto_types.TypeRisk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeRisk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sereto.sereto_types.TypeRiskOptional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeRiskOptional
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.sereto_types.TypeSalt16B" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2897,7 +2941,7 @@
 
 
 <h3 id="sereto.sereto_types.TypeNonce12B" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">TypeNonce12B</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SecretBytes</span><span class="p">,</span> <span class="n">Len</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">Strict</span><span class="p">(),</span> <span class="n">AfterValidator</span><span class="p">(</span><span class="n">zero_bytes</span><span class="p">)]</span></code>
+            <code class="highlight language-python"><span class="n">TypeNonce12B</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SecretBytes</span><span class="p">,</span> <span class="n">Len</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">Strict</span><span class="p">(),</span> <span class="n">AfterValidator</span><span class="p">(</span><span class="n">_zero_bytes</span><span class="p">)]</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
@@ -3001,8 +3045,54 @@
 
 
 
+<h3 id="sereto.sereto_types.TypeRisk" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">TypeRisk</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Risk</span><span class="p">,</span> <span class="n">BeforeValidator</span><span class="p">(</span><span class="n">_coerce_risk</span><span class="p">)]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#sereto.sereto_types.TypeRisk" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Type for Risk enum with automatic coercion from string.</p>
+<p>Accepts either a Risk enum value or a string that can be converted to Risk.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="sereto.sereto_types.TypeRiskOptional" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">TypeRiskOptional</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Risk</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BeforeValidator</span><span class="p">(</span><span class="n">_coerce_risk_optional</span><span class="p">)]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#sereto.sereto_types.TypeRiskOptional" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Type for optional Risk enum with automatic coercion from string.</p>
+<p>Accepts either a Risk enum value, a string that can be converted to Risk, or None.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="sereto.sereto_types.TypeSalt16B" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">TypeSalt16B</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SecretBytes</span><span class="p">,</span> <span class="n">Len</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">Strict</span><span class="p">(),</span> <span class="n">AfterValidator</span><span class="p">(</span><span class="n">zero_bytes</span><span class="p">)]</span></code>
+            <code class="highlight language-python"><span class="n">TypeSalt16B</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SecretBytes</span><span class="p">,</span> <span class="n">Len</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">Strict</span><span class="p">(),</span> <span class="n">AfterValidator</span><span class="p">(</span><span class="n">_zero_bytes</span><span class="p">)]</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
