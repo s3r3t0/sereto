@@ -61,7 +61,7 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
     def load_from(cls, path: Path) -> Self:
         """Load FindingTemplateFrontmatterModel from a file."""
         try:
-            metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
+            metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"), encoding="utf-8")
             return cls.model_validate(metadata)
         except ValidationError as ex:
             raise SeretoValueError(f"invalid template frontmatter in '{path}'") from ex
@@ -124,7 +124,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     def load_from(cls, path: Path) -> Self:
         """Load FindingFrontmatterModel from a file."""
         try:
-            metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
+            metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"), encoding="utf-8")
             return cls.model_validate(metadata)
         except ValidationError as ex:
             raise SeretoValueError(f"invalid finding frontmatter in '{path}'") from ex

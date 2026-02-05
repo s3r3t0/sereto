@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changes
+
+- Consistently specify encoding (utf-8) when reading/writing files.
+
 ### Dependencies
 
 - Update textual requirement from ~=7.4.0 to ~=7.5.0

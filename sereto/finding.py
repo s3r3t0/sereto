@@ -448,7 +448,7 @@ class Findings:
         # Load template metadata and content
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
         template_name = template_path.name.removesuffix(".md.j2")
-        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"))
+        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"), encoding="utf-8")
 
         # Determine sub-finding path
         sub_finding_path = self.get_path(category=category, name=template_name)
