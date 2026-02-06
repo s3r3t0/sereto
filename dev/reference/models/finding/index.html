@@ -3028,6 +3028,12 @@
     </table>
 
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>This model allows extra fields (via <code>extra="allow"</code>) to support plugin-specific data storage.
+Plugins should use namespaced keys (e.g., <code>yourplugin_var</code>) to avoid collisions with future core fields.</p>
+</details>
+
 
 
 
@@ -3057,7 +3063,11 @@
 <span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
-<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingGroupModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingGroupModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;allow&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a single finding group from `findings.toml`.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3065,6 +3075,10 @@
 <span class="sd">        findings: The list of sub-findings in the format of their unique name to include in the report.</span>
 <span class="sd">        locators: A list of locators used to find the finding group.</span>
 <span class="sd">        show_locator_types: A list of locator types to return from the FindingGroup.locators() property.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This model allows extra fields (via `extra=&quot;allow&quot;`) to support plugin-specific data storage.</span>
+<span class="sd">        Plugins should use namespaced keys (e.g., `yourplugin_var`) to avoid collisions with future core fields.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">risk</span><span class="p">:</span> <span class="n">TypeRiskOptional</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3115,13 +3129,13 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/models/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
 <span class="normal">130</span>
-<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
 <span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">unique_finding_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">findings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that all finding names are unique.&quot;&quot;&quot;</span>
@@ -3376,11 +3390,7 @@ the name of a finding group and the value is a FindingGroupModel.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/models/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
@@ -3409,7 +3419,11 @@ the name of a finding group and the value is a FindingGroupModel.</p>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
-<span class="normal">167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingsConfigModel</span><span class="p">(</span><span class="n">RootModel</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FindingGroupModel</span><span class="p">]]):</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingsConfigModel</span><span class="p">(</span><span class="n">RootModel</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FindingGroupModel</span><span class="p">]]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing the included findings configuration.</span>
 
 <span class="sd">    The data itself is expected to be a dict where each key is</span>
