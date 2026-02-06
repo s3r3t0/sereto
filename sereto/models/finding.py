@@ -107,7 +107,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             raise SeretoValueError(f"invalid finding frontmatter in '{path}'") from ex
 
 
-class FindingGroupModel(SeretoBaseModel):
+class FindingGroupModel(SeretoBaseModel, extra="allow"):
     """Representation of a single finding group from `findings.toml`.
 
     Attributes:
@@ -115,6 +115,10 @@ class FindingGroupModel(SeretoBaseModel):
         findings: The list of sub-findings in the format of their unique name to include in the report.
         locators: A list of locators used to find the finding group.
         show_locator_types: A list of locator types to return from the FindingGroup.locators() property.
+
+    Note:
+        This model allows extra fields (via `extra="allow"`) to support plugin-specific data storage.
+        Plugins should use namespaced keys (e.g., `yourplugin_var`) to avoid collisions with future core fields.
     """
 
     risk: TypeRiskOptional = None

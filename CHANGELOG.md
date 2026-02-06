@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 
 - Consistently specify encoding (utf-8) when reading/writing files.
+- Allow extras for FindingGroup (defined in `findings.toml`).
 
 ### Dependencies
 
