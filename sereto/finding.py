@@ -438,6 +438,7 @@ class Findings:
         risk: Risk | None = None,
         variables: dict[str, Any] | None = None,
         overwrite: bool = False,
+        group_uname: str | None = None,
     ) -> None:
         """Add a sub-finding from a template, creating a new finding group.
 
@@ -477,9 +478,10 @@ class Findings:
                     )
 
         # Prepare sub-finding frontmatter
+        dynamic_risk = risk or template_metadata.risk
         sub_finding_metadata = SubFindingFrontmatterModel(
             name=template_metadata.name,
-            risk=template_metadata.risk,
+            risk=dynamic_risk,
             category=category,
             variables=variables,
             template_path=str(template_path.relative_to(templates)),
@@ -489,12 +491,36 @@ class Findings:
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
 
         # If overwriting, nothing else to do
-        if overwrite:
+        if overwrite and group_name is None:
             return
 
         # Load the created sub-finding
         sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
 
+        if group_uname is not None:
+            doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
+            if group_uname not in doc:
+                raise SeretoValueError(f"finding group {group_uname!r} not found in {self.config_file}")
+
+            table = doc[group_uname]
+            if "findings" in table:
+                arr = table["findings"]
+                current = [str(x) for x in arr]
+                if sub_finding.uname not in current:
+                    arr.append(sub_finding.uname)
+            else:
+                arr = tomlkit.array()
+                arr.append(sub_finding.uname)
+                table.add("findings", arr)
+
+            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
+
+            # Update in-memory model if present
+            for g in self.groups:
+                if g.name == group_uname:
+                    g.sub_findings.append(sub_finding)
+                    break
+            return
         # Determine group name
         group_name = name or sub_finding.name
         if suffix:

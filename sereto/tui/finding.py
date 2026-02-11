@@ -34,7 +34,7 @@ from textual.widgets.option_list import Option
 from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.extract import extract_block_from_jinja, extract_text_from_jinja
-from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
+from sereto.models.finding import FindingsConfigModel, FindingTemplateFrontmatterModel, VarsMetadataModel
 from sereto.parsing import parse_query
 from sereto.project import Project
 from sereto.target import Target
@@ -121,7 +121,18 @@ class AddFindingScreen(ModalScreen[None]):
                 allow_blank=False,
             )
             yield self.select_target
-
+            # Finding
+            initial_groups: list[str] = []
+            if all_targets:
+                try:
+                    initial_groups = self._list_groups_for_target(all_targets[0])
+                except Exception:
+                    initial_groups = []
+            self.select_group = SelectWithLabel[str](
+                options=[(g, g) for g in initial_groups],
+                label="Group",
+            )
+            yield self.select_group
             # Existing finding warning + overwrite switch
             self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
             self.overwrite_warning = Horizontal(
@@ -191,7 +202,27 @@ class AddFindingScreen(ModalScreen[None]):
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select is self.select_target.query_one(Select):
+            group_select: Select[str] = self.select_group.query_one(Select)
+            try:
+                target = self._retrieve_target()
+                groups = self._list_groups_for_target(target)
+                group_select.set_options([(g, g) for g in groups])
+            except Exception:
+                group_select.set_options([])
             self.update_overwrite_warning()
+
+    def _list_groups_for_target(self, target: Target) -> list[str]:
+        """Return group names from the target's findings.toml."""
+        target_dir: Path
+        if hasattr(target, "findings") and hasattr(target.findings, "target_dir"):
+            target_dir = Path(target.findings.target_dir)
+        elif hasattr(target, "path"):
+            target_dir = Path(target.path)
+        else:
+            return []
+
+        config = FindingsConfigModel.load_from(target_dir / "findings.toml")
+        return list(config.root.keys())
 
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
@@ -310,6 +341,11 @@ class AddFindingScreen(ModalScreen[None]):
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
         target = self._retrieve_target()
+        # - Finding Group
+        group_select: Select[str] = self.select_group.query_one(Select)
+        selected_group = (
+            group_select.value if not isinstance(group_select.value, NoSelection) else None
+        )
 
         # - variables
         try:
@@ -327,6 +363,7 @@ class AddFindingScreen(ModalScreen[None]):
             risk=risk,
             variables=variables,
             overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
+            group_uname=selected_group,
         )
 
         # Navigate back, focus on the search input field
