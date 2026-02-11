@@ -491,7 +491,7 @@ class Findings:
         sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
 
         # If overwriting, nothing else to do
-        if overwrite and group_name is None:
+        if overwrite:
             return
 
         # Load the created sub-finding
