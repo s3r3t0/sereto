@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump cryptography from 46.0.2 to 46.0.5
 - Update pypdf requirement from ~=6.6.0 to ~=6.7.0
 
+### Security
+
+- uv.lock: Bump pillow from 11.3.0 to 12.1.1
+
 ## [0.5.5] - 2026-01-28
 
 Security release (update dependencies).
