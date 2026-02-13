@@ -92,7 +92,7 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
     ctx = click.get_current_context()
     config = ctx.meta.get("log_config")
 
-    if config.level!=LogLevel.INFO:
+    if config and config.level != LogLevel.INFO:
         final_prompt += [("class:debug", f"{config.level} ")]
 
     if project_id is not None:
@@ -152,7 +152,7 @@ def repl_exit() -> None:
     "log_level",
     type=click.Choice([level.value for level in LogLevel], case_sensitive=False)
 )
-def repl_log(log_level: LogLevel):
+def repl_log(log_level: LogLevel) -> None:
     """Set the logging level for current REPL session."""
     ctx = click.get_current_context()
     ctx.meta["log_config"] = setup_logging(log_level)

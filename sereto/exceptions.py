@@ -56,10 +56,10 @@ def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
             ctx = click.get_current_context()
             config = ctx.meta.get("log_config")
 
-            if config.debug_mode:
+            if config and config.debug_mode:
                 logger.opt(exception=e).exception("Debug traceback")
             else:
-                logger.info("Enable [blue]DEBUG=1[/] log level for more details.", markup=True)
+                logger.info("Enable [blue]DEBUG[/] log level for more details.", markup=True)
             sys.exit(1)
 
     return outer_function
