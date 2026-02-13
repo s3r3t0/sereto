@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-02-13
+
 ### Changes
 
 - Consistently specify encoding (utf-8) when reading/writing files.
@@ -698,7 +700,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.5...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.6...HEAD
+[0.5.6]: https://github.com/s3r3t0/sereto/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/s3r3t0/sereto/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/s3r3t0/sereto/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/s3r3t0/sereto/compare/v0.5.2...v0.5.3
