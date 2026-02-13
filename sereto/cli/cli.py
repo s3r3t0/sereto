@@ -2,7 +2,6 @@ import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
-import os
 import shutil
 import sys
 from contextlib import suppress
@@ -30,7 +29,7 @@ from sereto.crypto import decrypt_file
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.keyring import get_password, set_password
-from sereto.logging import LogLevel, logger, setup_logging
+from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
@@ -60,18 +59,19 @@ from sereto.utils import copy_skel, replace_strings
 @click.option(
     "--log-level",
     "log_level",
-    default=os.getenv("SERETO_LOG_LEVEL", LogLevel.INFO),
     type=click.Choice([level.value for level in LogLevel], case_sensitive=False),
     show_default=True,
     help="Set log verbosity for terminal output.",
 )
 @click.pass_context
-def cli(ctx: click.Context, log_level: LogLevel) -> None:
+def cli(ctx: click.Context, log_level: LogLevel | None) -> None:
     """Security Reporting Tool.
 
     This tool provides various commands for managing and generating security reports.
     """
-    setup_logging(log_level)
+    if log_level is not None or not is_logging_configured():
+        setup_logging(log_level)
+
     ctx.obj = Project()
 
 
@@ -970,6 +970,7 @@ def load_plugins() -> None:
 
 def entry_point() -> None:
     setup_logging()
+
     with suppress(SeretoException):
         load_plugins()
 

@@ -21,7 +21,7 @@ Python utility for penetration testers that generates professional security asse
 
 ## Logging
 
-Logging uses the Loguru library and is configured using `sereto.logging.configure_logging()`.
+Logging uses the Loguru library and is configured using `sereto.logging.setup_logging()`.
 
 Adding a log entry: `logger.<level>("message")`. Since the output is configured with a Rich handler, log messages can contain Rich markup for styling. In that case, use `logger.<level>("message {}", escape(var), markup=True)`, where `escape` is imported from `rich.markup`. Only dynamic content needs to be escaped.
 
