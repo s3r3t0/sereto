@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-02-13
+
+### Changes
+
+- Consistently specify encoding (utf-8) when reading/writing files.
+- Allow extras for FindingGroup (defined in `findings.toml`).
+
 ### Dependencies
 
 - Update textual requirement from ~=7.4.0 to ~=7.5.0
+- Bump cryptography from 46.0.2 to 46.0.5
+- Update pypdf requirement from ~=6.6.0 to ~=6.7.0
+
+### Security
+
+- uv.lock: Bump pillow from 11.3.0 to 12.1.1
 
 ## [0.5.5] - 2026-01-28
 
@@ -687,7 +700,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.5...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.6...HEAD
+[0.5.6]: https://github.com/s3r3t0/sereto/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/s3r3t0/sereto/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/s3r3t0/sereto/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/s3r3t0/sereto/compare/v0.5.2...v0.5.3

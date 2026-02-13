@@ -7,12 +7,12 @@ import frontmatter  # type: ignore[import-untyped]
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
 from tomlkit import dumps as toml_dumps
 
-from sereto.enums import FileFormat, Risk
+from sereto.enums import FileFormat
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.date import SeretoDate
 from sereto.models.locator import LocatorModel, get_locator_types
-from sereto.sereto_types import TypeCategoryName
+from sereto.sereto_types import TypeCategoryName, TypeRisk, TypeRiskOptional
 
 
 class VarsMetadataModel(SeretoBaseModel):
@@ -41,27 +41,16 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
     """
 
     name: str
-    risk: Risk
+    risk: TypeRisk
     keywords: list[str] = []
     variables: list[VarsMetadataModel] = []
-
-    @field_validator("risk", mode="before")
-    @classmethod
-    def convert_risk_type(cls, risk: Any) -> Risk:
-        match risk:
-            case Risk():
-                return risk
-            case str():
-                return Risk(risk)
-            case _:
-                raise ValueError("unsupported type for Risk")
 
     @classmethod
     @validate_call
     def load_from(cls, path: Path) -> Self:
         """Load FindingTemplateFrontmatterModel from a file."""
         try:
-            metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
+            metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"), encoding="utf-8")
             return cls.model_validate(metadata)
         except ValidationError as ex:
             raise SeretoValueError(f"invalid template frontmatter in '{path}'") from ex
@@ -82,25 +71,13 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     """
 
     name: str
-    risk: Risk
+    risk: TypeRisk
     category: TypeCategoryName
     variables: dict[str, Any] = {}
     template_path: str | None = None
     locators: list[LocatorModel] = Field(default_factory=list)
     format: FileFormat = Field(default=FileFormat.md)
     reported_on: SeretoDate | None = None
-
-    @field_validator("risk", mode="before")
-    @classmethod
-    def convert_risk_type(cls, risk: Any) -> Risk:
-        """Convert risk to Risk enum."""
-        match risk:
-            case Risk():
-                return risk
-            case str():
-                return Risk(risk)
-            case _:
-                raise ValueError("unsupported type for Risk")
 
     def dumps_toml(self) -> str:
         """Dump the model to a TOML-formatted string using a TOML library."""
@@ -124,13 +101,13 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     def load_from(cls, path: Path) -> Self:
         """Load FindingFrontmatterModel from a file."""
         try:
-            metadata, _ = frontmatter.parse(path.read_text(), encoding="utf-8")
+            metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"), encoding="utf-8")
             return cls.model_validate(metadata)
         except ValidationError as ex:
             raise SeretoValueError(f"invalid finding frontmatter in '{path}'") from ex
 
 
-class FindingGroupModel(SeretoBaseModel):
+class FindingGroupModel(SeretoBaseModel, extra="allow"):
     """Representation of a single finding group from `findings.toml`.
 
     Attributes:
@@ -138,24 +115,16 @@ class FindingGroupModel(SeretoBaseModel):
         findings: The list of sub-findings in the format of their unique name to include in the report.
         locators: A list of locators used to find the finding group.
         show_locator_types: A list of locator types to return from the FindingGroup.locators() property.
+
+    Note:
+        This model allows extra fields (via `extra="allow"`) to support plugin-specific data storage.
+        Plugins should use namespaced keys (e.g., `yourplugin_var`) to avoid collisions with future core fields.
     """
 
-    risk: Risk | None = None
+    risk: TypeRiskOptional = None
     findings: list[str] = Field(min_length=1)
     locators: list[LocatorModel] = Field(default_factory=list)
     show_locator_types: list[str] = Field(default_factory=get_locator_types)
-
-    @field_validator("risk", mode="before")
-    @classmethod
-    def load_risk(cls, risk: Any) -> Risk | None:
-        """Convert risk to correct type."""
-        match risk:
-            case Risk() | None:
-                return risk
-            case str():
-                return Risk(risk)
-            case _:
-                raise ValueError("invalid risk type")
 
     @field_validator("findings", mode="after")
     @classmethod

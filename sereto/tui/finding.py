@@ -398,7 +398,7 @@ class SearchWidget(Widget):
         for category in app.categories:
             findings_path = app.project.settings.templates_path / "categories" / category.lower() / "findings"
             for finding in findings_path.glob("*.md.j2"):
-                file_text = finding.read_text()
+                file_text = finding.read_text(encoding="utf-8")
                 metadata, content = frontmatter.parse(file_text)
                 # Extract clean text from the template file
                 env = Environment()
@@ -573,7 +573,7 @@ class SearchWidget(Widget):
         option = event.option
         if not isinstance(option, FindingOption):
             return
-        file = option.finding.path.read_text()
+        file = option.finding.path.read_text(encoding="utf-8")
         final_code = self.assemble_template(file)
 
         self.app.push_screen(
@@ -590,7 +590,7 @@ class SearchWidget(Widget):
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
         if not isinstance(option, FindingOption):
             return
-        file = option.finding.path.read_text()
+        file = option.finding.path.read_text(encoding="utf-8")
         final_code = self.assemble_template(file)
         self.app.push_screen(
             FindingPreviewScreen(

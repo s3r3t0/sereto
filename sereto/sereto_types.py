@@ -1,8 +1,10 @@
-from typing import Annotated
+from typing import Annotated, Any
 
 from annotated_types import Len
 from pydantic import SecretBytes, SecretStr, Strict, StringConstraints
-from pydantic.functional_validators import AfterValidator
+from pydantic.functional_validators import AfterValidator, BeforeValidator
+
+from sereto.enums import Risk
 
 __all__ = [
     "TypeProjectId",
@@ -11,6 +13,8 @@ __all__ = [
     "TypePassword",
     "TypeNonce12B",
     "TypeSalt16B",
+    "TypeRisk",
+    "TypeRiskOptional",
 ]
 
 
@@ -68,13 +72,13 @@ The value should meet the following requirements:
 """
 
 
-def zero_bytes(value: SecretBytes) -> SecretBytes:
+def _zero_bytes(value: SecretBytes) -> SecretBytes:
     if all(byte == 0 for byte in value.get_secret_value()):
         raise ValueError("salt contains only zero bytes")
     return value
 
 
-TypeNonce12B = Annotated[SecretBytes, Len(12, 12), Strict(), AfterValidator(zero_bytes)]
+TypeNonce12B = Annotated[SecretBytes, Len(12, 12), Strict(), AfterValidator(_zero_bytes)]
 """Type for a 12 byte long nonce.
 
 Using SecretBytes prevents the nonce from being printed in logs or tracebacks.
@@ -83,10 +87,45 @@ The value must contain at least one non-zero byte. This check is in place to pre
 """
 
 
-TypeSalt16B = Annotated[SecretBytes, Len(16, 16), Strict(), AfterValidator(zero_bytes)]
+TypeSalt16B = Annotated[SecretBytes, Len(16, 16), Strict(), AfterValidator(_zero_bytes)]
 """Type for a 16 byte long salt.
 
 Using SecretBytes prevents the salt from being printed in logs or tracebacks.
 
 The value must contain at least one non-zero byte. This check is in place to prevent unintentional errors.
+"""
+
+
+def _coerce_risk(value: Any) -> Risk:
+    """Convert string to Risk enum."""
+    match value:
+        case Risk():
+            return value
+        case str():
+            return Risk(value)
+        case _:
+            raise ValueError("unsupported type for Risk")
+
+
+def _coerce_risk_optional(value: Any) -> Risk | None:
+    """Convert string to Risk enum, allowing None."""
+    match value:
+        case Risk() | None:
+            return value
+        case str():
+            return Risk(value)
+        case _:
+            raise ValueError("unsupported type for Risk")
+
+
+TypeRisk = Annotated[Risk, BeforeValidator(_coerce_risk)]
+"""Type for Risk enum with automatic coercion from string.
+
+Accepts either a Risk enum value or a string that can be converted to Risk.
+"""
+
+TypeRiskOptional = Annotated[Risk | None, BeforeValidator(_coerce_risk_optional)]
+"""Type for optional Risk enum with automatic coercion from string.
+
+Accepts either a Risk enum value, a string that can be converted to Risk, or None.
 """

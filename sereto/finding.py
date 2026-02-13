@@ -169,6 +169,7 @@ class FindingGroup:
         _target_locators: A list of locators used to find the target.
         _finding_group_locators: A list of locators defined on the finding group.
         _show_locator_types: A list of locator types to return from the locators() property.
+        extras: A dictionary of extra fields (e.g. from plugins).
     """
 
     name: str
@@ -177,6 +178,7 @@ class FindingGroup:
     _target_locators: list[LocatorModel]
     _finding_group_locators: list[LocatorModel]
     _show_locator_types: list[str]
+    extras: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     @validate_call
@@ -212,6 +214,7 @@ class FindingGroup:
             _target_locators=target_locators,
             _finding_group_locators=group_desc.locators,
             _show_locator_types=group_desc.show_locator_types,
+            extras=group_desc.model_extra or {},
         )
 
     def dumps_toml(self) -> str:
@@ -234,6 +237,10 @@ class FindingGroup:
         for sf in self.sub_findings:
             findings_array.append(sf.uname)
         table.add("findings", findings_array)
+
+        # extras
+        for key, value in self.extras.items():
+            table.add(key, value)
 
         doc.add(self.name, table)
         return tomlkit.dumps(doc).strip()
@@ -448,7 +455,7 @@ class Findings:
         # Load template metadata and content
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
         template_name = template_path.name.removesuffix(".md.j2")
-        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"))
+        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"), encoding="utf-8")
 
         # Determine sub-finding path
         sub_finding_path = self.get_path(category=category, name=template_name)
@@ -551,6 +558,40 @@ class Findings:
     def findings_dir(self) -> Path:
         """Get the path to the directory containing the findings"""
         return self.target_dir / "findings"
+
+    @validate_call
+    def update_group_extras(self, selector: int | str, extras: dict[str, Any]) -> None:
+        """Update the extras of a finding group and persist to findings.toml.
+
+        This method updates plugin-specific extra fields on a finding group and writes the changes back to the
+        findings.toml file while preserving formatting.
+
+        Args:
+            selector: The index (1-based) or uname of the finding group to update.
+            extras: A dictionary of extra fields to set on the finding group.
+                    These will be merged with existing extras (new values override).
+
+        Raises:
+            SeretoValueError: If the finding group cannot be found.
+        """
+        group = self.select_group(selector)
+
+        # Update in-memory extras
+        group.extras.update(extras)
+
+        # Read and parse the existing TOML file preserving formatting
+        content = self.config_file.read_text(encoding="utf-8")
+        doc = tomlkit.parse(content)
+
+        # Update the extras in the TOML document
+        if group.name not in doc:
+            raise SeretoValueError(f"finding group '{group.name}' not found in findings.toml")
+
+        for key, value in extras.items():
+            doc[group.name][key] = value  # type: ignore[index]
+
+        # Write back to file
+        self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
 
     @property
     def risks(self) -> Risks:

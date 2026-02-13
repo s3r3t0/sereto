@@ -12,8 +12,8 @@ from sereto.project import Project, resolve_project_directory
 @pytest.fixture
 def project_root(tmp_path: Path) -> Path:
     # Minimal project structure
-    (tmp_path / ".sereto").write_text("")
-    (tmp_path / "config.json").write_text("{}")
+    (tmp_path / ".sereto").write_text("", encoding="utf-8")
+    (tmp_path / "config.json").write_text("{}", encoding="utf-8")
     return tmp_path
 
 
@@ -92,7 +92,7 @@ def test_ensure_dir_parent_traversal_inside_root(project: Project, project_root:
 
 def test_ensure_dir_existing_file_conflict(project: Project, project_root: Path):
     conflict = project_root / "report"
-    conflict.write_text("not a dir")
+    conflict.write_text("not a dir", encoding="utf-8")
     with pytest.raises(SeretoPathError, match="non-directory object"):
         project.ensure_dir("report")
 
@@ -170,7 +170,7 @@ def test_ensure_dir_symlink_in_path(project: Project, project_root: Path):
 def test_ensure_dir_path_collision_file_then_dir(project: Project, project_root: Path):
     # Create a file at 'temp', expect failure, then remove and succeed
     file_path = project_root / "temp"
-    file_path.write_text("collision")
+    file_path.write_text("collision", encoding="utf-8")
     with pytest.raises(SeretoPathError):
         project.ensure_dir("temp")
     file_path.unlink()
@@ -229,7 +229,7 @@ def test_ensure_dir_root_not_changed_on_root_requests(project: Project, project_
 def _write_minimal_project(root: Path, folder_name: str, config_id: str) -> Path:
     project_dir = root / folder_name
     project_dir.mkdir()
-    (project_dir / ".sereto").write_text("")
+    (project_dir / ".sereto").write_text("", encoding="utf-8")
     config_payload = {
         "sereto_version": "1.0.0",
         "version_configs": {
@@ -243,7 +243,7 @@ def _write_minimal_project(root: Path, folder_name: str, config_id: str) -> Path
             }
         },
     }
-    (project_dir / "config.json").write_text(json.dumps(config_payload))
+    (project_dir / "config.json").write_text(json.dumps(config_payload), encoding="utf-8")
     return project_dir
 
 

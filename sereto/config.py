@@ -497,7 +497,7 @@ class Config:
         )
 
     def save(self) -> None:
-        self.path.write_text(self.to_model().model_dump_json(indent=2) + "\n")
+        self.path.write_text(self.to_model().model_dump_json(indent=2) + "\n", encoding="utf-8")
 
     @property
     def versions(self) -> list[ProjectVersion]:
