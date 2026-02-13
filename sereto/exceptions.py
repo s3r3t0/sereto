@@ -1,8 +1,8 @@
 import functools
-import os
 import sys
 from collections.abc import Callable
 
+import click
 from pydantic import ValidationError
 
 from sereto.logging import logger
@@ -53,10 +53,13 @@ def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
             else:
                 logger.error("Unexpected error occurred")
 
-            if os.environ.get("DEBUG", "0") == "1":
+            ctx = click.get_current_context()
+            config = ctx.meta.get("log_config")
+
+            if config.debug_mode:
                 logger.opt(exception=e).exception("Debug traceback")
             else:
-                logger.info("Set environment variable [blue]DEBUG=1[/] for more details.", markup=True)
+                logger.info("Enable [blue]DEBUG=1[/] log level for more details.", markup=True)
             sys.exit(1)
 
     return outer_function

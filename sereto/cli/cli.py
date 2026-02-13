@@ -2,7 +2,6 @@ import asyncio
 import importlib
 import importlib.metadata
 import importlib.util
-import os
 import shutil
 import sys
 from contextlib import suppress
@@ -60,7 +59,7 @@ from sereto.utils import copy_skel, replace_strings
 @click.option(
     "--log-level",
     "log_level",
-    default=os.getenv("SERETO_LOG_LEVEL", LogLevel.INFO),
+    default=None,
     type=click.Choice([level.value for level in LogLevel], case_sensitive=False),
     show_default=True,
     help="Set log verbosity for terminal output.",
@@ -71,7 +70,9 @@ def cli(ctx: click.Context, log_level: LogLevel) -> None:
 
     This tool provides various commands for managing and generating security reports.
     """
-    setup_logging(log_level)
+    if "log_config" not in ctx.meta or log_level is not None:
+        ctx.meta["log_config"] = setup_logging(log_level)
+
     ctx.obj = Project()
 
 
@@ -969,7 +970,7 @@ def load_plugins() -> None:
 
 
 def entry_point() -> None:
-    setup_logging()
+    setup_logging(LogLevel.INFO)
     with suppress(SeretoException):
         load_plugins()
 

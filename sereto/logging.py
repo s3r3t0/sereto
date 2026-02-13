@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+from dataclasses import dataclass
 from enum import StrEnum
 
 import click
@@ -40,6 +41,18 @@ LEVEL_STYLES = {
 
 _console = Console()
 
+@dataclass
+class LogConfig:
+    level: LogLevel
+
+    @property
+    def debug_mode(self) -> bool:
+        return self.level in {LogLevel.DEBUG, LogLevel.TRACE}
+
+    @property
+    def show_locals(self) -> bool:
+        return self.level == LogLevel.TRACE
+
 
 def _resolve_level(level: LogLevel | None) -> LogLevel:
     """Resolve the effective log level from CLI arg or environment."""
@@ -56,8 +69,10 @@ def _resolve_level(level: LogLevel | None) -> LogLevel:
     return level
 
 
-def setup_logging(level: LogLevel | None = None) -> None:
+def setup_logging(level: LogLevel | None = None) -> LogConfig:
     """Configure Loguru to emit logs through Rich's console.log."""
+    effective_level = _resolve_level(level)
+    config = LogConfig(level=effective_level)
 
     def _rich_sink(message: loguru.Message) -> None:
         record = message.record
@@ -80,7 +95,7 @@ def setup_logging(level: LogLevel | None = None) -> None:
                 exc_type,
                 exc_value,
                 exc_traceback,
-                show_locals=os.getenv("DEBUG", "0") == "1",
+                show_locals = config.show_locals,
                 suppress=[loguru, click, jinja2, pathlib, pydantic, pypdf],
                 width=_console.width,
                 code_width=120,
@@ -88,7 +103,8 @@ def setup_logging(level: LogLevel | None = None) -> None:
             _console.print(tb)
 
     loguru.logger.remove()
-    loguru.logger.add(_rich_sink, level=_resolve_level(level), format="{message}", colorize=False, enqueue=False)
+    loguru.logger.add(_rich_sink, level=config.level, format="{message}", colorize=False, enqueue=False)
+    return config
 
 
 # Re-export configured logger for convenience

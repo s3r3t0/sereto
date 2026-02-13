@@ -14,7 +14,7 @@ from rich.table import Table
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
-from sereto.logging import logger
+from sereto.logging import LogLevel, logger, setup_logging
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir, resolve_project_directory
 from sereto.sereto_types import TypeProjectId
@@ -89,8 +89,11 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
 
     final_prompt: list[tuple[str, str]] = []
 
-    if os.environ.get("DEBUG", "0") == "1":
-        final_prompt += [("class:debug", "DEBUG ")]
+    ctx = click.get_current_context()
+    config = ctx.meta.get("log_config")
+
+    if config.level!=LogLevel.INFO:
+        final_prompt += [("class:debug", f"{config.level} ")]
 
     if project_id is not None:
         final_prompt += [
@@ -144,13 +147,15 @@ def repl_exit() -> None:
     click_repl_exit()
 
 
-@click.command(name="debug")
-def repl_toggle_debug() -> None:
-    """Toggle the debug mode."""
-    if os.environ.get("DEBUG", "0") == "1":
-        del os.environ["DEBUG"]
-    else:
-        os.environ["DEBUG"] = "1"
+@click.command(name="log")
+@click.argument(
+    "log_level",
+    type=click.Choice([level.value for level in LogLevel], case_sensitive=False)
+)
+def repl_log(log_level: LogLevel):
+    """Set the logging level for current REPL session."""
+    ctx = click.get_current_context()
+    ctx.meta["log_config"] = setup_logging(log_level)
 
 
 def sereto_repl(cli: Group) -> None:
@@ -179,7 +184,7 @@ Type '-h'/'--help' to see available commands.
     # Add REPL specific commands
     cli.add_command(repl_cd)
     cli.add_command(repl_exit)
-    cli.add_command(repl_toggle_debug)
+    cli.add_command(repl_log)
 
     # Define the prompt style
     prompt_style = Style.from_dict(
