@@ -3,10 +3,11 @@ import string
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Self, cast
 
 import frontmatter  # type: ignore[import-untyped]
 import tomlkit
+from tomlkit.items import Table, Array
 from pydantic import DirectoryPath, FilePath, validate_call
 
 from sereto.enums import FileFormat, Risk
@@ -346,7 +347,6 @@ class FindingGroup:
         """
         reported_dates = [sf.reported_on for sf in self.sub_findings if sf.reported_on is not None]
         return min(reported_dates) if len(reported_dates) > 0 else None
-
     @validate_call
     def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:
         """Filter locators by type.
@@ -370,7 +370,7 @@ class FindingGroup:
 @dataclass
 class Findings:
     """Represents a collection of all finding groups inside a target.
-
+tomlkit
     Attributes:
         groups: A list of finding groups.
         target_dir: The path to the target directory containing the findings.
@@ -501,21 +501,21 @@ class Findings:
             doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
             if group_uname not in doc:
                 raise SeretoValueError(f"finding group {group_uname!r} not found in {self.config_file}")
+            
+            table = cast(Table, doc[group_uname])
 
-            table = doc[group_uname]
             if "findings" in table:
-                arr = table["findings"]
-                current = [str(x) for x in arr]
+                table = cast(Table, doc[group_uname])
+                current = [str(x) for x in arr]  # type: ignore
                 if sub_finding.uname not in current:
-                    arr.append(sub_finding.uname)
+                    arr.append(sub_finding.uname)  # type: ignore
             else:
                 arr = tomlkit.array()
                 arr.append(sub_finding.uname)
                 table.add("findings", arr)
 
-            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
+            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8") 
 
-            # Update in-memory model if present
             for g in self.groups:
                 if g.name == group_uname:
                     g.sub_findings.append(sub_finding)
