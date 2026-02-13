@@ -14,7 +14,7 @@ from rich.table import Table
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
-from sereto.logging import LogLevel, logger, setup_logging
+from sereto.logging import LogLevel, get_log_config, logger, setup_logging
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir, resolve_project_directory
 from sereto.sereto_types import TypeProjectId
@@ -89,10 +89,9 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
 
     final_prompt: list[tuple[str, str]] = []
 
-    ctx = click.get_current_context()
-    config = ctx.meta.get("log_config")
+    config = get_log_config()
 
-    if config and config.level != LogLevel.INFO:
+    if config.level != LogLevel.INFO:
         final_prompt += [("class:debug", f"{config.level} ")]
 
     if project_id is not None:
@@ -148,14 +147,10 @@ def repl_exit() -> None:
 
 
 @click.command(name="log")
-@click.argument(
-    "log_level",
-    type=click.Choice([level.value for level in LogLevel], case_sensitive=False)
-)
+@click.argument("log_level", type=click.Choice([level.value for level in LogLevel], case_sensitive=False))
 def repl_log(log_level: LogLevel) -> None:
     """Set the logging level for current REPL session."""
-    ctx = click.get_current_context()
-    ctx.meta["log_config"] = setup_logging(log_level)
+    setup_logging(log_level)
 
 
 def sereto_repl(cli: Group) -> None:

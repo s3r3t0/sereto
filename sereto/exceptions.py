@@ -1,11 +1,9 @@
 import functools
-import sys
 from collections.abc import Callable
 
-import click
 from pydantic import ValidationError
 
-from sereto.logging import logger
+from sereto.logging import get_log_config, logger
 
 
 class SeretoException(Exception):
@@ -37,29 +35,34 @@ class SeretoCalledProcessError(SeretoException):
 
 
 def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
-    """Decorator for pretty printing SeReTo exceptions in debug mode
-
-    If the exception is a subclass of SeretoException and DEBUG environment variable is set to '1', the full exception
-    traceback will be printed with local variables shown.
-    """
+    """Decorator for pretty printing SeReTo exceptions."""
 
     @functools.wraps(func)
     def outer_function(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return func(*args, **kwargs)
+        except SystemExit:
+            raise
+        except KeyboardInterrupt:
+            logger.warning("Operation interrupted by user")
+            raise SystemExit(1) from None
+        except (SeretoException, ValidationError) as e:
+            logger.error(str(e))
+            _log_debug_traceback(e)
+            raise SystemExit(1) from None
         except Exception as e:
-            if isinstance(e, SeretoException | ValidationError):
-                logger.error(str(e))
-            else:
-                logger.error("Unexpected error occurred")
-
-            ctx = click.get_current_context()
-            config = ctx.meta.get("log_config")
-
-            if config and config.debug_mode:
-                logger.opt(exception=e).exception("Debug traceback")
-            else:
-                logger.info("Enable [blue]DEBUG[/] log level for more details.", markup=True)
-            sys.exit(1)
+            logger.error("Unexpected error occurred: {}", type(e).__name__)
+            _log_debug_traceback(e)
+            raise SystemExit(1) from None
 
     return outer_function
+
+
+def _log_debug_traceback(e: Exception) -> None:
+    """Log debug traceback if configured, otherwise hint the user."""
+    config = get_log_config()
+
+    if config.show_exceptions:
+        logger.opt(exception=e).exception("Debug traceback")
+    else:
+        logger.info("Increase the log level for more details.")

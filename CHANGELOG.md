@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly).
+
 ## [0.5.6] - 2026-02-13
 
 ### Changes
