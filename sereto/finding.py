@@ -7,8 +7,8 @@ from typing import Any, Self, cast
 
 import frontmatter  # type: ignore[import-untyped]
 import tomlkit
-from tomlkit.items import Table, Array
 from pydantic import DirectoryPath, FilePath, validate_call
+from tomlkit.items import Table
 
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -501,20 +501,21 @@ tomlkit
             doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
             if group_uname not in doc:
                 raise SeretoValueError(f"finding group {group_uname!r} not found in {self.config_file}")
-            
+
             table = cast(Table, doc[group_uname])
 
             if "findings" in table:
                 table = cast(Table, doc[group_uname])
-                current = [str(x) for x in arr]  # type: ignore
+                arr = table.get("findings", tomlkit.array())
+                current = [str(x) for x in arr]
                 if sub_finding.uname not in current:
-                    arr.append(sub_finding.uname)  # type: ignore
+                    arr.append(sub_finding.uname)
             else:
                 arr = tomlkit.array()
                 arr.append(sub_finding.uname)
                 table.add("findings", arr)
 
-            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8") 
+            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
 
             for g in self.groups:
                 if g.name == group_uname:
