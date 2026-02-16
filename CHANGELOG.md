@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly).
 
+### Dependencies
+
+- Update pydantic-settings requirement from ~=2.12.0 to ~=2.13.0
+
 ## [0.5.6] - 2026-02-13
 
 ### Changes
