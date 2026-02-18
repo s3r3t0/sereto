@@ -121,7 +121,17 @@ class AddFindingScreen(ModalScreen[None]):
                 allow_blank=False,
             )
             yield self.select_target
-
+            # Finding
+            initial_group_options: list[tuple[str, str]] = []
+            if all_targets:
+                initial_group_options = [
+                    (g.name, g.uname) for g in all_targets[0].findings.groups
+                ]
+            self.select_group = SelectWithLabel[str](
+                options=initial_group_options,
+                label="Group",
+            )
+            yield self.select_group
             # Existing finding warning + overwrite switch
             self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
             self.overwrite_warning = Horizontal(
@@ -191,6 +201,16 @@ class AddFindingScreen(ModalScreen[None]):
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select is self.select_target.query_one(Select):
+            group_select: Select[str] = self.select_group.query_one(Select)
+            try:
+                target = self._retrieve_target()
+            except Exception:
+                group_select.set_options([])
+                self.update_overwrite_warning()
+                return
+
+            groups = target.findings.groups
+            group_select.set_options([(g.name, g.uname) for g in groups])
             self.update_overwrite_warning()
 
     def update_overwrite_warning(self) -> None:
@@ -310,6 +330,11 @@ class AddFindingScreen(ModalScreen[None]):
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
         target = self._retrieve_target()
+        # - Finding Group
+        group_select: Select[str] = self.select_group.query_one(Select)
+        selected_group = (
+            group_select.value if not isinstance(group_select.value, NoSelection) else None
+        )
 
         # - variables
         try:
@@ -327,6 +352,7 @@ class AddFindingScreen(ModalScreen[None]):
             risk=risk,
             variables=variables,
             overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
+            group_uname=selected_group,
         )
 
         # Navigate back, focus on the search input field
