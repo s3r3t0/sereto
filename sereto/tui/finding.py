@@ -40,6 +40,8 @@ from sereto.project import Project
 from sereto.target import Target
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
 
+_NEW_GROUP_SENTINEL = "__new_group__"
+
 
 @dataclass
 class FindingMetadata:
@@ -66,7 +68,7 @@ class FindingPreviewScreen(ModalScreen[None]):
     }
     """
     BINDINGS = [
-        ("ctrl+s", "add_finding", "Add finding"),
+        ("ctrl+s", "add_sub_finding", "Add sub-finding"),
         ("escape", "dismiss", "Dismiss preview"),
     ]
 
@@ -86,14 +88,14 @@ class FindingPreviewScreen(ModalScreen[None]):
     def on_mount(self) -> None:
         code_widget = self.query_one("#code")
         code_widget.border_title = self.title
-        code_widget.border_subtitle = "^s to add finding; Esc to close"
+        code_widget.border_subtitle = "^s to add sub-finding; Esc to close"
 
-    def action_add_finding(self) -> None:
+    def action_add_sub_finding(self) -> None:
         self.dismiss()
-        self.app.query_one("#search", SearchWidget).action_add_finding()
+        self.app.query_one("#search", SearchWidget).action_add_sub_finding()
 
 
-class AddFindingScreen(ModalScreen[None]):
+class AddSubFindingScreen(ModalScreen[None]):
     BINDINGS = [("escape", "dismiss", "Dismiss finding")]
 
     def __init__(self, templates: DirectoryPath, finding: FindingMetadata, title: str) -> None:
@@ -106,7 +108,7 @@ class AddFindingScreen(ModalScreen[None]):
         app: SeretoApp = self.app  # type: ignore[assignment]
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
 
-        with ScrollableContainer(id="add-finding"):
+        with ScrollableContainer(id="add-sub-finding"):
             # Name
             self.input_name = Input(value=self.finding.name)
             yield InputWithLabel(self.input_name, label="Name")
@@ -121,7 +123,22 @@ class AddFindingScreen(ModalScreen[None]):
                 allow_blank=False,
             )
             yield self.select_target
-
+            # Finding Group
+            initial_groups: list[tuple[str, str]] = []
+            if all_targets:
+                initial_groups = [(g.name, g.uname) for g in all_targets[0].findings.groups]
+            self.select_group = SelectWithLabel[str](
+                options=self._build_group_options(initial_groups),
+                label="Group",
+                allow_blank=False,
+            )
+            yield self.select_group
+            # New group name input (shown when "Create new group" is selected)
+            self.input_group_name = Input(value=self.finding.name, id="input-group-name")
+            self.group_name_container = InputWithLabel(self.input_group_name, label="Group name")
+            yield self.group_name_container
+            # Store group unames for mapping select value -> uname
+            self._group_unames: list[str] = [g_uname for _g_name, g_uname in initial_groups]
             # Existing finding warning + overwrite switch
             self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
             self.overwrite_warning = Horizontal(
@@ -181,17 +198,50 @@ class AddFindingScreen(ModalScreen[None]):
                             yield Input(id=f"var-{var.name}", classes="m-1")
                 yield Rule()
 
-            self.btn_save_finding = Button.success("Save", id="save-finding", classes="m-1")
-            yield self.btn_save_finding
+            self.btn_save_sub_finding = Button.success("Save", id="save-sub-finding", classes="m-1")
+            yield self.btn_save_sub_finding
 
     def on_mount(self) -> None:
-        add_finding = self.query_one("#add-finding")
-        add_finding.border_title = self.title
-        add_finding.border_subtitle = "Esc to close"
+        add_sub_finding = self.query_one("#add-sub-finding")
+        add_sub_finding.border_title = self.title
+        add_sub_finding.border_subtitle = "Esc to close"
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select is self.select_target.query_one(Select):
+            try:
+                target = self._retrieve_target()
+            except Exception:
+                self._rebuild_group_options([])
+                self.update_overwrite_warning()
+                return
+
+            groups = target.findings.groups
+            self._rebuild_group_options([(g.name, g.uname) for g in groups])
             self.update_overwrite_warning()
+
+        if event.select is self.select_group.query_one(Select):
+            is_new_group = event.value == _NEW_GROUP_SENTINEL
+            self.group_name_container.display = is_new_group
+            if is_new_group:
+                self.input_group_name.focus()
+
+    @staticmethod
+    def _build_group_options(
+        groups: list[tuple[str, str]],
+    ) -> list[tuple[str, str]]:
+        """Build options list for the group Select with 'Create new group' first."""
+        options: list[tuple[str, str]] = [("\u2795 Create new group", _NEW_GROUP_SENTINEL)]
+        options.extend((g_name, g_uname) for g_name, g_uname in groups)
+        return options
+
+    def _rebuild_group_options(self, groups: list[tuple[str, str]]) -> None:
+        """Rebuild the group Select options."""
+        group_select: Select[str] = self.select_group.query_one(Select)
+        group_select.set_options(self._build_group_options(groups))
+        self._group_unames = [g_uname for _g_name, g_uname in groups]
+        # Reset to default ("Create new group")
+        group_select.value = _NEW_GROUP_SENTINEL
+        self.group_name_container.display = True
 
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
@@ -297,7 +347,7 @@ class AddFindingScreen(ModalScreen[None]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle Save button press event."""
-        if event.button is not self.btn_save_finding:
+        if event.button is not self.btn_save_sub_finding:
             return
 
         app: SeretoApp = self.app  # type: ignore[assignment]
@@ -310,6 +360,16 @@ class AddFindingScreen(ModalScreen[None]):
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
         target = self._retrieve_target()
+        # - Finding Group
+        selected_group: str | None = None
+        group_name: str | None = None
+        group_select: Select[str] = self.select_group.query_one(Select)
+        if not isinstance(group_select.value, NoSelection) and group_select.value == _NEW_GROUP_SENTINEL:
+            # "Create new group" selected
+            group_name = self.input_group_name.value.strip() or None
+        elif not isinstance(group_select.value, NoSelection):
+            # Existing group selected
+            selected_group = group_select.value
 
         # - variables
         try:
@@ -323,15 +383,16 @@ class AddFindingScreen(ModalScreen[None]):
             templates=self.templates,
             template_path=self.finding.path,
             category=self.finding.category.lower(),
-            name=name,
             risk=risk,
             variables=variables,
             overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
+            group_uname=selected_group,
+            group_name=group_name,
         )
 
         # Navigate back, focus on the search input field
         self.dismiss()
-        self.notify(message=name, title="Finding successfully added")
+        self.notify(message=name, title="Sub-finding successfully added")
         app.action_focus_search()
 
 
@@ -381,7 +442,7 @@ class FuzzyMatcher:
 
 class SearchWidget(Widget):
     BINDINGS = [
-        ("ctrl+s", "add_finding", "Add finding"),
+        ("ctrl+s", "add_sub_finding", "Add sub-finding"),
         ("down", "cursor_down", "Next result"),
         ("up", "cursor_up", "Previous result"),
     ]
@@ -599,7 +660,7 @@ class SearchWidget(Widget):
             )
         )
 
-    def action_add_finding(self) -> None:
+    def action_add_sub_finding(self) -> None:
         if not self.input_field.has_focus:
             return
 
@@ -608,10 +669,10 @@ class SearchWidget(Widget):
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
         if isinstance(option, FindingOption):
             self.app.push_screen(
-                AddFindingScreen(
+                AddSubFindingScreen(
                     templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
                     finding=option.finding,
-                    title="Add finding",
+                    title="Add sub-finding",
                 )
             )
 

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Select finding group from the TUI when adding a finding with `sereto findings add`.
 - `sereto clean` now supports also deleting generated layout files (in `layouts/generated` directory) with the `--generated` flag.
 
 ### Changed

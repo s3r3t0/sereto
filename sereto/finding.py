@@ -3,11 +3,12 @@ import string
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Self, cast
 
 import frontmatter  # type: ignore[import-untyped]
 import tomlkit
 from pydantic import DirectoryPath, FilePath, validate_call
+from tomlkit.items import Table
 
 from sereto.enums import FileFormat, Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
@@ -434,21 +435,28 @@ class Findings:
         templates: DirectoryPath,
         template_path: FilePath,
         category: str,
-        name: str | None = None,
         risk: Risk | None = None,
         variables: dict[str, Any] | None = None,
         overwrite: bool = False,
+        group_uname: str | None = None,
+        group_name: str | None = None,
     ) -> None:
-        """Add a sub-finding from a template, creating a new finding group.
+        """Add a sub-finding from a template.
+
+        When `group_uname` is provided, the sub-finding is appended to that existing finding group.
+        Otherwise a new finding group is created with the name `group_name` (defaults to the
+        sub-finding name from the template).
 
         Args:
             templates: Path to the templates directory.
             template_path: Path to the sub-finding template.
             category: Category of the sub-finding.
-            name: Name of the sub-finding group. Defaults to template name.
             risk: Risk of the sub-finding. Defaults to template risk.
             variables: Variables for the sub-finding template.
             overwrite: If True, overwrite existing sub-finding; otherwise, create with random suffix.
+            group_uname: Unique name of an existing finding group to add the sub-finding to.
+            group_name: Name for the new finding group. Only used when `group_uname` is None.
+                Defaults to the sub-finding name from the template.
         """
         variables = variables or {}
 
@@ -477,9 +485,10 @@ class Findings:
                     )
 
         # Prepare sub-finding frontmatter
+        dynamic_risk = risk or template_metadata.risk
         sub_finding_metadata = SubFindingFrontmatterModel(
             name=template_metadata.name,
-            risk=template_metadata.risk,
+            risk=dynamic_risk,
             category=category,
             variables=variables,
             template_path=str(template_path.relative_to(templates)),
@@ -495,8 +504,32 @@ class Findings:
         # Load the created sub-finding
         sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
 
+        if group_uname is not None:
+            group = self.select_group(group_uname)
+
+            doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
+            if group.name not in doc:
+                raise SeretoValueError(f"finding group {group.name!r} not found in {self.config_file}")
+
+            table = cast(Table, doc[group.name])
+
+            if "findings" in table:
+                arr = table.get("findings", tomlkit.array())
+                current = [str(x) for x in arr]
+                if sub_finding.uname not in current:
+                    arr.append(sub_finding.uname)
+            else:
+                arr = tomlkit.array()
+                arr.append(sub_finding.uname)
+                table.add("findings", arr)
+
+            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
+
+            group.sub_findings.append(sub_finding)
+            return
+
         # Determine group name
-        group_name = name or sub_finding.name
+        group_name = group_name or sub_finding.name
         if suffix:
             group_name = f"{group_name} {suffix}"
 
