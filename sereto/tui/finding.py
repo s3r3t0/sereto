@@ -40,6 +40,8 @@ from sereto.project import Project
 from sereto.target import Target
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
 
+_NEW_GROUP_SENTINEL = "__new_group__"
+
 
 @dataclass
 class FindingMetadata:
@@ -121,15 +123,22 @@ class AddSubFindingScreen(ModalScreen[None]):
                 allow_blank=False,
             )
             yield self.select_target
-            # Finding
-            initial_group_options: list[tuple[str, str]] = []
+            # Finding Group
+            initial_groups: list[tuple[str, str]] = []
             if all_targets:
-                initial_group_options = [(g.name, g.uname) for g in all_targets[0].findings.groups]
+                initial_groups = [(g.name, g.uname) for g in all_targets[0].findings.groups]
             self.select_group = SelectWithLabel[str](
-                options=initial_group_options,
+                options=self._build_group_options(initial_groups),
                 label="Group",
+                allow_blank=False,
             )
             yield self.select_group
+            # New group name input (shown when "Create new group" is selected)
+            self.input_group_name = Input(value=self.finding.name, id="input-group-name")
+            self.group_name_container = InputWithLabel(self.input_group_name, label="Group name")
+            yield self.group_name_container
+            # Store group unames for mapping select value -> uname
+            self._group_unames: list[str] = [g_uname for _g_name, g_uname in initial_groups]
             # Existing finding warning + overwrite switch
             self.overwrite_switch = Switch(value=False, name="overwrite", id="overwrite-switch")
             self.overwrite_warning = Horizontal(
@@ -199,17 +208,40 @@ class AddSubFindingScreen(ModalScreen[None]):
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select is self.select_target.query_one(Select):
-            group_select: Select[str] = self.select_group.query_one(Select)
             try:
                 target = self._retrieve_target()
             except Exception:
-                group_select.set_options([])
+                self._rebuild_group_options([])
                 self.update_overwrite_warning()
                 return
 
             groups = target.findings.groups
-            group_select.set_options([(g.name, g.uname) for g in groups])
+            self._rebuild_group_options([(g.name, g.uname) for g in groups])
             self.update_overwrite_warning()
+
+        if event.select is self.select_group.query_one(Select):
+            is_new_group = event.value == _NEW_GROUP_SENTINEL
+            self.group_name_container.display = is_new_group
+            if is_new_group:
+                self.input_group_name.focus()
+
+    @staticmethod
+    def _build_group_options(
+        groups: list[tuple[str, str]],
+    ) -> list[tuple[str, str]]:
+        """Build options list for the group Select with 'Create new group' first."""
+        options: list[tuple[str, str]] = [("\u2795 Create new group", _NEW_GROUP_SENTINEL)]
+        options.extend((g_name, g_uname) for g_name, g_uname in groups)
+        return options
+
+    def _rebuild_group_options(self, groups: list[tuple[str, str]]) -> None:
+        """Rebuild the group Select options."""
+        group_select: Select[str] = self.select_group.query_one(Select)
+        group_select.set_options(self._build_group_options(groups))
+        self._group_unames = [g_uname for _g_name, g_uname in groups]
+        # Reset to default ("Create new group")
+        group_select.value = _NEW_GROUP_SENTINEL
+        self.group_name_container.display = True
 
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
@@ -329,8 +361,15 @@ class AddSubFindingScreen(ModalScreen[None]):
         # - target
         target = self._retrieve_target()
         # - Finding Group
+        selected_group: str | None = None
+        group_name: str | None = None
         group_select: Select[str] = self.select_group.query_one(Select)
-        selected_group = group_select.value if not isinstance(group_select.value, NoSelection) else None
+        if not isinstance(group_select.value, NoSelection) and group_select.value == _NEW_GROUP_SENTINEL:
+            # "Create new group" selected
+            group_name = self.input_group_name.value.strip() or None
+        elif not isinstance(group_select.value, NoSelection):
+            # Existing group selected
+            selected_group = group_select.value
 
         # - variables
         try:
@@ -344,11 +383,11 @@ class AddSubFindingScreen(ModalScreen[None]):
             templates=self.templates,
             template_path=self.finding.path,
             category=self.finding.category.lower(),
-            name=name,
             risk=risk,
             variables=variables,
             overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
             group_uname=selected_group,
+            group_name=group_name,
         )
 
         # Navigate back, focus on the search input field

@@ -435,22 +435,28 @@ class Findings:
         templates: DirectoryPath,
         template_path: FilePath,
         category: str,
-        name: str | None = None,
         risk: Risk | None = None,
         variables: dict[str, Any] | None = None,
         overwrite: bool = False,
         group_uname: str | None = None,
+        group_name: str | None = None,
     ) -> None:
-        """Add a sub-finding from a template, creating a new finding group.
+        """Add a sub-finding from a template.
+
+        When `group_uname` is provided, the sub-finding is appended to that existing finding group.
+        Otherwise a new finding group is created with the name `group_name` (defaults to the
+        sub-finding name from the template).
 
         Args:
             templates: Path to the templates directory.
             template_path: Path to the sub-finding template.
             category: Category of the sub-finding.
-            name: Name of the sub-finding group. Defaults to template name.
             risk: Risk of the sub-finding. Defaults to template risk.
             variables: Variables for the sub-finding template.
             overwrite: If True, overwrite existing sub-finding; otherwise, create with random suffix.
+            group_uname: Unique name of an existing finding group to add the sub-finding to.
+            group_name: Name for the new finding group. Only used when `group_uname` is None.
+                Defaults to the sub-finding name from the template.
         """
         variables = variables or {}
 
@@ -523,7 +529,7 @@ class Findings:
             return
 
         # Determine group name
-        group_name = name or sub_finding.name
+        group_name = group_name or sub_finding.name
         if suffix:
             group_name = f"{group_name} {suffix}"
 
