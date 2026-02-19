@@ -174,11 +174,11 @@ class FindingGroup:
     """
 
     name: str
-    explicit_risk: Risk | None
     sub_findings: list[SubFinding]
     _target_locators: list[LocatorModel]
     _finding_group_locators: list[LocatorModel]
     _show_locator_types: list[str]
+    explicit_risk: Risk | None = None
     extras: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -539,7 +539,6 @@ class Findings:
         # Create finding group
         group = FindingGroup(
             name=group_name,
-            explicit_risk=risk,
             sub_findings=[sub_finding],
             _target_locators=self.target_locators,
             _finding_group_locators=[],
