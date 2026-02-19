@@ -354,7 +354,7 @@ class AddSubFindingScreen(ModalScreen[None]):
 
         # Retrieve the values from the inputs
         # - name
-        name = self.input_name.value
+        sub_finding_name = self.input_name.value
         # - risk
         risk_select: Select[str] = self.select_risk.query_one(Select)
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
@@ -383,6 +383,7 @@ class AddSubFindingScreen(ModalScreen[None]):
             templates=self.templates,
             template_path=self.finding.path,
             category=self.finding.category.lower(),
+            sub_finding_name=sub_finding_name,
             risk=risk,
             variables=variables,
             overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
@@ -392,7 +393,7 @@ class AddSubFindingScreen(ModalScreen[None]):
 
         # Navigate back, focus on the search input field
         self.dismiss()
-        self.notify(message=name, title="Sub-finding successfully added")
+        self.notify(message=sub_finding_name, title="Sub-finding successfully added")
         app.action_focus_search()
 
 

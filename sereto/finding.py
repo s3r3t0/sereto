@@ -435,6 +435,7 @@ class Findings:
         templates: DirectoryPath,
         template_path: FilePath,
         category: str,
+        sub_finding_name: str | None = None,
         risk: Risk | None = None,
         variables: dict[str, Any] | None = None,
         overwrite: bool = False,
@@ -451,6 +452,8 @@ class Findings:
             templates: Path to the templates directory.
             template_path: Path to the sub-finding template.
             category: Category of the sub-finding.
+            sub_finding_name: Name for the sub-finding written into its TOML frontmatter. Defaults to the template
+                name.
             risk: Risk of the sub-finding. Defaults to template risk.
             variables: Variables for the sub-finding template.
             overwrite: If True, overwrite existing sub-finding; otherwise, create with random suffix.
@@ -487,7 +490,7 @@ class Findings:
         # Prepare sub-finding frontmatter
         dynamic_risk = risk or template_metadata.risk
         sub_finding_metadata = SubFindingFrontmatterModel(
-            name=template_metadata.name,
+            name=sub_finding_name or template_metadata.name,
             risk=dynamic_risk,
             category=category,
             variables=variables,
