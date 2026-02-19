@@ -53,8 +53,8 @@ ListWidget {
     }
 }
 
-AddFindingScreen {
-    #add-finding {
+AddSubFindingScreen {
+    #add-sub-finding {
         border: heavy $accent;
         margin: 2 4;
         scrollbar-gutter: stable;
