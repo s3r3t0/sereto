@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `sereto clean` now supports also deleting generated layout files (in `layouts/generated` directory) with the `--generated` flag.
+
 ### Changed
 
 - Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly).

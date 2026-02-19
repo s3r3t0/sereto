@@ -152,11 +152,22 @@ def unpack(ctx: Project, file: FilePath) -> None:
 
 
 @cli.command()
+@handle_exceptions
+@click.option(
+    "--generated",
+    is_flag=True,
+    default=False,
+    help="Also delete generated layout files (layouts/generated).",
+)
 @click.pass_obj
-def clean(ctx: Project) -> None:
+def clean(ctx: Project, generated: bool) -> None:
     """Delete auxilary files created during the PDF build."""
     if (build_dir := ctx.path / ".build").is_dir():
         shutil.rmtree(build_dir)
+
+    generated_dir = ctx.path / "layouts" / "generated"
+    if generated and generated_dir.is_dir():
+        shutil.rmtree(generated_dir)
 
 
 @cli.command()
