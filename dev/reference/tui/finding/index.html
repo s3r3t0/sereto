@@ -3341,7 +3341,8 @@
 <span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AddSubFindingScreen</span><span class="p">(</span><span class="n">ModalScreen</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+<span class="normal">396</span>
+<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AddSubFindingScreen</span><span class="p">(</span><span class="n">ModalScreen</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
     <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;escape&quot;</span><span class="p">,</span> <span class="s2">&quot;dismiss&quot;</span><span class="p">,</span> <span class="s2">&quot;Dismiss finding&quot;</span><span class="p">)]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">finding</span><span class="p">:</span> <span class="n">FindingMetadata</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -3600,7 +3601,7 @@
 
         <span class="c1"># Retrieve the values from the inputs</span>
         <span class="c1"># - name</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">sub_finding_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span>
         <span class="c1"># - risk</span>
         <span class="n">risk_select</span><span class="p">:</span> <span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_risk</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">)</span>
         <span class="n">risk</span> <span class="o">=</span> <span class="n">Risk</span><span class="p">(</span><span class="n">risk_select</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
@@ -3629,6 +3630,7 @@
             <span class="n">templates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">,</span>
             <span class="n">template_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
             <span class="n">category</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+            <span class="n">sub_finding_name</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span>
             <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
             <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
             <span class="n">overwrite</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span><span class="o">.</span><span class="n">display</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -3638,7 +3640,7 @@
 
         <span class="c1"># Navigate back, focus on the search input field</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
         <span class="n">app</span><span class="o">.</span><span class="n">action_focus_search</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3720,7 +3722,8 @@
 <span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_button_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">396</span>
+<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_button_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle Save button press event.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">button</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">btn_save_sub_finding</span><span class="p">:</span>
         <span class="k">return</span>
@@ -3729,7 +3732,7 @@
 
     <span class="c1"># Retrieve the values from the inputs</span>
     <span class="c1"># - name</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">sub_finding_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span>
     <span class="c1"># - risk</span>
     <span class="n">risk_select</span><span class="p">:</span> <span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_risk</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">)</span>
     <span class="n">risk</span> <span class="o">=</span> <span class="n">Risk</span><span class="p">(</span><span class="n">risk_select</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
@@ -3758,6 +3761,7 @@
         <span class="n">templates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">,</span>
         <span class="n">template_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
         <span class="n">category</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+        <span class="n">sub_finding_name</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span>
         <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
         <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
         <span class="n">overwrite</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span><span class="o">.</span><span class="n">display</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -3767,7 +3771,7 @@
 
     <span class="c1"># Navigate back, focus on the search input field</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
     <span class="n">app</span><span class="o">.</span><span class="n">action_focus_search</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3858,8 +3862,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">680</span>
-<span class="normal">681</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">681</span>
 <span class="normal">682</span>
 <span class="normal">683</span>
 <span class="normal">684</span>
@@ -3873,7 +3876,8 @@
 <span class="normal">692</span>
 <span class="normal">693</span>
 <span class="normal">694</span>
-<span class="normal">695</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingOption</span><span class="p">(</span><span class="n">Option</span><span class="p">):</span>
+<span class="normal">695</span>
+<span class="normal">696</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingOption</span><span class="p">(</span><span class="n">Option</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An Option representing a finding, with name and keywords optionally highlighted.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">finding</span><span class="p">:</span> <span class="n">FindingMetadata</span><span class="p">,</span> <span class="n">matchers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FuzzyMatcher</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -3937,8 +3941,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
-<span class="normal">400</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
 <span class="normal">401</span>
 <span class="normal">402</span>
 <span class="normal">403</span>
@@ -3978,7 +3981,8 @@
 <span class="normal">437</span>
 <span class="normal">438</span>
 <span class="normal">439</span>
-<span class="normal">440</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FuzzyMatcher</span><span class="p">:</span>
+<span class="normal">440</span>
+<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FuzzyMatcher</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="p">[</span><span class="n">q</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">query</span><span class="p">]</span>
 
@@ -4052,8 +4056,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
-<span class="normal">419</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
@@ -4074,7 +4077,8 @@
 <span class="normal">437</span>
 <span class="normal">438</span>
 <span class="normal">439</span>
-<span class="normal">440</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="normal">440</span>
+<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Highlight all fuzzy matches of the query in the given text (used in names and keywords).&quot;&quot;&quot;</span>
     <span class="n">combined</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="n">combined_lower</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -4119,8 +4123,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">403</span>
-<span class="normal">404</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
 <span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
@@ -4132,7 +4135,8 @@
 <span class="normal">413</span>
 <span class="normal">414</span>
 <span class="normal">415</span>
-<span class="normal">416</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">max_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">max_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the average fuzzy match score between the query and the given values.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
@@ -4186,8 +4190,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">443</span>
-<span class="normal">444</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">444</span>
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
@@ -4420,7 +4423,8 @@
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
-<span class="normal">677</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SearchWidget</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
+<span class="normal">677</span>
+<span class="normal">678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SearchWidget</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
     <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="s2">&quot;ctrl+s&quot;</span><span class="p">,</span> <span class="s2">&quot;add_sub_finding&quot;</span><span class="p">,</span> <span class="s2">&quot;Add sub-finding&quot;</span><span class="p">),</span>
         <span class="p">(</span><span class="s2">&quot;down&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor_down&quot;</span><span class="p">,</span> <span class="s2">&quot;Next result&quot;</span><span class="p">),</span>
@@ -4687,8 +4691,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">612</span>
-<span class="normal">613</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">613</span>
 <span class="normal">614</span>
 <span class="normal">615</span>
 <span class="normal">616</span>
@@ -4705,7 +4708,8 @@
 <span class="normal">627</span>
 <span class="normal">628</span>
 <span class="normal">629</span>
-<span class="normal">630</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">assemble_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Text</span><span class="p">:</span>
+<span class="normal">630</span>
+<span class="normal">631</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">assemble_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Text</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Highlight matching words in specific Jinja blocks and returns reconstructed template.&quot;&quot;&quot;</span>
     <span class="n">code</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
     <span class="n">found_match</span> <span class="o">=</span> <span class="kc">False</span>
@@ -4746,15 +4750,15 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">579</span>
-<span class="normal">580</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">580</span>
 <span class="normal">581</span>
 <span class="normal">582</span>
 <span class="normal">583</span>
 <span class="normal">584</span>
 <span class="normal">585</span>
 <span class="normal">586</span>
-<span class="normal">587</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">events</span><span class="o">.</span><span class="n">Key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">587</span>
+<span class="normal">588</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">events</span><span class="o">.</span><span class="n">Key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Intercepts key presses and handles the Enter key.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;enter&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span><span class="o">.</span><span class="n">has_focus</span><span class="p">:</span>
@@ -4805,8 +4809,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">698</span>
-<span class="normal">699</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
 <span class="normal">700</span>
 <span class="normal">701</span>
 <span class="normal">702</span>
@@ -4838,7 +4841,8 @@
 <span class="normal">728</span>
 <span class="normal">729</span>
 <span class="normal">730</span>
-<span class="normal">731</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoApp</span><span class="p">(</span><span class="n">App</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+<span class="normal">731</span>
+<span class="normal">732</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoApp</span><span class="p">(</span><span class="n">App</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A SeReTo Textual CLI interface.&quot;&quot;&quot;</span>
 
     <span class="n">CSS_PATH</span> <span class="o">=</span> <span class="s2">&quot;finding.tcss&quot;</span>
@@ -4904,9 +4908,9 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Focus on the search input field.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">&quot;#search&quot;</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -4931,8 +4935,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">715</span>
-<span class="normal">716</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">716</span>
 <span class="normal">717</span>
 <span class="normal">718</span>
 <span class="normal">719</span>
@@ -4943,7 +4946,8 @@
 <span class="normal">724</span>
 <span class="normal">725</span>
 <span class="normal">726</span>
-<span class="normal">727</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
+<span class="normal">727</span>
+<span class="normal">728</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add widgets to the app.&quot;&quot;&quot;</span>
     <span class="c1"># adding findings only works if there is at least one target</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
