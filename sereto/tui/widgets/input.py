@@ -114,13 +114,22 @@ class SelectWithLabel[T](Widget):
     """
 
     def __init__(
-        self, options: Iterable[tuple[RenderableType, T]], label: str, id: str | None = None, allow_blank: bool = True
+        self,
+        options: Iterable[tuple[RenderableType, T]],
+        label: str,
+        id: str | None = None,
+        allow_blank: bool = True,
+        value: T | None = None,
     ) -> None:
         super().__init__(id=id)
         self.options = options
         self.label = label
         self.allow_blank = allow_blank
+        self.initial_value = value
 
     def compose(self) -> ComposeResult:
         yield Label(self.label)
-        yield Select(options=self.options, allow_blank=self.allow_blank)
+        if self.initial_value is not None:
+            yield Select(options=self.options, allow_blank=self.allow_blank, value=self.initial_value)
+        else:
+            yield Select(options=self.options, allow_blank=self.allow_blank)

@@ -48,6 +48,7 @@ class FindingMetadata:
     path: Path
     category: str
     name: str
+    risk: Risk
     variables: list[VarsMetadataModel]
     keywords: list[str]
     text: dict[str, str]
@@ -114,7 +115,9 @@ class AddSubFindingScreen(ModalScreen[None]):
             yield InputWithLabel(self.input_name, label="Name")
             # Risk
             risks = [r.capitalize() for r in Risk]
-            self.select_risk = SelectWithLabel[str](options=[(r, r) for r in risks], label="Risk")
+            self.select_risk = SelectWithLabel[str](
+                options=[(r, r) for r in risks], label="Risk", value=self.finding.risk.capitalize()
+            )
             yield self.select_risk
             # Target
             self.select_target = SelectWithLabel[str](
@@ -477,6 +480,7 @@ class SearchWidget(Widget):
                         path=finding,
                         category=category,
                         name=data.name,
+                        risk=data.risk,
                         variables=data.variables,
                         keywords=data.keywords,
                         text=extracted_text,
