@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.7] - 2026-02-23
+
 ### Added
 
 - Select finding group from the TUI when adding a finding with `sereto findings add`.
@@ -14,12 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly).
+- Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly). Previous `debug` command is now `log debug`.
 - Display default value in the TUI when adding a finding with `sereto findings add`.
 
 ### Dependencies
 
 - Update pydantic-settings requirement from ~=2.12.0 to ~=2.13.0
+- Update textual requirement from ~=7.5.0 to ~=8.0.0
 
 ## [0.5.6] - 2026-02-13
 
@@ -714,7 +717,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.6...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.7...HEAD
+[0.5.7]: https://github.com/s3r3t0/sereto/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/s3r3t0/sereto/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/s3r3t0/sereto/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/s3r3t0/sereto/compare/v0.5.3...v0.5.4
