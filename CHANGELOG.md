@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improve logging at various log levels, including in REPL (new command `log <LEVEL>` to change log level on the fly).
+- Display default value in the TUI when adding a finding with `sereto findings add`.
 
 ### Dependencies
 
