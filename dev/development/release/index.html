@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -2504,6 +2504,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -2520,6 +2538,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2553,6 +2612,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2572,16 +2661,32 @@
 
 
 <h1 id="release">Release<a class="headerlink" href="#release" title="Permanent link">&para;</a></h1>
+<p>The release process is automated via GitHub Actions. It consists of two workflows that handle version bumping, changelog updates, and tag creation.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The <code>## [Unreleased]</code> section in <code>CHANGELOG.md</code> must contain at least one entry.</li>
+</ul>
+<h2 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Update the version in <code>pyproject.toml</code></li>
-<li>Update the changelog in <code>CHANGELOG.md</code><ul>
-<li>Add a new section for the new version below the "Unreleased" section</li>
-<li>At the bottom of the changelog, update the comparison link for the "Unreleased" and new versions</li>
+<li>Ensure <code>CHANGELOG.md</code> has the desired entries under <code>## [Unreleased]</code>.</li>
+<li>Go to <strong>Actions</strong> → <strong>Prepare Release</strong> → <strong>Run workflow</strong>.</li>
+<li>Select the bump type (<code>patch</code>, <code>minor</code>, or <code>major</code>) and run it.</li>
+<li>The workflow creates a <code>release/vX.Y.Z</code> branch with:<ul>
+<li>Updated version in <code>pyproject.toml</code></li>
+<li>New version section in <code>CHANGELOG.md</code> (with today's date)</li>
+<li>Updated comparison links at the bottom of <code>CHANGELOG.md</code></li>
+<li>Regenerated <code>uv.lock</code></li>
 </ul>
 </li>
-<li>Generate new <code>uv.lock</code> file with <code>uv lock</code></li>
-<li>With the changes, create commit with message "Bump SeReTo version to x.y.z"</li>
-<li>Create a new tag with <code>git tag vx.y.z</code></li>
+<li>Review and merge the generated PR into <code>main</code>.</li>
+<li>On merge, the <strong>Tag Release</strong> workflow automatically creates and pushes the <code>vX.Y.Z</code> tag.</li>
+<li>The tag push triggers the existing release pipelines:<ul>
+<li><strong>PyPI</strong> publishing (with Sigstore signing)</li>
+<li><strong>GitHub Release</strong> creation (with changelog body)</li>
+<li><strong>Docker Hub</strong> image build and push</li>
+<li><strong>Documentation</strong> deployment via mike</li>
+</ul>
+</li>
 </ol>
 
 
