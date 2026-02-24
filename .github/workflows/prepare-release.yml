@@ -1,0 +1,122 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    name: Prepare release PR
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
+    - name: Compute new version
+      id: version
+      run: |
+        CURRENT=$(grep -oP '^version = "\K[^"]+' pyproject.toml)
+        echo "current=$CURRENT" >> $GITHUB_OUTPUT
+
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+        case "${{ inputs.bump_type }}" in
+          major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+          minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+          patch) PATCH=$((PATCH + 1)) ;;
+        esac
+
+        NEW="${MAJOR}.${MINOR}.${PATCH}"
+        echo "new=$NEW" >> $GITHUB_OUTPUT
+        echo "Bumping version: $CURRENT -> $NEW (${{ inputs.bump_type }})"
+
+    - name: Verify unreleased section has content
+      run: |
+        # Extract content between ## [Unreleased] and the next ## heading
+        CONTENT=$(sed -n '/^## \[Unreleased\]/,/^## \[/{/^## /d;p}' CHANGELOG.md | sed '/^$/d')
+        if [ -z "$CONTENT" ]; then
+          echo "::error::The [Unreleased] section in CHANGELOG.md is empty. Add changelog entries before releasing."
+          exit 1
+        fi
+
+    - name: Update pyproject.toml
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.new }}
+        CURRENT_VERSION: ${{ steps.version.outputs.current }}
+      run: |
+        sed -i "s/^version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
+
+    - name: Update CHANGELOG.md
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.new }}
+        CURRENT_VERSION: ${{ steps.version.outputs.current }}
+      run: |
+        TODAY=$(date +%Y-%m-%d)
+
+        # Insert new version heading below [Unreleased]
+        sed -i "s/^## \[Unreleased\]$/## [Unreleased]\n\n## [$NEW_VERSION] - $TODAY/" CHANGELOG.md
+
+        # Update the [unreleased] comparison link
+        sed -i "s|\[unreleased\]: \(https://github.com/s3r3t0/sereto/compare/\)v${CURRENT_VERSION}\.\.\.HEAD|[unreleased]: \1v${NEW_VERSION}...HEAD|" CHANGELOG.md
+
+        # Insert new version comparison link after [unreleased]
+        sed -i "/^\[unreleased\]: /a [$NEW_VERSION]: https://github.com/s3r3t0/sereto/compare/v${CURRENT_VERSION}...v${NEW_VERSION}" CHANGELOG.md
+
+    - name: Run uv lock
+      run: uv lock
+
+    - name: Extract changelog for PR body
+      id: changelog
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.new }}
+      run: |
+        {
+          echo 'body<<CHANGELOG_EOF'
+          echo "## Changelog for $NEW_VERSION"
+          echo ""
+          sed -n "/^## \[$NEW_VERSION\]/,/^## \[/{/^## /d;p}" CHANGELOG.md
+          echo 'CHANGELOG_EOF'
+        } >> $GITHUB_OUTPUT
+
+    - name: Create release PR
+      env:
+        GH_TOKEN: ${{ github.token }}
+        NEW_VERSION: ${{ steps.version.outputs.new }}
+        PR_BODY: ${{ steps.changelog.outputs.body }}
+      run: |
+        BRANCH="release/v${NEW_VERSION}"
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+        git checkout -b "$BRANCH"
+        git add pyproject.toml CHANGELOG.md uv.lock
+        git commit -m "Bump SeReTo version to ${NEW_VERSION}"
+        git push origin "$BRANCH"
+
+        gh pr create \
+          --base main \
+          --head "$BRANCH" \
+          --title "Release v${NEW_VERSION}" \
+          --body "$PR_BODY"

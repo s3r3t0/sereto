@@ -4,12 +4,50 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_run:
+    workflows: ["Tag Release"]
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
+  resolve-tag:
+    name: Resolve tag name
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+
+    permissions:
+      actions: read
+
+    steps:
+    - name: Resolve tag from push event
+      if: github.event_name == 'push'
+      id: from-push
+      run: echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+    - name: Download tag artifact from Tag Release
+      if: github.event_name == 'workflow_run'
+      uses: actions/download-artifact@v4
+      with:
+        name: tag-name
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ github.token }}
+
+    - name: Resolve tag from artifact
+      if: github.event_name == 'workflow_run'
+      id: from-artifact
+      run: echo "tag=$(cat tag-name.txt)" >> $GITHUB_OUTPUT
+
+    - name: Set output
+      id: resolve
+      run: echo "tag=${{ steps.from-push.outputs.tag || steps.from-artifact.outputs.tag }}" >> $GITHUB_OUTPUT
+
   docker:
+    needs: resolve-tag
     runs-on: ubuntu-latest
     steps:
     # - name: Set up Docker Buildx
@@ -25,4 +63,4 @@ jobs:
         push: true
         tags: |
           sereto/sereto:latest
-          sereto/sereto:${{ github.ref_name }}
+          sereto/sereto:${{ needs.resolve-tag.outputs.tag }}

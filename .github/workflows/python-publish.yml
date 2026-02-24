@@ -4,10 +4,48 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_run:
+    workflows: ["Tag Release"]
+    types:
+      - completed
 
 jobs:
+  resolve-tag:
+    name: Resolve tag name
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+
+    permissions:
+      actions: read
+
+    steps:
+    - name: Resolve tag from push event
+      if: github.event_name == 'push'
+      id: from-push
+      run: echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+    - name: Download tag artifact from Tag Release
+      if: github.event_name == 'workflow_run'
+      uses: actions/download-artifact@v4
+      with:
+        name: tag-name
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ github.token }}
+
+    - name: Resolve tag from artifact
+      if: github.event_name == 'workflow_run'
+      id: from-artifact
+      run: echo "tag=$(cat tag-name.txt)" >> $GITHUB_OUTPUT
+
+    - name: Set output
+      id: resolve
+      run: echo "tag=${{ steps.from-push.outputs.tag || steps.from-artifact.outputs.tag }}" >> $GITHUB_OUTPUT
+
   build:
     name: Build distribution 📦
+    needs: resolve-tag
     runs-on: ubuntu-latest
 
     permissions:
@@ -16,6 +54,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.resolve-tag.outputs.tag }}
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -57,6 +97,7 @@ jobs:
       Sign the Python 🐍 distribution 📦 with Sigstore
       and upload them to GitHub Release
     needs:
+    - resolve-tag
     - publish-to-pypi
     runs-on: ubuntu-latest
 
@@ -67,6 +108,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.resolve-tag.outputs.tag }}
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
@@ -79,25 +122,29 @@ jobs:
           ./dist/*.tar.gz
           ./dist/*.whl
     - name: Prepare numeric version
+      env:
+        TAG: ${{ needs.resolve-tag.outputs.tag }}
       run: |
-        NUMERIC_VERSION=${{ github.ref_name }}
-        NUMERIC_VERSION="${NUMERIC_VERSION#v}" # Remove leading 'v'
+        NUMERIC_VERSION="${TAG#v}" # Remove leading 'v'
         echo "NUMERIC_VERSION=${NUMERIC_VERSION}" >> $GITHUB_ENV # Set it as an environment variable for later steps
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        TAG: ${{ needs.resolve-tag.outputs.tag }}
       run: |
         CHANGELOG=$(sed -n "/^## \[$NUMERIC_VERSION\]/,/^## /p" CHANGELOG.md | sed '1d;$d;')
-        gh release create "${{ github.ref_name }}" \
+        gh release create "$TAG" \
         --repo '${{ github.repository }}' \
+        --title "$TAG" \
         --notes "$CHANGELOG"
     - name: Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        TAG: ${{ needs.resolve-tag.outputs.tag }}
       # Upload to GitHub Release using the `gh` CLI.
       # `dist/` contains the built packages, and the
       # sigstore-produced signatures and certificates.
       run: >-
         gh release upload
-        '${{ github.ref_name }}' dist/**
+        "$TAG" dist/**
         --repo '${{ github.repository }}'

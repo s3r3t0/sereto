@@ -6,6 +6,10 @@ on:
       - main
     tags:
       - 'v*.*.*'
+  workflow_run:
+    workflows: ["Tag Release"]
+    types:
+      - completed
 
 permissions:
   actions: write
@@ -13,11 +17,60 @@ permissions:
   pages: write
 
 jobs:
+  resolve-tag:
+    name: Resolve tag name
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      is-tag: ${{ steps.resolve.outputs.is-tag }}
+
+    permissions:
+      actions: read
+
+    steps:
+    - name: Resolve tag from push event (tag)
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+      id: from-push-tag
+      run: |
+        echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        echo "is-tag=true" >> $GITHUB_OUTPUT
+
+    - name: Resolve from push event (branch)
+      if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+      id: from-push-branch
+      run: echo "is-tag=false" >> $GITHUB_OUTPUT
+
+    - name: Download tag artifact from Tag Release
+      if: github.event_name == 'workflow_run'
+      uses: actions/download-artifact@v4
+      with:
+        name: tag-name
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ github.token }}
+
+    - name: Resolve tag from artifact
+      if: github.event_name == 'workflow_run'
+      id: from-artifact
+      run: |
+        echo "tag=$(cat tag-name.txt)" >> $GITHUB_OUTPUT
+        echo "is-tag=true" >> $GITHUB_OUTPUT
+
+    - name: Set output
+      id: resolve
+      run: |
+        echo "tag=${{ steps.from-push-tag.outputs.tag || steps.from-artifact.outputs.tag }}" >> $GITHUB_OUTPUT
+        echo "is-tag=${{ steps.from-push-tag.outputs.is-tag || steps.from-artifact.outputs.is-tag || steps.from-push-branch.outputs.is-tag }}" >> $GITHUB_OUTPUT
+
   deploy:
+    needs: resolve-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.resolve-tag.outputs.is-tag == 'true' && needs.resolve-tag.outputs.tag || 'main' }}
           fetch-depth: 0  # Fetch all history for mike to work properly
       - name: Configure Git Credentials
         run: |
@@ -36,11 +89,13 @@ jobs:
       - name: Install dependencies
         run: pip install mike mkdocs-material mkdocstrings[python]
       - name: Deploy documentation
+        env:
+          IS_TAG: ${{ needs.resolve-tag.outputs.is-tag }}
+          TAG: ${{ needs.resolve-tag.outputs.tag }}
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          if [[ "$IS_TAG" == "true" ]]; then
             # Deploy versioned docs for tags
-            VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"  # Remove 'v' prefix
+            VERSION="${TAG#v}"  # Remove 'v' prefix
             mike deploy --push --update-aliases $VERSION latest
             mike set-default --push latest
           else

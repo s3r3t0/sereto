@@ -1,9 +1,25 @@
 # Release
 
-1. Update the version in `pyproject.toml`
-2. Update the changelog in `CHANGELOG.md`
-    - Add a new section for the new version below the "Unreleased" section
-    - At the bottom of the changelog, update the comparison link for the "Unreleased" and new versions
-3. Generate new `uv.lock` file with `uv lock`
-4. With the changes, create commit with message "Bump SeReTo version to x.y.z"
-5. Create a new tag with `git tag vx.y.z`
+The release process is automated via GitHub Actions. It consists of two workflows that handle version bumping, changelog updates, and tag creation.
+
+## Prerequisites
+
+- The `## [Unreleased]` section in `CHANGELOG.md` must contain at least one entry.
+
+## Steps
+
+1. Ensure `CHANGELOG.md` has the desired entries under `## [Unreleased]`.
+2. Go to **Actions** → **Prepare Release** → **Run workflow**.
+3. Select the bump type (`patch`, `minor`, or `major`) and run it.
+4. The workflow creates a `release/vX.Y.Z` branch with:
+    - Updated version in `pyproject.toml`
+    - New version section in `CHANGELOG.md` (with today's date)
+    - Updated comparison links at the bottom of `CHANGELOG.md`
+    - Regenerated `uv.lock`
+5. Review and merge the generated PR into `main`.
+6. On merge, the **Tag Release** workflow automatically creates and pushes the `vX.Y.Z` tag.
+7. The tag push triggers the existing release pipelines:
+    - **PyPI** publishing (with Sigstore signing)
+    - **GitHub Release** creation (with changelog body)
+    - **Docker Hub** image build and push
+    - **Documentation** deployment via mike
