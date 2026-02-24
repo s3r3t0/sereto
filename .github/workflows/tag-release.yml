@@ -1,0 +1,57 @@
+name: Tag Release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Create release tag
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/v')
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 0
+
+    - name: Extract version and create tag
+      id: tag
+      env:
+        BRANCH: ${{ github.event.pull_request.head.ref }}
+      run: |
+        TAG="${BRANCH#release/}"  # release/v0.6.0 -> v0.6.0
+
+        if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Invalid tag format: '$TAG'. Expected vX.Y.Z"
+          exit 1
+        fi
+
+        echo "Creating tag: $TAG"
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+        git tag "$TAG"
+        git push origin "$TAG"
+
+    - name: Save tag name for downstream workflows
+      env:
+        TAG: ${{ steps.tag.outputs.tag }}
+      run: echo "$TAG" > tag-name.txt
+
+    - name: Upload tag name artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tag-name
+        path: tag-name.txt
