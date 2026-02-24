@@ -27,7 +27,9 @@ jobs:
     - name: Resolve tag from push event
       if: github.event_name == 'push'
       id: from-push
-      run: echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+      env:
+        REF_NAME: ${{ github.ref_name }}
+      run: echo "tag=$REF_NAME" >> $GITHUB_OUTPUT
 
     - name: Download tag artifact from Tag Release
       if: github.event_name == 'workflow_run'
@@ -42,9 +44,18 @@ jobs:
       id: from-artifact
       run: echo "tag=$(cat tag-name.txt)" >> $GITHUB_OUTPUT
 
-    - name: Set output
+    - name: Sanitize and set output
       id: resolve
-      run: echo "tag=${{ steps.from-push.outputs.tag || steps.from-artifact.outputs.tag }}" >> $GITHUB_OUTPUT
+      env:
+        TAG_PUSH: ${{ steps.from-push.outputs.tag }}
+        TAG_ARTIFACT: ${{ steps.from-artifact.outputs.tag }}
+      run: |
+        TAG="${TAG_PUSH:-$TAG_ARTIFACT}"
+        if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Invalid tag format: '$TAG'. Expected vX.Y.Z"
+          exit 1
+        fi
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
 
   docker:
     needs: resolve-tag

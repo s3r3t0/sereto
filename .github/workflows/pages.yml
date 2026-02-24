@@ -34,8 +34,10 @@ jobs:
     - name: Resolve tag from push event (tag)
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
       id: from-push-tag
+      env:
+        REF_NAME: ${{ github.ref_name }}
       run: |
-        echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        echo "tag=$REF_NAME" >> $GITHUB_OUTPUT
         echo "is-tag=true" >> $GITHUB_OUTPUT
 
     - name: Resolve from push event (branch)
@@ -58,11 +60,23 @@ jobs:
         echo "tag=$(cat tag-name.txt)" >> $GITHUB_OUTPUT
         echo "is-tag=true" >> $GITHUB_OUTPUT
 
-    - name: Set output
+    - name: Sanitize and set output
       id: resolve
+      env:
+        TAG_PUSH: ${{ steps.from-push-tag.outputs.tag }}
+        TAG_ARTIFACT: ${{ steps.from-artifact.outputs.tag }}
+        IS_TAG_PUSH: ${{ steps.from-push-tag.outputs.is-tag }}
+        IS_TAG_ARTIFACT: ${{ steps.from-artifact.outputs.is-tag }}
+        IS_TAG_BRANCH: ${{ steps.from-push-branch.outputs.is-tag }}
       run: |
-        echo "tag=${{ steps.from-push-tag.outputs.tag || steps.from-artifact.outputs.tag }}" >> $GITHUB_OUTPUT
-        echo "is-tag=${{ steps.from-push-tag.outputs.is-tag || steps.from-artifact.outputs.is-tag || steps.from-push-branch.outputs.is-tag }}" >> $GITHUB_OUTPUT
+        TAG="${TAG_PUSH:-$TAG_ARTIFACT}"
+        IS_TAG="${IS_TAG_PUSH:-${IS_TAG_ARTIFACT:-$IS_TAG_BRANCH}}"
+        if [[ "$IS_TAG" == "true" ]] && [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Invalid tag format: '$TAG'. Expected vX.Y.Z"
+          exit 1
+        fi
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "is-tag=$IS_TAG" >> $GITHUB_OUTPUT
 
   deploy:
     needs: resolve-tag
