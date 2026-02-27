@@ -44,6 +44,7 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
     risk: TypeRisk
     keywords: list[str] = []
     variables: list[VarsMetadataModel] = []
+    group_hint: str | None = None
 
     @classmethod
     @validate_call
