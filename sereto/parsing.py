@@ -19,6 +19,7 @@ def parse_query(query: str, keys: dict[str, str]) -> dict[str, list[str]]:
     reverse_keys = {v: k for k, v in keys.items()}
 
     result: dict[str, list[str]] = {key: [] for key in keys}
+    result["default"] = []
 
     try:
         for token in parser.parseString(query):
@@ -36,8 +37,7 @@ def parse_query(query: str, keys: dict[str, str]) -> dict[str, list[str]]:
                 if isinstance(value, str) and not value.strip():
                     continue
 
-                first_key = next(iter(keys))
-                result[first_key].append(value)
+                result["default"].append(value)
 
     except pp.ParseException:
         pass

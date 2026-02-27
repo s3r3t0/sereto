@@ -564,6 +564,10 @@ class SearchWidget(Widget):
         }
         parsed = parse_query(query, keys)
 
+        if default := parsed["default"]:
+            parsed["name"].extend(default)
+            parsed["keyword"].extend(default)
+
         self.result_list.clear_options()
 
         if len(query) == 0:
@@ -605,7 +609,7 @@ class SearchWidget(Widget):
                 key=lambda f: f.search_similarity,
                 reverse=True,
             )
-            if f.search_similarity > 80.0
+            if f.search_similarity > 75.0
         ]
 
         options: list[FindingOption | None] = []
