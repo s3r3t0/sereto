@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the template search logic in the `sereto findings add` TUI to search both name and keyword fields by default.
+
 ### Added
 
 - **Group hints**: Add support for group hints in the sub-finding template frontmatter. This allows to simply specify which finding group a sub-finding belongs to, without having to specify it manually every time.
