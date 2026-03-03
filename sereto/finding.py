@@ -367,6 +367,21 @@ class FindingGroup:
         """Unique name of the finding group."""
         return lower_alphanum(f"finding_group_{self.name}")
 
+    def matches_hint(self, hint: str) -> bool:
+        """Check if this group matches the given hint.
+
+        The comparison is done by computing the unique name from the hint and comparing it to the group's unique name,
+        or by comparing the group name case-insensitively.
+
+        Args:
+            hint: The group hint string to match against.
+
+        Returns:
+            True if the group matches the hint.
+        """
+        hint_uname = lower_alphanum(f"finding_group_{hint}")
+        return self.uname == hint_uname or self.name.casefold() == hint.casefold()
+
 
 @dataclass
 class Findings:
@@ -416,6 +431,20 @@ class Findings:
             raise SeretoValueError("finding group unique names must be unique")
 
         return cls(groups=groups, target_dir=target_dir, target_locators=target_locators)
+
+    def find_group_by_hint(self, hint: str) -> FindingGroup | None:
+        """Find a finding group that matches the given hint.
+
+        Args:
+            hint: The group hint string to match against.
+
+        Returns:
+            The matching finding group, or None if no match is found.
+        """
+        for group in self.groups:
+            if group.matches_hint(hint):
+                return group
+        return None
 
     def get_path(self, category: str, name: str) -> FilePath:
         """Get the path to a sub-finding by category and name.
@@ -533,8 +562,30 @@ class Findings:
 
         # Determine group name
         group_name = group_name or sub_finding.name
-        if suffix:
-            group_name = f"{group_name} {suffix}"
+
+        # Check if a group with this name already exists - reuse it instead of creating a new one
+        existing_group = next((g for g in self.groups if g.name == group_name), None)
+        if existing_group is not None:
+            doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
+            if existing_group.name not in doc:
+                raise SeretoValueError(f"finding group {existing_group.name!r} not found in {self.config_file}")
+
+            table = cast(Table, doc[existing_group.name])
+
+            if "findings" in table:
+                arr = table.get("findings", tomlkit.array())
+                current = [str(x) for x in arr]
+                if sub_finding.uname not in current:
+                    arr.append(sub_finding.uname)
+            else:
+                arr = tomlkit.array()
+                arr.append(sub_finding.uname)
+                table.add("findings", arr)
+
+            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
+
+            existing_group.sub_findings.append(sub_finding)
+            return
 
         # Create finding group
         group = FindingGroup(

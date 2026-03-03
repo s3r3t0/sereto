@@ -39,7 +39,6 @@ from sereto.parsing import parse_query
 from sereto.project import Project
 from sereto.target import Target
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
-from sereto.utils import lower_alphanum
 
 _NEW_GROUP_SENTINEL = "__new_group__"
 _GROUP_HINT_SENTINEL = "__group_hint__"
@@ -227,13 +226,9 @@ class AddSubFindingScreen(ModalScreen[None]):
 
         if event.select is self.select_group.query_one(Select):
             is_new_group = event.value == _NEW_GROUP_SENTINEL
-            is_hint_group = event.value == _GROUP_HINT_SENTINEL
-            # show group name input for explicit new group, or when hint would create a new group
-            self.group_name_container.display = is_new_group or self._hint_creates_new_group()
+            # show group name input only for explicit "Create new group"
+            self.group_name_container.display = is_new_group
             if is_new_group:
-                self.input_group_name.focus()
-            elif is_hint_group and self._hint_creates_new_group():
-                self.input_group_name.value = self.finding.group_hint or ""
                 self.input_group_name.focus()
 
     @staticmethod
@@ -244,7 +239,7 @@ class AddSubFindingScreen(ModalScreen[None]):
         """Build options list for the group Select with 'Create new group' first."""
         options: list[tuple[str, str]] = [("\u2795 Create new group", _NEW_GROUP_SENTINEL)]
         if group_hint:
-            options.append((f"HINT: {group_hint}", _GROUP_HINT_SENTINEL))
+            options.append((f"\U0001f4a1 Suggested: {group_hint}", _GROUP_HINT_SENTINEL))
         options.extend((g_name, g_uname) for g_name, g_uname in groups)
         return options
 
@@ -252,34 +247,35 @@ class AddSubFindingScreen(ModalScreen[None]):
         """Rebuild the group Select options."""
         group_select: Select[str] = self.select_group.query_one(Select)
         group_select.set_options(self._build_group_options(groups, self.finding.group_hint))
-        self._group_unames = [g_uname for _g_name, g_uname in groups]
-        # Reset to default ("Create new group")
-        group_select.value = _NEW_GROUP_SENTINEL
-        self.group_name_container.display = True
+        self._group_unames = [g_uname for _, g_uname in groups]
+        # Default to hint sentinel when a hint is present, otherwise "Create new group"
+        if self.finding.group_hint:
+            group_select.value = _GROUP_HINT_SENTINEL
+            self.group_name_container.display = False
+        else:
+            group_select.value = _NEW_GROUP_SENTINEL
+            self.group_name_container.display = True
 
-    def _hint_group_uname(self, target: Target) -> str | None:
-        # Check if it we can add hint to an existing group
+    def _resolve_group_hint(self, target: Target) -> str | None:
+        """Resolve the group hint to an existing group's uname.
+
+        Args:
+            target: The target to search for a matching group.
+
+        Returns:
+            The uname of the matching group, or None if no match is found.
+        """
         hint = (self.finding.group_hint or "").strip()
-        hint_uname = lower_alphanum(f"finding_group_{hint}")
-        for group in target.findings.groups:
-            # if group hint matches an existing group, we will add the new sub-finding to that group
-            if group.uname == hint_uname or group.name.casefold() == hint.casefold():
-                return group.uname
-        return None
-
-    def _hint_creates_new_group(self) -> bool:
-        # Check if the hint would create a new group
-        try:
-            target = self._retrieve_target()
-        except Exception:
-            return bool(self.finding.group_hint)
-        return self._hint_group_uname(target) is None and bool(self.finding.group_hint)
+        if not hint:
+            return None
+        group = target.findings.find_group_by_hint(hint)
+        return group.uname if group is not None else None
 
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
         try:
             target = self._retrieve_target()
-        except Exception:
+        except SeretoValueError:
             self.overwrite_warning.display = False
             return
 
@@ -400,15 +396,12 @@ class AddSubFindingScreen(ModalScreen[None]):
             # "Create new group" selected
             group_name = self.input_group_name.value.strip() or None
         elif not isinstance(group_select.value, NoSelection) and group_select.value == _GROUP_HINT_SENTINEL:
-            # "HINT" selected: append to hinted existing group when possible; otherwise create it
-            hinted_group_uname = self._hint_group_uname(target)
-            if hinted_group_uname is not None:
-                # Group does exist, add sub-finding to existing group
-                selected_group = hinted_group_uname
+            # "Suggested" selected: append to existing group when possible; otherwise create it
+            resolved_uname = self._resolve_group_hint(target)
+            if resolved_uname is not None:
+                selected_group = resolved_uname
             else:
-                # Group does not exist yet, create it from group_hint attribute
-                hinted_group_name = (self.finding.group_hint or "").strip()
-                group_name = hinted_group_name or (self.input_group_name.value.strip() or None)
+                group_name = (self.finding.group_hint or "").strip() or None
         elif not isinstance(group_select.value, NoSelection):
             # Existing group selected
             selected_group = group_select.value
