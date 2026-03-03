@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Group hints**: Add support for group hints in the sub-finding template frontmatter. This allows to simply specify which finding group a sub-finding belongs to, without having to specify it manually every time.
+
+### Dependencies
+
+- uv.lock: Bump pypdf from 6.7.1 to 6.7.5
+
 ## [0.5.8] - 2026-02-24
 
 ### Changed
