@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the template search logic in the `sereto findings add` TUI to search both name and keyword fields by default.
+
 ## [0.7.5] - 2026-04-20
 
 ### Fixed
