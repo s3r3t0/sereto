@@ -140,6 +140,32 @@ def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
     wd.change(project_path)
 
 
+@handle_exceptions
+@validate_call
+def repl_new_cd(project_id: TypeProjectId) -> None:
+    """Switch the active project in the REPL.
+
+    Args:
+        project_id: The ID of the project to switch to.
+
+    Raises:
+        SeretoValueError: If the project ID is invalid.
+        SeretoPathError: If the project's path does not exist.
+    """
+    project: Project = get_current_context().obj
+    wd = WorkingDir()
+
+    settings = project.settings
+    project_path = resolve_project_directory(
+        projects_path=settings.projects_path,
+        project_id=project_id,
+        templates_path=settings.templates_path,
+    )
+
+    # Change the current working directory to the new location
+    wd.change(project_path)
+
+
 @click.command(name="exit")
 def repl_exit() -> None:
     """Exit from the Read-Eval-Print Loop (REPL)."""

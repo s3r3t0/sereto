@@ -11,7 +11,7 @@ import click
 from prompt_toolkit import prompt
 from pydantic import FilePath, validate_call
 
-from sereto.cli.commands import sereto_ls, sereto_repl
+from sereto.cli.commands import repl_new_cd, sereto_ls, sereto_repl
 from sereto.cli.config import (
     add_dates_config,
     add_people_config,
@@ -104,6 +104,8 @@ def new(ctx: Project, project_id: TypeProjectId) -> None:
         name=name,
         people=ctx.settings.default_people,
     )
+
+    repl_new_cd(project_id=project_id)
 
 
 @cli.command()
