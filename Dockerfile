@@ -1,4 +1,4 @@
-FROM texlive/texlive:latest
+FROM texlive/texlive:latest@sha256:01bbb8d9dd354a02a8fbc24137ca13982f19fed90d0fd36c83773dfa6c4537ba
 
 # Volumes for mounting the projects and templates
 VOLUME /projects
