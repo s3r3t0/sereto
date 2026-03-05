@@ -574,37 +574,40 @@ class SearchWidget(Widget):
         if not self.matcher_dict:
             return
 
-        # When default terms are present, name and keyword share those terms.
-        # Use a single combined score (weighted toward max) instead of two separate scores to avoid penalizing findings
-        # that match well in one field but not the other.
-        has_default = bool(default_terms) and "name" in self.matcher_dict and "keyword" in self.matcher_dict
-
         # compute search similarity
         for f in filtered_findings:
-            scores: list[float] = []
+            name_scores: list[float] = []
+            other_scores: list[float] = []
 
             for key, matcher in self.matcher_dict.items():
-                if key == "name":
-                    name_score = matcher.max_score([f.name]) or 0
-                    if has_default:
-                        keyword_score = self.matcher_dict["keyword"].max_score(f.keywords) or 0
-                        # weighted average favoring the better match (70% max, 30% min)
-                        combined = 0.7 * max(name_score, keyword_score) + 0.3 * min(name_score, keyword_score)
-                        scores.append(combined)
-                    else:
-                        scores.append(name_score)
-                elif key == "keyword":
-                    if has_default:
-                        # already accounted for in the "name" branch
-                        continue
-                    keyword_score = matcher.max_score(f.keywords) or 0
-                    scores.append(keyword_score)
-                else:
-                    if key in f.text:
-                        text_score = matcher.max_score([f.text[key]]) or 0
-                        scores.append(text_score)
+                score = 0.0
 
-            f.search_similarity = sum(scores) / len(scores) if scores else 0.0
+                if key == "default":
+                    continue
+                elif key == "name":
+                    score = matcher.max_score([f.name]) or 0.0
+                elif key == "keyword":
+                    score = matcher.max_score(f.keywords) or 0.0
+                else:
+                    field_text = f.text.get(key)
+                    if field_text:
+                        score = matcher.max_score([field_text]) or 0.0
+
+                if score <= 0.0:
+                    continue
+
+                if key == "name":
+                    name_scores.append(score)
+                else:
+                    other_scores.append(score)
+
+            name_avg = sum(name_scores) / len(name_scores) if name_scores else 0.0
+            other_avg = sum(other_scores) / len(other_scores) if other_scores else 0.0
+
+            if name_avg > 0.0 and other_avg > 0.0:
+                f.search_similarity = 0.7 * max(name_avg, other_avg) + 0.3 * min(name_avg, other_avg)
+            else:
+                f.search_similarity = name_avg if name_avg > 0.0 else other_avg
 
         # display matching findings
         result_item = [
@@ -614,7 +617,7 @@ class SearchWidget(Widget):
                 key=lambda f: f.search_similarity,
                 reverse=True,
             )
-            if f.search_similarity > 75.0
+            if f.search_similarity > 80.0
         ]
 
         options: list[FindingOption | None] = []
