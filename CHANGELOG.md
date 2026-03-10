@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- uv.lock: Bump pypdf from 6.7.1 to 6.7.5
+- Update pypdf requirement from ~=6.7.0 to ~=6.8.0 to prevent "Annotation sizes differ" warning in the terminal when rendering the report.
+- uv.lock: Bump pypdf from 6.7.1 to 6.8.0
 
 ## [0.5.8] - 2026-02-24
 
