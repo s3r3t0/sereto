@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-10
+
 ### Added
 
 - **Group hints**: Add support for group hints in the sub-finding template frontmatter. This allows to simply specify which finding group a sub-finding belongs to, without having to specify it manually every time.
@@ -732,7 +734,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.5.8...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/s3r3t0/sereto/compare/v0.5.8...v0.6.0
 [0.5.8]: https://github.com/s3r3t0/sereto/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/s3r3t0/sereto/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/s3r3t0/sereto/compare/v0.5.5...v0.5.6
