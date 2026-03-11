@@ -11,7 +11,7 @@ import click
 from prompt_toolkit import prompt
 from pydantic import FilePath, validate_call
 
-from sereto.cli.commands import sereto_ls, sereto_repl
+from sereto.cli.commands import repl_cd_impl, sereto_ls, sereto_repl
 from sereto.cli.config import (
     add_dates_config,
     add_people_config,
@@ -75,6 +75,14 @@ def cli(ctx: click.Context, log_level: LogLevel | None) -> None:
     ctx.obj = Project()
 
 
+def is_in_repl_shell() -> bool:
+    """Return True when the command execution is inside the REPL session."""
+    ctx = click.get_current_context(silent=True)
+    if ctx is None:
+        return False
+    return ctx.meta.get("in_repl", False)
+
+
 @cli.command()
 @handle_exceptions
 @click.argument("project_id")
@@ -104,6 +112,10 @@ def new(ctx: Project, project_id: TypeProjectId) -> None:
         name=name,
         people=ctx.settings.default_people,
     )
+
+    # Only change the working directory when this command runs from inside REPL.
+    if is_in_repl_shell():
+        repl_cd_impl(project_id=project_id)
 
 
 @cli.command()
