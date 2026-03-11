@@ -121,6 +121,11 @@ def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
         SeretoValueError: If the project ID is invalid.
         SeretoPathError: If the project's path does not exist.
     """
+    repl_cd_impl(project_id=project_id)
+
+
+@validate_call
+def repl_cd_impl(project_id: TypeProjectId | Literal["-"]) -> None:
     project: Project = get_current_context().obj
     wd = WorkingDir()
 
@@ -128,32 +133,6 @@ def repl_cd(project_id: TypeProjectId | Literal["-"]) -> None:
     if project_id == "-":
         wd.go_back()
         return
-
-    settings = project.settings
-    project_path = resolve_project_directory(
-        projects_path=settings.projects_path,
-        project_id=project_id,
-        templates_path=settings.templates_path,
-    )
-
-    # Change the current working directory to the new location
-    wd.change(project_path)
-
-
-@handle_exceptions
-@validate_call
-def repl_new_cd(project_id: TypeProjectId) -> None:
-    """Switch the active project in the REPL.
-
-    Args:
-        project_id: The ID of the project to switch to.
-
-    Raises:
-        SeretoValueError: If the project ID is invalid.
-        SeretoPathError: If the project's path does not exist.
-    """
-    project: Project = get_current_context().obj
-    wd = WorkingDir()
 
     settings = project.settings
     project_path = resolve_project_directory(
@@ -223,4 +202,9 @@ Type '-h'/'--help' to see available commands.
         "history": FileHistory(Path(get_app_dir(app_name="sereto")) / ".sereto_history"),
         "style": prompt_style,
     }
-    repl(click.get_current_context(), prompt_kwargs=prompt_kwargs)
+
+    current_context = get_current_context()
+
+    current_context.meta["in_repl"] = True
+
+    repl(current_context, prompt_kwargs=prompt_kwargs)
