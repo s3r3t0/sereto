@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3241,23 +3241,7 @@
 <span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cd&quot;</span><span class="p">)</span>
+<span class="normal">124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cd&quot;</span><span class="p">)</span>
 <span class="nd">@handle_exceptions</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 <span class="nd">@validate_call</span>
@@ -3271,23 +3255,7 @@
 <span class="sd">        SeretoValueError: If the project ID is invalid.</span>
 <span class="sd">        SeretoPathError: If the project&#39;s path does not exist.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">project</span><span class="p">:</span> <span class="n">Project</span> <span class="o">=</span> <span class="n">get_current_context</span><span class="p">()</span><span class="o">.</span><span class="n">obj</span>
-    <span class="n">wd</span> <span class="o">=</span> <span class="n">WorkingDir</span><span class="p">()</span>
-
-    <span class="c1"># `cd -` ... Go back to the previous working directory</span>
-    <span class="k">if</span> <span class="n">project_id</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
-        <span class="n">wd</span><span class="o">.</span><span class="n">go_back</span><span class="p">()</span>
-        <span class="k">return</span>
-
-    <span class="n">settings</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span>
-    <span class="n">project_path</span> <span class="o">=</span> <span class="n">resolve_project_directory</span><span class="p">(</span>
-        <span class="n">projects_path</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">projects_path</span><span class="p">,</span>
-        <span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">,</span>
-        <span class="n">templates_path</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Change the current working directory to the new location</span>
-    <span class="n">wd</span><span class="o">.</span><span class="n">change</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+    <span class="n">repl_cd_impl</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3310,10 +3278,10 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_exit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit from the Read-Eval-Print Loop (REPL).&quot;&quot;&quot;</span>
     <span class="n">click_repl_exit</span><span class="p">()</span>
@@ -3339,11 +3307,11 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
 <span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">([</span><span class="n">level</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">LogLevel</span><span class="p">],</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_log</span><span class="p">(</span><span class="n">log_level</span><span class="p">:</span> <span class="n">LogLevel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the logging level for current REPL session.&quot;&quot;&quot;</span>
@@ -3496,12 +3464,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/commands.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
@@ -3540,7 +3503,17 @@
 <span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
-<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sereto_repl</span><span class="p">(</span><span class="n">cli</span><span class="p">:</span> <span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sereto_repl</span><span class="p">(</span><span class="n">cli</span><span class="p">:</span> <span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an interactive Read-Eval-Print Loop (REPL) session.</span>
 
 <span class="sd">    Args:</span>
@@ -3584,7 +3557,12 @@
         <span class="s2">&quot;history&quot;</span><span class="p">:</span> <span class="n">FileHistory</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">get_app_dir</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s2">&quot;sereto&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;.sereto_history&quot;</span><span class="p">),</span>
         <span class="s2">&quot;style&quot;</span><span class="p">:</span> <span class="n">prompt_style</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">repl</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">get_current_context</span><span class="p">(),</span> <span class="n">prompt_kwargs</span><span class="o">=</span><span class="n">prompt_kwargs</span><span class="p">)</span>
+
+    <span class="n">current_context</span> <span class="o">=</span> <span class="n">get_current_context</span><span class="p">()</span>
+
+    <span class="n">current_context</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;in_repl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">repl</span><span class="p">(</span><span class="n">current_context</span><span class="p">,</span> <span class="n">prompt_kwargs</span><span class="o">=</span><span class="n">prompt_kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
