@@ -112,6 +112,7 @@ def build_finding_group_dependencies(
 @validate_call
 def build_finding_group_to_format(
     project: Project,
+    template: str,
     target: Target,
     finding_group: FindingGroup,
     format: FileFormat,
@@ -125,8 +126,8 @@ def build_finding_group_to_format(
     fg_ix = target.findings.groups.index(finding_group)
 
     # Construct path to finding group template
-    if not (template := project.path / f"layouts/finding_group.{format.value}.j2").is_file():
-        raise SeretoPathError(f"template not found: '{template}'")
+    if not (template_path := project.path / f"layouts/{template}.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template_path}'")
 
     content = render_jinja2(
         templates=[
@@ -135,7 +136,7 @@ def build_finding_group_to_format(
             project.path / "includes",
             project.path,
         ],
-        file=template,
+        file=template_path,
         vars={
             "finding_group": finding_group,
             "finding_group_index": fg_ix,
@@ -190,7 +191,9 @@ def build_target_dependencies(
 
 
 @validate_call
-def build_target_to_format(project: Project, target: Target, format: FileFormat, version: ProjectVersion) -> Path:
+def build_target_to_format(
+    project: Project, template: str, target: Target, format: FileFormat, version: ProjectVersion
+) -> Path:
     # Initialize the build directory
     init_build_dir(project=project, target=target)
 
@@ -198,8 +201,8 @@ def build_target_to_format(project: Project, target: Target, format: FileFormat,
     target_ix = project.config.at_version(version).targets.index(target)
 
     # Construct path to target template
-    if not (template := project.path / f"layouts/target.{format.value}.j2").is_file():
-        raise SeretoPathError(f"template not found: '{template}'")
+    if not (template_path := project.path / f"layouts/{template}.{format.value}.j2").is_file():
+        raise SeretoPathError(f"template not found: '{template_path}'")
 
     # Render Jinja2 template
     content = render_jinja2(
@@ -209,7 +212,7 @@ def build_target_to_format(project: Project, target: Target, format: FileFormat,
             project.path / "includes",
             project.path,
         ],
-        file=template,
+        file=template_path,
         vars={
             "target": target,
             "target_index": target_ix,
