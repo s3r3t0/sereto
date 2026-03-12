@@ -627,6 +627,7 @@ def pdf() -> None:
 @click.option("-fs", "--finding-group-selector", help="Finding group selector.")
 @click.option("-c", "--converter", help="Convert finding recipe")
 @click.option("-r", "--renderer", help="Build TeX finding recipe")
+@click.option("-t", "--template", default="finding_group", help="Template for the finding group.")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @click.option(
     "-a",
@@ -643,6 +644,7 @@ def cli_pdf_finding_group(
     finding_group_selector: int | str | None,
     converter: str | None,
     renderer: str | None,
+    template: str,
     version: ProjectVersion | None,
     all: bool,
 ) -> None:
@@ -654,6 +656,7 @@ def cli_pdf_finding_group(
         finding_group_selector: The finding group to be generated.
         converter: The recipe for converting the findings.
         renderer: The recipe for building TeX.
+        template: The template for the finding group.
         version: The version of the configuration to use. If None, the last version is used.
         all: Flag to render all finding groups (exclusive with selectors).
     """
@@ -662,10 +665,13 @@ def cli_pdf_finding_group(
         raise SeretoValueError("--all cannot be used together with --target-selector or --finding-group-selector")
 
     if all:
-        generate_all_pdf_finding_groups(project=ctx, converter=converter, renderer=renderer, version=version)
+        generate_all_pdf_finding_groups(
+            project=ctx, template=template, converter=converter, renderer=renderer, version=version
+        )
     else:
         find_and_generate_pdf_finding_group(
             project=ctx,
+            template=template,
             target_selector=target_selector,
             finding_group_selector=finding_group_selector,
             converter=converter,
@@ -679,6 +685,7 @@ def cli_pdf_finding_group(
 @click.option("-ts", "--target-selector", help="Target selector.")
 @click.option("-c", "--convert-recipe", help="Convert finding recipe")
 @click.option("-r", "--target-recipe", help="Build TeX target recipe")
+@click.option("-t", "--template", default="target", help="Template for the target.")
 @click.option("-v", "--version", help="Use config at specific version, e.g. 'v1.0'.")
 @click.pass_obj
 @validate_call
@@ -687,6 +694,7 @@ def cli_pdf_target(
     target_selector: int | str | None,
     target_recipe: str | None,
     convert_recipe: str | None,
+    template: str,
     version: ProjectVersion | None,
 ) -> None:
     """Generate a target PDF.\f
@@ -696,10 +704,12 @@ def cli_pdf_target(
         target_selector: The target for which the PDF is being generated.
         target_recipe: The recipe for building the TeX target.
         convert_recipe: The recipe for converting the findings.
+        template: The template for the target.
         version: The version of the configuration to use. If None, the last version is used.
     """
     generate_pdf_target(
         project=ctx,
+        template=template,
         target_selector=target_selector,
         target_recipe=target_recipe,
         convert_recipe=convert_recipe,

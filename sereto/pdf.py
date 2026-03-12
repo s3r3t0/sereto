@@ -58,6 +58,7 @@ def render_to_pdf(
 @validate_call
 def generate_pdf_finding_group(
     project: Project,
+    template: str,
     target: Target,
     fg: FindingGroup,
     converter: str | None,
@@ -70,6 +71,7 @@ def generate_pdf_finding_group(
 
     Args:
         project: Project's representation.
+        template: The template used for generating the finding group.
         target: The target containing the finding group.
         fg: The finding group to generate.
         converter: The convert recipe used for file format transformations. If None, the first recipe is used.
@@ -92,7 +94,12 @@ def generate_pdf_finding_group(
         converter=converter,
     )
     finding_group_intermediate = build_finding_group_to_format(
-        project=project, target=target, finding_group=fg, format=recipe.intermediate_format, version=version
+        project=project,
+        template=template,
+        target=target,
+        finding_group=fg,
+        format=recipe.intermediate_format,
+        version=version,
     )
 
     # Render PDF
@@ -112,6 +119,7 @@ def generate_pdf_finding_group(
 @validate_call
 def find_and_generate_pdf_finding_group(
     project: Project,
+    template: str,
     target_selector: int | str | None,
     finding_group_selector: int | str | None,
     converter: str | None,
@@ -122,6 +130,7 @@ def find_and_generate_pdf_finding_group(
 
     Args:
         project: Project's representation.
+        template: The template used for generating the finding group.
         target_selector: The target selector (1-based index or unique name). If None, the only target is selected.
         finding_group_selector: The finding group selector (1-based index or unique name). If None, the only finding
             group is selected.
@@ -146,6 +155,7 @@ def find_and_generate_pdf_finding_group(
 
     return generate_pdf_finding_group(
         project=project,
+        template=template,
         target=target,
         fg=fg,
         converter=converter,
@@ -157,6 +167,7 @@ def find_and_generate_pdf_finding_group(
 @validate_call
 def generate_all_pdf_finding_groups(
     project: Project,
+    template: str,
     converter: str | None,
     renderer: str | None,
     version: ProjectVersion | None,
@@ -165,6 +176,7 @@ def generate_all_pdf_finding_groups(
 
     Args:
         project: Project's representation.
+        template: The template used for generating the finding group.
         converter: The convert recipe used for file format transformations. If None, the first recipe is used.
         renderer: The recipe used for generating the finding group. If None, the first recipe is used.
         version: The version of the project to use. If None, the last version is used.
@@ -181,6 +193,7 @@ def generate_all_pdf_finding_groups(
     return [
         generate_pdf_finding_group(
             project=project,
+            template=template,
             target=target,
             fg=fg,
             converter=converter,
@@ -295,6 +308,7 @@ def generate_pdf_sow(project: Project, sow_recipe: str | None, version: ProjectV
 @validate_call
 def generate_pdf_target(
     project: Project,
+    template: str,
     target_selector: int | str | None,
     target_recipe: str | None,
     convert_recipe: str | None,
@@ -304,6 +318,7 @@ def generate_pdf_target(
 
     Args:
         project: Project's representation.
+        template: The template used for generating the target.
         target_selector: The target selector (1-based index or unique name). If None, the only target is selected.
         target_recipe: The recipe used for generating the target. If None, the first recipe is used.
         convert_recipe: The convert recipe used for file format transformations. If None, the first recipe is used.
@@ -332,7 +347,7 @@ def generate_pdf_target(
         converter=convert_recipe,
     )
     target_intermediate = build_target_to_format(
-        project=project, target=target, format=recipe.intermediate_format, version=version
+        project=project, template=template, target=target, format=recipe.intermediate_format, version=version
     )
 
     # Render PDF
