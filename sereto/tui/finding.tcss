@@ -21,11 +21,23 @@ SearchWidget {
     .input-field {
     padding: 0 1;
     }
+    .query-summary {
+    padding: 0 1;
+    height: auto;
+    color: $text;
+    }
+    .search-hint {
+    padding: 0 1;
+    color: $text-muted;
+    }
+    .result-meta {
+    padding: 0 1;
+    color: $text-muted;
+    }
     .search-result{
     background: transparent;
-    padding: 0 1;
+    padding: 1 1 3 1;
     border: none;
-    padding-bottom:3;
     }
     .category-filter {
     min-width: 20;
