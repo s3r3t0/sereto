@@ -1,19 +1,17 @@
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import frontmatter  # type: ignore
 from jinja2 import Environment
 from pydantic import DirectoryPath, ValidationError
-from rapidfuzz import fuzz
 from rich.markup import escape
 from rich.syntax import Syntax
 from rich.text import Text
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
-from textual.fuzzy import Matcher
 from textual.screen import ModalScreen
 from textual.types import NoSelection
 from textual.widget import Widget
@@ -35,9 +33,21 @@ from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.extract import extract_block_from_jinja, extract_text_from_jinja
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
-from sereto.parsing import parse_query
 from sereto.project import Project
 from sereto.target import Target
+from sereto.tui.search import (
+    FINDING_SEARCH_FIELDS,
+    FuzzyMatcher,
+    ParsedSearchQuery,
+    SearchDocument,
+    SearchResult,
+    build_matchers,
+    parse_search_query,
+    rank_documents,
+    should_display_result,
+    summarize_query,
+    supported_operator_text,
+)
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
 from sereto.utils import lower_alphanum
 
@@ -55,7 +65,6 @@ class FindingMetadata:
     keywords: list[str]
     group_hint: str | None
     text: dict[str, str]
-    search_similarity: float = 0.0
 
 
 class FindingPreviewScreen(ModalScreen[None]):
@@ -96,7 +105,8 @@ class FindingPreviewScreen(ModalScreen[None]):
 
     def action_add_sub_finding(self) -> None:
         self.dismiss()
-        self.app.query_one("#search", SearchWidget).action_add_sub_finding()
+        app: SeretoApp = self.app  # type: ignore[assignment]
+        app.query_one("#search", SearchWidget).action_add_sub_finding()
 
 
 class AddSubFindingScreen(ModalScreen[None]):
@@ -246,7 +256,7 @@ class AddSubFindingScreen(ModalScreen[None]):
 
     def _rebuild_group_options(self, groups: list[tuple[str, str]]) -> None:
         """Rebuild the group Select options."""
-        group_select: Select[str] = self.select_group.query_one(Select)
+        group_select = cast(Select[str], self.select_group.query_one(Select))
         group_select.set_options(self._build_group_options(groups, self.finding.group_hint))
         self._group_unames = [g_uname for _, g_uname in groups]
         # Default to hint sentinel when a hint is present, otherwise "Create new group"
@@ -302,13 +312,20 @@ class AddSubFindingScreen(ModalScreen[None]):
         for var in self.finding.variables:
             if var.is_list:
                 widgets = list(self.query_one(f"#var-{var.name}", ListWidget).query(".widget").results())
+                values: list[bool] | list[int] | list[str]
 
                 match var.type:
                     case "boolean":
                         # get values, filter out NoSelection
-                        values = [
-                            w.value for w in widgets if isinstance(w, Select) and not isinstance(w.value, NoSelection)
-                        ]
+                        bool_values: list[bool] = []
+                        for widget in widgets:
+                            if not isinstance(widget, Select):
+                                continue
+                            select_widget = cast(Select[bool], widget)
+                            if isinstance(select_widget.value, NoSelection):
+                                continue
+                            bool_values.append(select_widget.value)
+                        values = bool_values
                     case "integer":
                         values_str = [
                             w.value.strip() for w in widgets if isinstance(w, Input) and len(w.value.strip()) > 0
@@ -333,7 +350,7 @@ class AddSubFindingScreen(ModalScreen[None]):
             else:
                 match var.type:
                     case "boolean":
-                        value_select: Select[bool] = self.query_one(f"#var-{var.name}", Select)
+                        value_select = cast(Select[bool], self.query_one(f"#var-{var.name}", Select))
                         value: int | str | None = (
                             value_select.value if not isinstance(value_select.value, NoSelection) else None
                         )
@@ -371,7 +388,7 @@ class AddSubFindingScreen(ModalScreen[None]):
         """
         app: SeretoApp = self.app  # type: ignore[assignment]
 
-        target_select: Select[str] = self.select_target.query_one(Select)
+        target_select = cast(Select[str], self.select_target.query_one(Select))
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
 
         matching_target = [t for t in all_targets if t.uname == target_select.value]
@@ -391,14 +408,14 @@ class AddSubFindingScreen(ModalScreen[None]):
         # - name
         sub_finding_name = self.input_name.value
         # - risk
-        risk_select: Select[str] = self.select_risk.query_one(Select)
+        risk_select = cast(Select[str], self.select_risk.query_one(Select))
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
         # - target
         target = self._retrieve_target()
         # - Finding Group
         selected_group: str | None = None
         group_name: str | None = None
-        group_select: Select[str] = self.select_group.query_one(Select)
+        group_select = cast(Select[str], self.select_group.query_one(Select))
         if not isinstance(group_select.value, NoSelection) and group_select.value == _NEW_GROUP_SENTINEL:
             # "Create new group" selected
             group_name = self.input_group_name.value.strip() or None
@@ -439,50 +456,6 @@ class AddSubFindingScreen(ModalScreen[None]):
         app.action_focus_search()
 
 
-class FuzzyMatcher:
-    def __init__(self, query: list[str]) -> None:
-        self.query = [q.lower() for q in query]
-
-    def max_score(self, values: list[str]) -> float:
-        """Calculate the average fuzzy match score between the query and the given values."""
-        if not self.query:
-            return 0.0
-
-        combined = "; ".join(values).lower()
-        scores: list[float] = []
-
-        for q in self.query:
-            raw_score = fuzz.partial_ratio(q, combined)
-            # Bonus for matching first letter
-            bonus = 5 if combined and combined[0] == q[0] else 0
-            scores.append(raw_score + bonus)
-        return round(sum(scores) / len(scores), 2)
-
-    def highlight(self, text: list[str]) -> Text:
-        """Highlight all fuzzy matches of the query in the given text (used in names and keywords)."""
-        combined = "; ".join(text)
-        combined_lower = combined.lower()
-        result_text = Text(combined)
-
-        for q in self.query:
-            if q in combined_lower:
-                start = 0
-                while True:
-                    idx = combined_lower.find(q, start)
-                    if idx == -1:
-                        break
-                    end = idx + len(q)
-                    result_text.stylize("bold yellow", idx, end)
-                    start = end
-            else:
-                for span in Matcher(q).highlight(combined).spans:
-                    span_text = combined[span.start : span.end]
-                    if len(span_text) <= len(q) + 2:
-                        result_text.stylize("bold yellow", span.start, span.end)
-
-        return result_text
-
-
 class SearchWidget(Widget):
     BINDINGS = [
         ("ctrl+s", "add_sub_finding", "Add sub-finding"),
@@ -493,7 +466,10 @@ class SearchWidget(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.findings: list[FindingMetadata] = []
-        self.filtered_findings: list[FindingMetadata] = []
+        self.documents: list[SearchDocument[FindingMetadata]] = []
+        self.current_results: list[SearchResult[FindingMetadata]] = []
+        self.current_query = ParsedSearchQuery(raw="")
+        self.matchers: dict[str, FuzzyMatcher] = {}
         self._load_findings()
 
     def _load_findings(self) -> None:
@@ -526,11 +502,35 @@ class SearchWidget(Widget):
                         text=extracted_text,
                     )
                 )
+                self.documents.append(
+                    SearchDocument(
+                        payload=self.findings[-1],
+                        fields=self._build_document_fields(self.findings[-1]),
+                    )
+                )
+
+    @staticmethod
+    def _build_document_fields(finding: FindingMetadata) -> dict[str, list[str]]:
+        fields: dict[str, list[str]] = {
+            "name": [finding.name],
+            "keyword": finding.keywords,
+        }
+        for field in FINDING_SEARCH_FIELDS.previewable_fields():
+            value = finding.text.get(field.name, "").strip()
+            if value:
+                fields[field.name] = [value]
+        return fields
 
     def compose(self) -> ComposeResult:
         app: SeretoApp = self.app  # type: ignore[assignment]
 
-        self.input_field = Input(placeholder="Type to search...", classes="input-field")
+        self.input_field = Input(
+            placeholder='Search by name or keyword. Try impact:rce or description:"sql injection".',
+            classes="input-field",
+        )
+        self.query_summary = Static(classes="query-summary")
+        self.search_hint = Static(classes="search-hint")
+        self.result_meta = Static(classes="result-meta")
         self.category_filter = SelectionList[str](*[(category, category, True) for category in app.categories])
 
         class NoFocusOptionList(OptionList):
@@ -543,99 +543,65 @@ class SearchWidget(Widget):
         with Horizontal(classes="search-panel"):
             with Vertical(), Container(classes="search-palette"):
                 yield self.input_field
+                yield self.query_summary
+                yield self.search_hint
+                yield self.result_meta
                 yield self.result_list
             with Container(classes="category-filter"):
                 yield self.category_filter
 
     def on_mount(self) -> None:
         self.input_field.focus()
+        self.query_summary.update(summarize_query(self.current_query, FINDING_SEARCH_FIELDS))
+        self.search_hint.update(supported_operator_text(FINDING_SEARCH_FIELDS))
+        self.result_meta.update(Text(f"Loaded {len(self.findings)} finding templates.", style="dim"))
 
     @on(Input.Changed)
     @on(SelectionList.SelectedChanged)
     def update_results(self) -> None:
-        query = self.input_field.value.strip()
-        keys = {
-            "name": "n",
-            "keyword": "k",
-            "description": "d",
-            "likelihood": "l",
-            "impact": "i",
-            "recommendation": "r",
-        }
-        parsed = parse_query(query, keys)
-
-        if default_terms := parsed.get("default", []):
-            parsed["name"].extend(default_terms)
-            parsed["keyword"].extend(default_terms)
+        query = self.input_field.value
+        self.current_query = parse_search_query(query, FINDING_SEARCH_FIELDS)
+        self.matchers = build_matchers(self.current_query, FINDING_SEARCH_FIELDS)
+        self.query_summary.update(summarize_query(self.current_query, FINDING_SEARCH_FIELDS))
 
         self.result_list.clear_options()
+        self.current_results = []
 
-        if len(query) == 0:
+        if not query.strip():
+            self.result_meta.update(Text(f"Loaded {len(self.findings)} finding templates.", style="dim"))
             return
 
         selected_categories = [c.lower() for c in self.category_filter.selected]
-        filtered_findings = [f for f in self.findings if f.category.lower() in selected_categories]
+        filtered_documents = [
+            document for document in self.documents if document.payload.category.lower() in selected_categories
+        ]
+        self.current_results = rank_documents(filtered_documents, self.current_query, FINDING_SEARCH_FIELDS)
 
-        # reusable fuzzy matchers for scoring and highlighting
-        self.matcher_dict = {key: FuzzyMatcher(parsed[key]) for key in keys if parsed[key]}
-        if not self.matcher_dict:
+        if not self.current_results:
+            self.result_meta.update(
+                Text("No matches. Try fewer terms or use one of the operators below.", style="yellow")
+            )
             return
 
-        # When default terms are present, name and keyword share those terms.
-        # Use a single combined score (weighted toward max) instead of two separate scores to avoid penalizing findings
-        # that match well in one field but not the other.
-        has_default = bool(default_terms) and "name" in self.matcher_dict and "keyword" in self.matcher_dict
-
-        # compute search similarity
-        for f in filtered_findings:
-            scores: list[float] = []
-
-            for key, matcher in self.matcher_dict.items():
-                if key == "name":
-                    name_score = matcher.max_score([f.name]) or 0
-                    if has_default:
-                        keyword_score = self.matcher_dict["keyword"].max_score(f.keywords) or 0
-                        # weighted average favoring the better match (70% max, 30% min)
-                        combined = 0.7 * max(name_score, keyword_score) + 0.3 * min(name_score, keyword_score)
-                        scores.append(combined)
-                    else:
-                        scores.append(name_score)
-                elif key == "keyword":
-                    if has_default:
-                        # already accounted for in the "name" branch
-                        continue
-                    keyword_score = matcher.max_score(f.keywords) or 0
-                    scores.append(keyword_score)
-                else:
-                    if key in f.text:
-                        text_score = matcher.max_score([f.text[key]]) or 0
-                        scores.append(text_score)
-
-            f.search_similarity = sum(scores) / len(scores) if scores else 0.0
-
-        # display matching findings
-        result_item = [
-            f
-            for f in sorted(
-                filtered_findings,
-                key=lambda f: f.search_similarity,
-                reverse=True,
-            )
-            if f.search_similarity > 75.0
-        ]
-
         options: list[FindingOption | None] = []
-        for f in result_item:
-            options.append(FindingOption(f, self.matcher_dict))
-            options.append(None)  # insert a separator line
+        visible_results = [result for result in self.current_results if should_display_result(result.score)]
+        for index, result in enumerate(visible_results):
+            options.append(FindingOption(result, self.matchers))
+            if index < len(visible_results) - 1:
+                options.append(None)
 
         self.result_list.clear_options()
         self.result_list.add_options(options)
+        self.result_meta.update(
+            Text(f"{len(visible_results)} matches across {len(selected_categories)} categories.", style="dim")
+        )
 
         # highlight the first search result
         if options:
-            self.result_list.highlighted = 0
-            self.result_list.scroll_to_highlight()
+            first_index = self._find_selectable_index(0, 1)
+            if first_index is not None:
+                self.result_list.highlighted = first_index
+                self.result_list.scroll_to_highlight()
 
     def on_key(self, event: events.Key) -> None:
         """Intercepts key presses and handles the Enter key."""
@@ -653,34 +619,50 @@ class SearchWidget(Widget):
             return
 
         if self.result_list.highlighted is None:
-            self.result_list.highlighted = 0
+            next_index = self._find_selectable_index(0, 1)
         else:
-            if self.result_list.highlighted < len(self.result_list.options) - 1:
-                self.result_list.highlighted += 1
-        self.result_list.scroll_to_highlight(top=True)
+            next_index = self._find_selectable_index(self.result_list.highlighted + 1, 1)
+
+        if next_index is not None:
+            self.result_list.highlighted = next_index
+            self.result_list.scroll_to_highlight(top=True)
 
     def action_cursor_up(self) -> None:
         if not self.result_list.options:
             return
 
         if self.result_list.highlighted is None:
-            self.result_list.highlighted = 0
+            next_index = self._find_selectable_index(len(self.result_list.options) - 1, -1)
         else:
-            if self.result_list.highlighted > 0:
-                self.result_list.highlighted -= 1
-        self.result_list.scroll_to_highlight(top=True)
+            next_index = self._find_selectable_index(self.result_list.highlighted - 1, -1)
+
+        if next_index is not None:
+            self.result_list.highlighted = next_index
+            self.result_list.scroll_to_highlight(top=True)
+
+    def _find_selectable_index(self, start: int, direction: int) -> int | None:
+        if direction not in {-1, 1}:
+            raise ValueError("direction must be -1 or 1")
+
+        index = start
+        while 0 <= index < len(self.result_list.options):
+            option = self.result_list.get_option_at_index(index)
+            if isinstance(option, FindingOption):
+                return index
+            index += direction
+        return None
 
     def assemble_template(self, file: str) -> str | Text:
         """Highlight matching words in specific Jinja blocks and returns reconstructed template."""
         code = Text(file)
         found_match = False
 
-        for key in ("likelihood", "description", "impact", "recommendation"):
-            matcher = self.matcher_dict.get(key)
+        for field in FINDING_SEARCH_FIELDS.previewable_fields():
+            matcher = self.matchers.get(field.name)
             if not matcher:
                 continue
             # extract the full content of the block
-            block_text, start, end = extract_block_from_jinja(file, key)
+            block_text, start, end = extract_block_from_jinja(file, field.name)
             highlighted_block = matcher.highlight([block_text])
             if highlighted_block.spans:
                 found_match = True
@@ -695,10 +677,11 @@ class SearchWidget(Widget):
         option = event.option
         if not isinstance(option, FindingOption):
             return
-        file = option.finding.path.read_text(encoding="utf-8")
+        file = option.result.document.payload.path.read_text(encoding="utf-8")
         final_code = self.assemble_template(file)
 
-        self.app.push_screen(
+        app: SeretoApp = self.app  # type: ignore[assignment]
+        app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
                 code=final_code,
@@ -712,9 +695,10 @@ class SearchWidget(Widget):
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
         if not isinstance(option, FindingOption):
             return
-        file = option.finding.path.read_text(encoding="utf-8")
+        file = option.result.document.payload.path.read_text(encoding="utf-8")
         final_code = self.assemble_template(file)
-        self.app.push_screen(
+        app: SeretoApp = self.app  # type: ignore[assignment]
+        app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
                 code=final_code,
@@ -729,10 +713,11 @@ class SearchWidget(Widget):
             return
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
         if isinstance(option, FindingOption):
-            self.app.push_screen(
+            app: SeretoApp = self.app  # type: ignore[assignment]
+            app.push_screen(
                 AddSubFindingScreen(
-                    templates=self.app.project.settings.templates_path,  # type: ignore[attr-defined]
-                    finding=option.finding,
+                    templates=app.project.settings.templates_path,
+                    finding=option.result.document.payload,
                     title="Add sub-finding",
                 )
             )
@@ -741,19 +726,50 @@ class SearchWidget(Widget):
 class FindingOption(Option):
     """An Option representing a finding, with name and keywords optionally highlighted."""
 
-    def __init__(self, finding: FindingMetadata, matchers: dict[str, FuzzyMatcher]) -> None:
+    def __init__(self, result: SearchResult[FindingMetadata], matchers: dict[str, FuzzyMatcher]) -> None:
+        finding = result.document.payload
         name_matcher = matchers.get("name")
         keyword_matcher = matchers.get("keyword")
 
         name_text = name_matcher.highlight([finding.name]) if name_matcher else Text(finding.name)
+        name_text.stylize("bold")
 
-        keywords_text = (
-            keyword_matcher.highlight(finding.keywords) if keyword_matcher else Text(", ".join(finding.keywords))
+        support_text = Text(finding.category, style="bold cyan")
+        keyword_preview = self._build_keyword_preview(finding.keywords, keyword_matcher)
+        match_hint = self._build_match_hint(result)
+
+        if keyword_preview is not None:
+            support_text.append("  |  ", style="dim")
+            support_text.append_text(keyword_preview)
+        elif match_hint is not None:
+            support_text.append("  |  ", style="dim")
+            support_text.append_text(match_hint)
+
+        text = Text.assemble(
+            name_text + "\n",
+            support_text,
         )
-
-        text = Text.assemble(name_text + "\n", Text(style="italic dim") + keywords_text)
         super().__init__(text, id=str(finding.path))
-        self.finding = finding
+        self.result = result
+
+    @staticmethod
+    def _build_keyword_preview(keywords: list[str], matcher: FuzzyMatcher | None) -> Text | None:
+        if not keywords:
+            return None
+
+        preview_keywords = keywords[:3]
+        preview = matcher.highlight(preview_keywords) if matcher else Text(", ".join(preview_keywords))
+        preview.stylize("italic dim")
+        if len(keywords) > len(preview_keywords):
+            preview.append(", ...", style="italic dim")
+        return preview
+
+    @staticmethod
+    def _build_match_hint(result: SearchResult[FindingMetadata]) -> Text | None:
+        reason = next((reason for reason in result.reasons if reason.field_name not in {"name", "keyword"}), None)
+        if reason is None:
+            return None
+        return Text(f"{reason.label.lower()} match", style="italic dim")
 
 
 class SeretoApp(App[None]):
