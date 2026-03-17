@@ -7,12 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-<<<<<<< HEAD
-### Dependencies
-
-- Update textual requirement from ~=8.0.0 to ~=8.1.1
-- Update pypdf requirement from ~=6.8.0 to ~=6.9.0
-=======
 ## [0.6.1] - 2026-03-17
 
 ### Added
@@ -23,7 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Reworked the `sereto findings show` table to look like the other tables within `show` command.
->>>>>>> 865dcd7 (Updated changelog with the new changes)
+
+### Dependencies
+
+- Update textual requirement from ~=8.0.0 to ~=8.1.1
+- Update pypdf requirement from ~=6.8.0 to ~=6.9.0
 
 ## [0.6.0] - 2026-03-10
 
