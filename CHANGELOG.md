@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add automatic redirection to the newly created project when in REPL using `new` command
+- Add template selection option `-t` to `sereto pdf target` and `sereto pdf finding-group`
+
+### Changed
+
+- Reworked the `sereto findings show` table to look like the other tables within `show` command.
+
 ### Dependencies
 
 - Update textual requirement from ~=8.0.0 to ~=8.1.1
