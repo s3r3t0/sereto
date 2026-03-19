@@ -70,3 +70,33 @@ def test_keyword_match_can_rescue_untagged_search():
     results = rank_documents(documents, parse_search_query("sweet32", FINDING_SEARCH_FIELDS), FINDING_SEARCH_FIELDS)
 
     assert results[0].document.payload == "Weak TLS Configuration"
+
+
+def test_result_diagnostics_include_free_text_details():
+    documents = [
+        _doc("SQL Injection", keywords=["sqli"]),
+    ]
+
+    result = rank_documents(
+        documents, parse_search_query("sql injection", FINDING_SEARCH_FIELDS), FINDING_SEARCH_FIELDS
+    )[0]
+
+    assert result.diagnostics.final_score == result.score
+    assert result.diagnostics.passed_threshold is True
+    assert result.diagnostics.free_text_score > 0
+    assert result.diagnostics.clause_score == 0.0
+    assert result.diagnostics.field_scores["name"] > 0
+
+
+def test_result_diagnostics_include_clause_details():
+    documents = [
+        _doc("Generic Finding", impact="Remote code execution through unsafe deserialization."),
+    ]
+
+    result = rank_documents(documents, parse_search_query("impact:rce", FINDING_SEARCH_FIELDS), FINDING_SEARCH_FIELDS)[
+        0
+    ]
+
+    assert result.diagnostics.final_score == result.score
+    assert result.diagnostics.clause_score > 0
+    assert result.diagnostics.field_scores["impact"] > 0

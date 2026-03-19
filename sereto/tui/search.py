@@ -4,10 +4,18 @@ from rapidfuzz import fuzz
 from rich.text import Text
 from textual.fuzzy import Matcher
 
+from sereto.logging import LogLevel, get_log_config
+
 _FREE_TEXT_REASON_WEIGHT = 1.0
 _CLAUSE_REASON_WEIGHT = 1.35
 _MATCH_THRESHOLD = 38.0
 _TERM_MATCH_THRESHOLD = 45.0
+
+
+def is_search_debug_visible() -> bool:
+    """Return whether inline search diagnostics should be shown in the TUI."""
+
+    return get_log_config().level in {LogLevel.DEBUG, LogLevel.TRACE}
 
 
 @dataclass(frozen=True)
@@ -84,6 +92,30 @@ class SearchResult[T]:
     document: SearchDocument[T]
     score: float
     reasons: list[SearchReason]
+    diagnostics: "SearchDiagnostics"
+
+
+@dataclass(frozen=True)
+class SearchDiagnostics:
+    """Structured scoring details for one ranked result.
+
+    Attributes:
+        free_text_score: Aggregate contribution from untagged free-text terms.
+        clause_score: Aggregate contribution from explicit field clauses.
+        phrase_bonus: Extra score added when the full free-text phrase appears
+            in a high-value field such as name or keyword.
+        final_score: Final score after combining weighted contributions and
+            bonuses.
+        passed_threshold: Whether the final score passed the display cutoff.
+        field_scores: Weighted field contributions keyed by field name.
+    """
+
+    free_text_score: float = 0.0
+    clause_score: float = 0.0
+    phrase_bonus: float = 0.0
+    final_score: float = 0.0
+    passed_threshold: bool = False
+    field_scores: dict[str, float] = field(default_factory=dict)
 
 
 class FuzzyMatcher:
@@ -310,11 +342,16 @@ def _rank_document[T](
     """
     weighted_scores: list[tuple[float, float]] = []
     reasons: dict[str, SearchReason] = {}
+    free_text_score = 0.0
+    clause_score = 0.0
+    field_scores: dict[str, float] = {}
 
     if query.free_terms:
-        free_score, free_reasons = _rank_free_terms(document, query.free_terms, fields)
+        free_score, free_reasons, free_field_scores = _rank_free_terms(document, query.free_terms, fields)
         if free_score > 0:
             weighted_scores.append((free_score, _FREE_TEXT_REASON_WEIGHT))
+            free_text_score = free_score
+            field_scores.update(free_field_scores)
             for reason in free_reasons:
                 _remember_reason(reasons, reason)
 
@@ -323,7 +360,10 @@ def _rank_document[T](
         field_score = _score_terms(values, document.fields.get(search_field.name, []))
         if field_score <= 0:
             continue
+        weighted_clause_score = field_score * search_field.clause_weight * _CLAUSE_REASON_WEIGHT
         weighted_scores.append((field_score, search_field.clause_weight * _CLAUSE_REASON_WEIGHT))
+        clause_score += weighted_clause_score
+        field_scores[search_field.name] = weighted_clause_score
         _remember_reason(reasons, SearchReason(search_field.name, search_field.label, field_score))
 
     if not weighted_scores:
@@ -331,19 +371,29 @@ def _rank_document[T](
 
     total_weight = sum(weight for _, weight in weighted_scores)
     score = sum(value * weight for value, weight in weighted_scores) / total_weight
-    score = min(score + _phrase_bonus(document, query), 100.0)
-    if not should_display_result(score):
+    phrase_bonus = _phrase_bonus(document, query)
+    score = min(score + phrase_bonus, 100.0)
+    passed_threshold = should_display_result(score)
+    diagnostics = SearchDiagnostics(
+        free_text_score=round(free_text_score, 2),
+        clause_score=round(clause_score, 2),
+        phrase_bonus=round(phrase_bonus, 2),
+        final_score=round(score, 2),
+        passed_threshold=passed_threshold,
+        field_scores={field_name: round(value, 2) for field_name, value in field_scores.items()},
+    )
+    if not passed_threshold:
         return None
 
     sorted_reasons = sorted(reasons.values(), key=lambda reason: reason.score, reverse=True)[:3]
-    return SearchResult(document=document, score=round(score, 2), reasons=sorted_reasons)
+    return SearchResult(document=document, score=round(score, 2), reasons=sorted_reasons, diagnostics=diagnostics)
 
 
 def _rank_free_terms[T](
     document: SearchDocument[T],
     terms: list[str],
     fields: SearchFieldRegistry,
-) -> tuple[float, list[SearchReason]]:
+) -> tuple[float, list[SearchReason], dict[str, float]]:
     """Score free-text terms across all fields using `default_weight`.
 
     Each free-text term is evaluated against every indexed field. The raw field
@@ -354,6 +404,7 @@ def _rank_free_terms[T](
 
     per_term_scores: list[float] = []
     reason_scores: dict[str, SearchReason] = {}
+    field_scores: dict[str, float] = {}
     matched_terms = 0
 
     for term in terms:
@@ -372,19 +423,20 @@ def _rank_free_terms[T](
         if best_score >= _TERM_MATCH_THRESHOLD:
             matched_terms += 1
             if best_field is not None:
+                field_scores[best_field.name] = max(field_scores.get(best_field.name, 0.0), round(best_score, 2))
                 _remember_reason(
                     reason_scores,
                     SearchReason(best_field.name, best_field.label, round(best_score, 2)),
                 )
 
     if not per_term_scores:
-        return 0.0, []
+        return 0.0, [], {}
 
     score = sum(per_term_scores) / len(per_term_scores)
     if matched_terms:
         score += 8 * (matched_terms / len(per_term_scores))
 
-    return min(score, 100.0), list(reason_scores.values())
+    return min(score, 100.0), list(reason_scores.values()), field_scores
 
 
 def _score_terms(terms: list[str], values: list[str]) -> float:

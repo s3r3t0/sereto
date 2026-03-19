@@ -39,9 +39,11 @@ from sereto.tui.search import (
     FINDING_SEARCH_FIELDS,
     FuzzyMatcher,
     ParsedSearchQuery,
+    SearchDiagnostics,
     SearchDocument,
     SearchResult,
     build_matchers,
+    is_search_debug_visible,
     parse_search_query,
     rank_documents,
     should_display_result,
@@ -470,6 +472,7 @@ class SearchWidget(Widget):
         self.current_results: list[SearchResult[FindingMetadata]] = []
         self.current_query = ParsedSearchQuery(raw="")
         self.matchers: dict[str, FuzzyMatcher] = {}
+        self.show_search_debug = is_search_debug_visible()
         self._load_findings()
 
     def _load_findings(self) -> None:
@@ -586,7 +589,7 @@ class SearchWidget(Widget):
         options: list[FindingOption | None] = []
         visible_results = [result for result in self.current_results if should_display_result(result.score)]
         for index, result in enumerate(visible_results):
-            options.append(FindingOption(result, self.matchers))
+            options.append(FindingOption(result, self.matchers, show_debug=self.show_search_debug))
             if index < len(visible_results) - 1:
                 options.append(None)
 
@@ -726,7 +729,12 @@ class SearchWidget(Widget):
 class FindingOption(Option):
     """An Option representing a finding, with name and keywords optionally highlighted."""
 
-    def __init__(self, result: SearchResult[FindingMetadata], matchers: dict[str, FuzzyMatcher]) -> None:
+    def __init__(
+        self,
+        result: SearchResult[FindingMetadata],
+        matchers: dict[str, FuzzyMatcher],
+        show_debug: bool = False,
+    ) -> None:
         finding = result.document.payload
         name_matcher = matchers.get("name")
         keyword_matcher = matchers.get("keyword")
@@ -745,10 +753,11 @@ class FindingOption(Option):
             support_text.append("  |  ", style="dim")
             support_text.append_text(match_hint)
 
-        text = Text.assemble(
-            name_text + "\n",
-            support_text,
-        )
+        text_parts: list[Text] = [name_text + "\n", support_text]
+        if show_debug:
+            text_parts.extend([Text("\n"), self._build_debug_text(result.diagnostics)])
+
+        text = Text.assemble(*text_parts)
         super().__init__(text, id=str(finding.path))
         self.result = result
 
@@ -770,6 +779,25 @@ class FindingOption(Option):
         if reason is None:
             return None
         return Text(f"{reason.label.lower()} match", style="italic dim")
+
+    @staticmethod
+    def _build_debug_text(diagnostics: SearchDiagnostics) -> Text:
+        details = [
+            f"score={diagnostics.final_score:.2f}",
+            f"threshold={'pass' if diagnostics.passed_threshold else 'fail'}",
+        ]
+        if diagnostics.free_text_score > 0:
+            details.append(f"free={diagnostics.free_text_score:.2f}")
+        if diagnostics.clause_score > 0:
+            details.append(f"clause={diagnostics.clause_score:.2f}")
+        if diagnostics.phrase_bonus > 0:
+            details.append(f"bonus={diagnostics.phrase_bonus:.2f}")
+        if diagnostics.field_scores:
+            field_scores = " ".join(
+                f"{field_name}={score:.2f}" for field_name, score in diagnostics.field_scores.items()
+            )
+            details.append(field_scores)
+        return Text(" | ".join(details), style="dim")
 
 
 class SeretoApp(App[None]):
