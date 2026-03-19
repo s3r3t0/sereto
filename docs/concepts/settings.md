@@ -23,7 +23,7 @@ The path to the directory where the *templates* are located.
 
 ## `render`
 
-Defines *recipes* and *tools* which are used when rendering the TeX files or converting between different formats (e.g. from Markdown to TeX).
+Defines *recipes* and *tools* which are used when rendering Typst or TeX files, or converting between different formats (e.g. from Markdown to Typst or TeX).
 
 The `render` field consists of the following:
 
@@ -36,50 +36,50 @@ Example:
 === "JSON"
     ```json
     {
-        "name": "default-report",
+        "name": "default-report-typ",
         "tools": [
-            "latexmk"
+            "typst"
         ],
-        "intermediate_format": "tex"
+        "intermediate_format": "typ"
     }
     ```
 
 === "Python"
     ```py
     RenderRecipe(
-        name="default-report",
+        name="default-report-typ",
         tools=[
-            "latexmk"
+            "typst"
         ],
-        intermediate_format=FileFormat.tex
+        intermediate_format=FileFormat.typ
     )
     ```
 
-### `finding_recipes`
+### `finding_group_recipes`
 
-List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *finding*.
+List of [`RenderRecipe`](../reference/models/settings.md#sereto.models.settings.RenderRecipe)s, which define the tools used to render a *finding group*.
 
 Example:
 
 === "JSON"
     ```json
     {
-        "name": "default-finding",
+        "name": "default-finding-typ",
         "tools": [
-            "latexmk-finding"
+            "typst-partial"
         ],
-        "intermediate_format": "tex"
+        "intermediate_format": "typ"
     }
     ```
 
 === "Python"
     ```py
     RenderRecipe(
-        name="default-finding",
+        name="default-finding-typ",
         tools=[
-            "latexmk-finding"
+            "typst-partial"
         ],
-        intermediate_format=FileFormat.tex
+        intermediate_format=FileFormat.typ
     )
     ```
 
@@ -92,22 +92,22 @@ Example:
 === "JSON"
     ```json
     {
-        "name": "default-sow",
+        "name": "default-sow-typ",
         "tools": [
-            "latexmk"
+            "typst"
         ],
-        "intermediate_format": "tex"
+        "intermediate_format": "typ"
     }
     ```
 
 === "Python"
     ```py
     RenderRecipe(
-        name="default-sow",
+        name="default-sow-typ",
         tools=[
-            "latexmk"
+            "typst"
         ],
-        intermediate_format=FileFormat.tex
+        intermediate_format=FileFormat.typ
     )
     ```
 
@@ -120,22 +120,22 @@ Example:
 === "JSON"
     ```json
     {
-        "name": "default-target",
+        "name": "default-target-typ",
         "tools": [
-            "latexmk-target"
+            "typst-partial"
         ],
-        "intermediate_format": "tex"
+        "intermediate_format": "typ"
     }
     ```
 
 === "Python"
     ```py
     RenderRecipe(
-        name="default-target",
+        name="default-target-typ",
         tools=[
-            "latexmk-target"
+            "typst-partial"
         ],
-        intermediate_format=FileFormat.tex
+        intermediate_format=FileFormat.typ
     )
     ```
 
@@ -148,11 +148,11 @@ Example:
 === "JSON"
     ```json
     {
-        "name": "convert-md",
+        "name": "convert-md-to-typ",
         "input_format": "md",
-        "output_format": "tex",
+        "output_format": "typ",
         "tools": [
-            "pandoc-md"
+            "pandoc-md-typ"
         ]
     }
     ```
@@ -160,11 +160,11 @@ Example:
 === "Python"
     ```py
     ConvertRecipe(
-        name="convert-md",
+        name="convert-md-to-typ",
         input_format=FileFormat.md,
-        output_format=FileFormat.tex,
+        output_format=FileFormat.typ,
         tools=[
-            "pandoc-md"
+            "pandoc-md-typ"
         ]
     )
     ```
@@ -188,13 +188,15 @@ Example:
 === "JSON"
     ```json
     {
-        "name": "latexmk",
-        "command": "latexmk",
+        "name": "typst-partial",
+        "command": "typst",
         "args": [
-            "-xelatex",
-            "-interaction=batchmode",
-            "-halt-on-error",
-            "%DOC%"
+            "compile",
+            "%DOC_EXT%",
+            "--root",
+            "%DIR%/../..",
+            "--font-path",
+            "%TEMPLATES%/fonts"
         ]
     }
     ```
@@ -202,13 +204,15 @@ Example:
 === "Python"
     ```py
     RenderTool(
-        name="latexmk",
-        command="latexmk",
+        name="typst-partial",
+        command="typst",
         args=[
-            "-xelatex",
-            "-interaction=batchmode",
-            "-halt-on-error",
-            "%DOC%"
+            "compile",
+            "%DOC_EXT%",
+            "--root",
+            "%DIR%/../..",
+            "--font-path",
+            "%TEMPLATES%/fonts"
         ]
     )
     ```

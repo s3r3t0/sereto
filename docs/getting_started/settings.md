@@ -63,7 +63,7 @@ The `type` attribute of a person can have the following values:
 
 ## Rendering settings
 
-For rendering the documents, external commands, such as `latexmk`, are used. The sequence of commands to be used is specified in recipes.
+For rendering the documents, external commands such as `pandoc`, `typst`, and `latexmk` are used. The sequence of commands to be used is specified in recipes.
 
 ### `render`
 
@@ -156,11 +156,18 @@ A dictionary of risk levels and time periods in which findings with given risk l
   "plugins": {
     "enabled": true,
     "directory": "/home/demo/sereto/plugins"
-  }
+  },
   "render": {
     "report_recipes": [
       {
-        "name": "default-report",
+        "name": "default-report-typ",
+        "tools": [
+          "typst"
+        ],
+        "intermediate_format": "typ"
+      },
+      {
+        "name": "default-report-tex",
         "tools": [
           "latexmk"
         ],
@@ -169,7 +176,14 @@ A dictionary of risk levels and time periods in which findings with given risk l
     ],
     "finding_group_recipes": [
       {
-        "name": "default-finding",
+        "name": "default-finding-typ",
+        "tools": [
+          "typst-partial"
+        ],
+        "intermediate_format": "typ"
+      },
+      {
+        "name": "default-finding-tex",
         "tools": [
           "latexmk-finding"
         ],
@@ -178,7 +192,14 @@ A dictionary of risk levels and time periods in which findings with given risk l
     ],
     "sow_recipes": [
       {
-        "name": "default-sow",
+        "name": "default-sow-typ",
+        "tools": [
+          "typst"
+        ],
+        "intermediate_format": "typ"
+      },
+      {
+        "name": "default-sow-tex",
         "tools": [
           "latexmk"
         ],
@@ -187,7 +208,14 @@ A dictionary of risk levels and time periods in which findings with given risk l
     ],
     "target_recipes": [
       {
-        "name": "default-target",
+        "name": "default-target-typ",
+        "tools": [
+          "typst-partial"
+        ],
+        "intermediate_format": "typ"
+      },
+      {
+        "name": "default-target-tex",
         "tools": [
           "latexmk-target"
         ],
@@ -196,9 +224,17 @@ A dictionary of risk levels and time periods in which findings with given risk l
     ],
     "convert_recipes": [
       {
+        "name": "convert-md-to-typ",
+        "tools": [
+          "pandoc-md-typ"
+        ],
+        "input_format": "md",
+        "output_format": "typ"
+      },
+      {
         "name": "convert-md-to-tex",
         "tools": [
-          "pandoc-md"
+          "pandoc-md-tex"
         ],
         "input_format": "md",
         "output_format": "tex"
@@ -206,7 +242,52 @@ A dictionary of risk levels and time periods in which findings with given risk l
     ],
     "tools": [
       {
-        "name": "pandoc-md",
+        "name": "pandoc-md-typ",
+        "command": "pandoc",
+        "args": [
+          "--from=markdown-implicit_figures+lists_without_preceding_blankline",
+          "--to=typst",
+          "--sandbox",
+          "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
+          "--filter=%TEMPLATES%/pandocfilters/graphics.py"
+        ]
+      },
+      {
+        "name": "typst",
+        "command": "typst",
+        "args": [
+          "compile",
+          "%DOC_EXT%",
+          "--root",
+          "%DIR%/..",
+          "--font-path",
+          "%TEMPLATES%/fonts"
+        ]
+      },
+      {
+        "name": "typst-partial",
+        "command": "typst",
+        "args": [
+          "compile",
+          "%DOC_EXT%",
+          "--root",
+          "%DIR%/../..",
+          "--font-path",
+          "%TEMPLATES%/fonts"
+        ]
+      },
+      {
+        "name": "latexmk-finding",
+        "command": "latexmk",
+        "args": [
+          "-xelatex",
+          "-interaction=batchmode",
+          "-halt-on-error",
+          "%DOC%"
+        ]
+      },
+      {
+        "name": "pandoc-md-tex",
         "command": "pandoc",
         "args": [
           "--from=markdown-implicit_figures+lists_without_preceding_blankline",
@@ -214,7 +295,7 @@ A dictionary of risk levels and time periods in which findings with given risk l
           "--sandbox",
           "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
           "--filter=%TEMPLATES%/pandocfilters/graphics.py",
-          "--filter=%TEMPLATES%/pandocfilters/verbatim.py",
+          "--filter=%TEMPLATES%/pandocfilters/verbatim.py"
         ]
       },
       {
@@ -229,16 +310,6 @@ A dictionary of risk levels and time periods in which findings with given risk l
       },
       {
         "name": "latexmk-target",
-        "command": "latexmk",
-        "args": [
-          "-xelatex",
-          "-interaction=batchmode",
-          "-halt-on-error",
-          "%DOC%"
-        ]
-      },
-      {
-        "name": "latexmk-finding",
         "command": "latexmk",
         "args": [
           "-xelatex",
