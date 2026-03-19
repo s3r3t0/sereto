@@ -2,14 +2,17 @@ import os
 import shlex
 from glob import iglob
 
-from click_repl import ClickCompleter
+import click
+from click_repl import ClickCompleter  # type: ignore[import-untyped]
 from prompt_toolkit.completion import Completion
 
 
 class EscapedClickCompleter(ClickCompleter):
     """ClickCompleter that properly escapes path completions for shell safety."""
 
-    def _get_completion_for_Path_types(self, param, args, incomplete):
+    def _get_completion_for_Path_types(
+        self, param: click.Parameter, args: list[str], incomplete: str
+    ) -> list[Completion]:
         if "*" in incomplete:
             return []
 
