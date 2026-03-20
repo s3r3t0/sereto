@@ -14,12 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** Change the render configuration in the settings to use Typst instead of LaTeX by default. This means that if you are using the default settings, you will need to prepare Typst templates for report, finding group, and statement-of-work rendering. The old LaTeX recipes are still present in the settings, so you can explicitly specify them if needed or change your settings.
 - Reworked the `sereto findings show` table to look like the other tables within `show` command.
 
 ### Dependencies
 
 - Update textual requirement from ~=8.0.0 to ~=8.1.1
-- Update pypdf requirement from ~=6.8.0 to ~=6.9.0
+- Update pypdf requirement from ~=6.8.0 to ~=6.9.1
 
 ## [0.6.0] - 2026-03-10
 

@@ -138,12 +138,20 @@ class Render(SeretoBaseModel):
 
     @model_validator(mode="after")
     def render_validator(self) -> Self:
-        for recipe in self.report_recipes + self.finding_group_recipes + self.sow_recipes:
-            if not all(tool in [t.name for t in self.tools] for tool in recipe.tools):
-                raise ValueError(f"unknown tools in recipe {recipe.name!r}")
-        tool_names = [t.name for t in self.tools]
+        tool_names = [tool.name for tool in self.tools]
         if len(tool_names) != len(set(tool_names)):
             raise ValueError("tools with duplicate name detected")
+
+        all_recipes = (
+            self.report_recipes
+            + self.finding_group_recipes
+            + self.sow_recipes
+            + self.target_recipes
+            + self.convert_recipes
+        )
+        for recipe in all_recipes:
+            if not all(tool in tool_names for tool in recipe.tools):
+                raise ValueError(f"unknown tools in recipe {recipe.name!r}")
         return self
 
     @validate_call
@@ -235,18 +243,78 @@ class Render(SeretoBaseModel):
 
 
 DEFAULT_RENDER_CONFIG = Render(
-    report_recipes=[RenderRecipe(name="default-report", tools=["latexmk"])],
-    finding_group_recipes=[RenderRecipe(name="default-finding", tools=["latexmk-finding"])],
-    sow_recipes=[RenderRecipe(name="default-sow", tools=["latexmk"])],
-    target_recipes=[RenderRecipe(name="default-target", tools=["latexmk-target"])],
+    report_recipes=[
+        RenderRecipe(name="default-report-typ", tools=["typst"], intermediate_format=FileFormat.typ),
+        RenderRecipe(name="default-report-tex", tools=["latexmk"], intermediate_format=FileFormat.tex),
+    ],
+    finding_group_recipes=[
+        RenderRecipe(name="default-finding-typ", tools=["typst-partial"], intermediate_format=FileFormat.typ),
+        RenderRecipe(name="default-finding-tex", tools=["latexmk-finding"], intermediate_format=FileFormat.tex),
+    ],
+    sow_recipes=[
+        RenderRecipe(name="default-sow-typ", tools=["typst"], intermediate_format=FileFormat.typ),
+        RenderRecipe(name="default-sow-tex", tools=["latexmk"], intermediate_format=FileFormat.tex),
+    ],
+    target_recipes=[
+        RenderRecipe(name="default-target-typ", tools=["typst-partial"], intermediate_format=FileFormat.typ),
+        RenderRecipe(name="default-target-tex", tools=["latexmk-target"], intermediate_format=FileFormat.tex),
+    ],
     convert_recipes=[
         ConvertRecipe(
-            name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md"]
+            name="convert-md-to-typ", input_format=FileFormat.md, output_format=FileFormat.typ, tools=["pandoc-md-typ"]
+        ),
+        ConvertRecipe(
+            name="convert-md-to-tex", input_format=FileFormat.md, output_format=FileFormat.tex, tools=["pandoc-md-tex"]
         ),
     ],
     tools=[
         RenderTool(
-            name="pandoc-md",
+            name="pandoc-md-typ",
+            command="pandoc",
+            args=[
+                "--from=markdown-implicit_figures+lists_without_preceding_blankline",
+                "--to=typst",
+                "--sandbox",
+                "--filter=%TEMPLATES%/pandocfilters/acronyms.py",
+                "--filter=%TEMPLATES%/pandocfilters/graphics.py",
+            ],
+        ),
+        RenderTool(
+            name="typst",
+            command="typst",
+            args=[
+                "compile",
+                "%DOC_EXT%",
+                "--root",
+                "%DIR%/..",
+                "--font-path",
+                "%TEMPLATES%/fonts",
+            ],
+        ),
+        RenderTool(
+            name="typst-partial",
+            command="typst",
+            args=[
+                "compile",
+                "%DOC_EXT%",
+                "--root",
+                "%DIR%/../..",
+                "--font-path",
+                "%TEMPLATES%/fonts",
+            ],
+        ),
+        RenderTool(
+            name="latexmk-finding",
+            command="latexmk",
+            args=[
+                "-xelatex",
+                "-interaction=batchmode",
+                "-halt-on-error",
+                "%DOC%",
+            ],
+        ),
+        RenderTool(
+            name="pandoc-md-tex",
             command="pandoc",
             args=[
                 "--from=markdown-implicit_figures+lists_without_preceding_blankline",
@@ -269,16 +337,6 @@ DEFAULT_RENDER_CONFIG = Render(
         ),
         RenderTool(
             name="latexmk-target",
-            command="latexmk",
-            args=[
-                "-xelatex",
-                "-interaction=batchmode",
-                "-halt-on-error",
-                "%DOC%",
-            ],
-        ),
-        RenderTool(
-            name="latexmk-finding",
             command="latexmk",
             args=[
                 "-xelatex",
