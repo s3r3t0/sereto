@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -745,10 +745,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#finding_recipes" class="md-nav__link">
+  <a href="#finding_group_recipes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        finding_recipes
+        finding_group_recipes
       
     </span>
   </a>
@@ -2760,10 +2760,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#finding_recipes" class="md-nav__link">
+  <a href="#finding_group_recipes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        finding_recipes
+        finding_group_recipes
       
     </span>
   </a>
@@ -2865,7 +2865,7 @@
 <h2 id="templates_path"><code>templates_path</code><a class="headerlink" href="#templates_path" title="Permanent link">&para;</a></h2>
 <p>The path to the directory where the <em>templates</em> are located.</p>
 <h2 id="render"><code>render</code><a class="headerlink" href="#render" title="Permanent link">&para;</a></h2>
-<p>Defines <em>recipes</em> and <em>tools</em> which are used when rendering the TeX files or converting between different formats (e.g. from Markdown to TeX).</p>
+<p>Defines <em>recipes</em> and <em>tools</em> which are used when rendering Typst or TeX files, or converting between different formats (e.g. from Markdown to Typst or TeX).</p>
 <p>The <code>render</code> field consists of the following:</p>
 <h3 id="report_recipes"><code>report_recipes</code><a class="headerlink" href="#report_recipes" title="Permanent link">&para;</a></h3>
 <p>List of <a href="../../reference/models/settings/#sereto.models.settings.RenderRecipe"><code>RenderRecipe</code></a>s, which define the tools used to render a <em>report</em>.</p>
@@ -2874,48 +2874,48 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report-typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;latexmk&quot;</span>
+<span class="w">        </span><span class="s2">&quot;typst&quot;</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">RenderRecipe</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-report-typ&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;latexmk&quot;</span>
+        <span class="s2">&quot;typst&quot;</span>
     <span class="p">],</span>
-    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">typ</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-<h3 id="finding_recipes"><code>finding_recipes</code><a class="headerlink" href="#finding_recipes" title="Permanent link">&para;</a></h3>
-<p>List of <a href="../../reference/models/settings/#sereto.models.settings.RenderRecipe"><code>RenderRecipe</code></a>s, which define the tools used to render a <em>finding</em>.</p>
+<h3 id="finding_group_recipes"><code>finding_group_recipes</code><a class="headerlink" href="#finding_group_recipes" title="Permanent link">&para;</a></h3>
+<p>List of <a href="../../reference/models/settings/#sereto.models.settings.RenderRecipe"><code>RenderRecipe</code></a>s, which define the tools used to render a <em>finding group</em>.</p>
 <p>Example:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">JSON</label><label for="__tabbed_2_2">Python</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding-typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;latexmk-finding&quot;</span>
+<span class="w">        </span><span class="s2">&quot;typst-partial&quot;</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">RenderRecipe</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-finding-typ&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;latexmk-finding&quot;</span>
+        <span class="s2">&quot;typst-partial&quot;</span>
     <span class="p">],</span>
-    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">typ</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2928,21 +2928,21 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow-typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;latexmk&quot;</span>
+<span class="w">        </span><span class="s2">&quot;typst&quot;</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">RenderRecipe</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-sow-typ&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;latexmk&quot;</span>
+        <span class="s2">&quot;typst&quot;</span>
     <span class="p">],</span>
-    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">typ</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2955,21 +2955,21 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target-typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;latexmk-target&quot;</span>
+<span class="w">        </span><span class="s2">&quot;typst-partial&quot;</span>
 <span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
+<span class="w">    </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">RenderRecipe</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;default-target-typ&quot;</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;latexmk-target&quot;</span>
+        <span class="s2">&quot;typst-partial&quot;</span>
     <span class="p">],</span>
-    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span>
+    <span class="n">intermediate_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">typ</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2982,22 +2982,22 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;convert-md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;convert-md-to-typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;input_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;pandoc-md&quot;</span>
+<span class="w">        </span><span class="s2">&quot;pandoc-md-typ&quot;</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">ConvertRecipe</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;convert-md&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;convert-md-to-typ&quot;</span><span class="p">,</span>
     <span class="n">input_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">md</span><span class="p">,</span>
-    <span class="n">output_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span><span class="p">,</span>
+    <span class="n">output_format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">typ</span><span class="p">,</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;pandoc-md&quot;</span>
+        <span class="s2">&quot;pandoc-md-typ&quot;</span>
     <span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -3021,26 +3021,30 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst-partial&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">&quot;-xelatex&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;-interaction=batchmode&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;-halt-on-error&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">&quot;%DOC%&quot;</span>
+<span class="w">        </span><span class="s2">&quot;compile&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;%DOC_EXT%&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--root&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;%DIR%/../..&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;--font-path&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;%TEMPLATES%/fonts&quot;</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="n">RenderTool</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
-    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;typst-partial&quot;</span><span class="p">,</span>
+    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;typst&quot;</span><span class="p">,</span>
     <span class="n">args</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;-xelatex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;-interaction=batchmode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;-halt-on-error&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;%DOC%&quot;</span>
+        <span class="s2">&quot;compile&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;%DOC_EXT%&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--root&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;%DIR%/../..&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--font-path&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;%TEMPLATES%/fonts&quot;</span>
     <span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>

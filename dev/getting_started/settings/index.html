@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -3299,7 +3299,7 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
     </div>
 
 </div><h2 id="rendering-settings">Rendering settings<a class="headerlink" href="#rendering-settings" title="Permanent link">&para;</a></h2>
-<p>For rendering the documents, external commands, such as <code>latexmk</code>, are used. The sequence of commands to be used is specified in recipes.</p>
+<p>For rendering the documents, external commands such as <code>pandoc</code>, <code>typst</code>, and <code>latexmk</code> are used. The sequence of commands to be used is specified in recipes.</p>
 <h3 id="render"><code>render</code><a class="headerlink" href="#render" title="Permanent link">&para;</a></h3>
 
 
@@ -3724,11 +3724,18 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">  </span><span class="nt">&quot;plugins&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/home/demo/sereto/plugins&quot;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;render&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;report_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;typst&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-report-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk&quot;</span>
 <span class="w">        </span><span class="p">],</span>
@@ -3737,7 +3744,14 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;finding_group_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;typst-partial&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-finding-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk-finding&quot;</span>
 <span class="w">        </span><span class="p">],</span>
@@ -3746,7 +3760,14 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;sow_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;typst&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-sow-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk&quot;</span>
 <span class="w">        </span><span class="p">],</span>
@@ -3755,7 +3776,14 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;target_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;typst-partial&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;intermediate_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default-target-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;latexmk-target&quot;</span>
 <span class="w">        </span><span class="p">],</span>
@@ -3764,9 +3792,17 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;convert_recipes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;convert-md-to-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;pandoc-md-typ&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;input_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;md&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typ&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;convert-md-to-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">          </span><span class="s2">&quot;pandoc-md&quot;</span>
+<span class="w">          </span><span class="s2">&quot;pandoc-md-tex&quot;</span>
 <span class="w">        </span><span class="p">],</span>
 <span class="w">        </span><span class="nt">&quot;input_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;md&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;output_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tex&quot;</span>
@@ -3774,7 +3810,52 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">&quot;tools&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pandoc-md&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pandoc-md-typ&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pandoc&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;--from=markdown-implicit_figures+lists_without_preceding_blankline&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--to=typst&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--sandbox&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/acronyms.py&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/graphics.py&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;compile&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%DOC_EXT%&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--root&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%DIR%/..&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--font-path&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%TEMPLATES%/fonts&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst-partial&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;typst&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;compile&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%DOC_EXT%&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--root&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%DIR%/../..&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--font-path&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%TEMPLATES%/fonts&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk-finding&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;-xelatex&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;-interaction=batchmode&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;-halt-on-error&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;%DOC%&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pandoc-md-tex&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pandoc&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;--from=markdown-implicit_figures+lists_without_preceding_blankline&quot;</span><span class="p">,</span>
@@ -3782,7 +3863,7 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">          </span><span class="s2">&quot;--sandbox&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/acronyms.py&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/graphics.py&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/verbatim.py&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;--filter=%TEMPLATES%/pandocfilters/verbatim.py&quot;</span>
 <span class="w">        </span><span class="p">]</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
@@ -3797,16 +3878,6 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk-target&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">          </span><span class="s2">&quot;-xelatex&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="s2">&quot;-interaction=batchmode&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="s2">&quot;-halt-on-error&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="s2">&quot;%DOC%&quot;</span>
-<span class="w">        </span><span class="p">]</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk-finding&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;latexmk&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">          </span><span class="s2">&quot;-xelatex&quot;</span><span class="p">,</span>
