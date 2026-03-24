@@ -8,8 +8,8 @@ from sereto.logging import LogLevel, get_log_config
 
 _FREE_TEXT_REASON_WEIGHT = 1.0
 _CLAUSE_REASON_WEIGHT = 1.35
-_MATCH_THRESHOLD = 38.0
-_TERM_MATCH_THRESHOLD = 45.0
+_MATCH_THRESHOLD = 62.0
+_TERM_MATCH_THRESHOLD = 70.0
 
 
 def is_search_debug_visible() -> bool:
@@ -182,7 +182,7 @@ class SearchFieldRegistry:
 FINDING_SEARCH_FIELDS = SearchFieldRegistry(
     [
         SearchField(name="name", label="Name", aliases=("n",), default_weight=1.0, clause_weight=1.2),
-        SearchField(name="keyword", label="Keyword", aliases=("k", "keywords"), default_weight=0.78),
+        SearchField(name="keyword", label="Keyword", aliases=("k", "keywords"), default_weight=0.8),
         SearchField(
             name="description",
             label="Description",
@@ -449,7 +449,7 @@ def _score_terms(terms: list[str], values: list[str]) -> float:
     matched = sum(score >= _TERM_MATCH_THRESHOLD for score in term_scores)
     score = sum(term_scores) / len(term_scores)
     if matched:
-        score += 6 * (matched / len(term_scores))
+        score += 5 * (matched / len(term_scores))
     return min(score, 100.0)
 
 
@@ -459,25 +459,37 @@ def _score_single_term(term: str, values: list[str]) -> float:
     if not normalized_term:
         return 0.0
 
+    term_len = len(normalized_term)
     best = 0.0
     for value in values:
         normalized_value = _normalize(value)
         if not normalized_value:
             continue
 
-        score = max(
-            fuzz.WRatio(normalized_term, normalized_value),
-            fuzz.token_set_ratio(normalized_term, normalized_value),
-            fuzz.partial_ratio(normalized_term, normalized_value),
-        )
+        wratio = fuzz.WRatio(normalized_term, normalized_value)
+        token_set = fuzz.token_set_ratio(normalized_term, normalized_value)
+        partial = fuzz.partial_ratio(normalized_term, normalized_value)
+
+        starts = normalized_value.startswith(normalized_term)
+        token_prefix = any(word.startswith(normalized_term) for word in normalized_value.split())
+        word_contains = f" {normalized_term} " in f" {normalized_value} "
+
+        if not (starts or token_prefix or word_contains):
+            if term_len <= 4:
+                partial *= 0.45
+            elif term_len <= 7:
+                partial *= 0.65
+            else:
+                partial *= 0.8
+        score = max(wratio, token_set, partial)
 
         if normalized_value == normalized_term:
             score = max(score, 100.0)
-        elif normalized_value.startswith(normalized_term):
+        elif starts:
             score += 10
-        elif any(word.startswith(normalized_term) for word in normalized_value.split()):
+        elif token_prefix:
             score += 5
-        elif f" {normalized_term} " in f" {normalized_value} ":
+        elif word_contains:
             score += 4
 
         best = max(best, min(score, 100.0))
