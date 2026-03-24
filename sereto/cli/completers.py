@@ -3,8 +3,17 @@ import shlex
 from glob import iglob
 
 import click
-from click_repl import ClickCompleter  # type: ignore[import-untyped]
+from click_repl import ClickCompleter
 from prompt_toolkit.completion import Completion
+
+IS_WINDOWS = os.name == "nt"
+
+
+def _quote_for_repl(path: str) -> str:
+    """On Windows normalize backslashes to forward slashes before quoting."""
+    if IS_WINDOWS:
+        path = path.replace("\\", "/")
+    return shlex.quote(path)
 
 
 class EscapedClickCompleter(ClickCompleter):
@@ -21,7 +30,7 @@ class EscapedClickCompleter(ClickCompleter):
         search_pattern = _incomplete.strip("'\"\t\n\r\v ").replace("\\\\", "\\") + "*"
 
         for path in iglob(search_pattern):
-            escaped = shlex.quote(path)
+            escaped = _quote_for_repl(path)
             choices.append(
                 Completion(
                     escaped,
