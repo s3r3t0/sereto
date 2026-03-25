@@ -122,6 +122,11 @@ class FuzzyMatcher:
     def __init__(self, query: list[str]) -> None:
         self.query = [q.lower() for q in query if q.strip()]
 
+    def has_direct_match(self, text: list[str]) -> bool:
+        """Return whether any query term appears directly in the text."""
+        combined_lower = "; ".join(text).lower()
+        return any(q in combined_lower for q in self.query)
+
     def highlight(self, text: list[str]) -> Text:
         """Highlight fuzzy matches in the given text."""
         combined = "; ".join(text)

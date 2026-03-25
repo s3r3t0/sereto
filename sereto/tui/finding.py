@@ -655,17 +655,26 @@ class SearchWidget(Widget):
             index += direction
         return None
 
-    def assemble_template(self, file: str) -> str | Text:
-        """Highlight matching words in specific Jinja blocks and returns reconstructed template."""
+    def assemble_template(self, file: str, result: SearchResult[FindingMetadata]) -> str | Text:
+        """Highlight matching words in relevant Jinja blocks and return reconstructed template."""
         code = Text(file)
         found_match = False
+        matched_fields = set(result.diagnostics.field_scores)
 
         for field in FINDING_SEARCH_FIELDS.previewable_fields():
+            if field.name not in matched_fields:
+                continue
+
             matcher = self.matchers.get(field.name)
             if not matcher:
                 continue
             # extract the full content of the block
             block_text, start, end = extract_block_from_jinja(file, field.name)
+            if start >= end or not block_text.strip():
+                continue
+            if not matcher.has_direct_match([block_text]):
+                continue
+
             highlighted_block = matcher.highlight([block_text])
             if highlighted_block.spans:
                 found_match = True
@@ -681,7 +690,7 @@ class SearchWidget(Widget):
         if not isinstance(option, FindingOption):
             return
         file = option.result.document.payload.path.read_text(encoding="utf-8")
-        final_code = self.assemble_template(file)
+        final_code = self.assemble_template(file, option.result)
 
         app: SeretoApp = self.app  # type: ignore[assignment]
         app.push_screen(
@@ -699,7 +708,7 @@ class SearchWidget(Widget):
         if not isinstance(option, FindingOption):
             return
         file = option.result.document.payload.path.read_text(encoding="utf-8")
-        final_code = self.assemble_template(file)
+        final_code = self.assemble_template(file, option.result)
         app: SeretoApp = self.app  # type: ignore[assignment]
         app.push_screen(
             FindingPreviewScreen(
