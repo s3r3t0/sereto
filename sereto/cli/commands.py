@@ -4,7 +4,7 @@ from typing import Literal
 
 import click
 from click import Group, get_app_dir, get_current_context
-from click_repl import exit as click_repl_exit  # type: ignore[import-untyped]
+from click_repl import exit as click_repl_exit
 from click_repl import repl
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.styles import Style
