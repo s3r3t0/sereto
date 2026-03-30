@@ -12,6 +12,7 @@ from pydantic import Field, validate_call
 from rich import box
 from rich.table import Table
 
+from sereto.cli.completers import EscapedClickCompleter
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.logging import LogLevel, get_log_config, logger, setup_logging
@@ -197,13 +198,18 @@ Type '-h'/'--help' to see available commands.
         }
     )
 
+    current_context = get_current_context()
+
+    group_ctx = current_context
+    if current_context.parent is not None and not isinstance(current_context.command, Group):
+        group_ctx = current_context.parent
+
     prompt_kwargs = {
         "message": _get_repl_prompt,
         "history": FileHistory(Path(get_app_dir(app_name="sereto")) / ".sereto_history"),
         "style": prompt_style,
+        "completer": EscapedClickCompleter(cli, ctx=group_ctx),
     }
-
-    current_context = get_current_context()
 
     current_context.meta["in_repl"] = True
 
