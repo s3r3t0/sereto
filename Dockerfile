@@ -1,4 +1,4 @@
-FROM texlive/texlive:latest@sha256:01bbb8d9dd354a02a8fbc24137ca13982f19fed90d0fd36c83773dfa6c4537ba
+FROM pandoc/typst:latest@sha256:90002c55474653351fd99d94fcd4e830c236440c2b51b22862ec96f6c9dd1560
 
 # Volumes for mounting the projects and templates
 VOLUME /projects
@@ -10,21 +10,24 @@ COPY . /usr/src/sereto
 
 RUN \
     # Install system dependencies and sereto
-    apt-get -y update && \
-    apt-get install -y pandoc python3-pip python3-venv vim gosu && \
+    apk add --no-cache \
+        python3 \
+        py3-pip \
+        vim \
+        gosu \
+    && \
     python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install /usr/src/sereto/ && \
     # Prepare container entrypoint script
     cp /usr/src/sereto/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-entrypoint.sh && \
-    # Clean up apt cache and temporary files
-    apt-get clean && \
-    rm -rf /var/cache/apt/* /var/lib/apt/lists/* /tmp/* /root/.cache/pip && \
+    # Clean up temporary files
+    rm -rf /tmp/* /root/.cache/pip && \
     rm -rf /usr/src/sereto && \
     # Create default settings
     mkdir -p /home/sereto/.config/sereto && \
-    echo '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}' > /home/sereto/.config/sereto/settings.json
+    printf '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}\n' > /home/sereto/.config/sereto/settings.json
 
 ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /home/sereto
