@@ -1996,7 +1996,7 @@ requires-dist = [
     { name = "rich", specifier = "~=14.3.1" },
     { name = "ruff", marker = "extra == 'docs'" },
     { name = "semver", specifier = "~=3.0.2" },
-    { name = "sereto-repl", specifier = "~=0.3.1" },
+    { name = "sereto-repl", specifier = "~=0.3.2" },
     { name = "textual", specifier = "~=8.2.3" },
     { name = "textual-dev", marker = "extra == 'dev'" },
     { name = "toml", specifier = ">=0.10.2" },
@@ -2006,16 +2006,16 @@ provides-extras = ["docs", "dev"]
 
 [[package]]
 name = "sereto-repl"
-version = "0.3.1"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "prompt-toolkit" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/25/03d443aaf5ed072daf50f6190e59e505b493306bf1af18d1aa0de554c15e/sereto_repl-0.3.1.tar.gz", hash = "sha256:ee7296f42d162b472b7f8fbb9e398cdaa10709922980402cc9dd7d3eb935ae65", size = 15149, upload-time = "2025-03-10T14:21:44.377Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/fc/8fae43dcc43295a9ef9d68cd688b42bed25dbf9a6c918b5332fae6bc622d/sereto_repl-0.3.2.tar.gz", hash = "sha256:659b6d565229764377357f528c80e1b96dfaea8d7648c1ffc2e6eca1b4febc4a", size = 15643, upload-time = "2026-03-30T09:37:41.543Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/ce/0d562e104d5f83cbc19abacade6d41d197409d7e915643ce815d0fa15e6a/sereto_repl-0.3.1-py3-none-any.whl", hash = "sha256:42d1e8a6e0083301755eb1c082ac44484ab1915c461ea1cb81c9827515a11a4c", size = 13911, upload-time = "2025-03-10T14:21:43.171Z" },
+    { url = "https://files.pythonhosted.org/packages/70/bc/ba926dd643da51b670033002cac72a69ae6ffdaa3a8cfe80efe6f56331a7/sereto_repl-0.3.2-py3-none-any.whl", hash = "sha256:42093061a0a6cacb27667bd824f5b8661d41e436b34316edeff2f8adb8a5ee98", size = 14605, upload-time = "2026-03-30T09:37:40.416Z" },
 ]
 
 [[package]]
