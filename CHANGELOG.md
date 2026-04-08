@@ -15,12 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking:** Change the render configuration in the settings to use Typst instead of LaTeX by default. This means that if you are using the default settings, you will need to prepare Typst templates for report, finding group, and statement-of-work rendering. The old LaTeX recipes are still present in the settings, so you can explicitly specify them if needed or change your settings.
+- **Breaking:** Rewrote the Dockerfile so that it derives from pandoc/typst Docker image.
 - Reworked the `sereto findings show` table to look like the other tables within `show` command.
+- Escape path suggestions in REPL.
 
 ### Dependencies
 
-- Update textual requirement from ~=8.0.0 to ~=8.1.1
-- Update pypdf requirement from ~=6.8.0 to ~=6.9.1
+- Update textual requirement from ~=8.0.0 to ~=8.2.3
+- Update pypdf requirement from ~=6.8.0 to ~=6.9.2
+- Update sereto-repl requirement from ~=0.3.1 to ~=0.3.2
+- Update click requirement from ~=8.1.7 to ~=8.3.1
+- Bump cryptography from 46.0.5 to 46.0.6
+- Bump requests from 2.32.5 to 2.33.0
+- Bump pygments from 2.19.2 to 2.20.0
+- Bump aiohttp from 3.13.3 to 3.13.4
 
 ## [0.6.0] - 2026-03-10
 
