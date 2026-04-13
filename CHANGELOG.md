@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-04-13
+
 ### Added
 
 - Add automatic redirection to the newly created project when in REPL using `new` command
@@ -763,7 +765,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/s3r3t0/sereto/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/s3r3t0/sereto/compare/v0.5.8...v0.6.0
 [0.5.8]: https://github.com/s3r3t0/sereto/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/s3r3t0/sereto/compare/v0.5.6...v0.5.7
