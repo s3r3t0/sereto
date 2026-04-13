@@ -21,14 +21,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- Update textual requirement from ~=8.0.0 to ~=8.2.3
-- Update pypdf requirement from ~=6.8.0 to ~=6.9.2
-- Update sereto-repl requirement from ~=0.3.1 to ~=0.3.2
 - Update click requirement from ~=8.1.7 to ~=8.3.1
-- Bump cryptography from 46.0.5 to 46.0.6
-- Bump requests from 2.32.5 to 2.33.0
-- Bump pygments from 2.19.2 to 2.20.0
+- Update jinja2 requirement from ~=3.1.4 to ~=3.1.6
+- Update pathspec requirement from >=0.12.1 to ~=1.0.4
+- Update prompt-toolkit requirement from ~=3.0.50 to ~=3.0.52
+- Update pydantic-settings requirement from ~=2.13.0 to ~=2.13.1
+- Update pypdf requirement from ~=6.8.0 to ~=6.10.0
+- Update rapidfuzz requirement from ~=3.14.0 to ~=3.14.5
+- Update sereto-repl requirement from ~=0.3.1 to ~=0.3.2
+- Update textual requirement from ~=8.0.0 to ~=8.2.3
 - Bump aiohttp from 3.13.3 to 3.13.4
+- Bump cryptography from 46.0.5 to 46.0.7
+- Bump pillow from 12.1.1 to 12.2.0
+- Bump pygments from 2.19.2 to 2.20.0
+- Bump requests from 2.32.5 to 2.33.0
 
 ## [0.6.0] - 2026-03-10
 
