@@ -8,8 +8,8 @@ from sereto.logging import LogLevel, get_log_config
 
 _FREE_TEXT_REASON_WEIGHT = 1.0
 _CLAUSE_REASON_WEIGHT = 1.35
-_MATCH_THRESHOLD = 62.0
-_TERM_MATCH_THRESHOLD = 70.0
+_MATCH_THRESHOLD = 70.0
+_TERM_MATCH_THRESHOLD = 50.0
 
 
 def is_search_debug_visible() -> bool:
@@ -459,29 +459,17 @@ def _score_single_term(term: str, values: list[str]) -> float:
     if not normalized_term:
         return 0.0
 
-    term_len = len(normalized_term)
     best = 0.0
     for value in values:
         normalized_value = _normalize(value)
         if not normalized_value:
             continue
 
-        wratio = fuzz.WRatio(normalized_term, normalized_value)
-        token_set = fuzz.token_set_ratio(normalized_term, normalized_value)
-        partial = fuzz.partial_ratio(normalized_term, normalized_value)
+        score = fuzz.WRatio(normalized_term, normalized_value)
 
         starts = normalized_value.startswith(normalized_term)
         token_prefix = any(word.startswith(normalized_term) for word in normalized_value.split())
         word_contains = f" {normalized_term} " in f" {normalized_value} "
-
-        if not (starts or token_prefix or word_contains):
-            if term_len <= 4:
-                partial *= 0.45
-            elif term_len <= 7:
-                partial *= 0.65
-            else:
-                partial *= 0.8
-        score = max(wratio, token_set, partial)
 
         if normalized_value == normalized_term:
             score = max(score, 100.0)
