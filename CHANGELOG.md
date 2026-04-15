@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-04-15
+
 ### Fixed
 
 - Keep reproducibility verification artifacts outside the repository checkout so the rebuilt sdist is not polluted by the downloaded reference distributions in CI.
@@ -789,7 +791,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.3...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/s3r3t0/sereto/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/s3r3t0/sereto/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/s3r3t0/sereto/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/s3r3t0/sereto/compare/v0.7.0...v0.7.1
