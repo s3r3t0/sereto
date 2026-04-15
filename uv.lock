@@ -1931,7 +1931,7 @@ wheels = [
 
 [[package]]
 name = "sereto"
-version = "0.7.1"
+version = "0.7.2"
 source = { editable = "." }
 dependencies = [
     { name = "annotated-types" },
