@@ -494,11 +494,11 @@ class Findings:
 
         # Load template metadata and content
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
-        template_name = template_path.name.removesuffix(".md.j2")
+        finding_file_name = lower_alphanum(sub_finding_name or template_metadata.name)
         _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"), encoding="utf-8")
 
         # Determine sub-finding path
-        sub_finding_path = self.get_path(category=category, name=template_name)
+        sub_finding_path = self.get_path(category=category, name=finding_file_name)
         suffix = None
 
         if sub_finding_path.is_file():
@@ -508,7 +508,7 @@ class Findings:
                 # Try to generate a unique filename with random suffix
                 for _ in range(5):
                     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
-                    sub_finding_path = self.get_path(category=category, name=f"{template_name}_{suffix}")
+                    sub_finding_path = self.get_path(category=category, name=f"{finding_file_name}_{suffix}")
                     if not sub_finding_path.is_file():
                         break
                 else:
