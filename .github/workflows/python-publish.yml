@@ -148,17 +148,8 @@ jobs:
       run: |
         CHANGELOG=$(sed -n "/^## \[$NUMERIC_VERSION\]/,/^## /p" CHANGELOG.md | sed '1d;$d;')
         gh release create "$TAG" \
+        dist/** \
         --repo '${{ github.repository }}' \
+        --verify-tag \
         --title "$TAG" \
         --notes "$CHANGELOG"
-    - name: Upload artifact signatures to GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-        TAG: ${{ needs.resolve-tag.outputs.tag }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
-      run: >-
-        gh release upload
-        "$TAG" dist/**
-        --repo '${{ github.repository }}'
