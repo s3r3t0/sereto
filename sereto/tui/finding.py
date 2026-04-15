@@ -273,6 +273,7 @@ class AddSubFindingScreen(ModalScreen[None]):
         return group.uname if group is not None else None
 
     def on_input_changed(self, event: Input.Changed) -> None:
+        """Update the overwrite warning when the name input changes."""
         if event.input is self.input_name:
             self.update_overwrite_warning()
 
