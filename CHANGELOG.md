@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Github settings: Enable release immutability - disallow assets and tags from being modified once a release is published.
+- Refactored finding file name to be derived from finding name.
+
 ## [0.7.0] - 2026-04-13
 
 ### Added
