@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Harden the Python release workflow for immutable GitHub releases by attaching release assets during release creation instead of uploading them afterwards.
+- Make Python package builds explicitly reproducible by pinning the build backend/toolchain, setting `SOURCE_DATE_EPOCH`, and verifying rebuilt wheel and sdist hashes in CI.
+
 ## [0.7.2] - 2026-04-15
 
 ### Changed

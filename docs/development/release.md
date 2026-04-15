@@ -1,6 +1,6 @@
 # Release
 
-The release process is automated via GitHub Actions. It consists of two workflows that handle version bumping, changelog updates, and tag creation.
+The release process is automated via GitHub Actions. It handles version bumping, changelog updates, tag creation, package publishing, release signing, and reproducibility verification.
 
 ## Prerequisites
 
@@ -19,7 +19,37 @@ The release process is automated via GitHub Actions. It consists of two workflow
 5. Review and merge the generated PR into `main`.
 6. On merge, the **Tag Release** workflow automatically creates and pushes the `vX.Y.Z` tag.
 7. The tag push triggers the existing release pipelines:
-    - **PyPI** publishing (with Sigstore signing)
-    - **GitHub Release** creation (with changelog body)
+    - **Python package build** using a pinned build toolchain
+    - **Reproducibility verification** by rebuilding the wheel and sdist and comparing hashes
+    - **PyPI** publishing
+    - **GitHub Release** creation with the built artifacts and Sigstore signatures attached during release creation
     - **Docker Hub** image build and push
     - **Documentation** deployment via mike
+
+## Notes
+
+- GitHub Releases are configured as immutable. The workflow therefore creates the release together with all assets in one operation, instead of publishing first and uploading assets afterwards.
+- Python package builds are configured to be reproducible. The release workflow pins the build backend/tool versions, sets `SOURCE_DATE_EPOCH` from the tagged commit, rebuilds the distributions, and blocks publishing if the hashes differ.
+
+## Verifying reproducibility locally
+
+To verify that a tagged release is reproducible, build it twice from a clean checkout of the same tag and compare the hashes:
+
+```sh
+git checkout vX.Y.Z
+rm -rf dist build *.egg-info
+
+export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct HEAD)"
+
+python -m pip install --user "build==1.4.3"
+python -m build
+sha256sum dist/* > /tmp/sereto-build1.sha256
+
+rm -rf dist build *.egg-info
+python -m build
+sha256sum dist/* > /tmp/sereto-build2.sha256
+
+diff -u /tmp/sereto-build1.sha256 /tmp/sereto-build2.sha256
+```
+
+If the output is empty, the wheel and source distribution are bit-for-bit identical for that environment and toolchain.
