@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep reproducibility verification artifacts outside the repository checkout so the rebuilt sdist is not polluted by the downloaded reference distributions in CI.
+
 ## [0.7.3] - 2026-04-15
 
 ### Changed
