@@ -39,6 +39,7 @@ from sereto.parsing import parse_query
 from sereto.project import Project
 from sereto.target import Target
 from sereto.tui.widgets.input import InputWithLabel, ListWidget, SelectWithLabel
+from sereto.utils import lower_alphanum
 
 _NEW_GROUP_SENTINEL = "__new_group__"
 _GROUP_HINT_SENTINEL = "__group_hint__"
@@ -271,6 +272,10 @@ class AddSubFindingScreen(ModalScreen[None]):
         group = target.findings.find_group_by_hint(hint)
         return group.uname if group is not None else None
 
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input is self.input_name:
+            self.update_overwrite_warning()
+
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
         try:
@@ -279,8 +284,9 @@ class AddSubFindingScreen(ModalScreen[None]):
             self.overwrite_warning.display = False
             return
 
+        finding_file_name = lower_alphanum(self.input_name.value or self.finding.name)
         finding_path = target.findings.get_path(
-            name=self.finding.path.name.removesuffix(".md.j2"),
+            name=finding_file_name,
             category=self.finding.category.lower(),
         )
         self.overwrite_warning.display = finding_path.is_file()
