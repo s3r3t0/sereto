@@ -2576,6 +2576,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-reproducibility-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying reproducibility locally
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2640,6 +2662,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-reproducibility-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying reproducibility locally
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2661,7 +2705,7 @@
 
 
 <h1 id="release">Release<a class="headerlink" href="#release" title="Permanent link">&para;</a></h1>
-<p>The release process is automated via GitHub Actions. It consists of two workflows that handle version bumping, changelog updates, and tag creation.</p>
+<p>The release process is automated via GitHub Actions. It handles version bumping, changelog updates, tag creation, package publishing, release signing, and reproducibility verification.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <code>## [Unreleased]</code> section in <code>CHANGELOG.md</code> must contain at least one entry.</li>
@@ -2681,13 +2725,38 @@
 <li>Review and merge the generated PR into <code>main</code>.</li>
 <li>On merge, the <strong>Tag Release</strong> workflow automatically creates and pushes the <code>vX.Y.Z</code> tag.</li>
 <li>The tag push triggers the existing release pipelines:<ul>
-<li><strong>PyPI</strong> publishing (with Sigstore signing)</li>
-<li><strong>GitHub Release</strong> creation (with changelog body)</li>
+<li><strong>Python package build</strong> using a pinned build toolchain</li>
+<li><strong>Reproducibility verification</strong> by rebuilding the wheel and sdist and comparing hashes</li>
+<li><strong>PyPI</strong> publishing</li>
+<li><strong>GitHub Release</strong> creation with the built artifacts and Sigstore signatures attached during release creation</li>
 <li><strong>Docker Hub</strong> image build and push</li>
 <li><strong>Documentation</strong> deployment via mike</li>
 </ul>
 </li>
 </ol>
+<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GitHub Releases are configured as immutable. The workflow therefore creates the release together with all assets in one operation, instead of publishing first and uploading assets afterwards.</li>
+<li>Python package builds are configured to be reproducible. The release workflow pins the build backend/tool versions, sets <code>SOURCE_DATE_EPOCH</code> from the tagged commit, rebuilds the distributions, and blocks publishing if the hashes differ.</li>
+</ul>
+<h2 id="verifying-reproducibility-locally">Verifying reproducibility locally<a class="headerlink" href="#verifying-reproducibility-locally" title="Permanent link">&para;</a></h2>
+<p>To verify that a tagged release is reproducible, build it twice from a clean checkout of the same tag and compare the hashes:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>vX.Y.Z
+rm<span class="w"> </span>-rf<span class="w"> </span>dist<span class="w"> </span>build<span class="w"> </span>*.egg-info
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">SOURCE_DATE_EPOCH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>git<span class="w"> </span>log<span class="w"> </span>-1<span class="w"> </span>--format<span class="o">=</span>%ct<span class="w"> </span>HEAD<span class="k">)</span><span class="s2">&quot;</span>
+
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span><span class="s2">&quot;build==1.4.3&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>build
+sha256sum<span class="w"> </span>dist/*<span class="w"> </span>&gt;<span class="w"> </span>/tmp/sereto-build1.sha256
+
+rm<span class="w"> </span>-rf<span class="w"> </span>dist<span class="w"> </span>build<span class="w"> </span>*.egg-info
+python<span class="w"> </span>-m<span class="w"> </span>build
+sha256sum<span class="w"> </span>dist/*<span class="w"> </span>&gt;<span class="w"> </span>/tmp/sereto-build2.sha256
+
+diff<span class="w"> </span>-u<span class="w"> </span>/tmp/sereto-build1.sha256<span class="w"> </span>/tmp/sereto-build2.sha256
+</code></pre></div>
+<p>If the output is empty, the wheel and source distribution are bit-for-bit identical for that environment and toolchain.</p>
 
 
 
