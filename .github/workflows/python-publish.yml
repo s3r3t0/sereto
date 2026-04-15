@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+env:
+  BUILD_FRONTEND_VERSION: "1.4.3"
+  BUILD_PYTHON_VERSION: "3.12.13"
+
 jobs:
   resolve-tag:
     name: Resolve tag name
@@ -73,9 +77,13 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
-        python-version: "3.x"
+        python-version: ${{ env.BUILD_PYTHON_VERSION }}
+    - name: Set reproducible build timestamp
+      env:
+        TAG: ${{ needs.resolve-tag.outputs.tag }}
+      run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct "$TAG")" >> $GITHUB_ENV
     - name: Install pypa/build
-      run: python3 -m pip install build --user
+      run: python3 -m pip install "build==${BUILD_FRONTEND_VERSION}" --user
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Store the distribution packages
@@ -84,10 +92,79 @@ jobs:
         name: python-package-distributions
         path: dist/
 
+  verify-reproducibility:
+    name: Verify reproducible distributions
+    needs:
+    - resolve-tag
+    - build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      with:
+        ref: ${{ needs.resolve-tag.outputs.tag }}
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      with:
+        python-version: ${{ env.BUILD_PYTHON_VERSION }}
+    - name: Download reference distributions
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      with:
+        name: python-package-distributions
+        path: reference-dist/
+    - name: Set reproducible build timestamp
+      env:
+        TAG: ${{ needs.resolve-tag.outputs.tag }}
+      run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct "$TAG")" >> $GITHUB_ENV
+    - name: Install pypa/build
+      run: python3 -m pip install "build==${BUILD_FRONTEND_VERSION}" --user
+    - name: Rebuild distributions
+      run: python3 -m build --outdir rebuilt-dist
+    - name: Compare distribution hashes
+      run: |
+        shopt -s nullglob
+        reference_artifacts=(reference-dist/*)
+        rebuilt_artifacts=(rebuilt-dist/*)
+
+        if [ "${#reference_artifacts[@]}" -eq 0 ] || [ "${#rebuilt_artifacts[@]}" -eq 0 ]; then
+          echo "::error::Missing artifacts for reproducibility verification."
+          exit 1
+        fi
+
+        if [ "${#reference_artifacts[@]}" -ne "${#rebuilt_artifacts[@]}" ]; then
+          echo "::error::Artifact count mismatch between reference and rebuilt distributions."
+          exit 1
+        fi
+
+        for artifact in "${reference_artifacts[@]}"; do
+          filename=$(basename "$artifact")
+          rebuilt_artifact="rebuilt-dist/$filename"
+
+          if [ ! -f "$rebuilt_artifact" ]; then
+            echo "::error::Missing rebuilt artifact: $filename"
+            exit 1
+          fi
+
+          reference_hash=$(sha256sum "$artifact" | cut -d' ' -f1)
+          rebuilt_hash=$(sha256sum "$rebuilt_artifact" | cut -d' ' -f1)
+
+          if [ "$reference_hash" != "$rebuilt_hash" ]; then
+            echo "::error::Artifact is not reproducible: $filename"
+            echo "reference: $reference_hash"
+            echo "rebuilt:   $rebuilt_hash"
+            exit 1
+          fi
+        done
+
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
     needs:
     - build
+    - verify-reproducibility
     runs-on: ubuntu-latest
     environment:
       name: pypi

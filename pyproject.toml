@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling==1.29.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -96,6 +96,9 @@ sereto = "sereto.cli.cli:entry_point"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.build]
+reproducible = true
 
 [tool.black]
 line-length = 119
