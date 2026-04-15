@@ -115,7 +115,7 @@ jobs:
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
       with:
         name: python-package-distributions
-        path: reference-dist/
+        path: ${{ runner.temp }}/reference-dist
     - name: Set reproducible build timestamp
       env:
         TAG: ${{ needs.resolve-tag.outputs.tag }}
@@ -123,12 +123,12 @@ jobs:
     - name: Install pypa/build
       run: python3 -m pip install "build==${BUILD_FRONTEND_VERSION}" --user
     - name: Rebuild distributions
-      run: python3 -m build --outdir rebuilt-dist
+      run: python3 -m build --outdir "${{ runner.temp }}/rebuilt-dist"
     - name: Compare distribution hashes
       run: |
         shopt -s nullglob
-        reference_artifacts=(reference-dist/*)
-        rebuilt_artifacts=(rebuilt-dist/*)
+        reference_artifacts=("${{ runner.temp }}"/reference-dist/*)
+        rebuilt_artifacts=("${{ runner.temp }}"/rebuilt-dist/*)
 
         if [ "${#reference_artifacts[@]}" -eq 0 ] || [ "${#rebuilt_artifacts[@]}" -eq 0 ]; then
           echo "::error::Missing artifacts for reproducibility verification."
@@ -142,7 +142,7 @@ jobs:
 
         for artifact in "${reference_artifacts[@]}"; do
           filename=$(basename "$artifact")
-          rebuilt_artifact="rebuilt-dist/$filename"
+          rebuilt_artifact="${{ runner.temp }}/rebuilt-dist/$filename"
 
           if [ ! -f "$rebuilt_artifact" ]; then
             echo "::error::Missing rebuilt artifact: $filename"
