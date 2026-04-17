@@ -108,7 +108,7 @@ def embed_attachment_to_pdf(
     writer = PdfWriter()
 
     # Copy content from the reader to the writer
-    writer.append(reader)
+    writer.clone_document_from_reader(reader)
 
     # Embed the source archive
     attachment_name = name if name is not None else attachment.name
