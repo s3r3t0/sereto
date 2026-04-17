@@ -3133,7 +3133,7 @@ keyring.</p>
     <span class="n">writer</span> <span class="o">=</span> <span class="n">PdfWriter</span><span class="p">()</span>
 
     <span class="c1"># Copy content from the reader to the writer</span>
-    <span class="n">writer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">clone_document_from_reader</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
 
     <span class="c1"># Embed the source archive</span>
     <span class="n">attachment_name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">attachment</span><span class="o">.</span><span class="n">name</span>
