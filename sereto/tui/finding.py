@@ -559,6 +559,10 @@ class SearchWidget(Widget):
         self.search_hint.update(supported_operator_text(FINDING_SEARCH_FIELDS))
         self.result_meta.update(Text(f"Loaded {len(self.findings)} finding templates.", style="dim"))
 
+    def on_resize(self) -> None:
+        if self.current_query.raw.strip():
+            self._render_results()
+
     @on(Input.Changed)
     @on(SelectionList.SelectedChanged)
     def update_results(self) -> None:
@@ -586,10 +590,40 @@ class SearchWidget(Widget):
             )
             return
 
-        options: list[FindingOption | None] = []
+        self._render_results()
+
+    def _render_results(self) -> None:
+        selected_categories = [c.lower() for c in self.category_filter.selected]
         visible_results = [result for result in self.current_results if should_display_result(result.score)]
+
+        if not visible_results:
+            self.result_list.clear_options()
+            self.result_meta.update(
+                Text("No matches. Try fewer terms or use one of the operators below.", style="yellow")
+            )
+            return
+
+        previous_highlighted_result: SearchResult[FindingMetadata] | None = None
+        if self.result_list.highlighted is not None and self.result_list.options:
+            try:
+                previous_option = self.result_list.get_option_at_index(self.result_list.highlighted)
+                if isinstance(previous_option, FindingOption):
+                    previous_highlighted_result = previous_option.result
+            except Exception:
+                previous_highlighted_result = None
+
+        available_width = self._get_option_content_width()
+
+        options: list[FindingOption | None] = []
         for index, result in enumerate(visible_results):
-            options.append(FindingOption(result, self.matchers, show_debug=self.show_search_debug))
+            options.append(
+                FindingOption(
+                    result=result,
+                    matchers=self.matchers,
+                    show_debug=self.show_search_debug,
+                    content_width=available_width,
+                )
+            )
             if index < len(visible_results) - 1:
                 options.append(None)
 
@@ -599,12 +633,27 @@ class SearchWidget(Widget):
             Text(f"{len(visible_results)} matches across {len(selected_categories)} categories.", style="dim")
         )
 
-        # highlight the first search result
-        if options:
-            first_index = self._find_selectable_index(0, 1)
-            if first_index is not None:
-                self.result_list.highlighted = first_index
-                self.result_list.scroll_to_highlight()
+        restored_index: int | None = None
+        if previous_highlighted_result is not None:
+            for index, option in enumerate(self.result_list.options):
+                if isinstance(option, FindingOption) and option.result.document.payload.path == previous_highlighted_result.document.payload.path:
+                    restored_index = index
+                    break
+
+        if restored_index is None:
+            restored_index = self._find_selectable_index(0, 1)
+
+        if restored_index is not None:
+            self.result_list.highlighted = restored_index
+            self.result_list.scroll_to_highlight()
+
+    def _get_option_content_width(self) -> int | None:
+        width = self.result_list.size.width
+        if width <= 0:
+            return None
+
+        usable_width = max(8, width - 4)
+        return usable_width
 
     def on_key(self, event: events.Key) -> None:
         """Intercepts key presses and handles the Enter key."""
@@ -712,7 +761,10 @@ class FindingOption(Option):
         result: SearchResult[FindingMetadata],
         matchers: dict[str, FuzzyMatcher],
         show_debug: bool = False,
+        content_width: int | None = None,
     ) -> None:
+        self.result = result
+
         finding = result.document.payload
         name_matcher = matchers.get("name")
         keyword_matcher = matchers.get("keyword")
@@ -731,24 +783,30 @@ class FindingOption(Option):
             support_text.append("  |  ", style="dim")
             support_text.append_text(match_hint)
 
-        text_parts: list[Text] = [name_text + "\n", support_text]
-        if show_debug:
-            text_parts.extend([Text("\n"), self._build_debug_text(result.diagnostics)])
+        debug_text = self._build_debug_text(result.diagnostics) if show_debug else None
+
+        if content_width is not None:
+            support_text = support_text.copy()
+            support_text.truncate(content_width, overflow="ellipsis")
+
+            if debug_text is not None:
+                debug_text = debug_text.copy()
+                debug_text.truncate(content_width, overflow="ellipsis")
+
+        text_parts: list[Text | str] = [name_text, "\n", support_text]
+        if debug_text is not None:
+            text_parts.extend(["\n", debug_text])
 
         text = Text.assemble(*text_parts)
         super().__init__(text, id=str(finding.path))
-        self.result = result
 
     @staticmethod
     def _build_keyword_preview(keywords: list[str], matcher: FuzzyMatcher | None) -> Text | None:
         if not keywords:
             return None
 
-        preview_keywords = keywords[:3]
-        preview = matcher.highlight(preview_keywords) if matcher else Text(", ".join(preview_keywords))
+        preview = matcher.highlight(keywords) if matcher else Text(", ".join(keywords))
         preview.stylize("italic dim")
-        if len(keywords) > len(preview_keywords):
-            preview.append(", ...", style="italic dim")
         return preview
 
     @staticmethod
