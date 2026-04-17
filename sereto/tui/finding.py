@@ -636,7 +636,8 @@ class SearchWidget(Widget):
         restored_index: int | None = None
         if previous_highlighted_result is not None:
             for index, option in enumerate(self.result_list.options):
-                if isinstance(option, FindingOption) and option.result.document.payload.path == previous_highlighted_result.document.payload.path:
+                if (isinstance(option, FindingOption)
+                        and option.result.document.payload.path == previous_highlighted_result.document.payload.path):
                     restored_index = index
                     break
 
