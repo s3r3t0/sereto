@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-04-20
+
 ### Fixed
 
 - Avoid pypdf annotation warnings when embedding attachments.
@@ -804,7 +806,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.4...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.5...HEAD
+[0.7.5]: https://github.com/s3r3t0/sereto/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/s3r3t0/sereto/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/s3r3t0/sereto/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/s3r3t0/sereto/compare/v0.7.1...v0.7.2
