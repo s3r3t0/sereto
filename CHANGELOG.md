@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid pypdf annotation warnings when embedding attachments.
+
+### Dependencies
+
+- Update cryptography requirement from ~=46.0.1 to ~=46.0.7
+- Update matplotlib requirement from ~=3.10.0 to ~=3.10.8
+- Update pydantic requirement from ~=2.12.4 to ~=2.13.2
+- Update pydantic-settings requirement from ~=2.13.1 to ~=2.14.0
+- Bump pypdf from 6.10.0 to 6.10.2
+
+
 ## [0.7.4] - 2026-04-15
 
 ### Fixed
