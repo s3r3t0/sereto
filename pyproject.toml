@@ -62,7 +62,7 @@ dependencies = [
   "prompt-toolkit~=3.0.52",
   "pydantic-settings~=2.14.0",
   "pydantic[email]",
-  "pydantic~=2.12.4",
+  "pydantic~=2.13.3",
   "pypdf~=6.10.0",
   "python-frontmatter~=1.1.0",
   "rapidfuzz~=3.14.5",
