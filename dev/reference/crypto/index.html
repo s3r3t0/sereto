@@ -2797,11 +2797,11 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/crypto.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
-<span class="normal">23</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DerivedKeyResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DerivedKeyResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of the Argon2 key derivation function.&quot;&quot;&quot;</span>
 
     <span class="n">key</span><span class="p">:</span> <span class="n">SecretBytes</span>
@@ -2953,9 +2953,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/crypto.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
@@ -3026,7 +3024,12 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 <span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
-<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">decrypt_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.</span>
 
@@ -3085,9 +3088,12 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
     <span class="n">derived</span> <span class="o">=</span> <span class="n">derive_key_argon2</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
 
     <span class="c1"># Decrypt the data</span>
-    <span class="n">decrypted_data</span> <span class="o">=</span> <span class="n">AESGCM</span><span class="p">(</span><span class="n">derived</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">())</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span>
-        <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">encrypted_data</span><span class="p">,</span> <span class="n">associated_data</span><span class="o">=</span><span class="kc">None</span>
-    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">decrypted_data</span> <span class="o">=</span> <span class="n">AESGCM</span><span class="p">(</span><span class="n">derived</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">())</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span>
+            <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">encrypted_data</span><span class="p">,</span> <span class="n">associated_data</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="n">InvalidTag</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SeretoDecryptionError</span><span class="p">(</span><span class="s2">&quot;Decryption failed due to incorrect password&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="c1"># Write the decrypted data</span>
     <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.tgz&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
@@ -3248,8 +3254,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/crypto.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
-<span class="normal">30</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
@@ -3286,7 +3291,8 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 <span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
-<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">67</span>
+<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">derive_key_argon2</span><span class="p">(</span>
     <span class="n">password</span><span class="p">:</span> <span class="n">TypePassword</span><span class="p">,</span>
     <span class="n">salt</span><span class="p">:</span> <span class="n">TypeSalt16B</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3439,6 +3445,16 @@ the file content. The encrypted data is then saved with a specific header and th
           </tr>
           <tr class="doc-section-item">
             <td>
+                  <code><a class="autorefs autorefs-internal" title="SeretoDecryptionError (sereto.exceptions.SeretoDecryptionError)" href="../exceptions/#sereto.exceptions.SeretoDecryptionError">SeretoDecryptionError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the decryption fails due to an invalid password.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><a class="autorefs autorefs-internal" title="SeretoPathError (sereto.exceptions.SeretoPathError)" href="../exceptions/#sereto.exceptions.SeretoPathError">SeretoPathError</a></code>
             </td>
             <td>
@@ -3463,8 +3479,7 @@ the file content. The encrypted data is then saved with a specific header and th
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/crypto.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 70</span>
-<span class="normal"> 71</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 71</span>
 <span class="normal"> 72</span>
 <span class="normal"> 73</span>
 <span class="normal"> 74</span>
@@ -3529,7 +3544,9 @@ the file content. The encrypted data is then saved with a specific header and th
 <span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
-<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">encrypt_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.</span>
 
@@ -3546,6 +3563,7 @@ the file content. The encrypted data is then saved with a specific header and th
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoEncryptionError: If the password is not found in the system keyring.</span>
+<span class="sd">        SeretoDecryptionError: If the decryption fails due to an invalid password.</span>
 <span class="sd">        SeretoPathError: If the provided file does not exist.</span>
 <span class="sd">        SeretoValueError: If the file size exceeds 1 GiB and the user chooses not to continue.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
