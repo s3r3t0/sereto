@@ -3,11 +3,12 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import NamedTuple
 
+from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 from pydantic import FilePath, SecretBytes, TypeAdapter, ValidationError, validate_call
 
-from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoDecryptionError, SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.keyring import get_password
 from sereto.logging import logger
 from sereto.sereto_types import TypeNonce12B, TypePassword, TypeSalt16B
@@ -84,6 +85,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
 
     Raises:
         SeretoEncryptionError: If the password is not found in the system keyring.
+        SeretoDecryptionError: If the decryption fails due to an invalid password.
         SeretoPathError: If the provided file does not exist.
         SeretoValueError: If the file size exceeds 1 GiB and the user chooses not to continue.
     """
@@ -195,9 +197,12 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
     derived = derive_key_argon2(password=password, salt=salt)
 
     # Decrypt the data
-    decrypted_data = AESGCM(derived.key.get_secret_value()).decrypt(
-        nonce=nonce.get_secret_value(), data=encrypted_data, associated_data=None
-    )
+    try:
+        decrypted_data = AESGCM(derived.key.get_secret_value()).decrypt(
+            nonce=nonce.get_secret_value(), data=encrypted_data, associated_data=None
+        )
+    except InvalidTag:
+        raise SeretoDecryptionError("Decryption failed due to incorrect password") from None
 
     # Write the decrypted data
     with NamedTemporaryFile(suffix=".tgz", delete=False) as tmp:

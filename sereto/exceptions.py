@@ -14,6 +14,10 @@ class SeretoEncryptionError(SeretoException):
     """Encryption error."""
 
 
+class SeretoDecryptionError(SeretoException):
+    """Decryption error."""
+
+
 class SeretoPathError(SeretoException):
     """Path error."""
 
