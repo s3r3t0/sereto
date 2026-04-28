@@ -17,21 +17,6 @@ from sereto.utils import assert_file_size_within_range
 
 
 @validate_call
-def _is_ignored(relative_path: str, patterns: list[str]) -> bool:
-    """Check if a file path matches any of the ignore patterns.
-
-    Args:
-        relative_path: The file path to check.
-        patterns: List of ignore patterns.
-
-    Returns:
-        True if the file is ignored, False otherwise.
-    """
-    spec = GitIgnoreSpec.from_lines(patterns)
-    return spec.match_file(relative_path)
-
-
-@validate_call
 def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
     """Create a source archive for the project.
 
@@ -65,25 +50,41 @@ def create_source_archive(project_path: DirectoryPath, config: Config) -> Path:
         # Determine the original project ID (store the project always with the original ID)
         original_id = config.first_config.id
 
+        ignore_spec: GitIgnoreSpec = GitIgnoreSpec.from_lines(ignore_lines)
+        added_items = 0
+        ignored_items = 0
+        skipped_items = 0
+
         # Create the source archive
         with tarfile.open(archive_path, "w:gz") as tar:
             for item in project_path.rglob("*"):
                 relative_path = item.relative_to(project_path)
+                relative_path_str = str(relative_path)
 
                 if not item.is_file() or item.is_symlink():
-                    logger.info(
+                    skipped_items += 1
+                    logger.debug(
                         "[yellow]-[/yellow] Skipping directory or symlink: '{}'",
-                        escape(str(relative_path)),
+                        escape(relative_path_str),
                         markup=True,
                     )
                     continue
 
-                if _is_ignored(str(relative_path), ignore_lines):
-                    logger.info("[yellow]-[/yellow] Skipping item: '{}'", escape(str(relative_path)), markup=True)
+                if ignore_spec.match_file(relative_path_str):
+                    ignored_items += 1
+                    logger.debug("[yellow]-[/yellow] Skipping item: '{}'", escape(relative_path_str), markup=True)
                     continue
 
-                logger.info("[green]+[/green] Adding item: '{}'", escape(str(relative_path)), markup=True)
+                added_items += 1
+                logger.debug("[green]+[/green] Adding item: '{}'", escape(relative_path_str), markup=True)
                 tar.add(item, arcname=str(Path(original_id) / item.relative_to(project_path)))
+
+        logger.info(
+            "Created source archive with {} files added, {} ignored, and {} directories or symlinks skipped",
+            added_items,
+            ignored_items,
+            skipped_items,
+        )
 
     try:
         return encrypt_file(archive_path)

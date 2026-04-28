@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add optional `performance` extra to enable the `pathspec` `re2` backend for faster source archive ignore matching on large projects.
+
+### Changed
+
+- Speed up source archive creation by compiling `.seretoignore` rules once per archive build and reduce INFO-level archive logging to a single summary line.
+
+### Dependencies
+
+- Update pathspec requirement from >=0.12.1 to >=1.1.1
+
 ## [0.7.6] - 2026-04-28
 
 ### Changed
