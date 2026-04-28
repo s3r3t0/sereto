@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.6] - 2026-04-28
+
 ### Changed
 
 - Updated the template search logic in the `sereto findings add` TUI to search both name and keyword fields by default.
@@ -820,7 +822,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.5...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.6...HEAD
+[0.7.6]: https://github.com/s3r3t0/sereto/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/s3r3t0/sereto/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/s3r3t0/sereto/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/s3r3t0/sereto/compare/v0.7.2...v0.7.3
