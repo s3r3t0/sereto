@@ -63,7 +63,7 @@ dependencies = [
   "pydantic-settings~=2.14.0",
   "pydantic[email]",
   "pydantic~=2.13.3",
-  "pypdf~=6.10.0",
+  "pypdf~=6.10.2",
   "python-frontmatter~=1.1.0",
   "rapidfuzz~=3.14.5",
   "rich~=14.3.1",
