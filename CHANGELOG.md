@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated the template search logic in the `sereto findings add` TUI to search both name and keyword fields by default.
+- Make `sereto repl` the default command when no subcommand is provided.
+- Display clear error when incorrect password is provided for decrypting the source archive.
+
+### Dependencies
+
+- Update cryptography requirement from ~=46.0.7 to ~=47.0.0
+- Update matplotlib requirement from ~=3.10.8 to ~=3.10.9
+- Update pypdf requirement from ~=6.10.0 to ~=6.10.2
+- Update textual requirement from ~=8.2.3 to ~=8.2.4
+- Bump python-dotenv from 1.1.1 to 1.2.2
 
 ## [0.7.5] - 2026-04-20
 
