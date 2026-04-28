@@ -54,7 +54,7 @@ from sereto.tui.finding import launch_finding_tui
 from sereto.utils import copy_skel, replace_strings
 
 
-@click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
+@click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
 @click.version_option(version=importlib.metadata.version("sereto"))
 @click.option(
     "--log-level",
@@ -73,6 +73,10 @@ def cli(ctx: click.Context, log_level: LogLevel | None) -> None:
         setup_logging(log_level)
 
     ctx.obj = Project()
+
+    # If no subcommand is invoked, start the REPL session
+    if ctx.invoked_subcommand is None:
+        sereto_repl(cli=cli)
 
 
 def is_in_repl_shell() -> bool:
