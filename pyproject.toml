@@ -58,7 +58,7 @@ dependencies = [
   "keyrings.alt~=5.0.2",
   "matplotlib~=3.10.9",
   "pandocfilters~=1.5.1",
-  "pathspec>=1.1.1",
+  "pathspec~=1.1.1",
   "prompt-toolkit~=3.0.52",
   "pydantic-settings~=2.14.0",
   "pydantic[email]",
@@ -80,6 +80,9 @@ docs = [
   "mkdocs-material",
   "mkdocstrings[python]",
   "ruff",
+]
+performance = [
+  "pathspec[re2]~=1.1.1",
 ]
 dev = [
   "textual-dev",

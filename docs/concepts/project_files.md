@@ -70,6 +70,8 @@ Usually, it is an empty file.
 
 SeReTo offers a convenient feature that allows the inclusion of project sources in the final report PDF. This functionality utilizes the `.seretoignore` file with the same syntax as `.gitignore`, enabling the exclusion of specific files.
 
+For very large projects with complex ignore rules, installing the optional `performance` extra enables the `pathspec` `re2` backend when it is available.
+
 ## `config.json`
 
 Configuration file for the project.
