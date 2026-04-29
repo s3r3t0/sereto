@@ -8,7 +8,7 @@ from click_repl import exit as click_repl_exit
 from click_repl import repl
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.styles import Style
-from pydantic import Field, validate_call
+from pydantic import Field, ValidationError, validate_call
 from rich import box
 from rich.table import Table
 
@@ -39,8 +39,9 @@ def sereto_ls(settings: Settings) -> None:
     for dir in project_paths:
         try:
             project_name = Project.load_from(dir).config.last_config.name
-        except (RuntimeError, SeretoValueError):
-            project_name = "n/a"
+        except (RuntimeError, SeretoValueError, ValidationError) as e:
+            logger.warning("Failed to load project from '{}': {}", dir, e)
+            continue
 
         table.add_row(dir.name, project_name, f"[link {dir.as_uri()}]{dir}")
 
