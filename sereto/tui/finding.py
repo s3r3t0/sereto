@@ -151,6 +151,8 @@ class AddSubFindingScreen(ModalScreen[None]):
                 allow_blank=False,
             )
             yield self.select_group
+            # Button for syncing group name with sub-finding name
+            yield Button("Sync Group Name With Name", variant="primary", id="sync-group-name", classes="m-1")
             # New group name input (shown when "Create new group" is selected)
             self.input_group_name = Input(value=self.finding.group_hint or self.finding.name, id="input-group-name")
             self.group_name_container = InputWithLabel(self.input_group_name, label="Group name")
@@ -216,8 +218,7 @@ class AddSubFindingScreen(ModalScreen[None]):
                             yield Input(id=f"var-{var.name}", classes="m-1")
                 yield Rule()
 
-            self.btn_save_sub_finding = Button.success("Save", id="save-sub-finding", classes="m-1")
-            yield self.btn_save_sub_finding
+            yield Button.success("Save", id="save-sub-finding", classes="m-1")
 
     def on_mount(self) -> None:
         add_sub_finding = self.query_one("#add-sub-finding")
@@ -399,11 +400,16 @@ class AddSubFindingScreen(ModalScreen[None]):
 
         return matching_target[0]
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle Save button press event."""
-        if event.button is not self.btn_save_sub_finding:
-            return
+    @on(Button.Pressed, "#sync-group-name")
+    def sync_group_name_with_name(self) -> None:
+        """Sync group name with the current name input value."""
+        current_name = self.input_name.value.strip()
+        if current_name:
+            self.input_group_name.value = current_name
 
+    @on(Button.Pressed, "#save-sub-finding")
+    def save_sub_finding(self) -> None:
+        """Handle Save button press event."""
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         # Retrieve the values from the inputs
