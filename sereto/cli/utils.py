@@ -28,8 +28,9 @@ class AliasedGroup(click.Group):
         if rv is not None:
             return rv
 
-        # look up an explicit command alias
-        if cmd_name in cli_aliases:
+        # if command is on the first position (has no context parent), check for explicit alias
+        if ctx.parent is None and cmd_name in cli_aliases:
+            # look up an explicit command alias
             actual_cmd = cli_aliases[cmd_name]
             return click.Group.get_command(self, ctx, actual_cmd)
 
