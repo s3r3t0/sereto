@@ -70,8 +70,14 @@ AddSubFindingScreen {
         border: heavy $accent;
         margin: 2 4;
         scrollbar-gutter: stable;
-        #sync-group-name {
-            margin-left: 13;
+        #group-name-row {
+            height: auto;
+            InputWithLabel { width: 1fr; }
+            #sync-group-name {
+                margin: 0 1 0 0;
+                min-width: 10;
+                width: auto;
+            }
         }
         #overwrite-warning {
             height: auto;
