@@ -55,6 +55,7 @@ from sereto.utils import lower_alphanum
 
 _NEW_GROUP_SENTINEL = "__new_group__"
 _GROUP_HINT_SENTINEL = "__group_hint__"
+_SYNC_ICON = "\u27f3"  # ⟳ clockwise gapped circle arrow
 
 
 @dataclass
@@ -154,7 +155,15 @@ class AddSubFindingScreen(ModalScreen[None]):
             # New group name input (shown when "Create new group" is selected)
             self.input_group_name = Input(value=self.finding.group_hint or self.finding.name, id="input-group-name")
             self.group_name_container = InputWithLabel(self.input_group_name, label="Group name")
-            yield self.group_name_container
+            # Button for syncing group name with sub-finding name
+            self.sync_group_name_button = Button(
+                label=_SYNC_ICON, variant="primary", id="sync-group-name", tooltip="Sync Group Name With Name"
+            )
+            self.sync_group_name_button.display = self.input_group_name.value != self.input_name.value
+            self.group_name_row = Horizontal(
+                self.group_name_container, self.sync_group_name_button, id="group-name-row"
+            )
+            yield self.group_name_row
             # Store group unames for mapping select value -> uname
             self._group_unames: list[str] = [g_uname for _g_name, g_uname in initial_groups]
             # Existing finding warning + overwrite switch
@@ -216,8 +225,7 @@ class AddSubFindingScreen(ModalScreen[None]):
                             yield Input(id=f"var-{var.name}", classes="m-1")
                 yield Rule()
 
-            self.btn_save_sub_finding = Button.success("Save", id="save-sub-finding", classes="m-1")
-            yield self.btn_save_sub_finding
+            yield Button.success("Save", id="save-sub-finding", classes="m-1")
 
     def on_mount(self) -> None:
         add_sub_finding = self.query_one("#add-sub-finding")
@@ -240,7 +248,8 @@ class AddSubFindingScreen(ModalScreen[None]):
         if event.select is self.select_group.query_one(Select):
             is_new_group = event.value == _NEW_GROUP_SENTINEL
             # show group name input only for explicit "Create new group"
-            self.group_name_container.display = is_new_group
+            self.group_name_row.display = is_new_group
+            self._refresh_sync_button()
             if is_new_group:
                 self.input_group_name.focus()
 
@@ -264,10 +273,11 @@ class AddSubFindingScreen(ModalScreen[None]):
         # Default to hint sentinel when a hint is present, otherwise "Create new group"
         if self.finding.group_hint:
             group_select.value = _GROUP_HINT_SENTINEL
-            self.group_name_container.display = False
+            self.group_name_row.display = False
         else:
             group_select.value = _NEW_GROUP_SENTINEL
-            self.group_name_container.display = True
+            self.group_name_row.display = True
+        self._refresh_sync_button()
 
     def _resolve_group_hint(self, target: Target) -> str | None:
         """Resolve the group hint to an existing group's uname.
@@ -288,6 +298,14 @@ class AddSubFindingScreen(ModalScreen[None]):
         """Update the overwrite warning when the name input changes."""
         if event.input is self.input_name:
             self.update_overwrite_warning()
+        if event.input in (self.input_name, self.input_group_name):
+            self._refresh_sync_button()
+
+    def _refresh_sync_button(self) -> None:
+        """Show the sync button only when the group name row is visible and the values differ."""
+        self.sync_group_name_button.display = (
+            self.group_name_row.display and self.input_name.value != self.input_group_name.value
+        )
 
     def update_overwrite_warning(self) -> None:
         """Update the overwrite warning and switch dynamically."""
@@ -399,11 +417,17 @@ class AddSubFindingScreen(ModalScreen[None]):
 
         return matching_target[0]
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle Save button press event."""
-        if event.button is not self.btn_save_sub_finding:
-            return
+    @on(Button.Pressed, "#sync-group-name")
+    def sync_group_name_with_name(self) -> None:
+        """Sync group name with the current name input value."""
+        current_name = self.input_name.value.strip()
+        if current_name:
+            self.input_group_name.value = current_name
+            self._refresh_sync_button()
 
+    @on(Button.Pressed, "#save-sub-finding")
+    def save_sub_finding(self) -> None:
+        """Handle Save button press event."""
         app: SeretoApp = self.app  # type: ignore[assignment]
 
         # Retrieve the values from the inputs
