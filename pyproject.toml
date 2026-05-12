@@ -49,7 +49,7 @@ classifiers = [
 ]
 dependencies = [
   "annotated-types~=0.7.0",
-  "click~=8.3.1",
+  "click~=8.3.3",
   "cryptography~=47.0.0",
   "humanize~=4.15.0",
   "loguru~=0.7.3",
@@ -60,18 +60,18 @@ dependencies = [
   "pandocfilters~=1.5.1",
   "pathspec~=1.1.1",
   "prompt-toolkit~=3.0.52",
-  "pydantic-settings~=2.14.0",
+  "pydantic-settings~=2.14.1",
   "pydantic[email]",
   "pydantic~=2.13.3",
-  "pypdf~=6.10.2",
+  "pypdf~=6.11.0",
   "python-frontmatter~=1.1.0",
   "rapidfuzz~=3.14.5",
-  "rich~=14.3.1",
-  "semver~=3.0.2",
+  "rich~=15.0.0",
+  "semver~=3.0.4",
   "sereto-repl~=0.3.2",
-  "textual~=8.2.4",
+  "textual~=8.2.5",
   "toml>=0.10.2",
-  "tomlkit~=0.14.0",
+  "tomlkit~=0.15.0",
 ]
 
 [project.optional-dependencies]
