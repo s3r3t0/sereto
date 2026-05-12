@@ -674,7 +674,7 @@ class Findings:
             raise SeretoValueError(f"finding group '{group.name}' not found in findings.toml")
 
         for key, value in extras.items():
-            doc[group.name][key] = value  # type: ignore[index]
+            doc[group.name][key] = value
 
         # Write back to file
         self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
