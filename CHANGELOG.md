@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Speed up source archive creation by compiling `.seretoignore` rules once per archive build and reduce INFO-level archive logging to a single summary line.
+- Refactor click aliases to take into account their position
 
 ### Dependencies
 
