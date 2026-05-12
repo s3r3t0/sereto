@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-05-12
+
 ### Added
 
 - Add optional `performance` extra to enable the `pathspec` `re2` backend for faster source archive ignore matching on large projects.
@@ -848,7 +850,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.6...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/s3r3t0/sereto/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/s3r3t0/sereto/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/s3r3t0/sereto/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/s3r3t0/sereto/compare/v0.7.3...v0.7.4
