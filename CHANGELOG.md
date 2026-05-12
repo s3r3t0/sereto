@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update pathspec requirement from >=0.12.1 to >=1.1.1
+- Update pydantic-settings requirement from ~=2.14.0 to ~=2.14.1
+- Update textual requirement from ~=8.2.4 to ~=8.2.5
+- Update rich requirement from ~=14.3.1 to ~=15.0.0
+- Update semver requirement from ~=3.0.2 to ~=3.0.4
+- Update tomlkit requirement from ~=0.14.0 to ~=0.15.0
+- Update pypdf requirement from ~=6.10.2 to ~=6.11.0
+- Update click requirement from ~=8.3.1 to ~=8.3.3
+- Bump urllib3 from 2.6.3 to 2.7.0
 
 ## [0.7.6] - 2026-04-28
 
