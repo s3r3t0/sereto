@@ -10,11 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add optional `performance` extra to enable the `pathspec` `re2` backend for faster source archive ignore matching on large projects.
+- Add sync button for group name.
 
 ### Changed
 
 - Speed up source archive creation by compiling `.seretoignore` rules once per archive build and reduce INFO-level archive logging to a single summary line.
 - Refactor click aliases to take into account their position
+
+### Fixed
+
+- Fix ls command to not fail entirely when target name has changed.
 
 ### Dependencies
 
