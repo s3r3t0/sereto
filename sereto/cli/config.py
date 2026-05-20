@@ -8,16 +8,17 @@ from pydantic import DirectoryPath, TypeAdapter, validate_call
 from rich import box
 from rich.table import Table
 
-from sereto.cli.date import prompt_user_for_date
+from sereto.cli.date import allows_range, prompt_user_for_date
 from sereto.cli.person import prompt_user_for_person
 from sereto.cli.target import prompt_user_for_target
 from sereto.cli.utils import Console, load_enum
 from sereto.config import Config, VersionConfig
 from sereto.enums import OutputFormat
+from sereto.exceptions import SeretoValueError
 from sereto.models.config import VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.target import TargetModel
+from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.project import Project
 from sereto.target import Target
@@ -94,25 +95,68 @@ def show_config(
 
 
 @validate_call
-def add_dates_config(config: Config, version: ProjectVersion | None = None) -> None:
+def add_dates_config(
+    config: Config,
+    version: ProjectVersion | None = None,
+    date_type: DateType | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> None:
     """Add date to the configuration.
+
+    When all required parameters are provided, operates non-interactively.
 
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
+        date_type: The type of the date event. Implies using non-interactive alternative of the command.
+        start_date: The start date str in DD-Mmm-YYYY format. Implies using non-interactive alternative of the command.
+        end_date: The end date str in DD-Mmm-YYYY format. Implies using non-interactive alternative of the command.
     """
     if version is None:
         version = config.last_version
 
-    # Prompt user for the date
-    date_type: DateType = load_enum(enum=DateType, message="Type:")
-    new_date = prompt_user_for_date(date_type=date_type)
+    if any([date_type, start_date, end_date]):
+        # Non-interactive alternative: both date_type and start_date must be provided, end_date is optional
+        new_date = _build_date_from_options(date_type=date_type, start_date=start_date, end_date=end_date)
+    else:
+        # Interactive alternative: prompt the user for the date details
+        new_date = _prompt_for_date()
 
     # Add the date to the configuration
-    config.at_version(version).add_date(Date(type=date_type, date=new_date))
+    config.at_version(version).add_date(new_date)
 
     # Write the configuration
     config.save()
+
+
+def _build_date_from_options(
+    date_type: DateType | None,
+    start_date: str | None,
+    end_date: str | None,
+) -> Date:
+    """Build a Date from CLI options for the non-interactive flow."""
+    if date_type is None or not start_date:
+        raise SeretoValueError(
+            "Both '--type' and '--date' must be provided. Optionally, '--end' can also be provided for a date range."
+        )
+    if end_date and not allows_range(date_type):
+        raise SeretoValueError("End date is not allowed for date types that do not allow ranges.")
+
+    parsed_start = SeretoDate.from_str(start_date)
+    parsed_end = SeretoDate.from_str(end_date) if end_date else parsed_start
+    value: SeretoDate | DateRange = (
+        DateRange(start=parsed_start, end=parsed_end)
+        if allows_range(date_type) and parsed_start != parsed_end
+        else parsed_start
+    )
+    return Date(type=date_type, date=value)
+
+
+def _prompt_for_date() -> Date:
+    """Prompt the user for a date interactively."""
+    date_type = load_enum(enum=DateType, message="Type:")
+    return Date(type=date_type, date=prompt_user_for_date(date_type=date_type))
 
 
 @validate_call
@@ -188,25 +232,72 @@ def show_dates_config(
 
 
 @validate_call
-def add_people_config(config: Config, version: ProjectVersion | None = None) -> None:
+def add_people_config(
+    config: Config,
+    version: ProjectVersion | None = None,
+    person_type: PersonType | None = None,
+    person_name: str | None = None,
+    business_unit: str | None = None,
+    email: str | None = None,
+    role: str | None = None,
+) -> None:
     """Add person to the configuration.
 
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
+        person_type: The type of the person. If not provided, the user is prompted.
+        person_name: The name of the person.
+        business_unit: The business unit of the person.
+        email: The email address of the person.
+        role: The role of the person.
     """
     if version is None:
         version = config.last_version
 
-    # Prompt user for the person
-    person_type: PersonType = load_enum(enum=PersonType, message="Type:")
-    new_person = prompt_user_for_person(person_type=person_type)
+    if any([person_type, person_name, business_unit, email, role]):
+        # Non-interactive alternative: at least person_type must be provided
+        new_person = _build_person_from_options(
+            person_type=person_type,
+            person_name=person_name,
+            business_unit=business_unit,
+            email=email,
+            role=role,
+        )
+    else:
+        # Interactive alternative: prompt the user for the person details
+        new_person = _prompt_for_person()
 
     # Add the person to the configuration
     config.at_version(version).add_person(new_person)
 
     # Write the configuration
     config.save()
+
+
+def _build_person_from_options(
+    person_type: PersonType | None,
+    person_name: str | None,
+    business_unit: str | None,
+    email: str | None,
+    role: str | None,
+) -> Person:
+    """Build a Person from CLI options for the non-interactive flow."""
+    if person_type is None:
+        raise SeretoValueError("Person type must be provided.")
+    return Person(
+        type=person_type,
+        name=person_name or None,
+        business_unit=business_unit or None,
+        email=email or None,
+        role=role or None,
+    )
+
+
+def _prompt_for_person() -> Person:
+    """Prompt the user for a person interactively."""
+    person_type = load_enum(enum=PersonType, message="Type:")
+    return prompt_user_for_person(person_type=person_type)
 
 
 @validate_call
@@ -283,6 +374,9 @@ def add_target(
     config: Config,
     categories: Iterable[str],
     version: ProjectVersion | None = None,
+    category: str | None = None,
+    target_name: str | None = None,
+    extra_json: str | None = None,
 ) -> None:
     """Add target to the configuration.
 
@@ -292,12 +386,21 @@ def add_target(
         config: Configuration of the project.
         categories: List of all categories.
         version: The version of the project. If not provided, the last version is used.
+        category: Category of the target.
+        target_name: Name of the target.
+        extra_json: Extra target fields as a JSON string for the non-interactive flow.
     """
     if version is None:
         version = config.last_version
 
-    # Prompt user for the target details
-    new_target_model = prompt_user_for_target(categories=categories)
+    if any([category, target_name]):
+        # Non-interactive alternative: both category and target_name must be provided
+        new_target_model = _build_target_from_options(
+            category=category, target_name=target_name, categories=categories, extra_json=extra_json
+        )
+    else:
+        # Interactive alternative: prompt the user for the target details
+        new_target_model = prompt_user_for_target(categories=categories)
 
     # Create the target instance, including on the filesystem
     new_target = Target.new(data=new_target_model, project_path=project_path, templates=templates, version=version)
@@ -307,6 +410,45 @@ def add_target(
 
     # Write the configuration
     config.save()
+
+
+def _build_target_from_options(
+    category: str | None,
+    target_name: str | None,
+    categories: Iterable[str],
+    extra_json: str | None = None,
+) -> TargetModel:
+    """Build a TargetModel from CLI options for the non-interactive flow."""
+    import json
+
+    if not category or not target_name:
+        raise SeretoValueError("Both category and target name must be provided when using non-interactive mode.")
+
+    category = category.lower()
+    categories = list(categories)
+
+    if category not in categories:
+        raise SeretoValueError(f"Invalid category '{category}'. Must be one of: {', '.join(categories)}.")
+
+    try:
+        extra = json.loads(extra_json) if extra_json else {}
+    except json.JSONDecodeError as e:
+        raise SeretoValueError(f"Invalid JSON in '--extra': {e}") from e
+
+    if not isinstance(extra, dict):
+        raise SeretoValueError("'--extra' must be a JSON object, e.g. '{\"environment\": \"production\"}'")
+
+    data = {"category": category, "name": target_name, **extra}
+
+    match category:
+        case "dast":
+            return TargetDastModel.model_validate(data, strict=False)
+        case "sast":
+            return TargetSastModel.model_validate(data, strict=False)
+        case "mobile":
+            return TargetMobileModel.model_validate(data, strict=False)
+        case _:
+            return TargetModel.model_validate(data, strict=False)
 
 
 @validate_call

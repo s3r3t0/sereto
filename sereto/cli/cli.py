@@ -30,6 +30,8 @@ from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.keyring import get_password, set_password
 from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
+from sereto.models.date import DateType
+from sereto.models.person import PersonType
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
@@ -90,30 +92,40 @@ def is_in_repl_shell() -> bool:
 @cli.command()
 @handle_exceptions
 @click.argument("project_id")
+@click.option("-n", "--name", "project_name", default=None, help="Name of the project.")
 @click.pass_obj
 @validate_call
-def new(ctx: Project, project_id: TypeProjectId) -> None:
+def new(ctx: Project, project_id: TypeProjectId, project_name: str | None) -> None:
     """Create a new project.
 
     \b
     Example:
         ```sh
         sereto new PT01234
+        sereto new PT01234 --name 'Test Project'
         ```
     \f
 
     Args:
         ctx: Project's representation.
         project_id: The ID of the project to be created.
+        project_name: The name of the project. Implies using non-interactive alternative of the command.
     """
-    Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
-    name = prompt("Name of the project: ")
+    if project_name is not None:
+        # Option was explicitly provided; reject empty strings
+        if not project_name:
+            raise SeretoValueError("Project name cannot be empty.")
+    else:
+        # Option was not provided; prompt interactively
+        Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
+        project_name = prompt("Name of the project: ")
+
     new_project(
         projects_path=ctx.settings.projects_path,
         templates_path=ctx.settings.templates_path,
         risk_due_dates=ctx.settings.risk_due_dates,
         id=project_id,
-        name=name,
+        name=project_name,
         people=ctx.settings.default_people,
     )
 
@@ -268,16 +280,41 @@ def config_dates() -> None:
 @config_dates.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option(
+    "-t",
+    "--type",
+    "date_type",
+    type=click.Choice([dt.value for dt in DateType], case_sensitive=False),
+    help="Type of the date event.",
+)
+@click.option("-d", "--date", "start_date", default=None, help="Date in DD-Mmm-YYYY format (e.g. '01-Jan-2025').")
+@click.option("-e", "--end", "end_date", default=None, help="End date for ranges in DD-Mmm-YYYY format.")
 @click.pass_obj
 @validate_call
-def config_dates_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_dates_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    date_type: str | None,
+    start_date: str | None,
+    end_date: str | None,
+) -> None:
     """Add date to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the date to. If None, the last version is used.
+        date_type: The type of the date event.
+        start_date: The date string in DD-Mmm-YYYY format.
+        end_date: The end date string for ranges in DD-Mmm-YYYY format.
     """
-    add_dates_config(config=ctx.config, version=version)
+
+    add_dates_config(
+        config=ctx.config,
+        version=version,
+        date_type=DateType(date_type) if date_type else None,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
 
 @config_dates.command(name="delete")
@@ -353,16 +390,49 @@ def config_people() -> None:
 @config_people.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option(
+    "-t",
+    "--type",
+    "person_type",
+    type=click.Choice([pt.value for pt in PersonType], case_sensitive=False),
+    help="Type of the person.",
+)
+@click.option("-n", "--name", "person_name", default=None, help="Full name of the person.")
+@click.option("-b", "--business-unit", default=None, help="Business unit.")
+@click.option("-e", "--email", default=None, help="Email address.")
+@click.option("-r", "--role", default=None, help="Role within the organization.")
 @click.pass_obj
 @validate_call
-def config_people_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_people_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    person_type: str | None,
+    person_name: str | None,
+    business_unit: str | None,
+    email: str | None,
+    role: str | None,
+) -> None:
     """Add person to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the person to. If None, the last version is used.
+        person_type: The type of the person.
+        person_name: The name of the person.
+        business_unit: The business unit of the person.
+        email: The email address of the person.
+        role: The role of the person.
     """
-    add_people_config(config=ctx.config, version=version)
+
+    add_people_config(
+        config=ctx.config,
+        version=version,
+        person_type=PersonType(person_type) if person_type else None,
+        person_name=person_name,
+        business_unit=business_unit,
+        email=email,
+        role=role,
+    )
 
 
 @config_people.command(name="delete")
@@ -438,21 +508,43 @@ def config_targets() -> None:
 @config_targets.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option("-c", "--category", default=None, help="Category of the target (e.g. 'dast', 'sast', 'mobile').")
+@click.option("-n", "--name", "target_name", default=None, help="Name of the target.")
+@click.option(
+    "-e",
+    "--extra",
+    "extra_json",
+    default=None,
+    help='Extra target fields as a JSON string (e.g. \'{"environment": "production"}\').',
+)
 @click.pass_obj
 @validate_call
-def config_targets_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_targets_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    category: str | None,
+    target_name: str | None,
+    extra_json: str | None,
+) -> None:
     """Add targets to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the targets to. If None, the last version is used.
+        category: Category of the target.
+        target_name: Name of the target.
+        extra_json: Extra target fields as a JSON string.
     """
+
     add_target(
         project_path=ctx.path,
         templates=ctx.settings.templates_path,
         config=ctx.config,
         categories=ctx.settings.categories,
         version=version,
+        category=category,
+        target_name=target_name,
+        extra_json=extra_json,
     )
 
 

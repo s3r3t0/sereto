@@ -1,6 +1,6 @@
 from typing import Self
 
-from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
+from pydantic import Field, FilePath, SerializeAsAny, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
@@ -25,7 +25,7 @@ class VersionConfigModel(SeretoBaseModel):
     id: str
     name: str
     version_description: str
-    targets: list[TargetModel] = Field(default_factory=list)
+    targets: list[SerializeAsAny[TargetModel]] = Field(default_factory=list)
     dates: list[Date] = Field(default_factory=list)
     people: list[Person] = Field(default_factory=list)
 
