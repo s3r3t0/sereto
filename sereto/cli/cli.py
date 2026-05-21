@@ -24,6 +24,7 @@ from sereto.cli.config import (
     show_targets_config,
 )
 from sereto.cli.finding import show_findings
+from sereto.cli.settings import edit_settings
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
 from sereto.enums import OutputFormat
@@ -32,7 +33,6 @@ from sereto.keyring import get_password, set_password
 from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
 from sereto.models.date import DateType
 from sereto.models.person import PersonType
-from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
 from sereto.pdf import (
@@ -222,14 +222,31 @@ def config() -> None:
 
 @config.command(name="edit")
 @handle_exceptions
+@click.option(
+    "-e",
+    "--extra",
+    "extra_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to a JSON file with config fields to update (non-interactive).",
+)
 @click.pass_obj
-def config_edit(ctx: Project) -> None:
+@validate_call
+def config_edit(
+    ctx: Project,
+    extra_file: str | None,
+) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
         ctx: Project's representation.
+        extra_file: Path to a JSON file with config fields to update (non-interactive).
     """
-    edit_config(project=ctx)
+
+    edit_config(
+        project=ctx,
+        extra_file=Path(extra_file) if extra_file else None,
+    )
 
 
 @config.command(name="show")
@@ -897,15 +914,29 @@ def settings() -> None:
 
 @settings.command(name="edit")
 @handle_exceptions
-def settings_edit() -> None:
+@click.option(
+    "-e",
+    "--extra",
+    "extra_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to a JSON file with settings fields to update (non-interactive).",
+)
+@validate_call
+def settings_edit(extra_file: str | None) -> None:
     """Edit settings with the configured editor.
 
     This command opens the global settings configuration file in the default editor.
     If the configuration file does not exist, it will be created first with the default values.
+
+    When a JSON file is provided via --extra, the settings are updated non-interactively.
+    \f
+
+    Args:
+        extra_file: Path to a JSON file with settings fields to update (non-interactive).
     """
-    if not (path := Settings.get_path()).is_file():
-        load_settings_function()
-    click.edit(filename=str(path))
+
+    edit_settings(extra_file=Path(extra_file) if extra_file else None)
 
 
 @settings.group(cls=AliasedGroup)

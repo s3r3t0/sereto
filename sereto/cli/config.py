@@ -1,10 +1,12 @@
 import importlib.metadata
+import json
 import shutil
 from collections.abc import Iterable
+from pathlib import Path
 
 import click
 from prompt_toolkit.shortcuts import yes_no_dialog
-from pydantic import DirectoryPath, TypeAdapter, validate_call
+from pydantic import DirectoryPath, TypeAdapter, ValidationError, validate_call
 from rich import box
 from rich.table import Table
 
@@ -15,7 +17,7 @@ from sereto.cli.utils import Console, load_enum
 from sereto.config import Config, VersionConfig
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoValueError
-from sereto.models.config import VersionConfigModel
+from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
@@ -29,12 +31,20 @@ from sereto.target import Target
 
 
 @validate_call
-def edit_config(project: Project) -> None:
+def edit_config(
+    project: Project,
+    extra_file: Path | None = None,
+) -> None:
     """Edit the configuration file in default CLI editor.
+
+    When `extra_file` is provided, the config is updated non-interactively from the JSON file.
+    Otherwise, the config file is opened in the default editor.
 
     Args:
         project: Project's representation.
+        extra_file: Path to a JSON file with config fields to update (non-interactive).
     """
+
     sereto_ver = importlib.metadata.version("sereto")
     config = project.config_path
 
@@ -55,8 +65,33 @@ def edit_config(project: Project) -> None:
             risk_due_dates=project.settings.risk_due_dates,
         ).save()
 
-    # Open the config file in the default editor
-    click.edit(filename=str(config))
+    if extra_file is not None:
+        # Non-interactive: read and parse the JSON file
+        try:
+            extra = json.loads(extra_file.read_text())
+        except json.JSONDecodeError as e:
+            raise SeretoValueError(f"Invalid JSON in '{extra_file}': {e}") from e
+
+        if not isinstance(extra, dict):
+            raise SeretoValueError(f"Content of '{extra_file}' must be a JSON object")
+
+        version_config = project.config.at_version(project.config.last_version)
+        skip_fields = {"version_configs", "targets", "dates", "people"}
+
+        for key, value in extra.items():
+            if key in skip_fields:
+                continue
+            elif key in VersionConfigModel.model_fields:
+                setattr(version_config, key, value)
+            elif key in ConfigModel.model_fields:
+                setattr(project.config, key, value)
+            else:
+                raise SeretoValueError(f"Unknown config field: '{key}'")
+
+        project.config.save()
+    else:
+        # Interactive: open the config file in the default editor
+        click.edit(filename=str(config))
 
 
 @validate_call
@@ -386,8 +421,8 @@ def add_target(
         config: Configuration of the project.
         categories: List of all categories.
         version: The version of the project. If not provided, the last version is used.
-        category: Category of the target.
-        target_name: Name of the target.
+        category: Category of the target. Implies using non-interactive alternative of the command.
+        target_name: Name of the target. IImplies using non-interactive alternative of the command.
         extra_json: Extra target fields as a JSON string for the non-interactive flow.
     """
     if version is None:
@@ -419,7 +454,6 @@ def _build_target_from_options(
     extra_json: str | None = None,
 ) -> TargetModel:
     """Build a TargetModel from CLI options for the non-interactive flow."""
-    import json
 
     if not category or not target_name:
         raise SeretoValueError("Both category and target name must be provided when using non-interactive mode.")
@@ -438,17 +472,34 @@ def _build_target_from_options(
     if not isinstance(extra, dict):
         raise SeretoValueError("'--extra' must be a JSON object, e.g. '{\"environment\": \"production\"}'")
 
-    data = {"category": category, "name": target_name, **extra}
-
+    model_class: type[TargetModel]
     match category:
         case "dast":
-            return TargetDastModel.model_validate(data, strict=False)
+            model_class = TargetDastModel
         case "sast":
-            return TargetSastModel.model_validate(data, strict=False)
+            model_class = TargetSastModel
         case "mobile":
-            return TargetMobileModel.model_validate(data, strict=False)
+            model_class = TargetMobileModel
         case _:
-            return TargetModel.model_validate(data, strict=False)
+            model_class = TargetModel
+
+    reserved = {"category", "name"}
+    valid_fields = set(model_class.model_fields.keys()) - reserved
+    for key in extra:
+        if key not in valid_fields:
+            raise SeretoValueError(
+                f"Unknown field '{key}' for category '{category}'. "
+                f"Valid extra fields: {', '.join(sorted(valid_fields)) or 'none'}."
+            )
+
+    try:
+        data = {"category": category, "name": target_name, **extra}
+        return model_class.model_validate(data, strict=False)
+    except Exception as e:
+        if isinstance(e, ValidationError):
+            errors = "; ".join(f"{' -> '.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in e.errors())
+            raise SeretoValueError(f"Invalid value(s) in '--extra': {errors}") from e
+        raise
 
 
 @validate_call
