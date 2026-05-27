@@ -23,11 +23,11 @@ from sereto.cli.config import (
     show_people_config,
     show_targets_config,
 )
-from sereto.cli.finding import show_findings
+from sereto.cli.finding import add_finding, show_findings
 from sereto.cli.settings import edit_settings
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
-from sereto.enums import OutputFormat
+from sereto.enums import OutputFormat, Risk
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.keyring import get_password, set_password
 from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
@@ -630,15 +630,77 @@ def findings() -> None:
 
 @findings.command(name="add")
 @handle_exceptions
+@click.option(
+    "-T",
+    "--template",
+    "template_path",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to the finding template (.md.j2). Required for non-interactive mode.",
+)
+@click.option("-n", "--name", "finding_name", default=None, help="Name for the sub-finding.")
+@click.option(
+    "-r",
+    "--risk",
+    type=click.Choice([r.value for r in Risk], case_sensitive=False),
+    default=None,
+    help="Risk level of the finding.",
+)
+@click.option("-t", "--target", "target_selector", default=None, help="Target selector (index or uname).")
+@click.option("-g", "--group", "group_uname", default=None, help="Uname of an existing finding group to append to.")
+@click.option("--group-name", default=None, help="Name for the new finding group (defaults to template name).")
+@click.option(
+    "--var",
+    "variables",
+    multiple=True,
+    metavar="KEY=VALUE",
+    help="Template variable as KEY=VALUE (repeatable; value parsed as JSON if possible).",
+)
+@click.option("--overwrite", is_flag=True, default=False, help="Overwrite existing sub-finding.")
 @click.pass_obj
 @validate_call
-def finding_add(ctx: Project) -> None:
-    """Launch TUI app for searching and adding findings from templates.\f
+def finding_add(
+    ctx: Project,
+    template_path: str | None,
+    finding_name: str | None,
+    risk: str | None,
+    target_selector: str | None,
+    group_uname: str | None,
+    group_name: str | None,
+    variables: tuple[str, ...],
+    overwrite: bool,
+) -> None:
+    """Launch TUI app for searching and adding findings from templates.
+
+    When --template is provided, runs non-interactively without the TUI.
+    \f
 
     Args:
         ctx: Project's representation.
+        template_path: Path to the finding template file.
+        finding_name: Name for the sub-finding.
+        risk: Risk level override.
+        target_selector: Target selector (index or uname).
+        group_uname: Uname of existing finding group to append to.
+        group_name: Name for the new finding group.
+        variables: Template variables as KEY=VALUE strings.
+        overwrite: If True, overwrite existing sub-finding.
     """
-    asyncio.run(launch_finding_tui())
+    if template_path is None:
+        asyncio.run(launch_finding_tui())
+        return
+
+    add_finding(
+        project=ctx,
+        template_path=Path(template_path),
+        finding_name=finding_name,
+        risk=Risk(risk) if risk else None,
+        target_selector=target_selector,
+        group_uname=group_uname,
+        group_name=group_name,
+        variables=variables,
+        overwrite=overwrite,
+    )
 
 
 @findings.command(name="show")
