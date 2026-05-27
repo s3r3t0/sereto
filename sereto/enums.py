@@ -12,6 +12,14 @@ class Environment(StrEnum):
     testing = "testing"
 
 
+class TargetExposure(StrEnum):
+    """Enum representing the network exposure of a Target."""
+
+    internal = "internal"
+    external = "external"
+    mixed = "mixed"
+
+
 class FileFormat(StrEnum):
     """Enum representing the file format.
 
