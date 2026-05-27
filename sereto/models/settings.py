@@ -17,7 +17,7 @@ from pydantic import (
 )
 from rich.markup import escape
 
-from sereto.enums import FileFormat, Risk
+from sereto.enums import FileFormat, Risk, TargetExposure
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.logging import logger
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
@@ -385,7 +385,7 @@ class Settings(SeretoBaseSettings):
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
             possible in all positions except the first and last one)
-        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta
+        risk_due_dates: due dates for fixing the findings, for each risk level and target exposure, as a timedelta
         plugins: plugins settings
 
     Raises:
@@ -398,12 +398,20 @@ class Settings(SeretoBaseSettings):
     default_people: list[Person] = Field(default_factory=list)
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
-    risk_due_dates: dict[Risk, timedelta] = Field(
+    risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]] = Field(
         default_factory=lambda: {
-            Risk.critical: timedelta(days=7),
-            Risk.high: timedelta(days=14),
-            Risk.medium: timedelta(days=30),
-            Risk.low: timedelta(days=90),
+            TargetExposure.internal: {
+                Risk.critical: timedelta(days=10),
+                Risk.high: timedelta(days=30),
+                Risk.medium: timedelta(days=60),
+                Risk.low: timedelta(days=90),
+            },
+            TargetExposure.external: {
+                Risk.critical: timedelta(days=5),
+                Risk.high: timedelta(days=10),
+                Risk.medium: timedelta(days=30),
+                Risk.low: timedelta(days=90),
+            },
         },
         strict=False,
     )

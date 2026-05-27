@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, field_validator
 
-from sereto.enums import Environment
+from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
 from sereto.models.locator import LocatorModel
 from sereto.settings import load_settings_function
@@ -49,7 +49,7 @@ class TargetDastModel(TargetModel):
     ip_allowed: bool | None = None
     authentication: bool = False
     credentials_provided: bool | None = None
-    internal: bool = False
+    exposure: TargetExposure = TargetExposure.external
     environment: Environment = Environment.acceptance
     waf_present: bool = False
     waf_whitelisted: bool | None = None
