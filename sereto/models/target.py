@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, field_validator, model_validator
+from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, ValidationInfo, field_validator, model_validator
 
 from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
@@ -26,7 +26,15 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 
     @field_validator("category")
     @classmethod
-    def category_valid(cls, v: str) -> str:
+    def category_valid(cls, v: str, info: ValidationInfo) -> str:
+        # Skip validation if categories provided in context (for testing)
+        if info.context and (categories := info.context.get("categories")):
+            if v in categories:
+                return v
+            else:
+                raise ValueError(f'category "{v}" is unknown')
+
+        # Normal validation: load settings
         settings = load_settings_function()
         if v in settings.categories:
             return v
