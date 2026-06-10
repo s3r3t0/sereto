@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** The `Config.due_date()` method now requires an `exposure` parameter (default: `external`) before the `reported_on` parameter to support exposure-specific due dates.
+- **Breaking:** The `risk_due_dates` field in global settings is now structured by target exposure. The old flat format `{"critical": "P7D", ...}` is deprecated. Use the nested format: `{"internal": {"critical": "P10D", ...}, "external": {"critical": "P5D", ...}}`. Old settings files will be automatically migrated on load.
+- **Breaking:** The `internal` boolean field in DAST targets is deprecated in favor of the `exposure` enum field with values: `internal`, `external`, or `mixed`. Old config files with `"internal": true/false` will be automatically migrated to `"exposure": "internal"/"external"` on load.
+
 ### Dependencies
 
 - Update click requirement from ~=8.3.3 to ~=8.4.1
