@@ -23,14 +23,16 @@ from sereto.cli.config import (
     show_people_config,
     show_targets_config,
 )
-from sereto.cli.finding import show_findings
+from sereto.cli.finding import add_finding, show_findings
+from sereto.cli.settings import edit_settings
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.crypto import decrypt_file
-from sereto.enums import OutputFormat
+from sereto.enums import OutputFormat, Risk
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.keyring import get_password, set_password
 from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
-from sereto.models.settings import Settings
+from sereto.models.date import DateType
+from sereto.models.person import PersonType
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
 from sereto.pdf import (
@@ -90,30 +92,40 @@ def is_in_repl_shell() -> bool:
 @cli.command()
 @handle_exceptions
 @click.argument("project_id")
+@click.option("-n", "--name", "project_name", default=None, help="Name of the project.")
 @click.pass_obj
 @validate_call
-def new(ctx: Project, project_id: TypeProjectId) -> None:
+def new(ctx: Project, project_id: TypeProjectId, project_name: str | None) -> None:
     """Create a new project.
 
     \b
     Example:
         ```sh
         sereto new PT01234
+        sereto new PT01234 --name 'Test Project'
         ```
     \f
 
     Args:
         ctx: Project's representation.
         project_id: The ID of the project to be created.
+        project_name: The name of the project. Implies using non-interactive alternative of the command.
     """
-    Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
-    name = prompt("Name of the project: ")
+    if project_name is not None:
+        # Option was explicitly provided; reject empty strings
+        if not project_name:
+            raise SeretoValueError("Project name cannot be empty.")
+    else:
+        # Option was not provided; prompt interactively
+        Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
+        project_name = prompt("Name of the project: ")
+
     new_project(
         projects_path=ctx.settings.projects_path,
         templates_path=ctx.settings.templates_path,
         risk_due_dates=ctx.settings.risk_due_dates,
         id=project_id,
-        name=name,
+        name=project_name,
         people=ctx.settings.default_people,
     )
 
@@ -210,14 +222,31 @@ def config() -> None:
 
 @config.command(name="edit")
 @handle_exceptions
+@click.option(
+    "-e",
+    "--extra",
+    "extra_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to a JSON file with config fields to update (non-interactive).",
+)
 @click.pass_obj
-def config_edit(ctx: Project) -> None:
+@validate_call
+def config_edit(
+    ctx: Project,
+    extra_file: str | None,
+) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
         ctx: Project's representation.
+        extra_file: Path to a JSON file with config fields to update (non-interactive).
     """
-    edit_config(project=ctx)
+
+    edit_config(
+        project=ctx,
+        extra_file=Path(extra_file) if extra_file else None,
+    )
 
 
 @config.command(name="show")
@@ -268,16 +297,41 @@ def config_dates() -> None:
 @config_dates.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option(
+    "-t",
+    "--type",
+    "date_type",
+    type=click.Choice([dt.value for dt in DateType], case_sensitive=False),
+    help="Type of the date event.",
+)
+@click.option("-d", "--date", "start_date", default=None, help="Date in DD-Mmm-YYYY format (e.g. '01-Jan-2025').")
+@click.option("-e", "--end", "end_date", default=None, help="End date for ranges in DD-Mmm-YYYY format.")
 @click.pass_obj
 @validate_call
-def config_dates_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_dates_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    date_type: str | None,
+    start_date: str | None,
+    end_date: str | None,
+) -> None:
     """Add date to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the date to. If None, the last version is used.
+        date_type: The type of the date event.
+        start_date: The date string in DD-Mmm-YYYY format.
+        end_date: The end date string for ranges in DD-Mmm-YYYY format.
     """
-    add_dates_config(config=ctx.config, version=version)
+
+    add_dates_config(
+        config=ctx.config,
+        version=version,
+        date_type=DateType(date_type) if date_type else None,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
 
 @config_dates.command(name="delete")
@@ -353,16 +407,49 @@ def config_people() -> None:
 @config_people.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option(
+    "-t",
+    "--type",
+    "person_type",
+    type=click.Choice([pt.value for pt in PersonType], case_sensitive=False),
+    help="Type of the person.",
+)
+@click.option("-n", "--name", "person_name", default=None, help="Full name of the person.")
+@click.option("-b", "--business-unit", default=None, help="Business unit.")
+@click.option("-e", "--email", default=None, help="Email address.")
+@click.option("-r", "--role", default=None, help="Role within the organization.")
 @click.pass_obj
 @validate_call
-def config_people_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_people_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    person_type: str | None,
+    person_name: str | None,
+    business_unit: str | None,
+    email: str | None,
+    role: str | None,
+) -> None:
     """Add person to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the person to. If None, the last version is used.
+        person_type: The type of the person.
+        person_name: The name of the person.
+        business_unit: The business unit of the person.
+        email: The email address of the person.
+        role: The role of the person.
     """
-    add_people_config(config=ctx.config, version=version)
+
+    add_people_config(
+        config=ctx.config,
+        version=version,
+        person_type=PersonType(person_type) if person_type else None,
+        person_name=person_name,
+        business_unit=business_unit,
+        email=email,
+        role=role,
+    )
 
 
 @config_people.command(name="delete")
@@ -438,21 +525,43 @@ def config_targets() -> None:
 @config_targets.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option("-c", "--category", default=None, help="Category of the target (e.g. 'dast', 'sast', 'mobile').")
+@click.option("-n", "--name", "target_name", default=None, help="Name of the target.")
+@click.option(
+    "-e",
+    "--extra",
+    "extra_json",
+    default=None,
+    help='Extra target fields as a JSON string (e.g. \'{"environment": "production"}\').',
+)
 @click.pass_obj
 @validate_call
-def config_targets_add(ctx: Project, version: ProjectVersion | None) -> None:
+def config_targets_add(
+    ctx: Project,
+    version: ProjectVersion | None,
+    category: str | None,
+    target_name: str | None,
+    extra_json: str | None,
+) -> None:
     """Add targets to the project's configuration.\f
 
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the targets to. If None, the last version is used.
+        category: Category of the target.
+        target_name: Name of the target.
+        extra_json: Extra target fields as a JSON string.
     """
+
     add_target(
         project_path=ctx.path,
         templates=ctx.settings.templates_path,
         config=ctx.config,
         categories=ctx.settings.categories,
         version=version,
+        category=category,
+        target_name=target_name,
+        extra_json=extra_json,
     )
 
 
@@ -521,15 +630,77 @@ def findings() -> None:
 
 @findings.command(name="add")
 @handle_exceptions
+@click.option(
+    "-T",
+    "--template",
+    "template_path",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to the finding template (.md.j2). Required for non-interactive mode.",
+)
+@click.option("-n", "--name", "finding_name", default=None, help="Name for the sub-finding.")
+@click.option(
+    "-r",
+    "--risk",
+    type=click.Choice([r.value for r in Risk], case_sensitive=False),
+    default=None,
+    help="Risk level of the finding.",
+)
+@click.option("-t", "--target", "target_selector", default=None, help="Target selector (index or uname).")
+@click.option("-g", "--group", "group_uname", default=None, help="Uname of an existing finding group to append to.")
+@click.option("--group-name", default=None, help="Name for the new finding group (defaults to template name).")
+@click.option(
+    "--var",
+    "variables",
+    multiple=True,
+    metavar="KEY=VALUE",
+    help="Template variable as KEY=VALUE (repeatable; value parsed as JSON if possible).",
+)
+@click.option("--overwrite", is_flag=True, default=False, help="Overwrite existing sub-finding.")
 @click.pass_obj
 @validate_call
-def finding_add(ctx: Project) -> None:
-    """Launch TUI app for searching and adding findings from templates.\f
+def finding_add(
+    ctx: Project,
+    template_path: str | None,
+    finding_name: str | None,
+    risk: str | None,
+    target_selector: str | None,
+    group_uname: str | None,
+    group_name: str | None,
+    variables: tuple[str, ...],
+    overwrite: bool,
+) -> None:
+    """Launch TUI app for searching and adding findings from templates.
+
+    When --template is provided, runs non-interactively without the TUI.
+    \f
 
     Args:
         ctx: Project's representation.
+        template_path: Path to the finding template file.
+        finding_name: Name for the sub-finding.
+        risk: Risk level override.
+        target_selector: Target selector (index or uname).
+        group_uname: Uname of existing finding group to append to.
+        group_name: Name for the new finding group.
+        variables: Template variables as KEY=VALUE strings.
+        overwrite: If True, overwrite existing sub-finding.
     """
-    asyncio.run(launch_finding_tui())
+    if template_path is None:
+        asyncio.run(launch_finding_tui())
+        return
+
+    add_finding(
+        project=ctx,
+        template_path=Path(template_path),
+        finding_name=finding_name,
+        risk=Risk(risk) if risk else None,
+        target_selector=target_selector,
+        group_uname=group_uname,
+        group_name=group_name,
+        variables=variables,
+        overwrite=overwrite,
+    )
 
 
 @findings.command(name="show")
@@ -805,15 +976,29 @@ def settings() -> None:
 
 @settings.command(name="edit")
 @handle_exceptions
-def settings_edit() -> None:
+@click.option(
+    "-e",
+    "--extra",
+    "extra_file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+    help="Path to a JSON file with settings fields to update (non-interactive).",
+)
+@validate_call
+def settings_edit(extra_file: str | None) -> None:
     """Edit settings with the configured editor.
 
     This command opens the global settings configuration file in the default editor.
     If the configuration file does not exist, it will be created first with the default values.
+
+    When a JSON file is provided via --extra, the settings are updated non-interactively.
+    \f
+
+    Args:
+        extra_file: Path to a JSON file with settings fields to update (non-interactive).
     """
-    if not (path := Settings.get_path()).is_file():
-        load_settings_function()
-    click.edit(filename=str(path))
+
+    edit_settings(extra_file=Path(extra_file) if extra_file else None)
 
 
 @settings.group(cls=AliasedGroup)
