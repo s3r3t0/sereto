@@ -2,7 +2,7 @@ import subprocess
 import time
 from datetime import timedelta
 from pathlib import Path
-from typing import Annotated, Self
+from typing import Annotated, Any, Self
 
 from annotated_types import MinLen
 from click import get_app_dir
@@ -416,6 +416,33 @@ class Settings(SeretoBaseSettings):
         strict=False,
     )
     plugins: Plugins = Field(default_factory=Plugins)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_risk_due_dates(cls, data: Any) -> Any:
+        """Migrate old risk_due_dates format (flat dict) to new format (nested by exposure)."""
+        if isinstance(data, dict):
+            risk_due_dates = data.get("risk_due_dates")
+
+            if risk_due_dates is not None and isinstance(risk_due_dates, dict):
+                # Check if this is the old format: keys are Risk values, not TargetExposure values
+                keys = set(risk_due_dates.keys())
+                risk_values = {r.value for r in Risk}
+                exposure_values = {e.value for e in TargetExposure}
+
+                # Old format: has risk keys but no exposure keys
+                if keys.issubset(risk_values) and not keys.intersection(exposure_values):
+                    # Migrate to new format: apply same due dates to both internal and external
+                    logger.warning(
+                        "Migrating deprecated risk_due_dates format. "
+                        "The flat format is deprecated; use nested format with 'internal' and 'external' keys."
+                    )
+                    data["risk_due_dates"] = {
+                        TargetExposure.internal: risk_due_dates.copy(),
+                        TargetExposure.external: risk_due_dates.copy(),
+                    }
+
+        return data
 
     @field_validator("categories", mode="after")
     @classmethod
