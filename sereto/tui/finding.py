@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
-import frontmatter  # type: ignore
+import frontmatter
 from jinja2 import Environment
 from pydantic import DirectoryPath, ValidationError
 from rich.markup import escape
