@@ -433,13 +433,14 @@ class Settings(SeretoBaseSettings):
                 # Old format: has risk keys but no exposure keys
                 if keys.issubset(risk_values) and not keys.intersection(exposure_values):
                     # Migrate to new format: apply same due dates to both internal and external
+                    # Use string keys, not enum keys, since we're in "before" mode
                     logger.warning(
                         "Migrating deprecated risk_due_dates format. "
                         "The flat format is deprecated; use nested format with 'internal' and 'external' keys."
                     )
                     data["risk_due_dates"] = {
-                        TargetExposure.internal: risk_due_dates.copy(),
-                        TargetExposure.external: risk_due_dates.copy(),
+                        "internal": risk_due_dates.copy(),
+                        "external": risk_due_dates.copy(),
                     }
 
         return data
