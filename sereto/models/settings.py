@@ -19,7 +19,6 @@ from rich.markup import escape
 
 from sereto.enums import FileFormat, Risk, TargetExposure
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
-from sereto.logging import logger
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.models.person import Person
 from sereto.sereto_types import TypeCategories
@@ -434,10 +433,6 @@ class Settings(SeretoBaseSettings):
                 if keys.issubset(risk_values) and not keys.intersection(exposure_values):
                     # Migrate to new format: apply same due dates to both internal and external
                     # Use string keys, not enum keys, since we're in "before" mode
-                    logger.warning(
-                        "Migrating deprecated risk_due_dates format. "
-                        "The flat format is deprecated; use nested format with 'internal' and 'external' keys."
-                    )
                     data["risk_due_dates"] = {
                         "internal": risk_due_dates.copy(),
                         "external": risk_due_dates.copy(),
