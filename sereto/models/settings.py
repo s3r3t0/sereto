@@ -19,6 +19,7 @@ from rich.markup import escape
 
 from sereto.enums import FileFormat, Risk, TargetExposure
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
+from sereto.logging import logger
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
 from sereto.models.person import Person
 from sereto.sereto_types import TypeCategories
