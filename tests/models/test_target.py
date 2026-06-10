@@ -4,6 +4,22 @@ from pydantic import ValidationError
 from sereto.enums import Environment, TargetExposure
 from sereto.models.target import TargetDastModel
 
+# Test context with categories to avoid loading settings
+TEST_CONTEXT = {
+    "categories": [
+        "dast",
+        "sast",
+        "mobile",
+        "scenario",
+        "infrastructure",
+        "rd",
+        "portal",
+        "cicd",
+        "kubernetes",
+        "generic",
+    ]
+}
+
 
 def test_migrate_internal_true_to_exposure():
     """Test that internal=True is migrated to exposure=internal."""
@@ -12,7 +28,7 @@ def test_migrate_internal_true_to_exposure():
         "name": "WebApp",
         "internal": True,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.internal
 
 
@@ -23,7 +39,7 @@ def test_migrate_internal_false_to_exposure():
         "name": "WebApp",
         "internal": False,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.external
 
 
@@ -35,7 +51,7 @@ def test_exposure_field_takes_precedence_when_consistent():
         "internal": True,
         "exposure": TargetExposure.internal,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.internal
 
 
@@ -46,7 +62,7 @@ def test_exposure_field_without_internal():
         "name": "WebApp",
         "exposure": TargetExposure.external,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.external
 
 
@@ -59,7 +75,7 @@ def test_conflicting_internal_true_exposure_external_raises_error():
         "exposure": "external",
     }
     with pytest.raises(ValidationError, match="Conflicting values"):
-        TargetDastModel(**data)
+        TargetDastModel.model_validate(data, context=TEST_CONTEXT)
 
 
 def test_conflicting_internal_false_exposure_internal_raises_error():
@@ -71,7 +87,7 @@ def test_conflicting_internal_false_exposure_internal_raises_error():
         "exposure": "internal",
     }
     with pytest.raises(ValidationError, match="Conflicting values"):
-        TargetDastModel(**data)
+        TargetDastModel.model_validate(data, context=TEST_CONTEXT)
 
 
 def test_migration_preserves_other_fields():
@@ -86,7 +102,7 @@ def test_migration_preserves_other_fields():
         "waf_present": True,
         "environment": Environment.production,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.internal
     assert model.dst_ips_dynamic is True
     assert model.ip_filtering is True
@@ -101,7 +117,7 @@ def test_no_internal_field_uses_default_exposure():
         "category": "dast",
         "name": "WebApp",
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     assert model.exposure == TargetExposure.external  # Default value
 
 
@@ -112,7 +128,7 @@ def test_model_dict_excludes_internal_field():
         "name": "WebApp",
         "internal": True,
     }
-    model = TargetDastModel(**data)
+    model = TargetDastModel.model_validate(data, context=TEST_CONTEXT)
     # The internal field should not be present in the model
     assert not hasattr(model, "internal")
     # Check that model_dump doesn't include 'internal'
