@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Self, cast
 
-import frontmatter  # type: ignore[import-untyped]
+import frontmatter
 import tomlkit
 from pydantic import DirectoryPath, FilePath, validate_call
 from tomlkit.items import Table

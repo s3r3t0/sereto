@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Update click requirement from ~=8.3.3 to ~=8.4.1
+- Update cryptography requirement from ~=47.0.0 to ~=48.0.0
+- Update pydantic requirement from ~=2.13.3 to ~=2.13.4
+- Update pypdf requirement from ~=6.11.0 to ~=6.13.1
+- Update python-frontmatter requirement from ~=1.1.0 to ~=1.3.0
+- Update textual requirement from ~=8.2.5 to ~=8.2.7
+- Bump aiohttp from 3.13.4 to 3.14.0
+- Bump hatchling from 1.29.0 to 1.30.1
+- Bump idna from 3.10 to 3.15
+- Bump pymdown-extensions from 10.16.1 to 10.21.3
+
 ## [0.7.7] - 2026-05-12
 
 ### Added

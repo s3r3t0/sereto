@@ -1,7 +1,7 @@
 from collections.abc import Callable, Sequence
 from typing import Any
 
-import frontmatter  # type: ignore[import-untyped]
+import frontmatter
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template, UndefinedError, is_undefined
 from pydantic import DirectoryPath, FilePath, validate_call
 

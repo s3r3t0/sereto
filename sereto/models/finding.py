@@ -3,7 +3,7 @@ from collections.abc import ItemsView
 from pathlib import Path
 from typing import Any, Literal, Self
 
-import frontmatter  # type: ignore[import-untyped]
+import frontmatter
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
 from tomlkit import dumps as toml_dumps
 
