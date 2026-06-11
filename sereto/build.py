@@ -1,3 +1,5 @@
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from shutil import copy2
 
@@ -167,16 +169,35 @@ def build_target_dependencies(
     intermediate_format: FileFormat,
     converter: str | None = None,
 ) -> None:
-    # Finding group dependencies
-    for finding_group in target.findings.groups:
-        build_finding_group_dependencies(
-            project=project,
-            target=target,
-            finding_group=finding_group,
-            version=version,
-            intermediate_format=intermediate_format,
-            converter=converter,
-        )
+    # Finding group dependencies - process in parallel
+    finding_groups = target.findings.groups
+
+    if finding_groups:
+        # Determine optimal number of workers
+        max_workers = min(os.cpu_count() or 4, len(finding_groups))
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(
+                    build_finding_group_dependencies,
+                    project=project,
+                    target=target,
+                    finding_group=finding_group,
+                    version=version,
+                    intermediate_format=intermediate_format,
+                    converter=converter,
+                ): finding_group
+                for finding_group in finding_groups
+            }
+
+            # Wait for all finding groups to complete and handle any exceptions
+            for future in as_completed(futures):
+                finding_group = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    # Re-raise with context about which finding group failed
+                    raise type(e)(f"Failed to build finding group '{finding_group.uname}': {e}") from e
 
     # Create template in "layouts/generated" directory
     template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{intermediate_format.value}.j2"
