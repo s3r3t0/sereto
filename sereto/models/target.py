@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Any, Literal
 
 from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, ValidationInfo, field_validator, model_validator
@@ -128,3 +129,30 @@ class TargetMobileModel(TargetModel):
     clickpath: str | None = None
     android: AndroidMobilePlatform | None = AndroidMobilePlatform()
     ios: iOSMobilePlatform | None = iOSMobilePlatform()
+
+
+type AnyTargetModel = TargetDastModel | TargetSastModel | TargetMobileModel | TargetModel
+
+_TARGET_MODEL_BY_CATEGORY: dict[str, type[TargetModel]] = {
+    "dast": TargetDastModel,
+    "sast": TargetSastModel,
+    "mobile": TargetMobileModel,
+}
+
+
+def parse_target_model(
+    data: AnyTargetModel | Mapping[str, Any],
+    *,
+    context: dict[str, Any] | None = None,
+) -> AnyTargetModel:
+    """Parse raw target data into the correct target model subtype."""
+    if isinstance(data, TargetModel):
+        payload: dict[str, Any] = data.model_dump()
+    elif isinstance(data, Mapping):
+        payload = dict(data)
+    else:
+        raise TypeError("target data must be a mapping or TargetModel instance")
+
+    category = payload.get("category")
+    model_cls = _TARGET_MODEL_BY_CATEGORY.get(category, TargetModel) if isinstance(category, str) else TargetModel
+    return model_cls.model_validate(payload, context=context)
