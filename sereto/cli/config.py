@@ -17,7 +17,7 @@ from sereto.enums import OutputFormat
 from sereto.models.config import VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.target import TargetModel
+from sereto.models.target import AnyTargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.project import Project
 from sereto.target import Target
@@ -383,8 +383,8 @@ def show_targets_config(
                 table = _get_target_table(version_config=config.at_version(version=ver).to_model(), version=ver)
                 Console().print(table, justify="center")
         case OutputFormat.json:
-            TargetList: TypeAdapter[list[TargetModel]] = TypeAdapter(list[TargetModel])
-            TargetAll: TypeAdapter[dict[str, list[TargetModel]]] = TypeAdapter(dict[str, list[TargetModel]])
+            TargetList: TypeAdapter[list[AnyTargetModel]] = TypeAdapter(list[AnyTargetModel])
+            TargetAll: TypeAdapter[dict[str, list[AnyTargetModel]]] = TypeAdapter(dict[str, list[AnyTargetModel]])
 
             if all:
                 all_targets = TargetAll.validate_python(
