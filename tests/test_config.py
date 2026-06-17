@@ -3,10 +3,91 @@ import re
 import pytest
 
 from sereto.config import VersionConfig
+from sereto.enums import TargetExposure
 from sereto.exceptions import SeretoValueError
+from sereto.models.config import ConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import PersonType
+from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.models.version import ProjectVersion
+
+TARGET_TEST_CONTEXT = {
+    "categories": [
+        "dast",
+        "sast",
+        "mobile",
+        "portal",
+    ]
+}
+
+
+def test_config_model_loads_legacy_dast_target_as_dast_model():
+    config = ConfigModel.model_validate(
+        {
+            "sereto_version": "1.0.0",
+            "version_configs": {
+                "v1.0": {
+                    "id": "PRJ",
+                    "name": "Project",
+                    "version_description": "Initial",
+                    "targets": [
+                        {
+                            "category": "dast",
+                            "name": "WebApp",
+                            "internal": True,
+                        }
+                    ],
+                    "dates": [],
+                    "people": [],
+                }
+            },
+        },
+        context=TARGET_TEST_CONTEXT,
+    )
+
+    version_config = next(iter(config.version_configs.values()))
+    target = version_config.targets[0]
+
+    assert isinstance(target, TargetDastModel)
+    assert target.exposure == TargetExposure.internal
+
+    dumped = config.model_dump()
+    dumped_target = next(iter(dumped["version_configs"].values()))["targets"][0]
+    assert dumped_target["exposure"] == TargetExposure.internal
+    assert "internal" not in dumped_target
+
+
+def test_config_model_coerces_targets_to_expected_subclasses():
+    config = ConfigModel.model_validate(
+        {
+            "sereto_version": "1.0.0",
+            "version_configs": {
+                "v1.0": {
+                    "id": "PRJ",
+                    "name": "Project",
+                    "version_description": "Initial",
+                    "targets": [
+                        {"category": "dast", "name": "WebApp", "internal": False},
+                        {"category": "sast", "name": "Source"},
+                        {"category": "mobile", "name": "App"},
+                        {"category": "portal", "name": "Generic"},
+                    ],
+                    "dates": [],
+                    "people": [],
+                }
+            },
+        },
+        context=TARGET_TEST_CONTEXT,
+    )
+
+    targets = next(iter(config.version_configs.values())).targets
+
+    assert isinstance(targets[0], TargetDastModel)
+    assert targets[0].exposure == TargetExposure.external
+    assert isinstance(targets[1], TargetSastModel)
+    assert isinstance(targets[2], TargetMobileModel)
+    assert type(targets[3]) is TargetModel
+
 
 # -------------------- VersionConfig.filter_targets tests ---------------------
 

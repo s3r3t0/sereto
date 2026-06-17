@@ -2,7 +2,7 @@ import subprocess
 import time
 from datetime import timedelta
 from pathlib import Path
-from typing import Annotated, Self
+from typing import Annotated, Any, Self
 
 from annotated_types import MinLen
 from click import get_app_dir
@@ -17,7 +17,7 @@ from pydantic import (
 )
 from rich.markup import escape
 
-from sereto.enums import FileFormat, Risk
+from sereto.enums import FileFormat, Risk, TargetExposure
 from sereto.exceptions import SeretoCalledProcessError, SeretoPathError, SeretoValueError
 from sereto.logging import logger
 from sereto.models.base import SeretoBaseModel, SeretoBaseSettings
@@ -385,7 +385,7 @@ class Settings(SeretoBaseSettings):
         render: rendering settings
         categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is
             possible in all positions except the first and last one)
-        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta
+        risk_due_dates: due dates for fixing the findings, for each risk level and target exposure, as a timedelta
         plugins: plugins settings
 
     Raises:
@@ -398,16 +398,48 @@ class Settings(SeretoBaseSettings):
     default_people: list[Person] = Field(default_factory=list)
     render: Render = Field(default=DEFAULT_RENDER_CONFIG)
     categories: TypeCategories = Field(default=DEFAULT_CATEGORIES)
-    risk_due_dates: dict[Risk, timedelta] = Field(
+    risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]] = Field(
         default_factory=lambda: {
-            Risk.critical: timedelta(days=7),
-            Risk.high: timedelta(days=14),
-            Risk.medium: timedelta(days=30),
-            Risk.low: timedelta(days=90),
+            TargetExposure.internal: {
+                Risk.critical: timedelta(days=10),
+                Risk.high: timedelta(days=30),
+                Risk.medium: timedelta(days=60),
+                Risk.low: timedelta(days=90),
+            },
+            TargetExposure.external: {
+                Risk.critical: timedelta(days=5),
+                Risk.high: timedelta(days=10),
+                Risk.medium: timedelta(days=30),
+                Risk.low: timedelta(days=90),
+            },
         },
         strict=False,
     )
     plugins: Plugins = Field(default_factory=Plugins)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_risk_due_dates(cls, data: Any) -> Any:
+        """Migrate old risk_due_dates format (flat dict) to new format (nested by exposure)."""
+        if isinstance(data, dict):
+            risk_due_dates = data.get("risk_due_dates")
+
+            if risk_due_dates is not None and isinstance(risk_due_dates, dict):
+                # Check if this is the old format: keys are Risk values, not TargetExposure values
+                keys = set(risk_due_dates.keys())
+                risk_values = {r.value for r in Risk}
+                exposure_values = {e.value for e in TargetExposure}
+
+                # Old format: has risk keys but no exposure keys
+                if keys.issubset(risk_values) and not keys.intersection(exposure_values):
+                    # Migrate to new format: apply same due dates to both internal and external
+                    # Use string keys, not enum keys, since we're in "before" mode
+                    data["risk_due_dates"] = {
+                        "internal": risk_due_dates.copy(),
+                        "external": risk_due_dates.copy(),
+                    }
+
+        return data
 
     @field_validator("categories", mode="after")
     @classmethod

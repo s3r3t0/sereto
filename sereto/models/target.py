@@ -1,8 +1,9 @@
-from typing import Literal
+from collections.abc import Mapping
+from typing import Any, Literal
 
-from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, field_validator
+from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, ValidationInfo, field_validator, model_validator
 
-from sereto.enums import Environment
+from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
 from sereto.models.locator import LocatorModel
 from sereto.settings import load_settings_function
@@ -26,7 +27,15 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 
     @field_validator("category")
     @classmethod
-    def category_valid(cls, v: str) -> str:
+    def category_valid(cls, v: str, info: ValidationInfo) -> str:
+        # Skip validation if categories provided in context (for testing)
+        if info.context and (categories := info.context.get("categories")):
+            if v in categories:
+                return v
+            else:
+                raise ValueError(f'category "{v}" is unknown')
+
+        # Normal validation: load settings
         settings = load_settings_function()
         if v in settings.categories:
             return v
@@ -42,6 +51,34 @@ class TargetModel(SeretoBaseModel, extra="allow"):
 class TargetDastModel(TargetModel):
     """Model representing a target which is characterized by IP address."""
 
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_internal_to_exposure(cls, data: Any) -> Any:
+        """Migrate deprecated 'internal' field to 'exposure'."""
+        if isinstance(data, dict):
+            internal = data.get("internal")
+            exposure = data.get("exposure")
+
+            if internal is not None:
+                # Determine the expected exposure based on internal value
+                expected_exposure = TargetExposure.internal if internal else TargetExposure.external
+                expected_exposure_str = "internal" if internal else "external"
+
+                if exposure is not None:
+                    # Both are present - check for conflicts
+                    # Normalize exposure to string for comparison
+                    exposure_str = exposure if isinstance(exposure, str) else exposure.value
+                    if exposure_str != expected_exposure_str:
+                        raise ValueError(f"Conflicting values: internal={internal} and exposure={exposure}.")
+                else:
+                    # Set exposure based on internal (use enum)
+                    data["exposure"] = expected_exposure
+
+                # Remove the internal field
+                data.pop("internal", None)
+
+        return data
+
     dst_ips_dynamic: bool = False
     dst_ips_dynamic_details: str | None = None
     src_ips: list[IPvAnyAddress | IPvAnyNetwork] = []
@@ -49,7 +86,7 @@ class TargetDastModel(TargetModel):
     ip_allowed: bool | None = None
     authentication: bool = False
     credentials_provided: bool | None = None
-    internal: bool = False
+    exposure: TargetExposure = TargetExposure.external
     environment: Environment = Environment.acceptance
     waf_present: bool = False
     waf_whitelisted: bool | None = None
@@ -92,3 +129,30 @@ class TargetMobileModel(TargetModel):
     clickpath: str | None = None
     android: AndroidMobilePlatform | None = AndroidMobilePlatform()
     ios: iOSMobilePlatform | None = iOSMobilePlatform()
+
+
+type AnyTargetModel = TargetDastModel | TargetSastModel | TargetMobileModel | TargetModel
+
+_TARGET_MODEL_BY_CATEGORY: dict[str, type[TargetModel]] = {
+    "dast": TargetDastModel,
+    "sast": TargetSastModel,
+    "mobile": TargetMobileModel,
+}
+
+
+def parse_target_model(
+    data: AnyTargetModel | Mapping[str, Any],
+    *,
+    context: dict[str, Any] | None = None,
+) -> AnyTargetModel:
+    """Parse raw target data into the correct target model subtype."""
+    if isinstance(data, TargetModel):
+        payload: dict[str, Any] = data.model_dump()
+    elif isinstance(data, Mapping):
+        payload = dict(data)
+    else:
+        raise TypeError("target data must be a mapping or TargetModel instance")
+
+    category = payload.get("category")
+    model_cls = _TARGET_MODEL_BY_CATEGORY.get(category, TargetModel) if isinstance(category, str) else TargetModel
+    return model_cls.model_validate(payload, context=context)
