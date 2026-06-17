@@ -3700,7 +3700,12 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <h3 id="categories"><code>categories</code><a class="headerlink" href="#categories" title="Permanent link">&para;</a></h3>
 <p>List of categories, such as DAST, SAST, infrastructure, etc.</p>
 <h3 id="risk_due_dates"><code>risk_due_dates</code><a class="headerlink" href="#risk_due_dates" title="Permanent link">&para;</a></h3>
-<p>A dictionary of risk levels and time periods in which findings with given risk levels should be addressed. These values are used to set the recommended due dates for findings in the report. The values follow the <a href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 format for durations</a> (e.g., <code>P7D</code> for 7 days).</p>
+<p>A dictionary of risk levels and time periods in which findings with given risk levels should be addressed, organized by target exposure (internal/external). These values are used to set the recommended due dates for findings in the report. The values follow the <a href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 format for durations</a> (e.g., <code>P7D</code> for 7 days).</p>
+<p>The structure is nested: first level keys are target exposures (<code>internal</code>, <code>external</code>), second level keys are risk levels (<code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Legacy Format</p>
+<p>Settings files using the old flat format (risk level keys directly without exposure nesting) will be automatically migrated on load. Both internal and external exposures will receive the same due dates from the old format.</p>
+</div>
 <h2 id="full-configuration-example">Full configuration example<a class="headerlink" href="#full-configuration-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;projects_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/home/demo/sereto/projects&quot;</span><span class="p">,</span>
@@ -3901,10 +3906,18 @@ It seems like this is the first time you&#39;re running the tool. Let&#39;s set 
 <span class="w">    </span><span class="s2">&quot;kubernetes&quot;</span>
 <span class="w">  </span><span class="p">],</span>
 <span class="w">  </span><span class="nt">&quot;risk_due_dates&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;critical&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;high&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P14D&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;medium&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P30D&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;low&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P90D&quot;</span>
+<span class="w">    </span><span class="nt">&quot;internal&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;critical&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P10D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;high&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P30D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;medium&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P60D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;low&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P90D&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;external&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;critical&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P5D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;high&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P10D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;medium&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P30D&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;low&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P90D&quot;</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>

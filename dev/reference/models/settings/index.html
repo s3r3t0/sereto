@@ -1773,6 +1773,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.models.settings.Settings.migrate_risk_due_dates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate_risk_due_dates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.models.settings.Settings.unique_categories" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2918,6 +2929,17 @@
   
     <nav class="md-nav" aria-label="Settings">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sereto.models.settings.Settings.migrate_risk_due_dates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate_risk_due_dates
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#sereto.models.settings.Settings.unique_categories" class="md-nav__link">
@@ -4584,11 +4606,11 @@ possible in all positions except the first and last one)</p>
           <tr class="doc-section-item">
             <td><code><span title="sereto.models.settings.Settings.risk_due_dates">risk_due_dates</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="Risk (sereto.enums.Risk)" href="../../enums/#sereto.enums.Risk">Risk</a>, <a class="autorefs autorefs-external" title="datetime.timedelta" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="TargetExposure (sereto.enums.TargetExposure)" href="../../enums/#sereto.enums.TargetExposure">TargetExposure</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="Risk (sereto.enums.Risk)" href="../../enums/#sereto.enums.Risk">Risk</a>, <a class="autorefs autorefs-external" title="datetime.timedelta" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>due dates for fixing the findings, for each risk level, as a timedelta</p>
+                <p>due dates for fixing the findings, for each risk level and target exposure, as a timedelta</p>
               </div>
             </td>
           </tr>
@@ -4711,7 +4733,39 @@ possible in all positions except the first and last one)</p>
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
-<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">SeretoBaseSettings</span><span class="p">):</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">SeretoBaseSettings</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Global settings:</span>
 
 <span class="sd">    Attributes:</span>
@@ -4721,7 +4775,7 @@ possible in all positions except the first and last one)</p>
 <span class="sd">        render: rendering settings</span>
 <span class="sd">        categories: supported categories - list of strings (2-20 lower-alpha characters; also dash and underscore is</span>
 <span class="sd">            possible in all positions except the first and last one)</span>
-<span class="sd">        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta</span>
+<span class="sd">        risk_due_dates: due dates for fixing the findings, for each risk level and target exposure, as a timedelta</span>
 <span class="sd">        plugins: plugins settings</span>
 
 <span class="sd">    Raises:</span>
@@ -4734,16 +4788,48 @@ possible in all positions except the first and last one)</p>
     <span class="n">default_people</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
     <span class="n">render</span><span class="p">:</span> <span class="n">Render</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_RENDER_CONFIG</span><span class="p">)</span>
     <span class="n">categories</span><span class="p">:</span> <span class="n">TypeCategories</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_CATEGORIES</span><span class="p">)</span>
-    <span class="n">risk_due_dates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Risk</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+    <span class="n">risk_due_dates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TargetExposure</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Risk</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">{</span>
-            <span class="n">Risk</span><span class="o">.</span><span class="n">critical</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span>
-            <span class="n">Risk</span><span class="o">.</span><span class="n">high</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">14</span><span class="p">),</span>
-            <span class="n">Risk</span><span class="o">.</span><span class="n">medium</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
-            <span class="n">Risk</span><span class="o">.</span><span class="n">low</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+            <span class="n">TargetExposure</span><span class="o">.</span><span class="n">internal</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">critical</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">high</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">medium</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">60</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">low</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">critical</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">high</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">medium</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">),</span>
+                <span class="n">Risk</span><span class="o">.</span><span class="n">low</span><span class="p">:</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+            <span class="p">},</span>
         <span class="p">},</span>
         <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">plugins</span><span class="p">:</span> <span class="n">Plugins</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">Plugins</span><span class="p">)</span>
+
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">migrate_risk_due_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Migrate old risk_due_dates format (flat dict) to new format (nested by exposure).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">risk_due_dates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># Check if this is the old format: keys are Risk values, not TargetExposure values</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">risk_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">Risk</span><span class="p">}</span>
+                <span class="n">exposure_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">TargetExposure</span><span class="p">}</span>
+
+                <span class="c1"># Old format: has risk keys but no exposure keys</span>
+                <span class="k">if</span> <span class="n">keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">risk_values</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exposure_values</span><span class="p">):</span>
+                    <span class="c1"># Migrate to new format: apply same due dates to both internal and external</span>
+                    <span class="c1"># Use string keys, not enum keys, since we&#39;re in &quot;before&quot; mode</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                        <span class="s2">&quot;external&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                    <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">data</span>
 
     <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
     <span class="nd">@classmethod</span>
@@ -4794,6 +4880,77 @@ possible in all positions except the first and last one)</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="sereto.models.settings.Settings.migrate_risk_due_dates" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">migrate_risk_due_dates</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#sereto.models.settings.Settings.migrate_risk_due_dates" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Migrate old risk_due_dates format (flat dict) to new format (nested by exposure).</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/models/settings.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">migrate_risk_due_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Migrate old risk_due_dates format (flat dict) to new format (nested by exposure).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">risk_due_dates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># Check if this is the old format: keys are Risk values, not TargetExposure values</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">risk_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">Risk</span><span class="p">}</span>
+            <span class="n">exposure_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">TargetExposure</span><span class="p">}</span>
+
+            <span class="c1"># Old format: has risk keys but no exposure keys</span>
+            <span class="k">if</span> <span class="n">keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">risk_values</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exposure_values</span><span class="p">):</span>
+                <span class="c1"># Migrate to new format: apply same due dates to both internal and external</span>
+                <span class="c1"># Use string keys, not enum keys, since we&#39;re in &quot;before&quot; mode</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                    <span class="s2">&quot;external&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="sereto.models.settings.Settings.unique_categories" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">unique_categories</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span></code>
 
@@ -4811,21 +4968,21 @@ possible in all positions except the first and last one)</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/models/settings.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
 <span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">unique_categories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">TypeCategories</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeCategories</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that all category names are unique and preserves their original order.&quot;&quot;&quot;</span>

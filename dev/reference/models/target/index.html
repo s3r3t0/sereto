@@ -1670,6 +1670,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="TargetDastModel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sereto.models.target.TargetDastModel.migrate_internal_to_exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate_internal_to_exposure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1716,6 +1733,17 @@
     <span class="md-ellipsis">
       
         TargetSastModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sereto.models.target.parse_target_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_target_model
       
     </span>
   </a>
@@ -2695,6 +2723,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="TargetDastModel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sereto.models.target.TargetDastModel.migrate_internal_to_exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate_internal_to_exposure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2741,6 +2786,17 @@
     <span class="md-ellipsis">
       
         TargetSastModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sereto.models.target.parse_target_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse_target_model
       
     </span>
   </a>
@@ -2833,23 +2889,79 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/models/target.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetDastModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetDastModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a target which is characterized by IP address.&quot;&quot;&quot;</span>
+
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">migrate_internal_to_exposure</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Migrate deprecated &#39;internal&#39; field to &#39;exposure&#39;.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">internal</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">internal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Determine the expected exposure based on internal value</span>
+                <span class="n">expected_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">internal</span> <span class="k">if</span> <span class="n">internal</span> <span class="k">else</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span>
+                <span class="n">expected_exposure_str</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span> <span class="k">if</span> <span class="n">internal</span> <span class="k">else</span> <span class="s2">&quot;external&quot;</span>
+
+                <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Both are present - check for conflicts</span>
+                    <span class="c1"># Normalize exposure to string for comparison</span>
+                    <span class="n">exposure_str</span> <span class="o">=</span> <span class="n">exposure</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">exposure</span><span class="o">.</span><span class="n">value</span>
+                    <span class="k">if</span> <span class="n">exposure_str</span> <span class="o">!=</span> <span class="n">expected_exposure_str</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conflicting values: internal=</span><span class="si">{</span><span class="n">internal</span><span class="si">}</span><span class="s2"> and exposure=</span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Set exposure based on internal (use enum)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">expected_exposure</span>
+
+                <span class="c1"># Remove the internal field</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span>
 
     <span class="n">dst_ips_dynamic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">dst_ips_dynamic_details</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2858,7 +2970,7 @@
     <span class="n">ip_allowed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">authentication</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">credentials_provided</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">internal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">exposure</span><span class="p">:</span> <span class="n">TargetExposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span>
     <span class="n">environment</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="o">.</span><span class="n">acceptance</span>
     <span class="n">waf_present</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">waf_whitelisted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2879,6 +2991,85 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="sereto.models.target.TargetDastModel.migrate_internal_to_exposure" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">migrate_internal_to_exposure</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#sereto.models.target.TargetDastModel.migrate_internal_to_exposure" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Migrate deprecated 'internal' field to 'exposure'.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/models/target.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">migrate_internal_to_exposure</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Migrate deprecated &#39;internal&#39; field to &#39;exposure&#39;.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">internal</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+        <span class="n">exposure</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">internal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Determine the expected exposure based on internal value</span>
+            <span class="n">expected_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">internal</span> <span class="k">if</span> <span class="n">internal</span> <span class="k">else</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span>
+            <span class="n">expected_exposure_str</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span> <span class="k">if</span> <span class="n">internal</span> <span class="k">else</span> <span class="s2">&quot;external&quot;</span>
+
+            <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Both are present - check for conflicts</span>
+                <span class="c1"># Normalize exposure to string for comparison</span>
+                <span class="n">exposure_str</span> <span class="o">=</span> <span class="n">exposure</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">exposure</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">if</span> <span class="n">exposure_str</span> <span class="o">!=</span> <span class="n">expected_exposure_str</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conflicting values: internal=</span><span class="si">{</span><span class="n">internal</span><span class="si">}</span><span class="s2"> and exposure=</span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Set exposure based on internal (use enum)</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">expected_exposure</span>
+
+            <span class="c1"># Remove the internal field</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -2916,25 +3107,25 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/models/target.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetMobileModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetMobileModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing the details of the &#39;mobile&#39; category.&quot;&quot;&quot;</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">MobilePlatform</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
@@ -3063,8 +3254,7 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/models/target.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">12</span>
-<span class="normal">13</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
@@ -3090,7 +3280,16 @@
 <span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span>
-<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;allow&quot;</span><span class="p">):</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;allow&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for model representing the details of a target.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3107,7 +3306,15 @@
 
     <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">category_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">category_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">ValidationInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># Skip validation if categories provided in context (for testing)</span>
+        <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">context</span> <span class="ow">and</span> <span class="p">(</span><span class="n">categories</span> <span class="o">:=</span> <span class="n">info</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;category &quot;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&quot; is unknown&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Normal validation: load settings</span>
         <span class="n">settings</span> <span class="o">=</span> <span class="n">load_settings_function</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">v</span>
@@ -3250,20 +3457,20 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/models/target.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetSastModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TargetSastModel</span><span class="p">(</span><span class="n">TargetModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing the details of the &#39;sast&#39; category.</span>
 
 <span class="sd">    Attributes:</span>
@@ -3301,6 +3508,59 @@
 
 </div>
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sereto.models.target.parse_target_model" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">parse_target_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#sereto.models.target.parse_target_model" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Parse raw target data into the correct target model subtype.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/models/target.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_target_model</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">AnyTargetModel</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">context</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyTargetModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse raw target data into the correct target model subtype.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TargetModel</span><span class="p">):</span>
+        <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;target data must be a mapping or TargetModel instance&quot;</span><span class="p">)</span>
+
+    <span class="n">category</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+    <span class="n">model_cls</span> <span class="o">=</span> <span class="n">_TARGET_MODEL_BY_CATEGORY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">TargetModel</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">TargetModel</span>
+    <span class="k">return</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

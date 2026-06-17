@@ -3682,11 +3682,11 @@ found or 'dir_subtree' is reached.</p>
                 <code>risk_due_dates</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="Risk (sereto.enums.Risk)" href="../enums/#sereto.enums.Risk">Risk</a>, <a class="autorefs autorefs-external" title="datetime.timedelta" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="TargetExposure (sereto.enums.TargetExposure)" href="../enums/#sereto.enums.TargetExposure">TargetExposure</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-internal" title="Risk (sereto.enums.Risk)" href="../enums/#sereto.enums.Risk">Risk</a>, <a class="autorefs autorefs-external" title="datetime.timedelta" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta">timedelta</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>due dates for fixing the findings, for each risk level, as a timedelta</p>
+                <p>due dates for fixing the findings, for each risk level and target exposure, as a timedelta</p>
               </div>
             </td>
             <td>
@@ -3831,7 +3831,7 @@ found or 'dir_subtree' is reached.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">new_project</span><span class="p">(</span>
     <span class="n">projects_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
     <span class="n">templates_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
-    <span class="n">risk_due_dates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Risk</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">],</span>
+    <span class="n">risk_due_dates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TargetExposure</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Risk</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">]],</span>
     <span class="nb">id</span><span class="p">:</span> <span class="n">TypeProjectId</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">people</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">],</span>
@@ -3841,7 +3841,7 @@ found or 'dir_subtree' is reached.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        projects_path: The path to the projects directory.</span>
 <span class="sd">        templates_path: The path to the templates directory.</span>
-<span class="sd">        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta</span>
+<span class="sd">        risk_due_dates: due dates for fixing the findings, for each risk level and target exposure, as a timedelta</span>
 <span class="sd">        id: The ID of the new project. This should be a string that uniquely identifies the project.</span>
 <span class="sd">        name: The name of the new project.</span>
 <span class="sd">        people: Initial list of people from global settings.</span>
