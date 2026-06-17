@@ -237,6 +237,11 @@ def copy_skel(templates: DirectoryPath, dst: DirectoryPath, overwrite: bool = Fa
         if not overwrite and dst_item.exists():
             raise SeretoPathError("Destination already exists")
         if item.is_file():
+            if item.name == "findings.toml" and overwrite:
+                logger.info(
+                    "[yellow]![/yellow] skipping file: '{}'", escape(str(item.relative_to(skel_path))), markup=True
+                )
+                continue
             logger.info("[green]+[/green] copy file: '{}'", escape(str(item.relative_to(skel_path))), markup=True)
             copy2(item, dst_item, follow_symlinks=False)
         if item.is_dir():
