@@ -1,5 +1,10 @@
 from pathlib import Path
 
+import matplotlib
+
+# Use the non-GUI "Agg" backend for matplotlib so that parallel execution doesn't cause running GUI
+# on non-main thread errors. This is required for the `sereto report` command.
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib.axes import Axes
