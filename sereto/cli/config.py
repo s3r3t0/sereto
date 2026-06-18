@@ -20,7 +20,7 @@ from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
-from sereto.models.target import AnyTargetModel
+from sereto.models.target import AnyTargetModel, TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.project import Project
 from sereto.target import Target
