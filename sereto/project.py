@@ -8,7 +8,7 @@ from pydantic import DirectoryPath, validate_call
 from typing_extensions import ParamSpec
 
 from sereto.config import Config, VersionConfig
-from sereto.enums import Risk
+from sereto.enums import Risk, TargetExposure
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.logging import logger
 from sereto.models.person import Person
@@ -222,7 +222,7 @@ def project_create_missing(project: Project, version_config: VersionConfig) -> N
 def new_project(
     projects_path: DirectoryPath,
     templates_path: DirectoryPath,
-    risk_due_dates: dict[Risk, timedelta],
+    risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]],
     id: TypeProjectId,
     name: str,
     people: list[Person],
@@ -232,7 +232,7 @@ def new_project(
     Args:
         projects_path: The path to the projects directory.
         templates_path: The path to the templates directory.
-        risk_due_dates: due dates for fixing the findings, for each risk level, as a timedelta
+        risk_due_dates: due dates for fixing the findings, for each risk level and target exposure, as a timedelta
         id: The ID of the new project. This should be a string that uniquely identifies the project.
         name: The name of the new project.
         people: Initial list of people from global settings.

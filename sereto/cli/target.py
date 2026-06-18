@@ -1,3 +1,4 @@
+import json
 from collections.abc import Iterable
 
 import click
@@ -6,10 +7,17 @@ from prompt_toolkit.shortcuts import radiolist_dialog
 
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoRuntimeError
-from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
+from sereto.models.target import (
+    AnyTargetModel,
+    TargetDastModel,
+    TargetMobileModel,
+    TargetModel,
+    TargetSastModel,
+    parse_target_model,
+)
 
 
-def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
+def prompt_user_for_target(categories: Iterable[str]) -> AnyTargetModel:
     """Interactively prompt for a target's details.
 
     Args:
@@ -41,4 +49,4 @@ def prompt_user_for_target(categories: Iterable[str]) -> TargetModel:
     if target_edited is None:
         raise SeretoRuntimeError("aborting, editor closed without saving")
 
-    return TargetModel.model_validate_json(target_edited)
+    return parse_target_model(json.loads(target_edited), context={"categories": list(categories)})
