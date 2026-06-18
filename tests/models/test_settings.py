@@ -1,8 +1,11 @@
+from datetime import timedelta
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
-from sereto.enums import FileFormat
-from sereto.models.settings import DEFAULT_RENDER_CONFIG, ConvertRecipe, Render, RenderRecipe, RenderTool
+from sereto.enums import FileFormat, Risk, TargetExposure
+from sereto.models.settings import DEFAULT_RENDER_CONFIG, ConvertRecipe, Render, RenderRecipe, RenderTool, Settings
 
 
 def _tool(name: str) -> RenderTool:
@@ -65,3 +68,72 @@ def test_render_rejects_unknown_tool_in_convert_recipe():
                 )
             ]
         )
+
+
+def test_migrate_risk_due_dates_old_format(tmp_path: Path):
+    """Test migration from old flat risk_due_dates format to new nested format."""
+    # Old format: flat dict with risk keys
+    old_format_data = {
+        "projects_path": str(tmp_path / "projects"),
+        "templates_path": str(tmp_path / "templates"),
+        "risk_due_dates": {
+            "critical": "P7D",
+            "high": "P14D",
+            "medium": "P30D",
+            "low": "P90D",
+        },
+    }
+
+    # Create the directories
+    (tmp_path / "projects").mkdir()
+    (tmp_path / "templates").mkdir()
+
+    # Should successfully migrate
+    settings = Settings(**old_format_data)
+
+    # Verify it was migrated to new format
+    assert isinstance(settings.risk_due_dates, dict)
+    assert TargetExposure.internal in settings.risk_due_dates
+    assert TargetExposure.external in settings.risk_due_dates
+
+    # Both internal and external should have the same values from old format
+    assert settings.risk_due_dates[TargetExposure.internal][Risk.critical] == timedelta(days=7)
+    assert settings.risk_due_dates[TargetExposure.internal][Risk.high] == timedelta(days=14)
+    assert settings.risk_due_dates[TargetExposure.external][Risk.critical] == timedelta(days=7)
+    assert settings.risk_due_dates[TargetExposure.external][Risk.high] == timedelta(days=14)
+
+
+def test_risk_due_dates_new_format_not_modified(tmp_path: Path):
+    """Test that new format is not modified by migration."""
+    # New format: nested dict with exposure -> risk keys
+    new_format_data = {
+        "projects_path": str(tmp_path / "projects"),
+        "templates_path": str(tmp_path / "templates"),
+        "risk_due_dates": {
+            "internal": {
+                "critical": "P10D",
+                "high": "P30D",
+                "medium": "P60D",
+                "low": "P90D",
+            },
+            "external": {
+                "critical": "P5D",
+                "high": "P10D",
+                "medium": "P30D",
+                "low": "P90D",
+            },
+        },
+    }
+
+    # Create the directories
+    (tmp_path / "projects").mkdir()
+    (tmp_path / "templates").mkdir()
+
+    # Should work without modification
+    settings = Settings(**new_format_data)
+
+    # Verify the values are preserved
+    assert settings.risk_due_dates[TargetExposure.internal][Risk.critical] == timedelta(days=10)
+    assert settings.risk_due_dates[TargetExposure.internal][Risk.high] == timedelta(days=30)
+    assert settings.risk_due_dates[TargetExposure.external][Risk.critical] == timedelta(days=5)
+    assert settings.risk_due_dates[TargetExposure.external][Risk.high] == timedelta(days=10)

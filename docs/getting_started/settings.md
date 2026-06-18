@@ -128,7 +128,12 @@ List of categories, such as DAST, SAST, infrastructure, etc.
 
 ### `risk_due_dates`
 
-A dictionary of risk levels and time periods in which findings with given risk levels should be addressed. These values are used to set the recommended due dates for findings in the report. The values follow the [ISO 8601 format for durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., `P7D` for 7 days).
+A dictionary of risk levels and time periods in which findings with given risk levels should be addressed, organized by target exposure (internal/external). These values are used to set the recommended due dates for findings in the report. The values follow the [ISO 8601 format for durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., `P7D` for 7 days).
+
+The structure is nested: first level keys are target exposures (`internal`, `external`), second level keys are risk levels (`critical`, `high`, `medium`, `low`).
+
+!!! note "Legacy Format"
+    Settings files using the old flat format (risk level keys directly without exposure nesting) will be automatically migrated on load. Both internal and external exposures will receive the same due dates from the old format.
 
 
 ## Full configuration example
@@ -333,10 +338,18 @@ A dictionary of risk levels and time periods in which findings with given risk l
     "kubernetes"
   ],
   "risk_due_dates": {
-    "critical": "P7D",
-    "high": "P14D",
-    "medium": "P30D",
-    "low": "P90D"
+    "internal": {
+      "critical": "P10D",
+      "high": "P30D",
+      "medium": "P60D",
+      "low": "P90D"
+    },
+    "external": {
+      "critical": "P5D",
+      "high": "P10D",
+      "medium": "P30D",
+      "low": "P90D"
+    }
   }
 }
 ```

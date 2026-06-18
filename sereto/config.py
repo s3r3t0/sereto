@@ -8,7 +8,7 @@ from typing import Literal, Self, overload
 
 from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
 
-from sereto.enums import Risk
+from sereto.enums import Risk, TargetExposure
 from sereto.exceptions import SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
@@ -24,7 +24,7 @@ class VersionConfig:
     id: str
     name: str
     version_description: str
-    risk_due_dates: dict[Risk, timedelta]
+    risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
     targets: list[Target] = field(default_factory=list)
     dates: list[Date] = field(default_factory=list)
     people: list[Person] = field(default_factory=list)
@@ -48,7 +48,7 @@ class VersionConfig:
         version: ProjectVersion,
         project_path: DirectoryPath,
         templates: DirectoryPath,
-        risk_due_dates: dict[Risk, timedelta],
+        risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]],
     ) -> Self:
         return cls(
             version=version,
@@ -69,9 +69,15 @@ class VersionConfig:
             risk_due_dates=risk_due_dates,
         )
 
-    def due_date_for(self, risk: Risk) -> SeretoDate | None:
-        """Get the due date for a specific risk level."""
-        if risk not in self.risk_due_dates:
+    def due_date_for(self, risk: Risk, exposure: TargetExposure = TargetExposure.external) -> SeretoDate | None:
+        """Get the due date for a specific risk level and target exposure.
+
+        Mixed exposure uses the stricter (external) deadlines.
+        """
+        effective_exposure = TargetExposure.external if exposure == TargetExposure.mixed else exposure
+        due_dates = self.risk_due_dates.get(effective_exposure, {})
+
+        if risk not in due_dates:
             return None
 
         report_sent_date = self.filter_dates(
@@ -81,7 +87,7 @@ class VersionConfig:
             return None
 
         # Calculate the due date by adding the risk's due timedelta to the report sent date
-        return report_sent_date + self.risk_due_dates[risk]
+        return report_sent_date + due_dates[risk]
 
     @validate_call
     def filter_targets(
@@ -467,11 +473,13 @@ class Config:
     sereto_version: SeretoVersion
     version_configs: dict[ProjectVersion, VersionConfig]
     path: FilePath
-    risk_due_dates: dict[Risk, timedelta]
+    risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
 
     @classmethod
     @validate_call
-    def load_from(cls, path: FilePath, templates: DirectoryPath, risk_due_dates: dict[Risk, timedelta]) -> Self:
+    def load_from(
+        cls, path: FilePath, templates: DirectoryPath, risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
+    ) -> Self:
         config = ConfigModel.load_from(path)
 
         return cls(
@@ -545,12 +553,21 @@ class Config:
         """Get the configuration for the last project version."""
         return self.at_version(self.last_version)
 
-    def due_date(self, risk: Risk, reported_on: SeretoDate | None = None) -> SeretoDate | None:
-        """Get the due date for a specific risk level.
+    def due_date(
+        self,
+        risk: Risk,
+        exposure: TargetExposure = TargetExposure.external,
+        reported_on: SeretoDate | None = None,
+    ) -> SeretoDate | None:
+        """Get the due date for a specific risk level and target exposure.
 
         For findings discovered during a retest, the `reported_on` date can be specified.
+        Mixed exposure uses the stricter (external) deadlines.
         """
-        if risk not in self.risk_due_dates:
+        effective_exposure = TargetExposure.external if exposure == TargetExposure.mixed else exposure
+        due_dates = self.risk_due_dates.get(effective_exposure, {})
+
+        if risk not in due_dates:
             return None
 
         report_sent_date = (
@@ -564,7 +581,7 @@ class Config:
             return None
 
         # Calculate the due date by adding the risk's due timedelta to the report sent date
-        return report_sent_date + self.risk_due_dates[risk]
+        return report_sent_date + due_dates[risk]
 
     @validate_call
     def add_version_config(

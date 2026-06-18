@@ -16,6 +16,7 @@ from sereto.cli.completers import EscapedClickCompleter
 from sereto.cli.utils import Console
 from sereto.exceptions import SeretoPathError, SeretoValueError, handle_exceptions
 from sereto.logging import LogLevel, get_log_config, logger, setup_logging
+from sereto.models.config import ConfigModel
 from sereto.models.settings import Settings
 from sereto.project import Project, is_project_dir, resolve_project_directory
 from sereto.sereto_types import TypeProjectId
@@ -85,9 +86,9 @@ def _get_repl_prompt() -> list[tuple[str, str]]:
     # Determine if the current working directory is a project directory
     project_id: TypeProjectId | None = None
     if is_project_dir(cwd := Path.cwd()):
-        # Load the project to get the ID (this can be different from the directory name)
-        project = Project.load_from(cwd)
-        project_id = project.config.last_config.id
+        config_model = ConfigModel.load_from(cwd / "config.json")
+        last_version = sorted(config_model.version_configs.keys())[-1]
+        project_id = config_model.version_configs[last_version].id
 
     final_prompt: list[tuple[str, str]] = []
 
