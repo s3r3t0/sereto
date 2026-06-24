@@ -6,6 +6,7 @@ from pydantic import DirectoryPath, validate_call
 
 from sereto.finding import Findings
 from sereto.logging import logger
+from sereto.models.document import DocumentModel
 from sereto.models.locator import LocatorModel
 from sereto.models.target import TargetModel
 from sereto.models.version import ProjectVersion
@@ -74,3 +75,16 @@ class Target:
         """
         type = [type] if isinstance(type, str) else list(type)
         return [loc for loc in self.data.locators if loc.type in type]
+
+    @validate_call
+    def filter_documents(self, type: str | Iterable[str]) -> list[DocumentModel]:
+        """Filter documents by type.
+
+        Args:
+            type: The document type(s) to filter by. Can be a single type or an iterable of types.
+
+        Returns:
+            A list of documents of the specified type.
+        """
+        type = [type] if isinstance(type, str) else list(type)
+        return [doc for doc in self.data.documents if doc.type in type]
