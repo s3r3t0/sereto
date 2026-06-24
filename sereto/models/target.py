@@ -88,8 +88,8 @@ class TargetDastModel(TargetModel):
     ip_allowed: bool | None = None
     authentication: bool = False
     credentials_provided: bool | None = None
-    exposure: TargetExposure = TargetExposure.external
-    environment: Environment = Environment.acceptance
+    exposure: TargetExposure = Field(strict=False, default=TargetExposure.external)
+    environment: Environment = Field(strict=False, default=Environment.acceptance)
     waf_present: bool = False
     waf_whitelisted: bool | None = None
 
