@@ -145,7 +145,7 @@ class AddSubFindingScreen(ModalScreen[None]):
             # Finding Group
             initial_groups: list[tuple[str, str]] = []
             if all_targets:
-                initial_groups = [(g.name, g.uname) for g in all_targets[0].findings.groups]
+                initial_groups = [(g.suggested_name, g.uname) for g in all_targets[0].findings.groups]
             self.select_group = SelectWithLabel[str](
                 options=self._build_group_options(initial_groups, self.finding.group_hint),
                 label="Group",
@@ -242,7 +242,7 @@ class AddSubFindingScreen(ModalScreen[None]):
                 return
 
             groups = target.findings.groups
-            self._rebuild_group_options([(g.name, g.uname) for g in groups])
+            self._rebuild_group_options([(g.suggested_name, g.uname) for g in groups])
             self.update_overwrite_warning()
 
         if event.select is self.select_group.query_one(Select):
