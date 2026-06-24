@@ -5,6 +5,7 @@ from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, ValidationInfo, field_
 
 from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
+from sereto.models.document import DocumentModel
 from sereto.models.locator import LocatorModel
 from sereto.settings import load_settings_function
 from sereto.utils import lower_alphanum
@@ -24,6 +25,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
     category: str
     name: str
     locators: list[LocatorModel] = Field(default_factory=list)
+    documents: list[DocumentModel] = Field(default_factory=list)
 
     @field_validator("category")
     @classmethod
@@ -90,8 +92,6 @@ class TargetDastModel(TargetModel):
     environment: Environment = Field(strict=False, default=Environment.acceptance)
     waf_present: bool = False
     waf_whitelisted: bool | None = None
-    clickpath: str | None = None
-    api: str | None = None
 
 
 class TargetSastModel(TargetModel):
@@ -126,7 +126,6 @@ class TargetMobileModel(TargetModel):
         short_version_string: str | None = None
         version: str | None = None
 
-    clickpath: str | None = None
     android: AndroidMobilePlatform | None = AndroidMobilePlatform()
     ios: iOSMobilePlatform | None = iOSMobilePlatform()
 
