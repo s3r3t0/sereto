@@ -25,6 +25,7 @@ class TargetModel(SeretoBaseModel, extra="allow"):
     category: str
     name: str
     locators: list[LocatorModel] = Field(default_factory=list)
+    documents: list[DocumentModel] = Field(default_factory=list)
 
     @field_validator("category")
     @classmethod
@@ -91,7 +92,6 @@ class TargetDastModel(TargetModel):
     environment: Environment = Environment.acceptance
     waf_present: bool = False
     waf_whitelisted: bool | None = None
-    documents: list[DocumentModel] = Field(default_factory=list)
 
 
 class TargetSastModel(TargetModel):
@@ -128,7 +128,6 @@ class TargetMobileModel(TargetModel):
 
     android: AndroidMobilePlatform | None = AndroidMobilePlatform()
     ios: iOSMobilePlatform | None = iOSMobilePlatform()
-    documents: list[DocumentModel] = Field(default_factory=list)
 
 
 type AnyTargetModel = TargetDastModel | TargetSastModel | TargetMobileModel | TargetModel
