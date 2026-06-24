@@ -80,6 +80,6 @@ def show_findings(version_config: VersionConfig) -> None:
         )
 
         for ix, finding_group in enumerate(target.findings.groups, start=1):
-            table.add_row(str(ix), finding_group.name, target.data.category, finding_group.risk)
+            table.add_row(str(ix), finding_group.suggested_name, target.data.category, finding_group.risk)
 
         Console().print(table, justify="center")

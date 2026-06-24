@@ -362,6 +362,21 @@ class FindingGroup:
         return [loc for loc in self.locators if loc.type in type]
 
     @property
+    def suggested_name(self) -> str:
+        """Display name for the finding group.
+
+        When the group contains a single sub-finding whose name differs from the group
+        name, returns ``"<group name>: <subfinding name>"``.  If the single sub-finding
+        shares the same name as the group, or there are multiple sub-findings, the
+        group name is returned as-is.
+        """
+        if len(self.sub_findings) == 1:
+            sf_name = self.sub_findings[0].name
+            if sf_name.casefold() != self.name.casefold():
+                return f"{self.name}: {sf_name}"
+        return self.name
+
+    @property
     @validate_call
     def uname(self) -> str:
         """Unique name of the finding group."""
