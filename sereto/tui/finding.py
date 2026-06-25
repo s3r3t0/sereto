@@ -108,7 +108,7 @@ class FindingPreviewScreen(ModalScreen[None]):
 
     def action_add_sub_finding(self) -> None:
         self.dismiss()
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         app.query_one("#search", SearchWidget).action_add_sub_finding()
 
 
@@ -122,7 +122,7 @@ class AddSubFindingScreen(ModalScreen[None]):
         self.title = title
 
     def compose(self) -> ComposeResult:
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
 
         with ScrollableContainer(id="add-sub-finding"):
@@ -406,7 +406,7 @@ class AddSubFindingScreen(ModalScreen[None]):
         Raises:
             SeretoValueError: If the target is not found.
         """
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         target_select = cast(Select[str], self.select_target.query_one(Select))
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
@@ -428,7 +428,7 @@ class AddSubFindingScreen(ModalScreen[None]):
     @on(Button.Pressed, "#save-sub-finding")
     def save_sub_finding(self) -> None:
         """Handle Save button press event."""
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         # Retrieve the values from the inputs
         # - name
@@ -500,7 +500,7 @@ class SearchWidget(Widget):
         self._load_findings()
 
     def _load_findings(self) -> None:
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         for category in app.categories:
             findings_path = app.project.settings.templates_path / "categories" / category.lower() / "findings"
@@ -549,7 +549,7 @@ class SearchWidget(Widget):
         return fields
 
     def compose(self) -> ComposeResult:
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         self.input_field = Input(
             placeholder='Search by name or keyword. Try impact:rce or description:"sql injection".',
@@ -738,7 +738,7 @@ class SearchWidget(Widget):
             return
         file = option.result.document.payload.path.read_text(encoding="utf-8")
 
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
@@ -754,7 +754,7 @@ class SearchWidget(Widget):
         if not isinstance(option, FindingOption):
             return
         file = option.result.document.payload.path.read_text(encoding="utf-8")
-        app: SeretoApp = self.app  # type: ignore[assignment]
+        app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         app.push_screen(
             FindingPreviewScreen(
                 title="Finding preview",
@@ -770,7 +770,7 @@ class SearchWidget(Widget):
             return
         option = self.result_list.get_option_at_index(self.result_list.highlighted)
         if isinstance(option, FindingOption):
-            app: SeretoApp = self.app  # type: ignore[assignment]
+            app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
             app.push_screen(
                 AddSubFindingScreen(
                     templates=app.project.settings.templates_path,

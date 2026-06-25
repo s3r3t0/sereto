@@ -105,7 +105,7 @@ class VersionVPrefix(Version):
     """A subclass of Version which allows a "v" prefix."""
 
     @classmethod
-    def parse(cls, v: str) -> "Version":  # type: ignore[override]
+    def parse(cls, v: str) -> "Version":  # type: ignore[override]  # ty: ignore[invalid-method-override]
         """Parse version string to a Version instance.
 
         Args:
@@ -211,10 +211,10 @@ class ProjectVersion(RootModel[VersionVPrefixPydanticAnnotation]):
         return ProjectVersion.model_construct(root=Version.parse(v[1:], optional_minor_and_patch=True))
 
     def next_major_version(self) -> "ProjectVersion":
-        return ProjectVersion(f"v{self.root.major + 1}.{self.root.minor}")  # type: ignore[arg-type]
+        return ProjectVersion.from_str(f"v{self.root.major + 1}.{self.root.minor}")
 
     def next_minor_version(self) -> "ProjectVersion":
-        return ProjectVersion(f"v{self.root.major}.{self.root.minor + 1}")  # type: ignore[arg-type]
+        return ProjectVersion.from_str(f"v{self.root.major}.{self.root.minor + 1}")
 
     @property
     def path_suffix(self) -> str:
