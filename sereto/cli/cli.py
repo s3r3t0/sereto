@@ -92,31 +92,31 @@ def is_in_repl_shell() -> bool:
 @cli.command()
 @handle_exceptions
 @click.argument("project_id")
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option("-n", "--name", "project_name", default=None, help="Name of the project.")
 @click.pass_obj
 @validate_call
-def new(ctx: Project, project_id: TypeProjectId, project_name: str | None) -> None:
+def new(ctx: Project, project_id: TypeProjectId, non_interactive: bool, project_name: str | None) -> None:
     """Create a new project.
 
     \b
     Example:
         ```sh
         sereto new PT01234
-        sereto new PT01234 --name 'Test Project'
+        sereto new PT01234 -N --name 'Test Project'
         ```
     \f
 
     Args:
         ctx: Project's representation.
         project_id: The ID of the project to be created.
-        project_name: The name of the project. Implies using non-interactive alternative of the command.
+        non_interactive: If True, run non-interactively.
+        project_name: The name of the project.
     """
-    if project_name is not None:
-        # Option was explicitly provided; reject empty strings
+    if non_interactive:
         if not project_name:
-            raise SeretoValueError("Project name cannot be empty.")
+            raise SeretoValueError("'--name' is required in non-interactive mode.")
     else:
-        # Option was not provided; prompt interactively
         Console().print("[cyan]We will ask you a few questions to set up the new project.\n")
         project_name = prompt("Name of the project: ")
 
@@ -222,29 +222,33 @@ def config() -> None:
 
 @config.command(name="edit")
 @handle_exceptions
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option(
     "-e",
     "--extra",
     "extra_file",
     default=None,
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to a JSON file with config fields to update (non-interactive).",
+    help="Path to a JSON file with config fields to update.",
 )
 @click.pass_obj
 @validate_call
 def config_edit(
     ctx: Project,
+    non_interactive: bool,
     extra_file: str | None,
 ) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
         ctx: Project's representation.
-        extra_file: Path to a JSON file with config fields to update (non-interactive).
+        non_interactive: If True, run non-interactively.
+        extra_file: Path to a JSON file with config fields to update.
     """
 
     edit_config(
         project=ctx,
+        non_interactive=non_interactive,
         extra_file=Path(extra_file) if extra_file else None,
     )
 
@@ -297,6 +301,7 @@ def config_dates() -> None:
 @config_dates.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option(
     "-t",
     "--type",
@@ -311,6 +316,7 @@ def config_dates() -> None:
 def config_dates_add(
     ctx: Project,
     version: ProjectVersion | None,
+    non_interactive: bool,
     date_type: str | None,
     start_date: str | None,
     end_date: str | None,
@@ -320,6 +326,7 @@ def config_dates_add(
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the date to. If None, the last version is used.
+        non_interactive: If True, run non-interactively.
         date_type: The type of the date event.
         start_date: The date string in DD-Mmm-YYYY format.
         end_date: The end date string for ranges in DD-Mmm-YYYY format.
@@ -328,6 +335,7 @@ def config_dates_add(
     add_dates_config(
         config=ctx.config,
         version=version,
+        non_interactive=non_interactive,
         date_type=DateType(date_type) if date_type else None,
         start_date=start_date,
         end_date=end_date,
@@ -407,6 +415,7 @@ def config_people() -> None:
 @config_people.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option(
     "-t",
     "--type",
@@ -423,6 +432,7 @@ def config_people() -> None:
 def config_people_add(
     ctx: Project,
     version: ProjectVersion | None,
+    non_interactive: bool,
     person_type: str | None,
     person_name: str | None,
     business_unit: str | None,
@@ -434,6 +444,7 @@ def config_people_add(
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the person to. If None, the last version is used.
+        non_interactive: If True, run non-interactively.
         person_type: The type of the person.
         person_name: The name of the person.
         business_unit: The business unit of the person.
@@ -444,6 +455,7 @@ def config_people_add(
     add_people_config(
         config=ctx.config,
         version=version,
+        non_interactive=non_interactive,
         person_type=PersonType(person_type) if person_type else None,
         person_name=person_name,
         business_unit=business_unit,
@@ -525,6 +537,7 @@ def config_targets() -> None:
 @config_targets.command(name="add")
 @handle_exceptions
 @click.option("-v", "--version", help="Use specific version, e.g. 'v1.0'.")
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option("-c", "--category", default=None, help="Category of the target (e.g. 'dast', 'sast', 'mobile').")
 @click.option("-n", "--name", "target_name", default=None, help="Name of the target.")
 @click.option(
@@ -539,6 +552,7 @@ def config_targets() -> None:
 def config_targets_add(
     ctx: Project,
     version: ProjectVersion | None,
+    non_interactive: bool,
     category: str | None,
     target_name: str | None,
     extra_json: str | None,
@@ -548,6 +562,7 @@ def config_targets_add(
     Args:
         ctx: Project's representation.
         version: The specific version of the configuration to add the targets to. If None, the last version is used.
+        non_interactive: If True, run non-interactively.
         category: Category of the target.
         target_name: Name of the target.
         extra_json: Extra target fields as a JSON string.
@@ -559,6 +574,7 @@ def config_targets_add(
         config=ctx.config,
         categories=ctx.settings.categories,
         version=version,
+        non_interactive=non_interactive,
         category=category,
         target_name=target_name,
         extra_json=extra_json,
@@ -630,13 +646,14 @@ def findings() -> None:
 
 @findings.command(name="add")
 @handle_exceptions
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option(
     "-T",
     "--template",
     "template_path",
     default=None,
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to the finding template (.md.j2). Required for non-interactive mode.",
+    help="Path to the finding template (.md.j2).",
 )
 @click.option("-n", "--name", "finding_name", default=None, help="Name for the sub-finding.")
 @click.option(
@@ -661,6 +678,7 @@ def findings() -> None:
 @validate_call
 def finding_add(
     ctx: Project,
+    non_interactive: bool,
     template_path: str | None,
     finding_name: str | None,
     risk: str | None,
@@ -672,11 +690,12 @@ def finding_add(
 ) -> None:
     """Launch TUI app for searching and adding findings from templates.
 
-    When --template is provided, runs non-interactively without the TUI.
+    With -N/--non-interactive, runs without the TUI; --template is required.
     \f
 
     Args:
         ctx: Project's representation.
+        non_interactive: If True, run non-interactively.
         template_path: Path to the finding template file.
         finding_name: Name for the sub-finding.
         risk: Risk level override.
@@ -686,9 +705,12 @@ def finding_add(
         variables: Template variables as KEY=VALUE strings.
         overwrite: If True, overwrite existing sub-finding.
     """
-    if template_path is None:
+    if not non_interactive:
         asyncio.run(launch_finding_tui())
         return
+
+    if not template_path:
+        raise SeretoValueError("'--template' is required in non-interactive mode.")
 
     add_finding(
         project=ctx,
@@ -976,29 +998,31 @@ def settings() -> None:
 
 @settings.command(name="edit")
 @handle_exceptions
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.option(
     "-e",
     "--extra",
     "extra_file",
     default=None,
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to a JSON file with settings fields to update (non-interactive).",
+    help="Path to a JSON file with settings fields to update.",
 )
 @validate_call
-def settings_edit(extra_file: str | None) -> None:
+def settings_edit(non_interactive: bool, extra_file: str | None) -> None:
     """Edit settings with the configured editor.
 
     This command opens the global settings configuration file in the default editor.
     If the configuration file does not exist, it will be created first with the default values.
 
-    When a JSON file is provided via --extra, the settings are updated non-interactively.
+    With -N/--non-interactive, the settings are updated from the JSON file provided via --extra.
     \f
 
     Args:
-        extra_file: Path to a JSON file with settings fields to update (non-interactive).
+        non_interactive: If True, run non-interactively.
+        extra_file: Path to a JSON file with settings fields to update.
     """
 
-    edit_settings(extra_file=Path(extra_file) if extra_file else None)
+    edit_settings(non_interactive=non_interactive, extra_file=Path(extra_file) if extra_file else None)
 
 
 @settings.group(cls=AliasedGroup)

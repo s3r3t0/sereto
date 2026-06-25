@@ -33,16 +33,18 @@ from sereto.target import Target
 @validate_call
 def edit_config(
     project: Project,
+    non_interactive: bool = False,
     extra_file: Path | None = None,
 ) -> None:
     """Edit the configuration file in default CLI editor.
 
-    When `extra_file` is provided, the config is updated non-interactively from the JSON file.
+    When `non_interactive` is True, the config is updated from `extra_file` without opening an editor.
     Otherwise, the config file is opened in the default editor.
 
     Args:
         project: Project's representation.
-        extra_file: Path to a JSON file with config fields to update (non-interactive).
+        non_interactive: If True, run non-interactively.
+        extra_file: Path to a JSON file with config fields to update.
     """
 
     sereto_ver = importlib.metadata.version("sereto")
@@ -65,8 +67,9 @@ def edit_config(
             risk_due_dates=project.settings.risk_due_dates,
         ).save()
 
-    if extra_file is not None:
-        # Non-interactive: read and parse the JSON file
+    if non_interactive:
+        if extra_file is None:
+            raise SeretoValueError("'--extra' is required in non-interactive mode.")
         try:
             extra = json.loads(extra_file.read_text())
         except json.JSONDecodeError as e:
@@ -133,29 +136,27 @@ def show_config(
 def add_dates_config(
     config: Config,
     version: ProjectVersion | None = None,
+    non_interactive: bool = False,
     date_type: DateType | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
 ) -> None:
     """Add date to the configuration.
 
-    When all required parameters are provided, operates non-interactively.
-
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
-        date_type: The type of the date event. Implies using non-interactive alternative of the command.
-        start_date: The start date str in DD-Mmm-YYYY format. Implies using non-interactive alternative of the command.
-        end_date: The end date str in DD-Mmm-YYYY format. Implies using non-interactive alternative of the command.
+        non_interactive: If True, run non-interactively; fail if required inputs are missing.
+        date_type: The type of the date event.
+        start_date: The start date str in DD-Mmm-YYYY format.
+        end_date: The end date str in DD-Mmm-YYYY format.
     """
     if version is None:
         version = config.last_version
 
-    if any([date_type, start_date, end_date]):
-        # Non-interactive alternative: both date_type and start_date must be provided, end_date is optional
+    if non_interactive:
         new_date = _build_date_from_options(date_type=date_type, start_date=start_date, end_date=end_date)
     else:
-        # Interactive alternative: prompt the user for the date details
         new_date = _prompt_for_date()
 
     # Add the date to the configuration
@@ -270,6 +271,7 @@ def show_dates_config(
 def add_people_config(
     config: Config,
     version: ProjectVersion | None = None,
+    non_interactive: bool = False,
     person_type: PersonType | None = None,
     person_name: str | None = None,
     business_unit: str | None = None,
@@ -281,7 +283,8 @@ def add_people_config(
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
-        person_type: The type of the person. If not provided, the user is prompted.
+        non_interactive: If True, run non-interactively; fail if required inputs are missing.
+        person_type: The type of the person.
         person_name: The name of the person.
         business_unit: The business unit of the person.
         email: The email address of the person.
@@ -290,8 +293,7 @@ def add_people_config(
     if version is None:
         version = config.last_version
 
-    if any([person_type, person_name, business_unit, email, role]):
-        # Non-interactive alternative: at least person_type must be provided
+    if non_interactive:
         new_person = _build_person_from_options(
             person_type=person_type,
             person_name=person_name,
@@ -300,7 +302,6 @@ def add_people_config(
             role=role,
         )
     else:
-        # Interactive alternative: prompt the user for the person details
         new_person = _prompt_for_person()
 
     # Add the person to the configuration
@@ -409,6 +410,7 @@ def add_target(
     config: Config,
     categories: Iterable[str],
     version: ProjectVersion | None = None,
+    non_interactive: bool = False,
     category: str | None = None,
     target_name: str | None = None,
     extra_json: str | None = None,
@@ -421,20 +423,19 @@ def add_target(
         config: Configuration of the project.
         categories: List of all categories.
         version: The version of the project. If not provided, the last version is used.
-        category: Category of the target. Implies using non-interactive alternative of the command.
-        target_name: Name of the target. IImplies using non-interactive alternative of the command.
-        extra_json: Extra target fields as a JSON string for the non-interactive flow.
+        non_interactive: If True, run non-interactively; fail if required inputs are missing.
+        category: Category of the target.
+        target_name: Name of the target.
+        extra_json: Extra target fields as a JSON string.
     """
     if version is None:
         version = config.last_version
 
-    if any([category, target_name]):
-        # Non-interactive alternative: both category and target_name must be provided
+    if non_interactive:
         new_target_model = _build_target_from_options(
             category=category, target_name=target_name, categories=categories, extra_json=extra_json
         )
     else:
-        # Interactive alternative: prompt the user for the target details
         new_target_model = prompt_user_for_target(categories=categories)
 
     # Create the target instance, including on the filesystem

@@ -10,19 +10,22 @@ from sereto.settings import load_settings_function, write_settings
 
 
 @validate_call
-def edit_settings(extra_file: Path | None = None) -> None:
+def edit_settings(non_interactive: bool = False, extra_file: Path | None = None) -> None:
     """Edit the global settings file.
 
-    When `extra_file` is provided, the settings are updated non-interactively from the JSON file.
+    When `non_interactive` is True, the settings are updated from `extra_file` without opening an editor.
     Otherwise, the settings file is opened in the default editor.
 
     Args:
-        extra_file: Path to a JSON file with settings fields to update (non-interactive).
+        non_interactive: If True, run non-interactively.
+        extra_file: Path to a JSON file with settings fields to update.
     """
     if not (path := Settings.get_path()).is_file():
         load_settings_function()
 
-    if extra_file is not None:
+    if non_interactive:
+        if extra_file is None:
+            raise SeretoValueError("'--extra' is required in non-interactive mode.")
         try:
             raw = json.loads(extra_file.read_text())
         except json.JSONDecodeError as e:
