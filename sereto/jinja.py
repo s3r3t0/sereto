@@ -104,7 +104,7 @@ def get_generic_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) ->
     env: Environment = Environment(
         autoescape=False, loader=FrontMatterStrippingLoader(templates), undefined=StrictUndefined
     )
-    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
+    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING  # ty: ignore[invalid-assignment]
     env.add_extension("jinja2.ext.debug")
     return env
 
@@ -134,7 +134,7 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
     # TODO: Once Jinja2 allows custom escape functions, we might use autoescape of special TeX characters.
     env.filters["tex"] = tex_escape_filter
     env.filters["yesno"] = yesno_filter
-    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
+    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING  # ty: ignore[invalid-assignment]
     env.add_extension("jinja2.ext.debug")
 
     return env
@@ -163,7 +163,7 @@ def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> E
     )
 
     env.filters["yesno"] = yesno_filter
-    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING
+    env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING  # ty: ignore[invalid-assignment]
     env.add_extension("jinja2.ext.debug")
     return env
 

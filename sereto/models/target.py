@@ -83,7 +83,7 @@ class TargetDastModel(TargetModel):
 
     dst_ips_dynamic: bool = False
     dst_ips_dynamic_details: str | None = None
-    src_ips: list[IPvAnyAddress | IPvAnyNetwork] = []
+    src_ips: list[IPvAnyAddress | IPvAnyNetwork] = []  # ty: ignore[unsupported-operator]
     ip_filtering: bool = False
     ip_allowed: bool | None = None
     authentication: bool = False

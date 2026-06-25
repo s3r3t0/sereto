@@ -73,10 +73,10 @@ class IpLocatorModel(BaseLocatorModel):
     """
 
     type: Literal["ip"] = "ip"
-    value: IPvAnyAddress | IPvAnyNetwork
+    value: IPvAnyAddress | IPvAnyNetwork  # ty: ignore[unsupported-operator]
 
     @field_serializer("value")
-    def serialize_value(self, value: IPvAnyAddress | IPvAnyNetwork) -> str:
+    def serialize_value(self, value: IPvAnyAddress | IPvAnyNetwork) -> str:  # ty: ignore[unsupported-operator]
         return str(value)
 
 
