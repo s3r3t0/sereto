@@ -5071,9 +5071,9 @@ Mixed exposure uses the stricter (external) deadlines.</p>
                 <span class="k">pass</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
 
         <span class="n">filtered_dates</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">d</span>
@@ -5081,13 +5081,13 @@ Mixed exposure uses the stricter (external) deadlines.</p>
             <span class="k">if</span> <span class="p">(</span><span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span>
                 <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span>
-                <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">SeretoDate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span>
                 <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span>
-                <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">SeretoDate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">end</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="p">]</span>
 
@@ -6404,9 +6404,9 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
             <span class="k">pass</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">SeretoDate</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
 
     <span class="n">filtered_dates</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">d</span>
@@ -6414,13 +6414,13 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
         <span class="k">if</span> <span class="p">(</span><span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">)</span>
         <span class="ow">and</span> <span class="p">(</span>
             <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">SeretoDate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
             <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">start</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="ow">and</span> <span class="p">(</span>
             <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">SeretoDate</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
             <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">end</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">)</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">]</span>
 
