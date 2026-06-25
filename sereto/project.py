@@ -195,7 +195,11 @@ def init_build_dir(
     project.ensure_dir(".build")
 
     # Create target directories in .build/
-    targets: list[Target] = [target] if target is not None else version_config.targets  # type: ignore[union-attr]
+    if target is not None:
+        targets: list[Target] = [target]
+    else:
+        assert version_config is not None  # guaranteed by the check above
+        targets = version_config.targets
     for target in targets:
         project.ensure_dir(f".build/{target.uname}")
 
