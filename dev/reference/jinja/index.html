@@ -3007,7 +3007,7 @@
     <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
         <span class="n">autoescape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loader</span><span class="o">=</span><span class="n">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span> <span class="n">undefined</span><span class="o">=</span><span class="n">StrictUndefined</span>
     <span class="p">)</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
     <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">env</span>
 </code></pre></div></td></tr></table></div>
@@ -3139,7 +3139,7 @@
     <span class="c1"># TODO: Once Jinja2 allows custom escape functions, we might use autoescape of special TeX characters.</span>
     <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;tex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tex_escape_filter</span>
     <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;yesno&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
     <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">env</span>
@@ -3267,7 +3267,7 @@
     <span class="p">)</span>
 
     <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;yesno&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
     <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">env</span>
 </code></pre></div></td></tr></table></div>

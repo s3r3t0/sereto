@@ -3364,7 +3364,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">all_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span>
 
         <span class="k">with</span> <span class="n">ScrollableContainer</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;add-sub-finding&quot;</span><span class="p">):</span>
@@ -3648,7 +3648,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the target is not found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="n">target_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_target</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">))</span>
         <span class="n">all_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span>
@@ -3670,7 +3670,7 @@
     <span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#save-sub-finding&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_sub_finding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle Save button press event.&quot;&quot;&quot;</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="c1"># Retrieve the values from the inputs</span>
         <span class="c1"># - name</span>
@@ -3844,7 +3844,7 @@
 <span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#save-sub-finding&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_sub_finding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle Save button press event.&quot;&quot;&quot;</span>
-    <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+    <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
     <span class="c1"># Retrieve the values from the inputs</span>
     <span class="c1"># - name</span>
@@ -4546,7 +4546,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_findings</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_findings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
             <span class="n">findings_path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span> <span class="o">/</span> <span class="s2">&quot;categories&quot;</span> <span class="o">/</span> <span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;findings&quot;</span>
@@ -4595,7 +4595,7 @@
         <span class="k">return</span> <span class="n">fields</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">input_field</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span>
             <span class="n">placeholder</span><span class="o">=</span><span class="s1">&#39;Search by name or keyword. Try impact:rce or description:&quot;sql injection&quot;.&#39;</span><span class="p">,</span>
@@ -4784,7 +4784,7 @@
             <span class="k">return</span>
         <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
 
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">app</span><span class="o">.</span><span class="n">push_screen</span><span class="p">(</span>
             <span class="n">FindingPreviewScreen</span><span class="p">(</span>
                 <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Finding preview&quot;</span><span class="p">,</span>
@@ -4800,7 +4800,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">FindingOption</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">app</span><span class="o">.</span><span class="n">push_screen</span><span class="p">(</span>
             <span class="n">FindingPreviewScreen</span><span class="p">(</span>
                 <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Finding preview&quot;</span><span class="p">,</span>
@@ -4816,7 +4816,7 @@
             <span class="k">return</span>
         <span class="n">option</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">get_option_at_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">highlighted</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">FindingOption</span><span class="p">):</span>
-            <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]</span>
+            <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
             <span class="n">app</span><span class="o">.</span><span class="n">push_screen</span><span class="p">(</span>
                 <span class="n">AddSubFindingScreen</span><span class="p">(</span>
                     <span class="n">templates</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
