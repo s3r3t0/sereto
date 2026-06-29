@@ -8,6 +8,37 @@ from sereto.cli.aliases import cli_aliases
 from sereto.singleton import Singleton
 
 
+def guard_ni_only_options(
+    click_ctx: click.Context,
+    non_interactive: bool,
+    ni_only: dict[str, str],
+) -> None:
+    """Validate that NI-only options are not provided without -N/--non-interactive.
+
+    Raises an error when any option that only applies in non-interactive mode is explicitly
+    passed on the command line without the -N/--non-interactive flag.
+
+    Args:
+        click_ctx: The current Click context (from ``click.get_current_context()``).
+        non_interactive: Value of the -N/--non-interactive flag.
+        ni_only: Mapping of Python parameter name → CLI flag name for options that only
+            apply in non-interactive mode.
+    """
+    if non_interactive:
+        return
+
+    ni_options = [
+        option
+        for param, option in ni_only.items()
+        if click_ctx.get_parameter_source(param) == click.ParameterSource.COMMANDLINE
+    ]
+    if ni_options:
+        from sereto.exceptions import SeretoValueError
+
+        options = ", ".join(ni_options)
+        raise SeretoValueError(f"Options {options} require -N/--non-interactive flag.")
+
+
 class AliasedGroup(click.Group):
     """A click Group subclass that allows for writing aliases and prefixes of any command."""
 

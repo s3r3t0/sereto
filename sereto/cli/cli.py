@@ -25,7 +25,7 @@ from sereto.cli.config import (
 )
 from sereto.cli.finding import add_finding, show_findings
 from sereto.cli.settings import edit_settings
-from sereto.cli.utils import AliasedGroup, Console
+from sereto.cli.utils import AliasedGroup, Console, guard_ni_only_options
 from sereto.crypto import decrypt_file
 from sereto.enums import OutputFormat, Risk
 from sereto.exceptions import SeretoException, SeretoPathError, SeretoValueError, handle_exceptions
@@ -113,6 +113,12 @@ def new(ctx: Project, project_id: TypeProjectId, non_interactive: bool, project_
         non_interactive: If True, run non-interactively.
         project_name: The name of the project.
     """
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={"project_name": "--name"},
+    )
+
     if non_interactive:
         if not project_name:
             raise SeretoValueError("'--name' is required in non-interactive mode.")
@@ -246,6 +252,12 @@ def config_edit(
         extra_file: Path to a JSON file with config fields to update.
     """
 
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={"extra_file": "--extra"},
+    )
+
     edit_config(
         project=ctx,
         non_interactive=non_interactive,
@@ -331,6 +343,12 @@ def config_dates_add(
         start_date: The date string in DD-Mmm-YYYY format.
         end_date: The end date string for ranges in DD-Mmm-YYYY format.
     """
+
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={"date_type": "--type", "start_date": "--date", "end_date": "--end"},
+    )
 
     add_dates_config(
         config=ctx.config,
@@ -452,6 +470,18 @@ def config_people_add(
         role: The role of the person.
     """
 
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={
+            "person_type": "--type",
+            "person_name": "--name",
+            "business_unit": "--business-unit",
+            "email": "--email",
+            "role": "--role",
+        },
+    )
+
     add_people_config(
         config=ctx.config,
         version=version,
@@ -567,6 +597,12 @@ def config_targets_add(
         target_name: Name of the target.
         extra_json: Extra target fields as a JSON string.
     """
+
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={"category": "--category", "target_name": "--name", "extra_json": "--extra"},
+    )
 
     add_target(
         project_path=ctx.path,
@@ -705,6 +741,21 @@ def finding_add(
         variables: Template variables as KEY=VALUE strings.
         overwrite: If True, overwrite existing sub-finding.
     """
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={
+            "template_path": "--template",
+            "finding_name": "--name",
+            "risk": "--risk",
+            "target_selector": "--target",
+            "group_uname": "--group",
+            "group_name": "--group-name",
+            "variables": "--var",
+            "overwrite": "--overwrite",
+        },
+    )
+
     if not non_interactive:
         asyncio.run(launch_finding_tui())
         return
@@ -1021,6 +1072,12 @@ def settings_edit(non_interactive: bool, extra_file: str | None) -> None:
         non_interactive: If True, run non-interactively.
         extra_file: Path to a JSON file with settings fields to update.
     """
+
+    guard_ni_only_options(
+        click_ctx=click.get_current_context(),
+        non_interactive=non_interactive,
+        ni_only={"extra_file": "--extra"},
+    )
 
     edit_settings(non_interactive=non_interactive, extra_file=Path(extra_file) if extra_file else None)
 
