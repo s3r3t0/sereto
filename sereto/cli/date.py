@@ -24,6 +24,11 @@ def _prompt_date(message: str, default: SeretoDate | None = None) -> SeretoDate 
         return None
 
 
+def allows_range(date_type: DateType) -> bool:
+    """Check if the date type allows for a range."""
+    return date_type in TYPES_WITH_ALLOWED_RANGE
+
+
 @validate_call
 def prompt_user_for_date(date_type: DateType) -> SeretoDate | DateRange:
     """Prompt user for a date or date range, depending on the provided date type.
@@ -37,7 +42,7 @@ def prompt_user_for_date(date_type: DateType) -> SeretoDate | DateRange:
         The date as provided by the user.
     """
     # Check if the date type allows for a range
-    allow_range = date_type in TYPES_WITH_ALLOWED_RANGE
+    allow_range = allows_range(date_type)
 
     while True:
         # Prompt user for the start date
