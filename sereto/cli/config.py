@@ -179,8 +179,8 @@ def _build_date_from_options(
     if end_date and not allows_range(date_type):
         raise SeretoValueError("End date is not allowed for date types that do not allow ranges.")
 
-    parsed_start = SeretoDate.from_str(start_date)
-    parsed_end = SeretoDate.from_str(end_date) if end_date else parsed_start
+    parsed_start = SeretoDate(start_date)
+    parsed_end = SeretoDate(end_date) if end_date else parsed_start
     value: SeretoDate | DateRange = (
         DateRange(start=parsed_start, end=parsed_end)
         if allows_range(date_type) and parsed_start != parsed_end
