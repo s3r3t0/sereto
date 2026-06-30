@@ -207,17 +207,17 @@ def _get_dates_table(version_config: VersionConfigModel, version: ProjectVersion
         box=box.MINIMAL,
     )
 
-    for ix, date in enumerate(version_config.dates, start=1):
-        match date.date:
-            case SeretoDate():
-                table.add_row(str(ix), date.type.value, str(date.date), "[yellow]n/a")
+    for ix, d in enumerate(version_config.dates, start=1):
+        match d.date:
             case DateRange():
                 table.add_row(
                     str(ix),
-                    date.type.value,
-                    str(date.date.start),
-                    str(date.date.end),
+                    d.type.value,
+                    str(d.date.start),
+                    str(d.date.end),
                 )
+            case _:
+                table.add_row(str(ix), d.type.value, str(d.date), "[yellow]n/a")
 
     return table
 

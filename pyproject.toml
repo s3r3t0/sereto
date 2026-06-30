@@ -49,7 +49,7 @@ classifiers = [
 ]
 dependencies = [
   "annotated-types~=0.7.0",
-  "click~=8.4.1",
+  "click~=8.4.2",
   "cryptography~=49.0.0",
   "humanize~=4.15.0",
   "loguru~=0.7.3",
@@ -63,7 +63,7 @@ dependencies = [
   "pydantic-settings~=2.14.2",
   "pydantic[email]",
   "pydantic~=2.13.4",
-  "pypdf~=6.13.3",
+  "pypdf~=6.14.2",
   "python-frontmatter~=1.3.0",
   "rapidfuzz~=3.14.5",
   "rich~=15.0.0",
@@ -72,7 +72,7 @@ dependencies = [
   "textual~=8.2.7",
   "toml>=0.10.2",
   "tomlkit~=0.15.0",
-  "ty>=0.0.52",
+  "ty>=0.0.55",
 ]
 
 [project.optional-dependencies]
