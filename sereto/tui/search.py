@@ -183,6 +183,7 @@ FINDING_SEARCH_FIELDS = SearchFieldRegistry(
     [
         SearchField(name="name", label="Name", aliases=("n",), default_weight=1.0, clause_weight=1.2),
         SearchField(name="keyword", label="Keyword", aliases=("k", "keywords"), default_weight=0.8),
+        SearchField(name="group_hint", label="Group hint", aliases=("g", "group"), default_weight=0.8),
         SearchField(
             name="description",
             label="Description",
@@ -223,7 +224,8 @@ def parse_search_query(query: str, fields: SearchFieldRegistry) -> ParsedSearchQ
     """Parse the raw search string into free-text terms and field clauses.
 
     Free-text terms are used for the default search mode, which primarily
-    targets finding names and keywords. Tokens in the form `field:value` are
+    targets finding names, keywords, and group hints. Tokens in the form
+    `field:value` are
     parsed as explicit field clauses when `field` matches a registered
     field name or alias.
     """
@@ -300,7 +302,7 @@ def rank_documents[T](
 def summarize_query(query: ParsedSearchQuery, fields: SearchFieldRegistry) -> Text:
     """Render the parsed query back into a compact user-facing summary."""
     if not query.has_terms:
-        return Text("Search name and keywords by default.", style="dim")
+        return Text("Search name, keywords, and group hints by default.", style="dim")
 
     parts: list[Text] = []
     if query.free_terms:
