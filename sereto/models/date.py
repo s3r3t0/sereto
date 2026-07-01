@@ -142,11 +142,11 @@ class Date(SeretoBaseModel):
 
     Attributes:
         type (DateType): Type of the event.
-        date (SeretoDate | DateRange): Date or date range.
+        date (DateRange | SeretoDate): Date or date range.
     """
 
     type: DateType
-    date: SeretoDate | DateRange
+    date: DateRange | SeretoDate
 
     @model_validator(mode="after")
     def range_allowed(self) -> Date:
