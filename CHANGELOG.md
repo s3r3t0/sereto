@@ -7,23 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add a generic `documents` field to targets, together with `Target.filter_documents()`, so templates can reference supporting material such as API specifications and clickpaths in a uniform way.
+- Add `FindingGroup.suggested_name` property to suggest a name for a finding group based on its sub-findings.
+
 ### Changed
 
-- **Breaking:** The `Config.due_date()` method now requires an `exposure` parameter (default: `external`) before the `reported_on` parameter to support exposure-specific due dates.
+- **Breaking:** `SeretoDate` is now a `datetime.date` subclass instead of a Pydantic `RootModel`. The `%d-%b-%Y` string format stays the same, but code relying on `SeretoDate.root`, `SeretoDate.raw()`, or `SeretoDate.from_str()` must be updated.
+- **Breaking:** `Config.due_date()` and `VersionConfig.due_date_for()` now support exposure-specific due dates. `Config.due_date()` now accepts an `exposure` parameter (default: `external`) before the `reported_on` parameter; `mixed` exposure uses the stricter external deadlines.
 - **Breaking:** The `risk_due_dates` field in global settings is now structured by target exposure. The old flat format `{"critical": "P7D", ...}` is deprecated. Use the nested format: `{"internal": {"critical": "P10D", ...}, "external": {"critical": "P5D", ...}}`. Old settings files will be automatically migrated on load.
 - **Breaking:** The `internal` boolean field in DAST targets is deprecated in favor of the `exposure` enum field with values: `internal`, `external`, or `mixed`. Old config files with `"internal": true/false` will be automatically migrated to `"exposure": "internal"/"external"` on load.
+- Speed up `sereto pdf report` by building finding-group dependencies in parallel.
+
+### Fixed
+
+- Fix config loading so targets are parsed into the correct subtype, including legacy DAST targets migrated from `internal` to `exposure`.
+- Preserve an existing `findings.toml` when refreshing a target skeleton with `sereto templates target-skel copy`.
+- Resolve the REPL prompt project ID from `config.json`, even when the project directory name differs from the project ID.
 
 ### Dependencies
 
-- Update click requirement from ~=8.3.3 to ~=8.4.1
-- Update cryptography requirement from ~=47.0.0 to ~=48.0.0
+- Add `ty` as an additional type checker in the `tox` workflow.
+- Update click requirement from ~=8.3.3 to ~=8.4.2
+- Update cryptography requirement from ~=47.0.0 to ~=49.0.0
+- Update matplotlib requirement from ~=3.10.9 to ~=3.11.0
 - Update pydantic requirement from ~=2.13.3 to ~=2.13.4
-- Update pypdf requirement from ~=6.11.0 to ~=6.13.1
+- Update pydantic-settings requirement from ~=2.14.1 to ~=2.14.2
+- Update pypdf requirement from ~=6.11.0 to ~=6.14.2
 - Update python-frontmatter requirement from ~=1.1.0 to ~=1.3.0
 - Update textual requirement from ~=8.2.5 to ~=8.2.7
-- Bump aiohttp from 3.13.4 to 3.14.0
+- Bump aiohttp from 3.13.4 to 3.14.1
 - Bump hatchling from 1.29.0 to 1.30.1
 - Bump idna from 3.10 to 3.15
+- Bump msgpack from 1.1.1 to 1.2.1
 - Bump pymdown-extensions from 10.16.1 to 10.21.3
 
 ## [0.7.7] - 2026-05-12
