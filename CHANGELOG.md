@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-01
+
 ### Added
 
 - Add a generic `documents` field to targets, together with `Target.filter_documents()`, so templates can reference supporting material such as API specifications and clickpaths in a uniform way.
@@ -886,7 +888,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.7.7...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/s3r3t0/sereto/compare/v0.7.7...v0.8.0
 [0.7.7]: https://github.com/s3r3t0/sereto/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/s3r3t0/sereto/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/s3r3t0/sereto/compare/v0.7.4...v0.7.5
