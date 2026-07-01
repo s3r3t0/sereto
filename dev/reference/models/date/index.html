@@ -2849,7 +2849,7 @@
           <tr class="doc-section-item">
             <td><code><span title="sereto.models.date.Date.date">date</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="SeretoDate (sereto.models.date.SeretoDate)" href="#sereto.models.date.SeretoDate">SeretoDate</a> | <a class="autorefs autorefs-internal" title="DateRange (sereto.models.date.DateRange)" href="#sereto.models.date.DateRange">DateRange</a></code>
+                  <code><a class="autorefs autorefs-internal" title="DateRange (sereto.models.date.DateRange)" href="#sereto.models.date.DateRange">DateRange</a> | <a class="autorefs autorefs-internal" title="SeretoDate (sereto.models.date.SeretoDate)" href="#sereto.models.date.SeretoDate">SeretoDate</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2899,11 +2899,11 @@
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        type (DateType): Type of the event.</span>
-<span class="sd">        date (SeretoDate | DateRange): Date or date range.</span>
+<span class="sd">        date (DateRange | SeretoDate): Date or date range.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nb">type</span><span class="p">:</span> <span class="n">DateType</span>
-    <span class="n">date</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="n">DateRange</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">DateRange</span> <span class="o">|</span> <span class="n">SeretoDate</span>
 
     <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">range_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Date</span><span class="p">:</span>
