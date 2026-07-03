@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure render subprocesses prepend SeReTo's active Python environment to `PATH`, so Pandoc filters installed alongside the tool remain importable when `pandoc` executes template filter scripts.
+
 ## [0.8.0] - 2026-07-01
 
 ### Added

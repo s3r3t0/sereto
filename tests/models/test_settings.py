@@ -1,9 +1,13 @@
+import os
+import subprocess
+import sys
 from datetime import timedelta
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
+import sereto.models.settings as settings_module
 from sereto.enums import FileFormat, Risk, TargetExposure
 from sereto.models.settings import DEFAULT_RENDER_CONFIG, ConvertRecipe, Render, RenderRecipe, RenderTool, Settings
 
@@ -42,6 +46,34 @@ def _render(**overrides) -> Render:
 
 def test_default_render_config_is_valid():
     assert DEFAULT_RENDER_CONFIG.tools
+
+
+def test_render_tool_run_prepends_current_python_bin_to_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.setenv("PATH", "/usr/bin")
+    captured: dict[str, object] = {}
+
+    venv_bin = tmp_path / "venv" / "bin"
+    venv_bin.mkdir(parents=True)
+    python_link = venv_bin / "python"
+    python_link.symlink_to(Path(sys.executable))
+    monkeypatch.setattr(settings_module.sys, "executable", str(python_link))
+
+    def fake_run(command, cwd=None, input=None, capture_output=None, env=None):
+        captured["command"] = command
+        captured["cwd"] = cwd
+        captured["input"] = input
+        captured["capture_output"] = capture_output
+        captured["env"] = env
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    tool = RenderTool(name="pandoc", command="pandoc", args=["--version"])
+    tool.run()
+
+    env = captured["env"]
+    assert isinstance(env, dict)
+    assert env["PATH"].split(os.pathsep)[0] == str(venv_bin)
 
 
 def test_render_rejects_duplicate_tool_names():
