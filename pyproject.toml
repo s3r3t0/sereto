@@ -72,7 +72,7 @@ dependencies = [
   "textual~=8.2.7",
   "toml>=0.10.2",
   "tomlkit~=0.15.0",
-  "ty>=0.0.55",
+  "ty>=0.0.56",
 ]
 
 [project.optional-dependencies]
