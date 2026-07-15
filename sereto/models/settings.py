@@ -1,4 +1,6 @@
+import os
 import subprocess
+import sys
 import time
 from datetime import timedelta
 from pathlib import Path
@@ -51,9 +53,15 @@ class RenderTool(SeretoBaseModel):
         command_preview = escape(" ".join(command))
         logger.info("[bold bright_cyan]▶ Running command[/]: [italic dim]{}[/]", command_preview, markup=True)
 
+        env = os.environ.copy()
+        python_bin_dir = str(Path(sys.executable).parent)
+        path_entries = env.get("PATH", "").split(os.pathsep) if env.get("PATH") else []
+        if python_bin_dir not in path_entries:
+            env["PATH"] = os.pathsep.join([python_bin_dir, *path_entries]) if path_entries else python_bin_dir
+
         # Run the command and measure the execution time
         start_time = time.time()
-        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True)
+        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True, env=env)
         end_time = time.time()
 
         # Check if the command failed
