@@ -5,7 +5,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import GetJsonSchemaHandler, model_validator
+from pydantic import GetJsonSchemaHandler, field_serializer, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
@@ -163,3 +163,9 @@ class Date(SeretoBaseModel):
 
     def __hash__(self) -> int:
         return hash((self.type, self.date))
+
+    @field_serializer("date")
+    def _serialize_date(self, value: SeretoDate | DateRange) -> str | dict[str, str]:
+        if isinstance(value, DateRange):
+            return {"start": str(value.start), "end": str(value.end)}
+        return str(value)
