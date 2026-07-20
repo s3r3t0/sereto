@@ -71,7 +71,7 @@ dependencies = [
   "sereto-repl~=0.3.2",
   "textual~=8.2.7",
   "toml>=0.10.2",
-  "tomlkit~=0.15.0",
+  "tomlkit~=0.15.1",
   "ty>=0.0.55",
 ]
 
