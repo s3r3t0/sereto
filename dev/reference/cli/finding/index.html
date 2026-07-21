@@ -1296,6 +1296,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.cli.finding.add_finding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_finding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.cli.finding.show_findings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2637,6 +2648,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.cli.finding.add_finding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_finding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.cli.finding.show_findings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2709,6 +2731,293 @@
 <div class="doc doc-object doc-function">
 
 
+<h3 id="sereto.cli.finding.add_finding" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_finding</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">template_path</span><span class="p">,</span> <span class="n">finding_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">risk</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group_uname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">(),</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#sereto.cli.finding.add_finding" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add a finding from a template non-interactively.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>project</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Project
+
+
+  
+      dataclass
+   (sereto.project.Project)" href="../../project/#sereto.project.Project">Project</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Project's representation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>template_path</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="pydantic.FilePath" href="https://docs.pydantic.dev/latest/api/pydantic/types/#pydantic.types.FilePath">FilePath</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the finding template file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>finding_name</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name for the sub-finding.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>risk</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Risk (sereto.enums.Risk)" href="../../enums/#sereto.enums.Risk">Risk</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Risk level override.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_selector</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target selector (index or uname).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_uname</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Uname of existing finding group to append to.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>group_name</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name for the new finding group.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>variables</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Template variables as KEY=VALUE strings.</p>
+              </div>
+            </td>
+            <td>
+                  <code>()</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>overwrite</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If True, overwrite existing sub-finding instead of generating a unique suffix.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/cli/finding.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_finding</span><span class="p">(</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
+    <span class="n">template_path</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span>
+    <span class="n">finding_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">risk</span><span class="p">:</span> <span class="n">Risk</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">target_selector</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">group_uname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">variables</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a finding from a template non-interactively.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        template_path: Path to the finding template file.</span>
+<span class="sd">        finding_name: Name for the sub-finding.</span>
+<span class="sd">        risk: Risk level override.</span>
+<span class="sd">        target_selector: Target selector (index or uname).</span>
+<span class="sd">        group_uname: Uname of existing finding group to append to.</span>
+<span class="sd">        group_name: Name for the new finding group.</span>
+<span class="sd">        variables: Template variables as KEY=VALUE strings.</span>
+<span class="sd">        overwrite: If True, overwrite existing sub-finding instead of generating a unique suffix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parsed_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">var_str</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_str</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid variable format: </span><span class="si">{</span><span class="n">var_str</span><span class="si">!r}</span><span class="s2">; expected KEY=VALUE&quot;</span><span class="p">)</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">value_str</span> <span class="o">=</span> <span class="n">var_str</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parsed_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value_str</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="n">parsed_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_str</span>
+
+    <span class="n">target</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">select_target</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="n">target_selector</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group_uname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">group_uname</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group with uname </span><span class="si">{</span><span class="n">group_uname</span><span class="si">!r}</span><span class="s2"> not found in target </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">add_from_template</span><span class="p">(</span>
+        <span class="n">templates</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
+        <span class="n">template_path</span><span class="o">=</span><span class="n">template_path</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">category</span><span class="p">,</span>
+        <span class="n">sub_finding_name</span><span class="o">=</span><span class="n">finding_name</span><span class="p">,</span>
+        <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
+        <span class="n">variables</span><span class="o">=</span><span class="n">parsed_vars</span><span class="p">,</span>
+        <span class="n">group_uname</span><span class="o">=</span><span class="n">group_uname</span><span class="p">,</span>
+        <span class="n">group_name</span><span class="o">=</span><span class="n">group_name</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="sereto.cli.finding.show_findings" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">show_findings</span><span class="p">(</span><span class="n">version_config</span><span class="p">)</span></code>
 
@@ -2758,24 +3067,24 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_findings</span><span class="p">(</span><span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show the findings for a specific version.</span>
 

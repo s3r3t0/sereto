@@ -1268,6 +1268,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.cli.date.allows_range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        allows_range
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.cli.date.prompt_user_for_date" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2637,6 +2648,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#sereto.cli.date.allows_range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        allows_range
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.cli.date.prompt_user_for_date" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2709,6 +2731,33 @@
 <div class="doc doc-object doc-function">
 
 
+<h3 id="sereto.cli.date.allows_range" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span></code>
+
+<a href="#sereto.cli.date.allows_range" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if the date type allows for a range.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/cli/date.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the date type allows for a range.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">date_type</span> <span class="ow">in</span> <span class="n">TYPES_WITH_ALLOWED_RANGE</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="sereto.cli.date.prompt_user_for_date" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">prompt_user_for_date</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span></code>
 
@@ -2777,12 +2826,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/date.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
 <span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
@@ -2807,7 +2851,12 @@
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">prompt_user_for_date</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="n">DateRange</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for a date or date range, depending on the provided date type.</span>
 
@@ -2820,7 +2869,7 @@
 <span class="sd">        The date as provided by the user.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Check if the date type allows for a range</span>
-    <span class="n">allow_range</span> <span class="o">=</span> <span class="n">date_type</span> <span class="ow">in</span> <span class="n">TYPES_WITH_ALLOWED_RANGE</span>
+    <span class="n">allow_range</span> <span class="o">=</span> <span class="n">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span>
 
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="c1"># Prompt user for the start date</span>
