@@ -33,6 +33,7 @@ from sereto.keyring import get_password, set_password
 from sereto.logging import LogLevel, is_logging_configured, logger, setup_logging
 from sereto.models.date import DateType
 from sereto.models.person import PersonType
+from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
 from sereto.pdf import (
@@ -45,7 +46,6 @@ from sereto.pdf import (
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
 from sereto.sereto_types import TypeProjectId
-from sereto.settings import load_settings_function
 from sereto.source_archive import (
     create_source_archive,
     embed_attachment_to_pdf,
@@ -1201,7 +1201,10 @@ def load_plugins() -> None:
     This function loads plugins from the configured directory and registers their commands with the CLI. The plugin
     support needs to be enabled in the settings.
     """
-    settings = load_settings_function()
+    settings_path = Settings.get_path()
+    if not settings_path.is_file():
+        return
+    settings = Settings.load_from(settings_path)
 
     # Check if plugins are enabled
     if not settings.plugins.enabled:
