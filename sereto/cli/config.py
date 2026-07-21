@@ -2,7 +2,6 @@ import importlib.metadata
 import json
 import shutil
 from collections.abc import Iterable
-from pathlib import Path
 
 import click
 from prompt_toolkit.shortcuts import yes_no_dialog
@@ -34,17 +33,17 @@ from sereto.target import Target
 def edit_config(
     project: Project,
     non_interactive: bool = False,
-    extra_file: Path | None = None,
+    extra_json: str | None = None,
 ) -> None:
     """Edit the configuration file in default CLI editor.
 
-    When `non_interactive` is True, the config is updated from `extra_file` without opening an editor.
+    When `non_interactive` is True, the config is updated from `extra_json` without opening an editor.
     Otherwise, the config file is opened in the default editor.
 
     Args:
         project: Project's representation.
         non_interactive: If True, run non-interactively.
-        extra_file: Path to a JSON file with config fields to update.
+        extra_json: A JSON string with config fields to update.
     """
 
     sereto_ver = importlib.metadata.version("sereto")
@@ -68,17 +67,17 @@ def edit_config(
         ).save()
 
     if non_interactive:
-        if extra_file is None:
+        if extra_json is None:
             raise SeretoValueError("'--extra' is required in non-interactive mode.")
         try:
-            extra = json.loads(extra_file.read_text())
+            extra = json.loads(extra_json)
         except json.JSONDecodeError as e:
-            raise SeretoValueError(f"Invalid JSON in '{extra_file}': {e}") from e
+            raise SeretoValueError(f"Invalid JSON in '--extra': {e}") from e
 
         if not isinstance(extra, dict):
-            raise SeretoValueError(f"Content of '{extra_file}' must be a JSON object")
+            raise SeretoValueError("Value of '--extra' must be a JSON object")
 
-        version_config = project.config.at_version(project.config.last_version)
+        version_config = project.config.last_version
         skip_fields = {"version_configs", "targets", "dates", "people"}
 
         for key, value in extra.items():

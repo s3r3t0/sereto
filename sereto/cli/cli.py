@@ -232,36 +232,35 @@ def config() -> None:
 @click.option(
     "-e",
     "--extra",
-    "extra_file",
+    "extra_json",
     default=None,
-    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to a JSON file with config fields to update.",
+    help='Extra config fields as a JSON string (e.g. \'{"name": "My Project"}\').',
 )
 @click.pass_obj
 @validate_call
 def config_edit(
     ctx: Project,
     non_interactive: bool,
-    extra_file: str | None,
+    extra_json: str | None,
 ) -> None:
     """Launch editor with project's configuration file.\f
 
     Args:
         ctx: Project's representation.
         non_interactive: If True, run non-interactively.
-        extra_file: Path to a JSON file with config fields to update.
+        extra_json: A JSON string with config fields to update.
     """
 
     guard_ni_only_options(
         click_ctx=click.get_current_context(),
         non_interactive=non_interactive,
-        ni_only={"extra_file": "--extra"},
+        ni_only={"extra_json": "--extra"},
     )
 
     edit_config(
         project=ctx,
         non_interactive=non_interactive,
-        extra_file=Path(extra_file) if extra_file else None,
+        extra_json=extra_json,
     )
 
 
@@ -688,8 +687,7 @@ def findings() -> None:
     "--template",
     "template_path",
     default=None,
-    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to the finding template (.md.j2).",
+    help="Path to the finding template.",
 )
 @click.option("-n", "--name", "finding_name", default=None, help="Name for the sub-finding.")
 @click.option(
@@ -1053,33 +1051,32 @@ def settings() -> None:
 @click.option(
     "-e",
     "--extra",
-    "extra_file",
+    "extra_json",
     default=None,
-    type=click.Path(exists=True, dir_okay=False, resolve_path=True),
-    help="Path to a JSON file with settings fields to update.",
+    help='Extra settings fields as a JSON string (e.g. \'{"projects_path": "/srv/projects"}\').',
 )
 @validate_call
-def settings_edit(non_interactive: bool, extra_file: str | None) -> None:
+def settings_edit(non_interactive: bool, extra_json: str | None) -> None:
     """Edit settings with the configured editor.
 
     This command opens the global settings configuration file in the default editor.
     If the configuration file does not exist, it will be created first with the default values.
 
-    With -N/--non-interactive, the settings are updated from the JSON file provided via --extra.
+    With -N/--non-interactive, the settings are updated from the JSON string provided via --extra.
     \f
 
     Args:
         non_interactive: If True, run non-interactively.
-        extra_file: Path to a JSON file with settings fields to update.
+        extra_json: A JSON string with settings fields to update.
     """
 
     guard_ni_only_options(
         click_ctx=click.get_current_context(),
         non_interactive=non_interactive,
-        ni_only={"extra_file": "--extra"},
+        ni_only={"extra_json": "--extra"},
     )
 
-    edit_settings(non_interactive=non_interactive, extra_file=Path(extra_file) if extra_file else None)
+    edit_settings(non_interactive=non_interactive, extra_json=extra_json)
 
 
 @settings.group(cls=AliasedGroup)
