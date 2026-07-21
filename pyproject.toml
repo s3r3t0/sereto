@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.30.1"]
+requires = ["hatchling==1.31.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -51,7 +51,7 @@ dependencies = [
   "annotated-types~=0.7.0",
   "click~=8.4.2",
   "cryptography~=49.0.0",
-  "humanize~=4.15.0",
+  "humanize~=4.16.0",
   "loguru~=0.7.3",
   "jinja2~=3.1.6",
   "keyring~=25.7.0",
@@ -69,9 +69,9 @@ dependencies = [
   "rich~=15.0.0",
   "semver~=3.0.4",
   "sereto-repl~=0.3.2",
-  "textual~=8.2.7",
+  "textual~=8.2.8",
   "toml>=0.10.2",
-  "tomlkit~=0.15.0",
+  "tomlkit~=0.15.1",
   "ty>=0.0.55",
 ]
 
