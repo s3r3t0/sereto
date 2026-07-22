@@ -72,7 +72,6 @@ dependencies = [
   "textual~=8.2.8",
   "toml>=0.10.2",
   "tomlkit~=0.15.1",
-  "ty>=0.0.55",
 ]
 
 [project.optional-dependencies]
@@ -80,12 +79,13 @@ docs = [
   "mike",
   "mkdocs-material",
   "mkdocstrings[python]",
-  "ruff",
 ]
 performance = [
   "pathspec[re2]~=1.1.1",
 ]
 dev = [
+  "ruff",
+  "ty>=0.0.55",
   "textual-dev",
 ]
 
