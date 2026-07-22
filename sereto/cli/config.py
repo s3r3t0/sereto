@@ -77,7 +77,7 @@ def edit_config(
         if not isinstance(extra, dict):
             raise SeretoValueError("Value of '--extra' must be a JSON object")
 
-        version_config = project.config.at_version(project.config.last_version)
+        version_config = project.config.last_config
         skip_fields = {"version_configs", "targets", "dates", "people"}
 
         for key, value in extra.items():
