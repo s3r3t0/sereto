@@ -3974,7 +3974,7 @@ Otherwise, the config file is opened in the default editor.</p>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;Value of &#39;--extra&#39; must be a JSON object&quot;</span><span class="p">)</span>
 
-        <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
+        <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span>
         <span class="n">skip_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version_configs&quot;</span><span class="p">,</span> <span class="s2">&quot;targets&quot;</span><span class="p">,</span> <span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="s2">&quot;people&quot;</span><span class="p">}</span>
 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extra</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
