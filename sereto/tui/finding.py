@@ -542,6 +542,8 @@ class SearchWidget(Widget):
             "name": [finding.name],
             "keyword": finding.keywords,
         }
+        if finding.group_hint:
+            fields["group_hint"] = [finding.group_hint]
         for field in FINDING_SEARCH_FIELDS.previewable_fields():
             value = finding.text.get(field.name, "").strip()
             if value:
@@ -552,7 +554,7 @@ class SearchWidget(Widget):
         app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         self.input_field = Input(
-            placeholder='Search by name or keyword. Try impact:rce or description:"sql injection".',
+            placeholder='Search by name, keyword, or group_hint. Try impact:rce or description:"sql injection".',
             classes="input-field",
         )
         self.query_summary = Static(classes="query-summary")
@@ -795,12 +797,14 @@ class FindingOption(Option):
         finding = result.document.payload
         name_matcher = matchers.get("name")
         keyword_matcher = matchers.get("keyword")
+        group_hint_matcher = matchers.get("group_hint")
 
         name_text = name_matcher.highlight([finding.name]) if name_matcher else Text(finding.name)
         name_text.stylize("bold")
 
         support_text = Text(finding.category, style="bold cyan")
         keyword_preview = self._build_keyword_preview(finding.keywords, keyword_matcher)
+        group_hint_line = self._build_group_preview(finding.group_hint, group_hint_matcher)
         match_hint = self._build_match_hint(result)
 
         if keyword_preview is not None:
@@ -816,11 +820,17 @@ class FindingOption(Option):
             support_text = support_text.copy()
             support_text.truncate(content_width, overflow="ellipsis")
 
+            if group_hint_line is not None:
+                group_hint_line = group_hint_line.copy()
+                group_hint_line.truncate(content_width, overflow="ellipsis")
+
             if debug_text is not None:
                 debug_text = debug_text.copy()
                 debug_text.truncate(content_width, overflow="ellipsis")
 
         text_parts: list[Text | str] = [name_text, "\n", support_text]
+        if group_hint_line is not None:
+            text_parts.extend(["\n", group_hint_line])
         if debug_text is not None:
             text_parts.extend(["\n", debug_text])
 
@@ -837,8 +847,22 @@ class FindingOption(Option):
         return preview
 
     @staticmethod
+    def _build_group_preview(group_hint: str | None, matcher: FuzzyMatcher | None) -> Text | None:
+        if not group_hint:
+            return None
+
+        hint_text = matcher.highlight([group_hint]) if matcher else Text(group_hint)
+        line = Text("Group hint: ", style="dim")
+        line.append_text(hint_text)
+        line.stylize("italic dim", len("Group hint: "))
+        return line
+
+    @staticmethod
     def _build_match_hint(result: SearchResult[FindingMetadata]) -> Text | None:
-        reason = next((reason for reason in result.reasons if reason.field_name not in {"name", "keyword"}), None)
+        reason = next(
+            (reason for reason in result.reasons if reason.field_name not in {"name", "keyword", "group_hint"}),
+            None
+        )
         if reason is None:
             return None
         return Text(f"{reason.label.lower()} match", style="italic dim")
