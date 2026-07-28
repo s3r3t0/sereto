@@ -59,7 +59,7 @@ dependencies = [
   "matplotlib~=3.11.0",
   "pandocfilters~=1.5.1",
   "pathspec~=1.1.1",
-  "prompt-toolkit~=3.0.52",
+  "prompt-toolkit~=3.0.53",
   "pydantic-settings~=2.14.2",
   "pydantic[email]",
   "pydantic~=2.13.4",
