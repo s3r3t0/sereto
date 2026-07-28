@@ -32,6 +32,9 @@ def prompt_user_for_target(categories: Iterable[str]) -> AnyTargetModel:
         text="Category:",
         values=[(c, c.upper()) for c in categories],
     ).run()
+    if category is None:  # pyright: ignore[reportUnnecessaryComparison]
+        raise SeretoRuntimeError("aborting, category selection cancelled")
+
     name = prompt("Name: ")
 
     match category:
