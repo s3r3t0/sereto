@@ -85,7 +85,7 @@ performance = [
 ]
 dev = [
   "ruff",
-  "ty>=0.0.62",
+  "ty>=0.0.64",
   "textual-dev",
 ]
 
