@@ -48,7 +48,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "annotated-types~=0.7.0",
+  "annotated-types~=0.8.0",
   "click~=8.4.2",
   "cryptography~=49.0.0",
   "humanize~=4.16.0",
