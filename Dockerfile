@@ -29,7 +29,11 @@ RUN \
     mkdir -p /home/sereto/.config/sereto && \
     printf '{\n  "projects_path": "/projects",\n  "templates_path": "/templates"\n}\n' > /home/sereto/.config/sereto/settings.json
 
-ENV PATH="/opt/venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH" \
+    HOME="/home/sereto" \
+    XDG_CONFIG_HOME="/home/sereto/.config" \
+    XDG_DATA_HOME="/home/sereto/.local/share" \
+    XDG_CACHE_HOME="/home/sereto/.cache"
 WORKDIR /home/sereto
 
 # Entry point adjusts group permissions for mounted volumes and starts CMD as low-privileged user
