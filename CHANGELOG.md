@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+There are no user-facing changes in this release.
+
+### Dependencies
+
+- Update GitHub Actions versions.
+
 ## [0.8.2] - 2026-08-05
 
 ### Added
