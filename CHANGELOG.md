@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `-N`/`--non-interactive` support to project creation, settings and configuration editing, adding dates, people, and targets, and `sereto findings add`. The commands accept their input as options or JSON, enabling use in scripts and CI without prompts or the findings TUI.
+
+### Changed
+
+- Move `ruff` and `ty` to the `dev` dependency extra and install `ty` explicitly in its tox environment.
+
+### Fixed
+
+- Serialize `Date` model values using SeReTo's `%d-%b-%Y` date format.
+- Display the configured finding-group name, rather than its suggested name, when selecting a group in the findings TUI.
+- Fix non-interactive configuration editing to update the current version configuration and return the correct `VersionConfig` value.
+- Fix a possible `None` assignment reported by the `ty` type checker.
+- Configure Docker's home and XDG directories for the unprivileged `sereto` user, allowing the keyring backend to work in containers.
+
+### Dependencies
+
+- Update annotated-types requirement from ~=0.7.0 to ~=0.8.0
+- Update humanize requirement from ~=4.15.0 to ~=4.16.0
+- Update matplotlib requirement from ~=3.11.0 to ~=3.11.1
+- Update prompt-toolkit requirement from ~=3.0.52 to ~=3.0.53
+- Update textual requirement from ~=8.2.7 to ~=8.2.8
+- Update tomlkit requirement from ~=0.15.0 to ~=0.15.1
+- Update ty requirement from >=0.0.55 to >=0.0.65
+- Bump hatchling from 1.30.1 to 1.31.0
+- Bump pillow from 12.2.0 to 12.3.0
+
 ## [0.8.1] - 2026-07-03
 
 ### Fixed
