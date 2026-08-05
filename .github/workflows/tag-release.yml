@@ -19,7 +19,7 @@ jobs:
       startsWith(github.event.pull_request.head.ref, 'release/v')
 
     steps:
-    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         ref: main
         fetch-depth: 0
@@ -51,7 +51,7 @@ jobs:
       run: echo "$TAG" > tag-name.txt
 
     - name: Upload tag name artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: tag-name
         path: tag-name.txt
