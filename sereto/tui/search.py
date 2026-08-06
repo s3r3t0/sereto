@@ -183,7 +183,7 @@ FINDING_SEARCH_FIELDS = SearchFieldRegistry(
     [
         SearchField(name="name", label="Name", aliases=("n",), default_weight=1.0, clause_weight=1.2),
         SearchField(name="keyword", label="Keyword", aliases=("k", "keywords"), default_weight=0.8),
-        SearchField(name="group_hint", label="Group hint", aliases=("g", "group"), default_weight=0.8),
+        SearchField(name="group_hint", label="Group hint", aliases=("g", "group"), default_weight=0.65),
         SearchField(
             name="description",
             label="Description",
