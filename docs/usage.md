@@ -138,8 +138,12 @@ The TUI utilizes fuzzy search to help you effectively locate the desired finding
 
 It also supports advanced search with query operators, similar to Google Search. You can search across the following fields:
 
-* `name:` or `n:` matches against the finding title (this is also the default field if no operator is used)
+* `name:` or `n:` matches against the finding title
 * `keyword:` or `k:` matches keywords
+* `group_hint:` or `g:` matches the group hint
+
+These fields are also the default fields if no operator is used.
+
 Matched results are immediately displayed in the option list.
 
 Additionally, you can search within the template content using:
