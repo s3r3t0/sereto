@@ -5,6 +5,7 @@ def _doc(
     name: str,
     *,
     keywords: list[str] | None = None,
+    group_hint: str = "",
     description: str = "",
     impact: str = "",
     recommendation: str = "",
@@ -13,6 +14,8 @@ def _doc(
         "name": [name],
         "keyword": keywords or [],
     }
+    if group_hint:
+        fields["group_hint"] = [group_hint]
     if description:
         fields["description"] = [description]
     if impact:
@@ -77,6 +80,21 @@ def test_keyword_match_can_rescue_untagged_search():
     results = rank_documents(documents, parse_search_query("sweet32", FINDING_SEARCH_FIELDS), FINDING_SEARCH_FIELDS)
 
     assert results[0].document.payload == "Weak TLS Configuration"
+
+
+def test_group_hint_match_can_rescue_untagged_search():
+    documents = [
+        _doc("Generic TLS Finding", group_hint="Weak TLS Cipher Suites"),
+        _doc("Another Finding", description="Legacy crypto is supported."),
+    ]
+
+    results = rank_documents(
+        documents,
+        parse_search_query("cipher suites", FINDING_SEARCH_FIELDS),
+        FINDING_SEARCH_FIELDS,
+    )
+
+    assert results[0].document.payload == "Generic TLS Finding"
 
 
 def test_result_diagnostics_include_free_text_details():
