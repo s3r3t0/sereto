@@ -1,0 +1,232 @@
+DeleteConfirmationScreen {
+    align: center middle;
+    #confirm-dialog {
+        width: 50;
+        height: auto;
+        border: heavy $warning;
+        padding: 1 2;
+        background: $surface;
+    }
+    #confirm-message {
+        width: 1fr;
+        margin-bottom: 1;
+        text-align: center;
+    }
+    #confirm-buttons {
+        height: auto;
+        align: center middle;
+    }
+}
+
+ProjectBrowserScreen {
+    #browser-layout {
+        height: 1fr;
+        padding: 1 2;
+    }
+    #project-select-row {
+        height: auto;
+        margin-bottom: 1;
+        align: left middle;
+    }
+    #project-select {
+        height: auto;
+        width: 1fr;
+    }
+    #new-project-btn {
+        height: 3;
+        width: 5;
+        min-width: 3;
+        margin-left: 1;
+    }
+    #action-bar {
+        height: auto;
+        margin-bottom: 1;
+    }
+    .action-btn {
+        height: 3;
+    }
+    #content-panel {
+        height: 1fr;
+        border: tall $panel;
+        padding: 1 2;
+        scrollbar-gutter: stable;
+    }
+    #content-static {
+        height: auto;
+    }
+}
+
+NewProjectScreen {
+    #new-project-layout {
+        height: auto;
+        padding: 2 4;
+        align: center top;
+    }
+    #new-project-title {
+        text-style: bold;
+        margin-bottom: 1;
+    }
+    Rule {
+        margin-bottom: 1;
+    }
+    InputWithLabel {
+        margin-bottom: 1;
+    }
+    #new-project-buttons {
+        height: auto;
+        margin-top: 1;
+        align: right middle;
+    }
+    #new-project-create {
+        margin-right: 1;
+    }
+}
+
+FindingSearchScreen {
+    SearchWidget {
+        height: 1fr;
+    }
+}
+
+ProjectBrowserApp {
+    #browser-layout {
+        height: 1fr;
+    }
+    .browser-pane {
+        width: 30%;
+        min-width: 24;
+        border-right: solid $accent;
+        scrollbar-gutter: stable;
+    }
+    #project-tree {
+        padding: 1 0;
+        background: $background;
+    }
+    .browser-content-pane {
+        width: 1fr;
+        padding: 1 2;
+        scrollbar-gutter: stable;
+    }
+}
+
+RenderScreen {
+    #render-layout {
+        height: 1fr;
+        padding: 1 2;
+    }
+    #render-controls {
+        height: auto;
+        margin-bottom: 1;
+        align: left top;
+    }
+    .render-field {
+        height: auto;
+        align: left middle;
+        margin-right: 2;
+        Label {
+            width: 10;
+            padding: 1 1;
+            text-align: right;
+        }
+        Select {
+            width: 20;
+        }
+    }
+    #render-log {
+        height: 1fr;
+    }
+    #open-pdf-btn {
+        width: 1fr;
+        margin-top: 1;
+    }
+    #render-buttons {
+        height: auto;
+        margin-left: 2;
+        Button {
+            margin-bottom: 0;
+            margin-right: 1;
+        }
+    }
+    #render-log {
+        height: 1fr;
+        border: tall $panel;
+        padding: 0 1;
+    }
+}
+
+ConfigScreen {
+    #version-bar {
+        height: auto;
+        padding: 0 2;
+        align: left middle;
+        background: $panel;
+        border-bottom: solid $accent;
+        #version-bar-label {
+            width: 10;
+            padding: 1 1;
+            text-align: right;
+        }
+        Select {
+            width: 30;
+        }
+    }
+    #config-tabs {
+        height: 1fr;
+    }
+    #general-form,
+    #targets-form,
+    #dates-form,
+    #people-form {
+        height: 1fr;
+        padding: 1 2;
+        scrollbar-gutter: stable;
+    }
+    #general-buttons {
+        height: auto;
+        margin-top: 1;
+        align: right middle;
+    }
+    .config-add-row {
+        height: auto;
+        margin-top: 1;
+        align: right middle;
+    }
+    .field-row {
+        height: auto;
+        margin-bottom: 1;
+        align: left middle;
+        Label {
+            width: 14;
+            padding: 1 1;
+            text-align: right;
+        }
+        Select {
+            width: 1fr;
+        }
+    }
+    #targets-list,
+    #dates-list,
+    #people-list {
+        height: auto;
+        margin-bottom: 1;
+    }
+    .config-row {
+        height: auto;
+        margin-bottom: 1;
+        align: left middle;
+        padding: 0 0 0 1;
+    }
+    .config-row-label {
+        width: 1fr;
+        padding: 0 1;
+    }
+    .config-remove-btn {
+        width: auto;
+        min-width: 5;
+    }
+    #add-target-btn,
+    #add-date-btn,
+    #add-person-btn {
+        margin-top: 1;
+    }
+}

@@ -70,6 +70,10 @@ AddSubFindingScreen {
         border: heavy $accent;
         margin: 2 4;
         scrollbar-gutter: stable;
+        #save-button-row {
+            height: auto;
+            align: right middle;
+        }
         #group-name-row {
             height: auto;
             InputWithLabel { width: 1fr; }
