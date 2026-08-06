@@ -109,6 +109,7 @@ nav:
       - reference/models/version.md
     - TUI:
       - reference/tui/finding.md
+      - reference/tui/search.md
     - reference/build.md
     - reference/config.md
     - reference/convert.md
