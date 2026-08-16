@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Implement `__reduce__` for `SeretoDate` to fix deepcopy and pickling.
+
 ## [0.8.3] - 2026-08-05
 
 There are no user-facing changes in this release.

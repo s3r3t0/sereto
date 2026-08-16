@@ -64,6 +64,9 @@ class SeretoDate(date):
     def __repr__(self) -> str:
         return f"SeretoDate('{self!s}')"
 
+    def __reduce__(self) -> tuple[type[SeretoDate], tuple[int, int, int]]:
+        return (self.__class__, (self.year, self.month, self.day))
+
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
