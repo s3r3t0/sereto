@@ -1,3 +1,6 @@
+import copy
+import pickle
+
 import pytest
 
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
@@ -30,6 +33,26 @@ class TestSeretoDate:
     )
     def test_not_eq(self, a, b):
         assert SeretoDate(a) != SeretoDate(b)
+
+    @pytest.mark.parametrize("input", ["01-Jan-2024", "29-Feb-2024", "31-Dec-2024"])
+    def test_deepcopy(self, input):
+        d = SeretoDate(input)
+        d_copy = copy.deepcopy(d)
+
+        assert type(d_copy) is SeretoDate
+        assert d == d_copy
+        assert d is not d_copy
+        assert str(d_copy) == input
+
+    @pytest.mark.parametrize("input", ["01-Jan-2024", "29-Feb-2024", "31-Dec-2024"])
+    def test_pickle_roundtrip(self, input):
+        d = SeretoDate(input)
+        d_loaded = pickle.loads(pickle.dumps(d))
+
+        assert type(d_loaded) is SeretoDate
+        assert d == d_loaded
+        assert d is not d_loaded
+        assert str(d_loaded) == input
 
 
 class TestDateRange:
