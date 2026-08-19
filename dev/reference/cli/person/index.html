@@ -2834,25 +2834,25 @@
 <span class="normal">35</span>
 <span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">prompt_user_for_person</span><span class="p">(</span><span class="n">person_type</span><span class="p">:</span> <span class="n">PersonType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Person</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interactively prompt for a person&#39;s details.</span>
+<span class="w">    </span><span class="sd">"""Interactively prompt for a person's details.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        person_type: The type of person to prompt for.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The person as provided by the user.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">&quot;Name: &quot;</span><span class="p">)</span>
-    <span class="n">business_unit</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">&quot;Business unit: &quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">"Name: "</span><span class="p">)</span>
+    <span class="n">business_unit</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">"Business unit: "</span><span class="p">)</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">&quot;Email: &quot;</span><span class="p">)</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">"Email: "</span><span class="p">)</span>
             <span class="n">ta</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">EmailStr</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">EmailStr</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
             <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">ta</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="k">break</span>
         <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
-            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[red]Please enter valid email address&quot;</span><span class="p">)</span>
-    <span class="n">role</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">&quot;Role: &quot;</span><span class="p">)</span>
+            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[red]Please enter valid email address"</span><span class="p">)</span>
+    <span class="n">role</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="s2">"Role: "</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">Person</span><span class="p">(</span>
         <span class="nb">type</span><span class="o">=</span><span class="n">person_type</span><span class="p">,</span>

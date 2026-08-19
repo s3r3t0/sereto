@@ -3082,7 +3082,7 @@
     <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add date to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add date to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config: Configuration of the project.</span>
@@ -3091,7 +3091,7 @@
 <span class="sd">        date_type: The type of the date event.</span>
 <span class="sd">        start_date: The start date str in DD-Mmm-YYYY format.</span>
 <span class="sd">        end_date: The end date str in DD-Mmm-YYYY format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3327,7 +3327,7 @@
     <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">role</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add person to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add person to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config: Configuration of the project.</span>
@@ -3338,7 +3338,7 @@
 <span class="sd">        business_unit: The business unit of the person.</span>
 <span class="sd">        email: The email address of the person.</span>
 <span class="sd">        role: The role of the person.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3598,7 +3598,7 @@
     <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra_json</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add target to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add target to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        project_path: Path to the project directory.</span>
@@ -3610,7 +3610,7 @@
 <span class="sd">        category: Category of the target.</span>
 <span class="sd">        target_name: Name of the target.</span>
 <span class="sd">        extra_json: Extra target fields as a JSON string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3770,14 +3770,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">delete_target</span><span class="p">(</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete target from the configuration by its index.</span>
+<span class="w">    </span><span class="sd">"""Delete target from the configuration by its index.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config: Configuration of the project.</span>
 <span class="sd">        index: Index to item which should be deleted. First item is 1.</span>
 <span class="sd">        version: The version of the project. If not provided, the last version is used.</span>
 <span class="sd">        interactive: Whether to ask for confirmations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3795,7 +3795,7 @@
     <span class="k">if</span> <span class="p">(</span>
         <span class="n">target_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
         <span class="ow">and</span> <span class="n">interactive</span>
-        <span class="ow">and</span> <span class="n">yes_no_dialog</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Confirm&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Delete &#39;</span><span class="si">{</span><span class="n">target_path</span><span class="si">}</span><span class="s2">&#39; from the filesystem?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="ow">and</span> <span class="n">yes_no_dialog</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Confirm"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Delete '</span><span class="si">{</span><span class="n">target_path</span><span class="si">}</span><span class="s2">' from the filesystem?"</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="p">):</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">target_path</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3960,18 +3960,18 @@ Otherwise, the config file is opened in the default editor.</p>
     <span class="n">non_interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">extra_json</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Edit the configuration file in default CLI editor.</span>
+<span class="w">    </span><span class="sd">"""Edit the configuration file in default CLI editor.</span>
 
 <span class="sd">    When `non_interactive` is True, the config is updated from `extra_json` without opening an editor.</span>
 <span class="sd">    Otherwise, the config file is opened in the default editor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        non_interactive: If True, run non-interactively.</span>
 <span class="sd">        extra_json: A JSON string with config fields to update.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">sereto_ver</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;sereto&quot;</span><span class="p">)</span>
+    <span class="n">sereto_ver</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">"sereto"</span><span class="p">)</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config_path</span>
 
     <span class="c1"># If the config file does not exist, create it with default values</span>
@@ -3979,11 +3979,11 @@ Otherwise, the config file is opened in the default editor.</p>
         <span class="n">Config</span><span class="p">(</span>
             <span class="n">sereto_version</span><span class="o">=</span><span class="n">SeretoVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">sereto_ver</span><span class="p">),</span>
             <span class="n">version_configs</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">):</span> <span class="n">VersionConfig</span><span class="p">(</span>
-                    <span class="n">version</span><span class="o">=</span><span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">),</span>
-                    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">version_description</span><span class="o">=</span><span class="s2">&quot;Initial&quot;</span><span class="p">,</span>
+                <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">):</span> <span class="n">VersionConfig</span><span class="p">(</span>
+                    <span class="n">version</span><span class="o">=</span><span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">),</span>
+                    <span class="nb">id</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">version_description</span><span class="o">=</span><span class="s2">"Initial"</span><span class="p">,</span>
                     <span class="n">risk_due_dates</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">},</span>
@@ -3993,17 +3993,17 @@ Otherwise, the config file is opened in the default editor.</p>
 
     <span class="k">if</span> <span class="n">non_interactive</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">extra_json</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;&#39;--extra&#39; is required in non-interactive mode.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"'--extra' is required in non-interactive mode."</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">extra</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">extra_json</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid JSON in &#39;--extra&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid JSON in '--extra': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;Value of &#39;--extra&#39; must be a JSON object&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"Value of '--extra' must be a JSON object"</span><span class="p">)</span>
 
         <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span>
-        <span class="n">skip_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version_configs&quot;</span><span class="p">,</span> <span class="s2">&quot;targets&quot;</span><span class="p">,</span> <span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="s2">&quot;people&quot;</span><span class="p">}</span>
+        <span class="n">skip_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"version_configs"</span><span class="p">,</span> <span class="s2">"targets"</span><span class="p">,</span> <span class="s2">"dates"</span><span class="p">,</span> <span class="s2">"people"</span><span class="p">}</span>
 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extra</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">skip_fields</span><span class="p">:</span>
@@ -4013,7 +4013,7 @@ Otherwise, the config file is opened in the default editor.</p>
             <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ConfigModel</span><span class="o">.</span><span class="n">model_fields</span><span class="p">:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown config field: &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown config field: '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
         <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -4156,14 +4156,14 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_config</span><span class="p">(</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">OutputFormat</span><span class="p">,</span> <span class="nb">all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the configuration for a project.</span>
+<span class="w">    </span><span class="sd">"""Display the configuration for a project.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config: Configuration of the project.</span>
 <span class="sd">        output_format: Format of the output.</span>
 <span class="sd">        all: Whether to show values from all versions or just the last one.</span>
-<span class="sd">        version: Show config at specific version, e.g. &#39;v1.0&#39;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        version: Show config at specific version, e.g. 'v1.0'.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -4171,7 +4171,7 @@ Otherwise, the config file is opened in the default editor.</p>
 
     <span class="k">match</span> <span class="n">output_format</span><span class="p">:</span>
         <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
-            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[blue]</span><span class="si">{</span><span class="n">version_config</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">version_config</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n\n</span><span class="s2">[blue]</span><span class="si">{</span><span class="n">version_config</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">version_config</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
             <span class="n">show_targets_config</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="nb">all</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
             <span class="n">show_dates_config</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="nb">all</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
             <span class="n">show_people_config</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">output_format</span><span class="o">=</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="nb">all</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
@@ -4331,7 +4331,7 @@ Otherwise, the config file is opened in the default editor.</p>
     <span class="nb">all</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the configured dates.</span>
+<span class="w">    </span><span class="sd">"""Display the configured dates.</span>
 
 <span class="sd">    By default, if neither of `version` and `all` arguments are used, dates from the latest version are displayed.</span>
 
@@ -4340,7 +4340,7 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="sd">        output_format: Select format of the output.</span>
 <span class="sd">        all: Show dates from all versions.</span>
 <span class="sd">        version: Show dates from specific version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -4349,7 +4349,7 @@ Otherwise, the config file is opened in the default editor.</p>
             <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">if</span> <span class="nb">all</span> <span class="k">else</span> <span class="p">[</span><span class="n">version</span><span class="p">]:</span>
                 <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
                 <span class="n">table</span> <span class="o">=</span> <span class="n">_get_dates_table</span><span class="p">(</span><span class="n">version_config</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">to_model</span><span class="p">(),</span> <span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">json</span><span class="p">:</span>
             <span class="n">DateList</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">])</span>
             <span class="n">DateAll</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]])</span>
@@ -4358,10 +4358,10 @@ Otherwise, the config file is opened in the default editor.</p>
                 <span class="n">all_dates</span> <span class="o">=</span> <span class="n">DateAll</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span>
                     <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">ver</span><span class="p">):</span> <span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">dates</span> <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span><span class="p">}</span>
                 <span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">DateAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_dates</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">DateAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_dates</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">dates</span> <span class="o">=</span> <span class="n">DateList</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">DateList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">DateList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4503,7 +4503,7 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="normal">396</span>
 <span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_people_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">OutputFormat</span><span class="p">,</span> <span class="nb">all</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the configured people.</span>
+<span class="w">    </span><span class="sd">"""Display the configured people.</span>
 
 <span class="sd">    By default, if neither of `version` and `all` arguments are used, people from the latest version are displayed.</span>
 
@@ -4512,7 +4512,7 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="sd">        output_format: Select format of the output.</span>
 <span class="sd">        all: Show people from all versions.</span>
 <span class="sd">        version: Show people from specific version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -4521,7 +4521,7 @@ Otherwise, the config file is opened in the default editor.</p>
             <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">if</span> <span class="nb">all</span> <span class="k">else</span> <span class="p">[</span><span class="n">version</span><span class="p">]:</span>
                 <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
                 <span class="n">table</span> <span class="o">=</span> <span class="n">_get_person_table</span><span class="p">(</span><span class="n">version_config</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">to_model</span><span class="p">(),</span> <span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">json</span><span class="p">:</span>
             <span class="n">PersonList</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">])</span>
             <span class="n">PersonAll</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]])</span>
@@ -4530,10 +4530,10 @@ Otherwise, the config file is opened in the default editor.</p>
                 <span class="n">all_people</span> <span class="o">=</span> <span class="n">PersonAll</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span>
                     <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">ver</span><span class="p">):</span> <span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">people</span> <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span><span class="p">}</span>
                 <span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">PersonAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_people</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">PersonAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_people</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">people</span> <span class="o">=</span> <span class="n">PersonList</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="o">.</span><span class="n">people</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">PersonList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">people</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">PersonList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">people</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4683,7 +4683,7 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_targets_config</span><span class="p">(</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">OutputFormat</span><span class="p">,</span> <span class="nb">all</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display the configured targets.</span>
+<span class="w">    </span><span class="sd">"""Display the configured targets.</span>
 
 <span class="sd">    By default, if neither of `version` and `all` arguments are used, targets from the latest version are displayed.</span>
 
@@ -4691,8 +4691,8 @@ Otherwise, the config file is opened in the default editor.</p>
 <span class="sd">        config: Configuration of the project.</span>
 <span class="sd">        output_format: Select format of the output.</span>
 <span class="sd">        all: Show targets from all versions.</span>
-<span class="sd">        version: Show targets from the specified project&#39;s version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        version: Show targets from the specified project's version.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -4701,7 +4701,7 @@ Otherwise, the config file is opened in the default editor.</p>
             <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">if</span> <span class="nb">all</span> <span class="k">else</span> <span class="p">[</span><span class="n">version</span><span class="p">]:</span>
                 <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
                 <span class="n">table</span> <span class="o">=</span> <span class="n">_get_target_table</span><span class="p">(</span><span class="n">version_config</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">to_model</span><span class="p">(),</span> <span class="n">version</span><span class="o">=</span><span class="n">ver</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">json</span><span class="p">:</span>
             <span class="n">TargetList</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">AnyTargetModel</span><span class="p">]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">AnyTargetModel</span><span class="p">])</span>
             <span class="n">TargetAll</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">AnyTargetModel</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">AnyTargetModel</span><span class="p">]])</span>
@@ -4713,11 +4713,11 @@ Otherwise, the config file is opened in the default editor.</p>
                         <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span>
                     <span class="p">}</span>
                 <span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">TargetAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_targets</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">TargetAll</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">all_targets</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">target_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_model</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span>
                 <span class="n">targets</span> <span class="o">=</span> <span class="n">TargetList</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">target_models</span><span class="p">)</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">TargetList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">TargetList</span><span class="o">.</span><span class="n">dump_json</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

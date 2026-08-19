@@ -2943,19 +2943,19 @@ If the output file already exists and has the same content, it is not overwritte
     <span class="n">intermediate_format</span><span class="p">:</span> <span class="n">FileFormat</span><span class="p">,</span>
     <span class="n">converter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a sub-finding into the specified format and write it to the &quot;.build&quot; directory.</span>
+<span class="w">    </span><span class="sd">"""Process a sub-finding into the specified format and write it to the ".build" directory.</span>
 
 <span class="sd">    The sub-finding is first rendered as a Jinja2 template, then converted to the desired format.</span>
 <span class="sd">    If the output file already exists and has the same content, it is not overwritten (to preserve timestamps).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        target: The target containing the sub-finding.</span>
 <span class="sd">        sub_finding: The sub-finding to process.</span>
 <span class="sd">        version: The project version to use for rendering.</span>
 <span class="sd">        intermediate_format: The desired output format (e.g., FileFormat.tex).</span>
 <span class="sd">        converter: The convert recipe used for file format transformations. If None, the first recipe is used.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Initialize the build directory</span>
     <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 
@@ -2966,10 +2966,10 @@ If the output file already exists and has the same content, it is not overwritte
         <span class="n">templates</span><span class="o">=</span><span class="p">[</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">],</span>
         <span class="n">file</span><span class="o">=</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
         <span class="nb">vars</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="n">sub_finding</span><span class="p">,</span>
-            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">version_config</span><span class="p">,</span>
-            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
-            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
+            <span class="s2">"f"</span><span class="p">:</span> <span class="n">sub_finding</span><span class="p">,</span>
+            <span class="s2">"c"</span><span class="p">:</span> <span class="n">version_config</span><span class="p">,</span>
+            <span class="s2">"config"</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="s2">"version"</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">)</span>
 
@@ -2981,16 +2981,16 @@ If the output file already exists and has the same content, it is not overwritte
         <span class="n">render</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="p">,</span>
         <span class="n">recipe</span><span class="o">=</span><span class="n">converter</span><span class="p">,</span>
         <span class="n">replacements</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;%TEMPLATES%&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">),</span>
+            <span class="s2">"%TEMPLATES%"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">),</span>
         <span class="p">},</span>
     <span class="p">)</span>
 
-    <span class="c1"># Write the finding to the &quot;.build&quot; directory; do not overwrite the same content (preserve timestamps)</span>
+    <span class="c1"># Write the finding to the ".build" directory; do not overwrite the same content (preserve timestamps)</span>
     <span class="n">write_if_different</span><span class="p">(</span>
         <span class="n">file</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span>
-        <span class="o">/</span> <span class="s2">&quot;.build&quot;</span>
+        <span class="o">/</span> <span class="s2">".build"</span>
         <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span>
-        <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1">.j2&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">intermediate_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="sa">f</span><span class="s1">'.</span><span class="si">{</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1">.j2'</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">intermediate_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>

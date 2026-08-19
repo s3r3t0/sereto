@@ -2902,7 +2902,7 @@
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">FileSystemLoader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Jinja2 template loader that strips frontmatter from templates.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A Jinja2 template loader that strips frontmatter from templates."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_source</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -3024,19 +3024,19 @@
 <span class="normal">108</span>
 <span class="normal">109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_generic_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a generic Jinja2 environment object.</span>
+<span class="w">    </span><span class="sd">"""Creates a generic Jinja2 environment object.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        templates: The directory/directories containing template files.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A Jinja2 environment object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
         <span class="n">autoescape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loader</span><span class="o">=</span><span class="n">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span> <span class="n">undefined</span><span class="o">=</span><span class="n">StrictUndefined</span>
     <span class="p">)</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">"MANUAL_EDIT_WARNING"</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">"jinja2.ext.debug"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">env</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3144,31 +3144,31 @@
 <span class="normal">139</span>
 <span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_tex_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a Jinja2 environment object for rendering TeX templates.</span>
+<span class="w">    </span><span class="sd">"""Creates a Jinja2 environment object for rendering TeX templates.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        templates: The directory/directories containing the TeX template files.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A Jinja2 environment object that is configured for rendering TeX templates.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
-        <span class="n">block_start_string</span><span class="o">=</span><span class="s2">&quot;((*&quot;</span><span class="p">,</span>
-        <span class="n">block_end_string</span><span class="o">=</span><span class="s2">&quot;*))&quot;</span><span class="p">,</span>
-        <span class="n">variable_start_string</span><span class="o">=</span><span class="s2">&quot;(((&quot;</span><span class="p">,</span>
-        <span class="n">variable_end_string</span><span class="o">=</span><span class="s2">&quot;)))&quot;</span><span class="p">,</span>
-        <span class="n">comment_start_string</span><span class="o">=</span><span class="s2">&quot;((=&quot;</span><span class="p">,</span>
-        <span class="n">comment_end_string</span><span class="o">=</span><span class="s2">&quot;=))&quot;</span><span class="p">,</span>
+        <span class="n">block_start_string</span><span class="o">=</span><span class="s2">"((*"</span><span class="p">,</span>
+        <span class="n">block_end_string</span><span class="o">=</span><span class="s2">"*))"</span><span class="p">,</span>
+        <span class="n">variable_start_string</span><span class="o">=</span><span class="s2">"((("</span><span class="p">,</span>
+        <span class="n">variable_end_string</span><span class="o">=</span><span class="s2">")))"</span><span class="p">,</span>
+        <span class="n">comment_start_string</span><span class="o">=</span><span class="s2">"((="</span><span class="p">,</span>
+        <span class="n">comment_end_string</span><span class="o">=</span><span class="s2">"=))"</span><span class="p">,</span>
         <span class="n">autoescape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">loader</span><span class="o">=</span><span class="n">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
         <span class="n">undefined</span><span class="o">=</span><span class="n">StrictUndefined</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># TODO: Once Jinja2 allows custom escape functions, we might use autoescape of special TeX characters.</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;tex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tex_escape_filter</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;yesno&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">"tex"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tex_escape_filter</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">"yesno"</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">"MANUAL_EDIT_WARNING"</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">"jinja2.ext.debug"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">env</span>
 </code></pre></div></td></tr></table></div>
@@ -3274,29 +3274,29 @@
 <span class="normal">167</span>
 <span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_typst_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a Jinja2 environment object for rendering Typst templates.</span>
+<span class="w">    </span><span class="sd">"""Creates a Jinja2 environment object for rendering Typst templates.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        templates: The directory/directories containing the Typst template files.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A Jinja2 environment object that is configured for rendering Typst templates.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
-        <span class="n">block_start_string</span><span class="o">=</span><span class="s2">&quot;((*&quot;</span><span class="p">,</span>
-        <span class="n">block_end_string</span><span class="o">=</span><span class="s2">&quot;*))&quot;</span><span class="p">,</span>
-        <span class="n">variable_start_string</span><span class="o">=</span><span class="s2">&quot;(((&quot;</span><span class="p">,</span>
-        <span class="n">variable_end_string</span><span class="o">=</span><span class="s2">&quot;)))&quot;</span><span class="p">,</span>
-        <span class="n">comment_start_string</span><span class="o">=</span><span class="s2">&quot;((=&quot;</span><span class="p">,</span>
-        <span class="n">comment_end_string</span><span class="o">=</span><span class="s2">&quot;=))&quot;</span><span class="p">,</span>
+        <span class="n">block_start_string</span><span class="o">=</span><span class="s2">"((*"</span><span class="p">,</span>
+        <span class="n">block_end_string</span><span class="o">=</span><span class="s2">"*))"</span><span class="p">,</span>
+        <span class="n">variable_start_string</span><span class="o">=</span><span class="s2">"((("</span><span class="p">,</span>
+        <span class="n">variable_end_string</span><span class="o">=</span><span class="s2">")))"</span><span class="p">,</span>
+        <span class="n">comment_start_string</span><span class="o">=</span><span class="s2">"((="</span><span class="p">,</span>
+        <span class="n">comment_end_string</span><span class="o">=</span><span class="s2">"=))"</span><span class="p">,</span>
         <span class="n">autoescape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">loader</span><span class="o">=</span><span class="n">FrontMatterStrippingLoader</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
         <span class="n">undefined</span><span class="o">=</span><span class="n">StrictUndefined</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;yesno&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">&quot;MANUAL_EDIT_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">&quot;jinja2.ext.debug&quot;</span><span class="p">)</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">"yesno"</span><span class="p">]</span> <span class="o">=</span> <span class="n">yesno_filter</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">globals</span><span class="p">[</span><span class="s2">"MANUAL_EDIT_WARNING"</span><span class="p">]</span> <span class="o">=</span> <span class="n">MANUAL_EDIT_WARNING</span>  <span class="c1"># ty: ignore[invalid-assignment]</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">add_extension</span><span class="p">(</span><span class="s2">"jinja2.ext.debug"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">env</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3437,7 +3437,7 @@
 <span class="normal">208</span>
 <span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">render_jinja2</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DirectoryPath</span><span class="p">],</span> <span class="nb">vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders a Jinja2 template.</span>
+<span class="w">    </span><span class="sd">"""Renders a Jinja2 template.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        file: The path to the template file to be rendered.</span>
@@ -3446,25 +3446,25 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Rendered template as a string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tex.j2&quot;</span><span class="p">):</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".tex.j2"</span><span class="p">):</span>
         <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">=</span> <span class="n">get_tex_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.typ.j2&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".typ.j2"</span><span class="p">):</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">get_typst_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.j2&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".j2"</span><span class="p">):</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">get_generic_jinja_env</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;unsupported file type&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"unsupported file type"</span><span class="p">)</span>
 
     <span class="n">template</span><span class="p">:</span> <span class="n">Template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="n">content</span> <span class="o">=</span> <span class="n">strip_toml_frontmatter</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">strip_toml_frontmatter</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
     <span class="n">template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">UndefinedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Undefined variable or attribute in template &#39;</span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Undefined variable or attribute in template '</span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3475,7 +3475,7 @@
 
 
 <h3 id="sereto.jinja.tex_escape_filter" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">tex_escape_filter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;n/a&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">tex_escape_filter</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">'n/a'</span><span class="p">)</span></code>
 
 <a href="#sereto.jinja.tex_escape_filter" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3591,8 +3591,8 @@ default value to return if <code>text</code> is undefined or empty.</p>
 <span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
-<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">tex_escape_filter</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;n/a&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Escape special characters in text for use in TeX.</span>
+<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">tex_escape_filter</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"n/a"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Escape special characters in text for use in TeX.</span>
 
 <span class="sd">    This function serves as a Jinja2 filter to escape special characters in `text` for use in TeX. It replaces each</span>
 <span class="sd">    special character with its corresponding TeX escape sequence. The `default` argument can be used to specify a</span>
@@ -3600,27 +3600,27 @@ default value to return if <code>text</code> is undefined or empty.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        text: The text to be escaped.</span>
-<span class="sd">        default: The default value to return if `text` is undefined or empty. Defaults to &#39;n/a&#39;.</span>
+<span class="sd">        default: The default value to return if `text` is undefined or empty. Defaults to 'n/a'.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The escaped text.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">is_undefined</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">default</span>
 
     <span class="n">replacements</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;&amp;&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\&amp;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;%&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\%&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;$&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\$&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;#&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\#&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\_&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;{&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\{&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;}&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\}&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;~&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\textasciitilde</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;^&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\^</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\textbackslash</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\textless</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\textgreater</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">"&amp;"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\&amp;"</span><span class="p">,</span>
+        <span class="s2">"%"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\%"</span><span class="p">,</span>
+        <span class="s2">"$"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\$"</span><span class="p">,</span>
+        <span class="s2">"#"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\#"</span><span class="p">,</span>
+        <span class="s2">"_"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\_"</span><span class="p">,</span>
+        <span class="s2">"{"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\{"</span><span class="p">,</span>
+        <span class="s2">"}"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\}"</span><span class="p">,</span>
+        <span class="s2">"~"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\textasciitilde</span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"^"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\^</span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"</span><span class="se">\\</span><span class="s2">"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\textbackslash</span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"&lt;"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\textless</span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"&gt;"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\textgreater</span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">replace_strings</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">replacements</span><span class="o">=</span><span class="n">replacements</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3633,7 +3633,7 @@ default value to return if <code>text</code> is undefined or empty.</p>
 
 
 <h3 id="sereto.jinja.yesno_filter" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">yesno_filter</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">arg</span><span class="o">=</span><span class="s1">&#39;yes,no,maybe&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">yesno_filter</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">arg</span><span class="o">=</span><span class="s1">'yes,no,maybe'</span><span class="p">)</span></code>
 
 <a href="#sereto.jinja.yesno_filter" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3683,28 +3683,28 @@ Value       Argument                Outputs
 <span class="normal">88</span>
 <span class="normal">89</span>
 <span class="normal">90</span>
-<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">yesno_filter</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;yes,no,maybe&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tex filter for converting boolean values to strings.</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">yesno_filter</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"yes,no,maybe"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Tex filter for converting boolean values to strings.</span>
 
 <span class="sd">    Given a string mapping values for true, false, and (optionally) None,</span>
 <span class="sd">    return one of those strings according to the value:</span>
 <span class="sd">    ==========  ======================  ==================================</span>
 <span class="sd">    Value       Argument                Outputs</span>
 <span class="sd">    ==========  ======================  ==================================</span>
-<span class="sd">    ``True``    ``&quot;yeah,no,maybe&quot;``     ``yeah``</span>
-<span class="sd">    ``False``   ``&quot;yeah,no,maybe&quot;``     ``no``</span>
-<span class="sd">    ``None``    ``&quot;yeah,no,maybe&quot;``     ``maybe``</span>
-<span class="sd">    ``None``    ``&quot;yeah,no&quot;``           ``&quot;no&quot;`` (converts None to False</span>
+<span class="sd">    ``True``    ``"yeah,no,maybe"``     ``yeah``</span>
+<span class="sd">    ``False``   ``"yeah,no,maybe"``     ``no``</span>
+<span class="sd">    ``None``    ``"yeah,no,maybe"``     ``maybe``</span>
+<span class="sd">    ``None``    ``"yeah,no"``           ``"no"`` (converts None to False</span>
 <span class="sd">                                        if no mapping for None is given.</span>
 <span class="sd">    ==========  ======================  ==================================</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">bits</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">bits</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;invalid argument&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"invalid argument"</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">yes</span><span class="p">,</span> <span class="n">no</span><span class="p">,</span> <span class="n">maybe</span> <span class="o">=</span> <span class="n">bits</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="c1"># Unpack list of wrong size (no &quot;maybe&quot; value provided).</span>
+        <span class="c1"># Unpack list of wrong size (no "maybe" value provided).</span>
         <span class="n">yes</span><span class="p">,</span> <span class="n">no</span><span class="p">,</span> <span class="n">maybe</span> <span class="o">=</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">maybe</span>

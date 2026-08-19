@@ -3383,7 +3383,7 @@
 <span class="normal">480</span>
 <span class="normal">481</span>
 <span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AddSubFindingScreen</span><span class="p">(</span><span class="n">ModalScreen</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
-    <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;escape&quot;</span><span class="p">,</span> <span class="s2">&quot;dismiss&quot;</span><span class="p">,</span> <span class="s2">&quot;Dismiss finding&quot;</span><span class="p">)]</span>
+    <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">"escape"</span><span class="p">,</span> <span class="s2">"dismiss"</span><span class="p">,</span> <span class="s2">"Dismiss finding"</span><span class="p">)]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">finding</span><span class="p">:</span> <span class="n">FindingMetadata</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -3395,20 +3395,20 @@
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">all_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">versions</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span>
 
-        <span class="k">with</span> <span class="n">ScrollableContainer</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;add-sub-finding&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">ScrollableContainer</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">"add-sub-finding"</span><span class="p">):</span>
             <span class="c1"># Name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">yield</span> <span class="n">InputWithLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Name&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">InputWithLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Name"</span><span class="p">)</span>
             <span class="c1"># Risk</span>
             <span class="n">risks</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">Risk</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">select_risk</span> <span class="o">=</span> <span class="n">SelectWithLabel</span><span class="p">[</span><span class="nb">str</span><span class="p">](</span>
-                <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">risks</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Risk&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">risk</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">risks</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Risk"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">risk</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
             <span class="p">)</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_risk</span>
             <span class="c1"># Target</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">select_target</span> <span class="o">=</span> <span class="n">SelectWithLabel</span><span class="p">[</span><span class="nb">str</span><span class="p">](</span>
                 <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="n">t</span><span class="o">.</span><span class="n">uname</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">all_targets</span><span class="p">],</span>
-                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Target&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">"Target"</span><span class="p">,</span>
                 <span class="n">allow_blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_target</span>
@@ -3418,89 +3418,89 @@
                 <span class="n">initial_groups</span> <span class="o">=</span> <span class="p">[(</span><span class="n">g</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">all_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">groups</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span> <span class="o">=</span> <span class="n">SelectWithLabel</span><span class="p">[</span><span class="nb">str</span><span class="p">](</span>
                 <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_group_options</span><span class="p">(</span><span class="n">initial_groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">),</span>
-                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Group&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">"Group"</span><span class="p">,</span>
                 <span class="n">allow_blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span>
-            <span class="c1"># New group name input (shown when &quot;Create new group&quot; is selected)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;input-group-name&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">group_name_container</span> <span class="o">=</span> <span class="n">InputWithLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Group name&quot;</span><span class="p">)</span>
+            <span class="c1"># New group name input (shown when "Create new group" is selected)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"input-group-name"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_name_container</span> <span class="o">=</span> <span class="n">InputWithLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Group name"</span><span class="p">)</span>
             <span class="c1"># Button for syncing group name with sub-finding name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sync_group_name_button</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span>
-                <span class="n">label</span><span class="o">=</span><span class="n">_SYNC_ICON</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;sync-group-name&quot;</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="s2">&quot;Sync Group Name With Name&quot;</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">_SYNC_ICON</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">"primary"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"sync-group-name"</span><span class="p">,</span> <span class="n">tooltip</span><span class="o">=</span><span class="s2">"Sync Group Name With Name"</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sync_group_name_button</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">group_name_row</span> <span class="o">=</span> <span class="n">Horizontal</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">group_name_container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sync_group_name_button</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;group-name-row&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group_name_container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sync_group_name_button</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"group-name-row"</span>
             <span class="p">)</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_name_row</span>
             <span class="c1"># Store group unames for mapping select value -&gt; uname</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_group_unames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">g_uname</span> <span class="k">for</span> <span class="n">_g_name</span><span class="p">,</span> <span class="n">g_uname</span> <span class="ow">in</span> <span class="n">initial_groups</span><span class="p">]</span>
             <span class="c1"># Existing finding warning + overwrite switch</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span> <span class="o">=</span> <span class="n">Switch</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;overwrite&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;overwrite-switch&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span> <span class="o">=</span> <span class="n">Switch</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"overwrite"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"overwrite-switch"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_warning</span> <span class="o">=</span> <span class="n">Horizontal</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_switch</span><span class="p">,</span>
                 <span class="n">Static</span><span class="p">(</span>
-                    <span class="s2">&quot;[b red]Warning:[/b red] A finding with this name already exists in the selected target.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot;  [b]Switch OFF:[/b] Keep the original and create a new one with a random suffix.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot;  [b]Switch ON:[/b] Overwrite the existing finding.&quot;</span>
+                    <span class="s2">"[b red]Warning:[/b red] A finding with this name already exists in the selected target.</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="s2">"  [b]Switch OFF:[/b] Keep the original and create a new one with a random suffix.</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="s2">"  [b]Switch ON:[/b] Overwrite the existing finding."</span>
                 <span class="p">),</span>
-                <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;overwrite-warning&quot;</span><span class="p">,</span>
+                <span class="nb">id</span><span class="o">=</span><span class="s2">"overwrite-warning"</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_warning</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_warning</span>
 
-            <span class="k">yield</span> <span class="n">Static</span><span class="p">(</span><span class="s2">&quot;[b]Variables&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;section-header&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Static</span><span class="p">(</span><span class="s2">"[b]Variables"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"section-header"</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">Rule</span><span class="p">()</span>
 
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">Static</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[b]</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:[/b] </span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">  </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;pl-1&quot;</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">Static</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[b]</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:[/b] </span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">  </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"pl-1"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span><span class="p">:</span>
                     <span class="k">match</span> <span class="n">var</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                        <span class="k">case</span> <span class="s2">&quot;boolean&quot;</span><span class="p">:</span>
+                        <span class="k">case</span> <span class="s2">"boolean"</span><span class="p">:</span>
                             <span class="k">yield</span> <span class="n">ListWidget</span><span class="p">(</span>
                                 <span class="n">widget_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="p">:</span> <span class="n">Select</span><span class="p">(</span>  <span class="c1"># type: ignore[misc]</span>
                                     <span class="n">options</span><span class="o">=</span><span class="p">[</span>
-                                        <span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-                                        <span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">"True"</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">"False"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
                                     <span class="p">],</span>
                                     <span class="n">allow_blank</span><span class="o">=</span><span class="ow">not</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">,</span>
                                 <span class="p">),</span>
-                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="p">)</span>
-                        <span class="k">case</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+                        <span class="k">case</span> <span class="s2">"integer"</span><span class="p">:</span>
                             <span class="k">yield</span> <span class="n">ListWidget</span><span class="p">(</span>
-                                <span class="n">widget_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Input</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;m-1&quot;</span><span class="p">),</span>
-                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="n">widget_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Input</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">"integer"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"m-1"</span><span class="p">),</span>
+                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="p">)</span>
                         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                             <span class="k">yield</span> <span class="n">ListWidget</span><span class="p">(</span>
-                                <span class="n">widget_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Input</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;m-1&quot;</span><span class="p">),</span>
-                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="n">widget_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Input</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"m-1"</span><span class="p">),</span>
+                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">match</span> <span class="n">var</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                        <span class="k">case</span> <span class="s2">&quot;boolean&quot;</span><span class="p">:</span>
+                        <span class="k">case</span> <span class="s2">"boolean"</span><span class="p">:</span>
                             <span class="k">yield</span> <span class="n">Select</span><span class="p">(</span>
                                 <span class="n">options</span><span class="o">=</span><span class="p">[</span>
-                                    <span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-                                    <span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">"True"</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">"False"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
                                 <span class="p">],</span>
                                 <span class="n">allow_blank</span><span class="o">=</span><span class="ow">not</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">,</span>
-                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="p">)</span>
-                        <span class="k">case</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
-                            <span class="k">yield</span> <span class="n">Input</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;m-1&quot;</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="s2">"integer"</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">Input</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"integer"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"m-1"</span><span class="p">)</span>
                         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-                            <span class="k">yield</span> <span class="n">Input</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;m-1&quot;</span><span class="p">)</span>
+                            <span class="k">yield</span> <span class="n">Input</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">"var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"m-1"</span><span class="p">)</span>
                 <span class="k">yield</span> <span class="n">Rule</span><span class="p">()</span>
 
-            <span class="k">yield</span> <span class="n">Button</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;Save&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;save-sub-finding&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;m-1&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Button</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">"Save"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"save-sub-finding"</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="s2">"m-1"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_mount</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">add_sub_finding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">&quot;#add-sub-finding&quot;</span><span class="p">)</span>
+        <span class="n">add_sub_finding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">"#add-sub-finding"</span><span class="p">)</span>
         <span class="n">add_sub_finding</span><span class="o">.</span><span class="n">border_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
-        <span class="n">add_sub_finding</span><span class="o">.</span><span class="n">border_subtitle</span> <span class="o">=</span> <span class="s2">&quot;Esc to close&quot;</span>
+        <span class="n">add_sub_finding</span><span class="o">.</span><span class="n">border_subtitle</span> <span class="o">=</span> <span class="s2">"Esc to close"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_select_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Select</span><span class="o">.</span><span class="n">Changed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">select</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_target</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">):</span>
@@ -3517,7 +3517,7 @@
 
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">select</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">):</span>
             <span class="n">is_new_group</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">_NEW_GROUP_SENTINEL</span>
-            <span class="c1"># show group name input only for explicit &quot;Create new group&quot;</span>
+            <span class="c1"># show group name input only for explicit "Create new group"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">group_name_row</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="n">is_new_group</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_sync_button</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">is_new_group</span><span class="p">:</span>
@@ -3528,19 +3528,19 @@
         <span class="n">groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
         <span class="n">group_hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build options list for the group Select with &#39;Create new group&#39; first.&quot;&quot;&quot;</span>
-        <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;</span><span class="se">\u2795</span><span class="s2"> Create new group&quot;</span><span class="p">,</span> <span class="n">_NEW_GROUP_SENTINEL</span><span class="p">)]</span>
+<span class="w">        </span><span class="sd">"""Build options list for the group Select with 'Create new group' first."""</span>
+        <span class="n">options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">"</span><span class="se">\u2795</span><span class="s2"> Create new group"</span><span class="p">,</span> <span class="n">_NEW_GROUP_SENTINEL</span><span class="p">)]</span>
         <span class="k">if</span> <span class="n">group_hint</span><span class="p">:</span>
-            <span class="n">options</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\U0001f4a1</span><span class="s2"> Suggested: </span><span class="si">{</span><span class="n">group_hint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">_GROUP_HINT_SENTINEL</span><span class="p">))</span>
+            <span class="n">options</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">f</span><span class="s2">"</span><span class="se">\U0001f4a1</span><span class="s2"> Suggested: </span><span class="si">{</span><span class="n">group_hint</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">_GROUP_HINT_SENTINEL</span><span class="p">))</span>
         <span class="n">options</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">g_name</span><span class="p">,</span> <span class="n">g_uname</span><span class="p">)</span> <span class="k">for</span> <span class="n">g_name</span><span class="p">,</span> <span class="n">g_uname</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">options</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_group_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rebuild the group Select options.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Rebuild the group Select options."""</span>
         <span class="n">group_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">))</span>
         <span class="n">group_select</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_group_options</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_group_unames</span> <span class="o">=</span> <span class="p">[</span><span class="n">g_uname</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">g_uname</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
-        <span class="c1"># Default to hint sentinel when a hint is present, otherwise &quot;Create new group&quot;</span>
+        <span class="c1"># Default to hint sentinel when a hint is present, otherwise "Create new group"</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">:</span>
             <span class="n">group_select</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">_GROUP_HINT_SENTINEL</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">group_name_row</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="kc">False</span>
@@ -3550,35 +3550,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_sync_button</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_group_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the group hint to an existing group&#39;s uname.</span>
+<span class="w">        </span><span class="sd">"""Resolve the group hint to an existing group's uname.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            target: The target to search for a matching group.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The uname of the matching group, or None if no match is found.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">hint</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">find_group_by_hint</span><span class="p">(</span><span class="n">hint</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">group</span><span class="o">.</span><span class="n">uname</span> <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_input_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Input</span><span class="o">.</span><span class="n">Changed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the overwrite warning when the name input changes.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Update the overwrite warning when the name input changes."""</span>
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">input</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_overwrite_warning</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">input</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_sync_button</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_refresh_sync_button</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Show the sync button only when the group name row is visible and the values differ.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Show the sync button only when the group name row is visible and the values differ."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sync_group_name_button</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">group_name_row</span><span class="o">.</span><span class="n">display</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update_overwrite_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the overwrite warning and switch dynamically.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Update the overwrite warning and switch dynamically."""</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_target</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">SeretoValueError</span><span class="p">:</span>
@@ -3593,19 +3593,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_warning</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="n">finding_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load variables from the inputs.</span>
+<span class="w">        </span><span class="sd">"""Load variables from the inputs.</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If a required variable is not set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span><span class="p">:</span>
-                <span class="n">widgets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ListWidget</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;.widget&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">results</span><span class="p">())</span>
+                <span class="n">widgets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">ListWidget</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">".widget"</span><span class="p">)</span><span class="o">.</span><span class="n">results</span><span class="p">())</span>
                 <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
                 <span class="k">match</span> <span class="n">var</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                    <span class="k">case</span> <span class="s2">&quot;boolean&quot;</span><span class="p">:</span>
+                    <span class="k">case</span> <span class="s2">"boolean"</span><span class="p">:</span>
                         <span class="c1"># get values, filter out NoSelection</span>
                         <span class="n">bool_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                         <span class="k">for</span> <span class="n">widget</span> <span class="ow">in</span> <span class="n">widgets</span><span class="p">:</span>
@@ -3616,66 +3616,66 @@
                                 <span class="k">continue</span>
                             <span class="n">bool_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">select_widget</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
                         <span class="n">values</span> <span class="o">=</span> <span class="n">bool_values</span>
-                    <span class="k">case</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+                    <span class="k">case</span> <span class="s2">"integer"</span><span class="p">:</span>
                         <span class="n">values_str</span> <span class="o">=</span> <span class="p">[</span>
                             <span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">widgets</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
                         <span class="p">]</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values_str</span><span class="p">]</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; must be an integer&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be an integer"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
                     <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                         <span class="n">values</span> <span class="o">=</span> <span class="p">[</span>
                             <span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">widgets</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
                         <span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is required&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' is required"</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="c1"># don&#39;t set the variable if not required and empty</span>
+                    <span class="c1"># don't set the variable if not required and empty</span>
                     <span class="k">continue</span>
                 <span class="c1"># always set list variables, even if empty</span>
                 <span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
                 <span class="k">continue</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">match</span> <span class="n">var</span><span class="o">.</span><span class="n">type</span><span class="p">:</span>
-                    <span class="k">case</span> <span class="s2">&quot;boolean&quot;</span><span class="p">:</span>
-                        <span class="n">value_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">Select</span><span class="p">))</span>
+                    <span class="k">case</span> <span class="s2">"boolean"</span><span class="p">:</span>
+                        <span class="n">value_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">Select</span><span class="p">))</span>
                         <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
                             <span class="n">value_select</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
                         <span class="p">)</span>
-                    <span class="k">case</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
-                        <span class="n">value_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">case</span> <span class="s2">"integer"</span><span class="p">:</span>
+                        <span class="n">value_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is required&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' is required"</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">continue</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value_str</span><span class="p">)</span>
                         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; must be an integer&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be an integer"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
                     <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-                        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">"#var-</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">Input</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variable &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is required&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"variable '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' is required"</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="c1"># don&#39;t set the variable if not required and empty</span>
+                                <span class="c1"># don't set the variable if not required and empty</span>
                                 <span class="k">continue</span>
                 <span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="k">return</span> <span class="n">variables</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_retrieve_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Target</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the target from the select input.</span>
+<span class="w">        </span><span class="sd">"""Retrieve the target from the select input.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The target object corresponding to the selected value.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the target is not found.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="n">target_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_target</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">))</span>
@@ -3683,21 +3683,21 @@
 
         <span class="n">matching_target</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">all_targets</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">target_select</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_target</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target with uname </span><span class="si">{</span><span class="n">target_select</span><span class="o">.</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target with uname </span><span class="si">{</span><span class="n">target_select</span><span class="o">.</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> not found"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">matching_target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#sync-group-name&quot;</span><span class="p">)</span>
+    <span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">"#sync-group-name"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sync_group_name_with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sync group name with the current name input value.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Sync group name with the current name input value."""</span>
         <span class="n">current_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">current_name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">current_name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_sync_button</span><span class="p">()</span>
 
-    <span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#save-sub-finding&quot;</span><span class="p">)</span>
+    <span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">"#save-sub-finding"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_sub_finding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle Save button press event.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Handle Save button press event."""</span>
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="c1"># Retrieve the values from the inputs</span>
@@ -3713,15 +3713,15 @@
         <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">group_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">_NEW_GROUP_SENTINEL</span><span class="p">:</span>
-            <span class="c1"># &quot;Create new group&quot; selected</span>
+            <span class="c1"># "Create new group" selected</span>
             <span class="n">group_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">_GROUP_HINT_SENTINEL</span><span class="p">:</span>
-            <span class="c1"># &quot;Suggested&quot; selected: append to existing group when possible; otherwise create it</span>
+            <span class="c1"># "Suggested" selected: append to existing group when possible; otherwise create it</span>
             <span class="n">resolved_uname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_group_hint</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">resolved_uname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">selected_group</span> <span class="o">=</span> <span class="n">resolved_uname</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">group_name</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
+                <span class="n">group_name</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">):</span>
             <span class="c1"># Existing group selected</span>
             <span class="n">selected_group</span> <span class="o">=</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span>
@@ -3730,7 +3730,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_variables</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">SeretoValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Validation error&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">),</span> <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Validation error"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">),</span> <span class="n">severity</span><span class="o">=</span><span class="s2">"error"</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># Create the sub-finding</span>
@@ -3748,7 +3748,7 @@
 
         <span class="c1"># Navigate back, focus on the search input field</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Sub-finding successfully added"</span><span class="p">)</span>
         <span class="n">app</span><span class="o">.</span><span class="n">action_focus_search</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3788,7 +3788,7 @@
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_input_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Input</span><span class="o">.</span><span class="n">Changed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the overwrite warning when the name input changes.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Update the overwrite warning when the name input changes."""</span>
     <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">input</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_overwrite_warning</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">input</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="p">):</span>
@@ -3869,9 +3869,9 @@
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#save-sub-finding&quot;</span><span class="p">)</span>
+<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">"#save-sub-finding"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_sub_finding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle Save button press event.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Handle Save button press event."""</span>
     <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
     <span class="c1"># Retrieve the values from the inputs</span>
@@ -3887,15 +3887,15 @@
     <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">group_select</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Select</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="n">Select</span><span class="p">))</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">_NEW_GROUP_SENTINEL</span><span class="p">:</span>
-        <span class="c1"># &quot;Create new group&quot; selected</span>
+        <span class="c1"># "Create new group" selected</span>
         <span class="n">group_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">_GROUP_HINT_SENTINEL</span><span class="p">:</span>
-        <span class="c1"># &quot;Suggested&quot; selected: append to existing group when possible; otherwise create it</span>
+        <span class="c1"># "Suggested" selected: append to existing group when possible; otherwise create it</span>
         <span class="n">resolved_uname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_group_hint</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">resolved_uname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">selected_group</span> <span class="o">=</span> <span class="n">resolved_uname</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">group_name</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
+            <span class="n">group_name</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_select</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">NoSelection</span><span class="p">):</span>
         <span class="c1"># Existing group selected</span>
         <span class="n">selected_group</span> <span class="o">=</span> <span class="n">group_select</span><span class="o">.</span><span class="n">value</span>
@@ -3904,7 +3904,7 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_variables</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">SeretoValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Validation error&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">),</span> <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Validation error"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">),</span> <span class="n">severity</span><span class="o">=</span><span class="s2">"error"</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="c1"># Create the sub-finding</span>
@@ -3922,7 +3922,7 @@
 
     <span class="c1"># Navigate back, focus on the search input field</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sub-finding successfully added&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">sub_finding_name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Sub-finding successfully added"</span><span class="p">)</span>
     <span class="n">app</span><span class="o">.</span><span class="n">action_focus_search</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3952,9 +3952,9 @@
 <span class="normal">423</span>
 <span class="normal">424</span>
 <span class="normal">425</span>
-<span class="normal">426</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">&quot;#sync-group-name&quot;</span><span class="p">)</span>
+<span class="normal">426</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@on</span><span class="p">(</span><span class="n">Button</span><span class="o">.</span><span class="n">Pressed</span><span class="p">,</span> <span class="s2">"#sync-group-name"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sync_group_name_with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sync group name with the current name input value.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Sync group name with the current name input value."""</span>
     <span class="n">current_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_name</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">current_name</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_group_name</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">current_name</span>
@@ -3995,7 +3995,7 @@
 <span class="normal">321</span>
 <span class="normal">322</span>
 <span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_overwrite_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the overwrite warning and switch dynamically.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Update the overwrite warning and switch dynamically."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_target</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">SeretoValueError</span><span class="p">:</span>
@@ -4153,7 +4153,7 @@
 <span class="normal">885</span>
 <span class="normal">886</span>
 <span class="normal">887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingOption</span><span class="p">(</span><span class="n">Option</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An Option representing a finding, with name and keywords optionally highlighted.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""An Option representing a finding, with name and keywords optionally highlighted."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -4165,44 +4165,44 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">result</span>
 
         <span class="n">finding</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span>
-        <span class="n">name_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-        <span class="n">keyword_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keyword&quot;</span><span class="p">)</span>
-        <span class="n">group_hint_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;group_hint&quot;</span><span class="p">)</span>
+        <span class="n">name_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+        <span class="n">keyword_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"keyword"</span><span class="p">)</span>
+        <span class="n">group_hint_matcher</span> <span class="o">=</span> <span class="n">matchers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"group_hint"</span><span class="p">)</span>
 
         <span class="n">name_text</span> <span class="o">=</span> <span class="n">name_matcher</span><span class="o">.</span><span class="n">highlight</span><span class="p">([</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">])</span> <span class="k">if</span> <span class="n">name_matcher</span> <span class="k">else</span> <span class="n">Text</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">name_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+        <span class="n">name_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold"</span><span class="p">)</span>
 
-        <span class="n">support_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;bold cyan&quot;</span><span class="p">)</span>
+        <span class="n">support_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"bold cyan"</span><span class="p">)</span>
         <span class="n">keyword_preview</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_keyword_preview</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">keywords</span><span class="p">,</span> <span class="n">keyword_matcher</span><span class="p">)</span>
         <span class="n">group_hint_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_group_preview</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">,</span> <span class="n">group_hint_matcher</span><span class="p">)</span>
         <span class="n">match_hint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_match_hint</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">keyword_preview</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">support_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  |  &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+            <span class="n">support_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  |  "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
             <span class="n">support_text</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">keyword_preview</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">match_hint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">support_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  |  &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+            <span class="n">support_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  |  "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
             <span class="n">support_text</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">match_hint</span><span class="p">)</span>
 
         <span class="n">debug_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_debug_text</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">)</span> <span class="k">if</span> <span class="n">show_debug</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">content_width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">support_text</span> <span class="o">=</span> <span class="n">support_text</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">support_text</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;ellipsis&quot;</span><span class="p">)</span>
+            <span class="n">support_text</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">"ellipsis"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">group_hint_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">group_hint_line</span> <span class="o">=</span> <span class="n">group_hint_line</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">group_hint_line</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;ellipsis&quot;</span><span class="p">)</span>
+                <span class="n">group_hint_line</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">"ellipsis"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">debug_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">debug_text</span> <span class="o">=</span> <span class="n">debug_text</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">debug_text</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">&quot;ellipsis&quot;</span><span class="p">)</span>
+                <span class="n">debug_text</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">content_width</span><span class="p">,</span> <span class="n">overflow</span><span class="o">=</span><span class="s2">"ellipsis"</span><span class="p">)</span>
 
-        <span class="n">text_parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Text</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">name_text</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">support_text</span><span class="p">]</span>
+        <span class="n">text_parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Text</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">name_text</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">support_text</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">group_hint_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">group_hint_line</span><span class="p">])</span>
+            <span class="n">text_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">group_hint_line</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">debug_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">debug_text</span><span class="p">])</span>
+            <span class="n">text_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">debug_text</span><span class="p">])</span>
 
         <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="o">*</span><span class="n">text_parts</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">finding</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
@@ -4212,8 +4212,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">keywords</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="n">preview</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span> <span class="k">if</span> <span class="n">matcher</span> <span class="k">else</span> <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keywords</span><span class="p">))</span>
-        <span class="n">preview</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;italic dim&quot;</span><span class="p">)</span>
+        <span class="n">preview</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">keywords</span><span class="p">)</span> <span class="k">if</span> <span class="n">matcher</span> <span class="k">else</span> <span class="n">Text</span><span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keywords</span><span class="p">))</span>
+        <span class="n">preview</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"italic dim"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">preview</span>
 
     <span class="nd">@staticmethod</span>
@@ -4222,39 +4222,39 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">hint_text</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">highlight</span><span class="p">([</span><span class="n">group_hint</span><span class="p">])</span> <span class="k">if</span> <span class="n">matcher</span> <span class="k">else</span> <span class="n">Text</span><span class="p">(</span><span class="n">group_hint</span><span class="p">)</span>
-        <span class="n">line</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Group hint: &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="s2">"Group hint: "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
         <span class="n">line</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">hint_text</span><span class="p">)</span>
-        <span class="n">line</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;italic dim&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;Group hint: &quot;</span><span class="p">))</span>
+        <span class="n">line</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"italic dim"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="s2">"Group hint: "</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">line</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_match_hint</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">SearchResult</span><span class="p">[</span><span class="n">FindingMetadata</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">reason</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">reason</span> <span class="k">for</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">reasons</span> <span class="k">if</span> <span class="n">reason</span><span class="o">.</span><span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;keyword&quot;</span><span class="p">,</span> <span class="s2">&quot;group_hint&quot;</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">reason</span> <span class="k">for</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">reasons</span> <span class="k">if</span> <span class="n">reason</span><span class="o">.</span><span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"keyword"</span><span class="p">,</span> <span class="s2">"group_hint"</span><span class="p">}),</span>
             <span class="kc">None</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">reason</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reason</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> match&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;italic dim&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reason</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> match"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"italic dim"</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_debug_text</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">:</span> <span class="n">SearchDiagnostics</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
         <span class="n">details</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;score=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">final_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;threshold=</span><span class="si">{</span><span class="s1">&#39;pass&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">diagnostics</span><span class="o">.</span><span class="n">passed_threshold</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;fail&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"score=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">final_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"threshold=</span><span class="si">{</span><span class="s1">'pass'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">diagnostics</span><span class="o">.</span><span class="n">passed_threshold</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'fail'</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">free_text_score</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;free=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">free_text_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"free=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">free_text_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">clause_score</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;clause=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">clause_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"clause=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">clause_score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">phrase_bonus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bonus=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">phrase_bonus</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"bonus=</span><span class="si">{</span><span class="n">diagnostics</span><span class="o">.</span><span class="n">phrase_bonus</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">field_scores</span><span class="p">:</span>
-            <span class="n">field_scores</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">field_scores</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="n">field_scores</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">field_scores</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">)</span>
             <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_scores</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">details</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s2">" | "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">details</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4604,9 +4604,9 @@
 <span class="normal">781</span>
 <span class="normal">782</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SearchWidget</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
     <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">(</span><span class="s2">&quot;ctrl+s&quot;</span><span class="p">,</span> <span class="s2">&quot;add_sub_finding&quot;</span><span class="p">,</span> <span class="s2">&quot;Add sub-finding&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;down&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor_down&quot;</span><span class="p">,</span> <span class="s2">&quot;Next result&quot;</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor_up&quot;</span><span class="p">,</span> <span class="s2">&quot;Previous result&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"ctrl+s"</span><span class="p">,</span> <span class="s2">"add_sub_finding"</span><span class="p">,</span> <span class="s2">"Add sub-finding"</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"down"</span><span class="p">,</span> <span class="s2">"cursor_down"</span><span class="p">,</span> <span class="s2">"Next result"</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"up"</span><span class="p">,</span> <span class="s2">"cursor_up"</span><span class="p">,</span> <span class="s2">"Previous result"</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -4614,7 +4614,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FindingMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchDocument</span><span class="p">[</span><span class="n">FindingMetadata</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchResult</span><span class="p">[</span><span class="n">FindingMetadata</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_query</span> <span class="o">=</span> <span class="n">ParsedSearchQuery</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_query</span> <span class="o">=</span> <span class="n">ParsedSearchQuery</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matchers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FuzzyMatcher</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">show_search_debug</span> <span class="o">=</span> <span class="n">is_search_debug_visible</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_findings</span><span class="p">()</span>
@@ -4623,9 +4623,9 @@
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
-            <span class="n">findings_path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span> <span class="o">/</span> <span class="s2">&quot;categories&quot;</span> <span class="o">/</span> <span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;findings&quot;</span>
-            <span class="k">for</span> <span class="n">finding</span> <span class="ow">in</span> <span class="n">findings_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.md.j2&quot;</span><span class="p">):</span>
-                <span class="n">file_text</span> <span class="o">=</span> <span class="n">finding</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="n">findings_path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span> <span class="o">/</span> <span class="s2">"categories"</span> <span class="o">/</span> <span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"findings"</span>
+            <span class="k">for</span> <span class="n">finding</span> <span class="ow">in</span> <span class="n">findings_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.md.j2"</span><span class="p">):</span>
+                <span class="n">file_text</span> <span class="o">=</span> <span class="n">finding</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
                 <span class="n">metadata</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">frontmatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">file_text</span><span class="p">)</span>
                 <span class="c1"># Extract clean text from the template file</span>
                 <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
@@ -4635,7 +4635,7 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">FindingTemplateFrontmatterModel</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid template metadata in &#39;</span><span class="si">{</span><span class="n">finding</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ex</span>
+                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid template metadata in '</span><span class="si">{</span><span class="n">finding</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ex</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">FindingMetadata</span><span class="p">(</span>
@@ -4659,13 +4659,13 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_document_fields</span><span class="p">(</span><span class="n">finding</span><span class="p">:</span> <span class="n">FindingMetadata</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
         <span class="n">fields</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
-            <span class="s2">&quot;keyword&quot;</span><span class="p">:</span> <span class="n">finding</span><span class="o">.</span><span class="n">keywords</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+            <span class="s2">"keyword"</span><span class="p">:</span> <span class="n">finding</span><span class="o">.</span><span class="n">keywords</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">:</span>
-            <span class="n">fields</span><span class="p">[</span><span class="s2">&quot;group_hint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">]</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s2">"group_hint"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">finding</span><span class="o">.</span><span class="n">group_hint</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">FINDING_SEARCH_FIELDS</span><span class="o">.</span><span class="n">previewable_fields</span><span class="p">():</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">finding</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">finding</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
                 <span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">fields</span>
@@ -4674,36 +4674,36 @@
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">input_field</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span>
-            <span class="n">placeholder</span><span class="o">=</span><span class="s1">&#39;Search by name, keyword, or group_hint. Try impact:rce or description:&quot;sql injection&quot;.&#39;</span><span class="p">,</span>
-            <span class="n">classes</span><span class="o">=</span><span class="s2">&quot;input-field&quot;</span><span class="p">,</span>
+            <span class="n">placeholder</span><span class="o">=</span><span class="s1">'Search by name, keyword, or group_hint. Try impact:rce or description:"sql injection".'</span><span class="p">,</span>
+            <span class="n">classes</span><span class="o">=</span><span class="s2">"input-field"</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_summary</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;query-summary&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">search_hint</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;search-hint&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;result-meta&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_summary</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"query-summary"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_hint</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"search-hint"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span> <span class="o">=</span> <span class="n">Static</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"result-meta"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span> <span class="o">=</span> <span class="n">SelectionList</span><span class="p">[</span><span class="nb">str</span><span class="p">](</span><span class="o">*</span><span class="p">[(</span><span class="n">category</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">categories</span><span class="p">])</span>
 
         <span class="k">class</span><span class="w"> </span><span class="nc">NoFocusOptionList</span><span class="p">(</span><span class="n">OptionList</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;An OptionList subclass whose items are not focusable.&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""An OptionList subclass whose items are not focusable."""</span>
 
             <span class="n">can_focus</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span> <span class="o">=</span> <span class="n">NoFocusOptionList</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;search-result&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span> <span class="o">=</span> <span class="n">NoFocusOptionList</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"search-result"</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">Horizontal</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;search-panel&quot;</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">Vertical</span><span class="p">(),</span> <span class="n">Container</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;search-palette&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">Horizontal</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"search-panel"</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">Vertical</span><span class="p">(),</span> <span class="n">Container</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"search-palette"</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_field</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_summary</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_hint</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span>
-            <span class="k">with</span> <span class="n">Container</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">&quot;category-filter&quot;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">Container</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="s2">"category-filter"</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_mount</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_summary</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">summarize_query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query</span><span class="p">,</span> <span class="n">FINDING_SEARCH_FIELDS</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">search_hint</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">supported_operator_text</span><span class="p">(</span><span class="n">FINDING_SEARCH_FIELDS</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding templates.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding templates."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_resize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_query</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
@@ -4721,7 +4721,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding templates.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">findings</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding templates."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">))</span>
             <span class="k">return</span>
 
         <span class="n">selected_categories</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span><span class="o">.</span><span class="n">selected</span><span class="p">]</span>
@@ -4732,7 +4732,7 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;No matches. Try fewer terms or use one of the operators below.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">)</span>
+                <span class="n">Text</span><span class="p">(</span><span class="s2">"No matches. Try fewer terms or use one of the operators below."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"yellow"</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">return</span>
 
@@ -4745,7 +4745,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">visible_results</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">clear_options</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;No matches. Try fewer terms or use one of the operators below.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">)</span>
+                <span class="n">Text</span><span class="p">(</span><span class="s2">"No matches. Try fewer terms or use one of the operators below."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"yellow"</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">return</span>
 
@@ -4776,7 +4776,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">clear_options</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">add_options</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">visible_results</span><span class="p">)</span><span class="si">}</span><span class="s2"> matches across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">selected_categories</span><span class="p">)</span><span class="si">}</span><span class="s2"> categories.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+            <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">visible_results</span><span class="p">)</span><span class="si">}</span><span class="s2"> matches across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">selected_categories</span><span class="p">)</span><span class="si">}</span><span class="s2"> categories."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="n">restored_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4805,8 +4805,8 @@
         <span class="k">return</span> <span class="n">usable_width</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">on_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">events</span><span class="o">.</span><span class="n">Key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Intercepts key presses and handles the Enter key.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;enter&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Intercepts key presses and handles the Enter key."""</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">"enter"</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span><span class="o">.</span><span class="n">has_focus</span><span class="p">:</span>
                 <span class="k">return</span>
 
@@ -4843,7 +4843,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_selectable_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;direction must be -1 or 1&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"direction must be -1 or 1"</span><span class="p">)</span>
 
         <span class="n">index</span> <span class="o">=</span> <span class="n">start</span>
         <span class="k">while</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">options</span><span class="p">):</span>
@@ -4858,12 +4858,12 @@
         <span class="n">option</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">option</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">FindingOption</span><span class="p">):</span>
             <span class="k">return</span>
-        <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">app</span><span class="o">.</span><span class="n">push_screen</span><span class="p">(</span>
             <span class="n">FindingPreviewScreen</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Finding preview&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Finding preview"</span><span class="p">,</span>
                 <span class="n">code</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
@@ -4875,11 +4875,11 @@
         <span class="n">option</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">get_option_at_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result_list</span><span class="o">.</span><span class="n">highlighted</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">FindingOption</span><span class="p">):</span>
             <span class="k">return</span>
-        <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
         <span class="n">app</span><span class="p">:</span> <span class="n">SeretoApp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>  <span class="c1"># type: ignore[assignment]  # ty: ignore[invalid-assignment]</span>
         <span class="n">app</span><span class="o">.</span><span class="n">push_screen</span><span class="p">(</span>
             <span class="n">FindingPreviewScreen</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Finding preview&quot;</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Finding preview"</span><span class="p">,</span>
                 <span class="n">code</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
@@ -4897,7 +4897,7 @@
                 <span class="n">AddSubFindingScreen</span><span class="p">(</span>
                     <span class="n">templates</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
                     <span class="n">finding</span><span class="o">=</span><span class="n">option</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span>
-                    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Add sub-finding&quot;</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="s2">"Add sub-finding"</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4941,8 +4941,8 @@
 <span class="normal">693</span>
 <span class="normal">694</span>
 <span class="normal">695</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">on_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">events</span><span class="o">.</span><span class="n">Key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Intercepts key presses and handles the Enter key.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;enter&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Intercepts key presses and handles the Enter key."""</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">"enter"</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">category_filter</span><span class="o">.</span><span class="n">has_focus</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -5025,12 +5025,12 @@
 <span class="normal">921</span>
 <span class="normal">922</span>
 <span class="normal">923</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoApp</span><span class="p">(</span><span class="n">App</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A SeReTo Textual CLI interface.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A SeReTo Textual CLI interface."""</span>
 
-    <span class="n">CSS_PATH</span> <span class="o">=</span> <span class="s2">&quot;finding.tcss&quot;</span>
-    <span class="n">TITLE</span> <span class="o">=</span> <span class="s2">&quot;SeReTo&quot;</span>
-    <span class="n">SUB_TITLE</span> <span class="o">=</span> <span class="s2">&quot;Security Reporting Tool&quot;</span>
-    <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;focus_search&quot;</span><span class="p">,</span> <span class="s2">&quot;Focus on search&quot;</span><span class="p">)]</span>
+    <span class="n">CSS_PATH</span> <span class="o">=</span> <span class="s2">"finding.tcss"</span>
+    <span class="n">TITLE</span> <span class="o">=</span> <span class="s2">"SeReTo"</span>
+    <span class="n">SUB_TITLE</span> <span class="o">=</span> <span class="s2">"Security Reporting Tool"</span>
+    <span class="n">BINDINGS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">"focus_search"</span><span class="p">,</span> <span class="s2">"Focus on search"</span><span class="p">)]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -5042,22 +5042,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">categories</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add widgets to the app.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Add widgets to the app."""</span>
         <span class="c1"># adding findings only works if there is at least one target</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;no targets found in the configuration&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"no targets found in the configuration"</span><span class="p">)</span>
 
         <span class="n">search</span> <span class="o">=</span> <span class="n">SearchWidget</span><span class="p">()</span>
-        <span class="n">search</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s2">&quot;search&quot;</span>
-        <span class="n">search</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="s2">&quot;dropdown&quot;</span>
+        <span class="n">search</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s2">"search"</span>
+        <span class="n">search</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="s2">"dropdown"</span>
 
         <span class="k">yield</span> <span class="n">Header</span><span class="p">()</span>
         <span class="k">yield</span> <span class="n">search</span>
         <span class="k">yield</span> <span class="n">Footer</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Focus on the search input field.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">&quot;#search&quot;</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
+<span class="w">        </span><span class="sd">"""Focus on the search input field."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">"#search"</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -5093,8 +5093,8 @@
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">921</span>
 <span class="normal">922</span>
 <span class="normal">923</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Focus on the search input field.&quot;&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">&quot;#search&quot;</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">"""Focus on the search input field."""</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">"#search"</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5130,14 +5130,14 @@
 <span class="normal">917</span>
 <span class="normal">918</span>
 <span class="normal">919</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add widgets to the app.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Add widgets to the app."""</span>
     <span class="c1"># adding findings only works if there is at least one target</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;no targets found in the configuration&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"no targets found in the configuration"</span><span class="p">)</span>
 
     <span class="n">search</span> <span class="o">=</span> <span class="n">SearchWidget</span><span class="p">()</span>
-    <span class="n">search</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s2">&quot;search&quot;</span>
-    <span class="n">search</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="s2">&quot;dropdown&quot;</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s2">"search"</span>
+    <span class="n">search</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="s2">"dropdown"</span>
 
     <span class="k">yield</span> <span class="n">Header</span><span class="p">()</span>
     <span class="k">yield</span> <span class="n">search</span>

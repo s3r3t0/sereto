@@ -2772,9 +2772,9 @@
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>vX.Y.Z
 rm<span class="w"> </span>-rf<span class="w"> </span>dist<span class="w"> </span>build<span class="w"> </span>*.egg-info
 
-<span class="nb">export</span><span class="w"> </span><span class="nv">SOURCE_DATE_EPOCH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>git<span class="w"> </span>log<span class="w"> </span>-1<span class="w"> </span>--format<span class="o">=</span>%ct<span class="w"> </span>HEAD<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SOURCE_DATE_EPOCH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>git<span class="w"> </span>log<span class="w"> </span>-1<span class="w"> </span>--format<span class="o">=</span>%ct<span class="w"> </span>HEAD<span class="k">)</span><span class="s2">"</span>
 
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span><span class="s2">&quot;build==1.4.3&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span><span class="s2">"build==1.4.3"</span>
 python<span class="w"> </span>-m<span class="w"> </span>build
 sha256sum<span class="w"> </span>dist/*<span class="w"> </span>&gt;<span class="w"> </span>/tmp/sereto-build1.sha256
 

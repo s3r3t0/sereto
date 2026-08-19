@@ -3117,12 +3117,12 @@
 <span class="normal">97</span>
 <span class="normal">98</span>
 <span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseRecipe</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base recipe for rendering and converting files using `RenderTool`s.</span>
+<span class="w">    </span><span class="sd">"""Base recipe for rendering and converting files using `RenderTool`s.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: name of the recipe</span>
 <span class="sd">        tools: list of `RenderTool` names to run</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">tools</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
@@ -3248,14 +3248,14 @@
 <span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConvertRecipe</span><span class="p">(</span><span class="n">BaseRecipe</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipe for converting between file formats using `RenderTool`s.</span>
+<span class="w">    </span><span class="sd">"""Recipe for converting between file formats using `RenderTool`s.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: name of the recipe</span>
 <span class="sd">        tools: list of `RenderTool` names to run</span>
 <span class="sd">        input_format: input file format</span>
 <span class="sd">        output_format: output file format</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -3357,15 +3357,15 @@
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Plugins</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugins settings.</span>
+<span class="w">    </span><span class="sd">"""Plugins settings.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        enabled: whether plugins are enabled</span>
 <span class="sd">        directory: path to the directory containing plugins (`%TEMPLATES%` will be replaced with the templates path`)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%TEMPLATES%/plugins&quot;</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"%TEMPLATES%/plugins"</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3621,7 +3621,7 @@
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Render</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rendering settings.</span>
+<span class="w">    </span><span class="sd">"""Rendering settings.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        report_recipes: list of `RenderRecipe`s for rendering reports</span>
@@ -3630,7 +3630,7 @@
 <span class="sd">        target_recipes: list of `RenderRecipe`s for rendering targets</span>
 <span class="sd">        convert_recipes: list of `ConvertRecipe`s for converting between file formats</span>
 <span class="sd">        tools: list of `RenderTool`s used in recipes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">report_recipes</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">RenderRecipe</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
     <span class="n">finding_group_recipes</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">RenderRecipe</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
@@ -3639,11 +3639,11 @@
     <span class="n">convert_recipes</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ConvertRecipe</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
     <span class="n">tools</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">RenderTool</span><span class="p">],</span> <span class="n">MinLen</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span>
 
-    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">render_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="n">tool_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tool_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tool_names</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tools with duplicate name detected&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"tools with duplicate name detected"</span><span class="p">)</span>
 
         <span class="n">all_recipes</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_recipes</span>
@@ -3654,66 +3654,66 @@
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">recipe</span> <span class="ow">in</span> <span class="n">all_recipes</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">tool</span> <span class="ow">in</span> <span class="n">tool_names</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">recipe</span><span class="o">.</span><span class="n">tools</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown tools in recipe </span><span class="si">{</span><span class="n">recipe</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown tools in recipe </span><span class="si">{</span><span class="n">recipe</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_report_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a report recipe by name.</span>
+<span class="w">        </span><span class="sd">"""Get a report recipe by name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no report recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no report recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_finding_group_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a finding group recipe by name.</span>
+<span class="w">        </span><span class="sd">"""Get a finding group recipe by name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding_group_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding_group_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no finding recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no finding recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sow_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a SoW recipe by name.</span>
+<span class="w">        </span><span class="sd">"""Get a SoW recipe by name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sow_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sow_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no SoW recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no SoW recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_target_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a target recipe by name.</span>
+<span class="w">        </span><span class="sd">"""Get a target recipe by name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no target recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no target recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -3721,25 +3721,25 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_convert_recipe</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvertRecipe</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a convert recipe by name, input format, and output format.</span>
+<span class="w">        </span><span class="sd">"""Get a convert recipe by name, input format, and output format.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the recipe to get. If None, the first matching recipe is returned.</span>
 <span class="sd">            input_format: The input file format.</span>
 <span class="sd">            output_format: The output file format.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">acceptable_recipes</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">input_format</span> <span class="o">==</span> <span class="n">input_format</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">output_format</span> <span class="o">==</span> <span class="n">output_format</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acceptable_recipes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">acceptable_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">acceptable_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -3867,25 +3867,25 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_convert_recipe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_format</span><span class="p">:</span> <span class="n">FileFormat</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="n">FileFormat</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvertRecipe</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a convert recipe by name, input format, and output format.</span>
+<span class="w">    </span><span class="sd">"""Get a convert recipe by name, input format, and output format.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the recipe to get. If None, the first matching recipe is returned.</span>
 <span class="sd">        input_format: The input file format.</span>
 <span class="sd">        output_format: The output file format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">acceptable_recipes</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">input_format</span> <span class="o">==</span> <span class="n">input_format</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">output_format</span> <span class="o">==</span> <span class="n">output_format</span>
     <span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acceptable_recipes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">acceptable_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">acceptable_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"no convert recipe found for </span><span class="si">{</span><span class="n">input_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">output_format</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -3957,16 +3957,16 @@
 <span class="normal">192</span>
 <span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_finding_group_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a finding group recipe by name.</span>
+<span class="w">    </span><span class="sd">"""Get a finding group recipe by name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding_group_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">finding_group_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no finding recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no finding recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4037,16 +4037,16 @@
 <span class="normal">177</span>
 <span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_report_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a report recipe by name.</span>
+<span class="w">    </span><span class="sd">"""Get a report recipe by name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no report recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no report recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4117,16 +4117,16 @@
 <span class="normal">207</span>
 <span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sow_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a SoW recipe by name.</span>
+<span class="w">    </span><span class="sd">"""Get a SoW recipe by name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sow_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sow_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no SoW recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no SoW recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4197,16 +4197,16 @@
 <span class="normal">222</span>
 <span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_target_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderRecipe</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a target recipe by name.</span>
+<span class="w">    </span><span class="sd">"""Get a target recipe by name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the recipe to get. If None, the first recipe is returned.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_recipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span> <span class="o">:=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_recipes</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no target recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no target recipe found with name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4308,13 +4308,13 @@
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RenderRecipe</span><span class="p">(</span><span class="n">BaseRecipe</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipe for rendering files using `RenderTool`s.</span>
+<span class="w">    </span><span class="sd">"""Recipe for rendering files using `RenderTool`s.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: name of the recipe</span>
 <span class="sd">        tools: list of `RenderTool` names to run</span>
 <span class="sd">        intermediate_format: supported `FileFormat`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">intermediate_format</span><span class="p">:</span> <span class="n">FileFormat</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">tex</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4473,13 +4473,13 @@
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RenderTool</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Commands used in recipes.</span>
+<span class="w">    </span><span class="sd">"""Commands used in recipes.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: name of the tool</span>
 <span class="sd">        command: command to run</span>
 <span class="sd">        args: list of arguments to pass to the command</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">command</span><span class="p">:</span> <span class="nb">str</span>
@@ -4493,15 +4493,15 @@
         <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span>
         <span class="k">if</span> <span class="n">replacements</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="n">replace_strings</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">command</span><span class="p">,</span> <span class="n">replacements</span><span class="o">=</span><span class="n">replacements</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running command: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
-        <span class="n">command_preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[bold bright_cyan]▶ Running command[/]: [italic dim]</span><span class="si">{}</span><span class="s2">[/]&quot;</span><span class="p">,</span> <span class="n">command_preview</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running command: </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+        <span class="n">command_preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[bold bright_cyan]▶ Running command[/]: [italic dim]</span><span class="si">{}</span><span class="s2">[/]"</span><span class="p">,</span> <span class="n">command_preview</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">python_bin_dir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
-        <span class="n">path_entries</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PATH&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">path_entries</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PATH"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PATH"</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">python_bin_dir</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">path_entries</span><span class="p">:</span>
-            <span class="n">env</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">python_bin_dir</span><span class="p">,</span> <span class="o">*</span><span class="n">path_entries</span><span class="p">])</span> <span class="k">if</span> <span class="n">path_entries</span> <span class="k">else</span> <span class="n">python_bin_dir</span>
+            <span class="n">env</span><span class="p">[</span><span class="s2">"PATH"</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">python_bin_dir</span><span class="p">,</span> <span class="o">*</span><span class="n">path_entries</span><span class="p">])</span> <span class="k">if</span> <span class="n">path_entries</span> <span class="k">else</span> <span class="n">python_bin_dir</span>
 
         <span class="c1"># Run the command and measure the execution time</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -4510,22 +4510,22 @@
 
         <span class="c1"># Check if the command failed</span>
         <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">stderr_raw</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
-            <span class="n">stderr</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">stderr_raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">stderr_raw</span> <span class="k">else</span> <span class="s2">&quot;no stderr output&quot;</span>
+            <span class="n">stderr_raw</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+            <span class="n">stderr</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">stderr_raw</span><span class="p">)</span> <span class="k">if</span> <span class="n">stderr_raw</span> <span class="k">else</span> <span class="s2">"no stderr output"</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">&quot;[bold bright_red]✖ Command failed[/] (exit code </span><span class="si">{}</span><span class="s2">): [italic dim]</span><span class="si">{}</span><span class="s2">[/]</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;[bright_black]┌─ stderr ────────────────────────────────────────────[/]</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;[bright_black]│[/] [red]</span><span class="si">{}</span><span class="s2">[/]</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="s2">&quot;[bright_black]└──────────────────────────────────────────────────────[/]&quot;</span><span class="p">,</span>
+                <span class="s2">"[bold bright_red]✖ Command failed[/] (exit code </span><span class="si">{}</span><span class="s2">): [italic dim]</span><span class="si">{}</span><span class="s2">[/]</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"[bright_black]┌─ stderr ────────────────────────────────────────────[/]</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"[bright_black]│[/] [red]</span><span class="si">{}</span><span class="s2">[/]</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"[bright_black]└──────────────────────────────────────────────────────[/]"</span><span class="p">,</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
                 <span class="n">command_preview</span><span class="p">,</span>
                 <span class="n">stderr</span><span class="p">,</span>
                 <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">raise</span> <span class="n">SeretoCalledProcessError</span><span class="p">(</span><span class="s2">&quot;command execution failed&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoCalledProcessError</span><span class="p">(</span><span class="s2">"command execution failed"</span><span class="p">)</span>
 
         <span class="c1"># Report success</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Command finished in </span><span class="si">{:.2f}</span><span class="s2"> s&quot;</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Command finished in </span><span class="si">{:.2f}</span><span class="s2"> s"</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
 
         <span class="c1"># Return the command output</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
@@ -4806,7 +4806,7 @@ possible in all positions except the first and last one)</p>
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">SeretoBaseSettings</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Global settings:</span>
+<span class="w">    </span><span class="sd">"""Global settings:</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        projects_path: path to the directory containing all projects</span>
@@ -4821,7 +4821,7 @@ possible in all positions except the first and last one)</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoPathError: If the file is not found or permission is denied.</span>
 <span class="sd">        SeretoValueError: If the JSON file is invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">projects_path</span><span class="p">:</span> <span class="n">DirectoryPath</span>
     <span class="n">templates_path</span><span class="p">:</span> <span class="n">DirectoryPath</span>
@@ -4847,12 +4847,12 @@ possible in all positions except the first and last one)</p>
     <span class="p">)</span>
     <span class="n">plugins</span><span class="p">:</span> <span class="n">Plugins</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">Plugins</span><span class="p">)</span>
 
-    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">migrate_risk_due_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Migrate old risk_due_dates format (flat dict) to new format (nested by exposure).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Migrate old risk_due_dates format (flat dict) to new format (nested by exposure)."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">)</span>
+            <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"risk_due_dates"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">risk_due_dates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="c1"># Check if this is the old format: keys are Risk values, not TargetExposure values</span>
@@ -4863,18 +4863,18 @@ possible in all positions except the first and last one)</p>
                 <span class="c1"># Old format: has risk keys but no exposure keys</span>
                 <span class="k">if</span> <span class="n">keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">risk_values</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exposure_values</span><span class="p">):</span>
                     <span class="c1"># Migrate to new format: apply same due dates to both internal and external</span>
-                    <span class="c1"># Use string keys, not enum keys, since we&#39;re in &quot;before&quot; mode</span>
-                    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                        <span class="s2">&quot;external&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                    <span class="c1"># Use string keys, not enum keys, since we're in "before" mode</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s2">"risk_due_dates"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">"internal"</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                        <span class="s2">"external"</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                     <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">data</span>
 
-    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"categories"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unique_categories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">TypeCategories</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeCategories</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure that all category names are unique and preserves their original order.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Ensure that all category names are unique and preserves their original order."""</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">categories</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
@@ -4889,18 +4889,18 @@ possible in all positions except the first and last one)</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">get_app_dir</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s2">&quot;sereto&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;settings.json&quot;</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">get_app_dir</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s2">"sereto"</span><span class="p">))</span> <span class="o">/</span> <span class="s2">"settings.json"</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;file not found at &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file not found at '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="k">except</span> <span class="ne">PermissionError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;permission denied for &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"permission denied for '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid settings</span><span class="se">\n\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid settings</span><span class="se">\n\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4959,12 +4959,12 @@ possible in all positions except the first and last one)</p>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
-<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
 <span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">migrate_risk_due_dates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Migrate old risk_due_dates format (flat dict) to new format (nested by exposure).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Migrate old risk_due_dates format (flat dict) to new format (nested by exposure)."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">)</span>
+        <span class="n">risk_due_dates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"risk_due_dates"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">risk_due_dates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">risk_due_dates</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="c1"># Check if this is the old format: keys are Risk values, not TargetExposure values</span>
@@ -4975,10 +4975,10 @@ possible in all positions except the first and last one)</p>
             <span class="c1"># Old format: has risk keys but no exposure keys</span>
             <span class="k">if</span> <span class="n">keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">risk_values</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keys</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">exposure_values</span><span class="p">):</span>
                 <span class="c1"># Migrate to new format: apply same due dates to both internal and external</span>
-                <span class="c1"># Use string keys, not enum keys, since we&#39;re in &quot;before&quot; mode</span>
-                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;risk_due_dates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;internal&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                    <span class="s2">&quot;external&quot;</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                <span class="c1"># Use string keys, not enum keys, since we're in "before" mode</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">"risk_due_dates"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"internal"</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                    <span class="s2">"external"</span><span class="p">:</span> <span class="n">risk_due_dates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                 <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">data</span>
@@ -5022,10 +5022,10 @@ possible in all positions except the first and last one)</p>
 <span class="normal">463</span>
 <span class="normal">464</span>
 <span class="normal">465</span>
-<span class="normal">466</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+<span class="normal">466</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"categories"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"after"</span><span class="p">)</span>
 <span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">unique_categories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">TypeCategories</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeCategories</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that all category names are unique and preserves their original order.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Ensure that all category names are unique and preserves their original order."""</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">categories</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>

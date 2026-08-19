@@ -2980,16 +2980,16 @@
 <span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">WorkingDir</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">Singleton</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper class for REPL implementing the `cd` command.</span>
+<span class="w">    </span><span class="sd">"""Helper class for REPL implementing the `cd` command.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        old_cwd: The previous working directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">old_cwd</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change the current working directory to the new location.</span>
+<span class="w">        </span><span class="sd">"""Change the current working directory to the new location.</span>
 
 <span class="sd">        Also saves the previous location for future reference.</span>
 
@@ -2998,16 +2998,16 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoPathError: If the provided path is not an existing directory.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dst</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Directory &#39;</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">&#39; does not exist.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Directory '</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">' does not exist."</span><span class="p">)</span>
 
         <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">old_cwd</span> <span class="o">=</span> <span class="n">cwd</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">go_back</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change the current working directory to the previous location.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Change the current working directory to the previous location."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">change</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_cwd</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3113,7 +3113,7 @@
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Change the current working directory to the new location.</span>
+<span class="w">    </span><span class="sd">"""Change the current working directory to the new location.</span>
 
 <span class="sd">    Also saves the previous location for future reference.</span>
 
@@ -3122,9 +3122,9 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoPathError: If the provided path is not an existing directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dst</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Directory &#39;</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">&#39; does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Directory '</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">' does not exist."</span><span class="p">)</span>
 
     <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
     <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
@@ -3154,7 +3154,7 @@
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">go_back</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Change the current working directory to the previous location.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Change the current working directory to the previous location."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">change</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_cwd</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3269,20 +3269,20 @@
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cd&quot;</span><span class="p">)</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"cd"</span><span class="p">)</span>
 <span class="nd">@handle_exceptions</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">"project_id"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 <span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">repl_cd</span><span class="p">(</span><span class="n">project_id</span><span class="p">:</span> <span class="n">TypeProjectId</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Switch the active project in the REPL.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">repl_cd</span><span class="p">(</span><span class="n">project_id</span><span class="p">:</span> <span class="n">TypeProjectId</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"-"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Switch the active project in the REPL.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project_id: The ID of the project to switch to. Use &#39;-&#39; to go back to the previous working directory.</span>
+<span class="sd">        project_id: The ID of the project to switch to. Use '-' to go back to the previous working directory.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the project ID is invalid.</span>
-<span class="sd">        SeretoPathError: If the project&#39;s path does not exist.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        SeretoPathError: If the project's path does not exist.</span>
+<span class="sd">    """</span>
     <span class="n">repl_cd_impl</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3309,9 +3309,9 @@
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
-<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
+<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"exit"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_exit</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit from the Read-Eval-Print Loop (REPL).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Exit from the Read-Eval-Print Loop (REPL)."""</span>
     <span class="n">click_repl_exit</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3339,10 +3339,10 @@
 <span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
-<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">([</span><span class="n">level</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">LogLevel</span><span class="p">],</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s2">"log_level"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">([</span><span class="n">level</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">LogLevel</span><span class="p">],</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">repl_log</span><span class="p">(</span><span class="n">log_level</span><span class="p">:</span> <span class="n">LogLevel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the logging level for current REPL session.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Set the logging level for current REPL session."""</span>
     <span class="n">setup_logging</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3421,26 +3421,26 @@
 <span class="normal">48</span>
 <span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sereto_ls</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;List all projects in the user&#39;s projects directory.</span>
+<span class="w">    </span><span class="sd">"""List all projects in the user's projects directory.</span>
 
 <span class="sd">    Print a table with the details to the console.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        settings: The Settings object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">project_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">projects_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">is_project_dir</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
-    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s2">&quot;ID&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="s2">&quot;Location&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Projects&quot;</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="o">.</span><span class="n">MINIMAL</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s2">"ID"</span><span class="p">,</span> <span class="s2">"Name"</span><span class="p">,</span> <span class="s2">"Location"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Projects"</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="o">.</span><span class="n">MINIMAL</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">project_paths</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">project_name</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">name</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="n">SeretoValueError</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to load project from &#39;</span><span class="si">{}</span><span class="s2">&#39;: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Failed to load project from '</span><span class="si">{}</span><span class="s2">': </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="nb">dir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;[link </span><span class="si">{</span><span class="nb">dir</span><span class="o">.</span><span class="n">as_uri</span><span class="p">()</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="nb">dir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"[link </span><span class="si">{</span><span class="nb">dir</span><span class="o">.</span><span class="n">as_uri</span><span class="p">()</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+    <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3549,13 +3549,13 @@
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sereto_repl</span><span class="p">(</span><span class="n">cli</span><span class="p">:</span> <span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an interactive Read-Eval-Print Loop (REPL) session.</span>
+<span class="w">    </span><span class="sd">"""Start an interactive Read-Eval-Print Loop (REPL) session.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        cli: The main CLI group.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">  ____       ____     _____</span>
 <span class="sd"> / ___|  ___|  _ \ __|_   _|__</span>
 <span class="sd"> \___ \ / _ \ |_) / _ \| |/ _ \</span>
@@ -3564,10 +3564,10 @@
 
 <span class="sd">Welcome to [blue]SeReTo Interactive Mode[/blue]!</span>
 <span class="sd">---------------------------------------------</span>
-<span class="sd">Type &#39;exit&#39; or press &#39;Ctrl+D&#39; to quit.</span>
-<span class="sd">Use &#39;cd &lt;ID&gt;&#39; to change the active project.</span>
-<span class="sd">Type &#39;-h&#39;/&#39;--help&#39; to see available commands.</span>
-<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">Type 'exit' or press 'Ctrl+D' to quit.</span>
+<span class="sd">Use 'cd &lt;ID&gt;' to change the active project.</span>
+<span class="sd">Type '-h'/'--help' to see available commands.</span>
+<span class="sd">    """</span><span class="p">,</span>
         <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -3579,11 +3579,11 @@
     <span class="c1"># Define the prompt style</span>
     <span class="n">prompt_style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
         <span class="p">{</span>
-            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;sereto&quot;</span><span class="p">:</span> <span class="s2">&quot;#02a0f0 bold&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;bracket&quot;</span><span class="p">:</span> <span class="s2">&quot;#8a8a8a&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;#00ff00&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;gt&quot;</span><span class="p">:</span> <span class="s2">&quot;#8a8a8a bold&quot;</span><span class="p">,</span>
+            <span class="s2">"debug"</span><span class="p">:</span> <span class="s2">"red"</span><span class="p">,</span>
+            <span class="s2">"sereto"</span><span class="p">:</span> <span class="s2">"#02a0f0 bold"</span><span class="p">,</span>
+            <span class="s2">"bracket"</span><span class="p">:</span> <span class="s2">"#8a8a8a"</span><span class="p">,</span>
+            <span class="s2">"project_id"</span><span class="p">:</span> <span class="s2">"#00ff00"</span><span class="p">,</span>
+            <span class="s2">"gt"</span><span class="p">:</span> <span class="s2">"#8a8a8a bold"</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">)</span>
 
@@ -3594,13 +3594,13 @@
         <span class="n">group_ctx</span> <span class="o">=</span> <span class="n">current_context</span><span class="o">.</span><span class="n">parent</span>
 
     <span class="n">prompt_kwargs</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">_get_repl_prompt</span><span class="p">,</span>
-        <span class="s2">&quot;history&quot;</span><span class="p">:</span> <span class="n">FileHistory</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">get_app_dir</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s2">&quot;sereto&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;.sereto_history&quot;</span><span class="p">),</span>
-        <span class="s2">&quot;style&quot;</span><span class="p">:</span> <span class="n">prompt_style</span><span class="p">,</span>
-        <span class="s2">&quot;completer&quot;</span><span class="p">:</span> <span class="n">EscapedClickCompleter</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">group_ctx</span><span class="p">),</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="n">_get_repl_prompt</span><span class="p">,</span>
+        <span class="s2">"history"</span><span class="p">:</span> <span class="n">FileHistory</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">get_app_dir</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s2">"sereto"</span><span class="p">))</span> <span class="o">/</span> <span class="s2">".sereto_history"</span><span class="p">),</span>
+        <span class="s2">"style"</span><span class="p">:</span> <span class="n">prompt_style</span><span class="p">,</span>
+        <span class="s2">"completer"</span><span class="p">:</span> <span class="n">EscapedClickCompleter</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">group_ctx</span><span class="p">),</span>
     <span class="p">}</span>
 
-    <span class="n">current_context</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;in_repl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">current_context</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"in_repl"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="n">repl</span><span class="p">(</span><span class="n">current_context</span><span class="p">,</span> <span class="n">prompt_kwargs</span><span class="o">=</span><span class="n">prompt_kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>

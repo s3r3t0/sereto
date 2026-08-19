@@ -3069,10 +3069,10 @@ group is selected.</p>
     <span class="n">renderer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FilePath</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a finding group PDF from given target and finding group selectors.</span>
+<span class="w">    </span><span class="sd">"""Generate a finding group PDF from given target and finding group selectors.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        template: The template used for generating the finding group.</span>
 <span class="sd">        target_selector: The target selector (1-based index or unique name). If None, the only target is selected.</span>
 <span class="sd">        finding_group_selector: The finding group selector (1-based index or unique name). If None, the only finding</span>
@@ -3083,7 +3083,7 @@ group is selected.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the generated finding group PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3296,10 +3296,10 @@ group is selected.</p>
     <span class="n">renderer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">FilePath</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate all finding group PDFs.</span>
+<span class="w">    </span><span class="sd">"""Generate all finding group PDFs.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        template: The template used for generating the finding group.</span>
 <span class="sd">        converter: The convert recipe used for file format transformations. If None, the first recipe is used.</span>
 <span class="sd">        renderer: The recipe used for generating the finding group. If None, the first recipe is used.</span>
@@ -3307,7 +3307,7 @@ group is selected.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        List of paths to the generated finding group PDFs.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
@@ -3583,12 +3583,12 @@ group is selected.</p>
     <span class="n">renderer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FilePath</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a finding group PDF.</span>
+<span class="w">    </span><span class="sd">"""Generate a finding group PDF.</span>
 
 <span class="sd">    You should call `project_create_missing` before calling this function.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        template: The template used for generating the finding group.</span>
 <span class="sd">        target: The target containing the finding group.</span>
 <span class="sd">        fg: The finding group to generate.</span>
@@ -3598,8 +3598,8 @@ group is selected.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the generated finding group PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rendering partial report for finding group &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Rendering partial report for finding group '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">get_finding_group_recipe</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">renderer</span><span class="p">)</span>
 
     <span class="c1"># Build finding group to intermediate format</span>
@@ -3629,9 +3629,9 @@ group is selected.</p>
         <span class="n">recipe</span><span class="o">=</span><span class="n">recipe</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># Move the finding group PDF to the &quot;pdf&quot; directory</span>
-    <span class="n">pdf_dir</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">&quot;pdf&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">finding_group_pdf</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">pdf_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">finding_group_pdf</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Move the finding group PDF to the "pdf" directory</span>
+    <span class="n">pdf_dir</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">"pdf"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">finding_group_pdf</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">pdf_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">finding_group_pdf</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3839,10 +3839,10 @@ group is selected.</p>
     <span class="n">convert_recipe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a report PDF.</span>
+<span class="w">    </span><span class="sd">"""Generate a report PDF.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        template: The template used for generating the report.</span>
 <span class="sd">        report_recipe: The recipe used for generating the report. If None, the first recipe is used.</span>
 <span class="sd">        convert_recipe: The convert recipe used for file format transformations. If None, the first recipe is used.</span>
@@ -3850,11 +3850,11 @@ group is selected.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the generated report PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rendering report version: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Rendering report version: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
 
     <span class="n">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">get_report_recipe</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">report_recipe</span><span class="p">)</span>
@@ -3878,12 +3878,12 @@ group is selected.</p>
     <span class="p">)</span>
 
     <span class="c1"># Create directory for the PDF results if it does not exist</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="n">pdf_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 
-    <span class="c1"># Move the report PDF to the &quot;pdf&quot; directory</span>
+    <span class="c1"># Move the report PDF to the "pdf" directory</span>
     <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="k">if</span> <span class="n">version</span> <span class="k">else</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span>
-    <span class="n">report_pdf</span> <span class="o">=</span> <span class="n">report_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span> <span class="o">/</span> <span class="n">version_config</span><span class="o">.</span><span class="n">report_name</span><span class="p">)</span>
+    <span class="n">report_pdf</span> <span class="o">=</span> <span class="n">report_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span> <span class="o">/</span> <span class="n">version_config</span><span class="o">.</span><span class="n">report_name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">report_pdf</span>
 </code></pre></div></td></tr></table></div>
@@ -4041,20 +4041,20 @@ group is selected.</p>
 <span class="normal">304</span>
 <span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_pdf_sow</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span> <span class="n">sow_recipe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a Statement of Work (SoW) PDF.</span>
+<span class="w">    </span><span class="sd">"""Generate a Statement of Work (SoW) PDF.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        sow_recipe: The recipe used for generating the SoW. If None, the first recipe is used.</span>
 <span class="sd">        version: The version of the project to use. If None, the last version</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the generated Statement of Work (SoW) PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rendering SoW version: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Rendering SoW version: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
 
     <span class="n">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">get_sow_recipe</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">sow_recipe</span><span class="p">)</span>
@@ -4072,12 +4072,12 @@ group is selected.</p>
     <span class="p">)</span>
 
     <span class="c1"># Create directory for the PDF results if it does not exist</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="n">pdf_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 
-    <span class="c1"># Move the SoW PDF to the &quot;pdf&quot; directory</span>
+    <span class="c1"># Move the SoW PDF to the "pdf" directory</span>
     <span class="n">version_config</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="k">if</span> <span class="n">version</span> <span class="k">else</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span>
-    <span class="n">sow_pdf</span> <span class="o">=</span> <span class="n">sow_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span> <span class="o">/</span> <span class="n">version_config</span><span class="o">.</span><span class="n">sow_name</span><span class="p">)</span>
+    <span class="n">sow_pdf</span> <span class="o">=</span> <span class="n">sow_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span> <span class="o">/</span> <span class="n">version_config</span><span class="o">.</span><span class="n">sow_name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">sow_pdf</span>
 </code></pre></div></td></tr></table></div>
@@ -4311,10 +4311,10 @@ group is selected.</p>
     <span class="n">convert_recipe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a target PDF.</span>
+<span class="w">    </span><span class="sd">"""Generate a target PDF.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        project: Project&#39;s representation.</span>
+<span class="sd">        project: Project's representation.</span>
 <span class="sd">        template: The template used for generating the target.</span>
 <span class="sd">        target_selector: The target selector (1-based index or unique name). If None, the only target is selected.</span>
 <span class="sd">        target_recipe: The recipe used for generating the target. If None, the first recipe is used.</span>
@@ -4323,14 +4323,14 @@ group is selected.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the generated target PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_version</span>
 
     <span class="c1"># Select target</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">select_target</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="n">target_selector</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rendering partial report for target &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Rendering partial report for target '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
 
     <span class="n">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
     <span class="n">recipe</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">get_target_recipe</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">target_recipe</span><span class="p">)</span>
@@ -4357,11 +4357,11 @@ group is selected.</p>
     <span class="p">)</span>
 
     <span class="c1"># Create directory for the PDF results if it does not exist</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pdf_dir</span> <span class="o">:=</span> <span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="n">pdf_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 
-    <span class="c1"># Move the target PDF to the &quot;pdf&quot; directory</span>
-    <span class="n">target_pdf</span> <span class="o">=</span> <span class="n">target_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;pdf&quot;</span> <span class="o">/</span> <span class="n">target_pdf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="c1"># Move the target PDF to the "pdf" directory</span>
+    <span class="n">target_pdf</span> <span class="o">=</span> <span class="n">target_pdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"pdf"</span> <span class="o">/</span> <span class="n">target_pdf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">target_pdf</span>
 </code></pre></div></td></tr></table></div>

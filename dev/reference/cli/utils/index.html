@@ -2925,10 +2925,10 @@
 <span class="normal">81</span>
 <span class="normal">82</span>
 <span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AliasedGroup</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A click Group subclass that allows for writing aliases and prefixes of any command.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A click Group subclass that allows for writing aliases and prefixes of any command."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">click</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">cmd_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">click</span><span class="o">.</span><span class="n">Command</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the command with the given name.</span>
+<span class="w">        </span><span class="sd">"""Retrieves the command with the given name.</span>
 
 <span class="sd">        If the command is not found, it looks up an explicit command alias or a command prefix.</span>
 
@@ -2938,7 +2938,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The command with the given name, or None if no command is found.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># built-in commands</span>
         <span class="n">rv</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">Group</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">cmd_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2956,15 +2956,15 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">click</span><span class="o">.</span><span class="n">Group</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too many matches: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">matches</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Too many matches: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">matches</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resolve_command</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">click</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">click</span><span class="o">.</span><span class="n">Command</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolves the full command&#39;s name.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resolves the full command's name."""</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">resolve_command</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cmd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;No such command&quot;</span><span class="p">)</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">"No such command"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cmd</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">args</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3099,7 +3099,7 @@
 <span class="normal">72</span>
 <span class="normal">73</span>
 <span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">click</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">cmd_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">click</span><span class="o">.</span><span class="n">Command</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves the command with the given name.</span>
+<span class="w">    </span><span class="sd">"""Retrieves the command with the given name.</span>
 
 <span class="sd">    If the command is not found, it looks up an explicit command alias or a command prefix.</span>
 
@@ -3109,7 +3109,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The command with the given name, or None if no command is found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># built-in commands</span>
     <span class="n">rv</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">Group</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">cmd_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">rv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -3127,7 +3127,7 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">click</span><span class="o">.</span><span class="n">Group</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too many matches: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">matches</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Too many matches: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">matches</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3160,10 +3160,10 @@
 <span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve_command</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">click</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">click</span><span class="o">.</span><span class="n">Command</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolves the full command&#39;s name.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Resolves the full command's name."""</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">resolve_command</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cmd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;No such command&quot;</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">"No such command"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cmd</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">args</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3209,7 +3209,7 @@
                 <summary>Source code in <code>sereto/cli/utils.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">97</span>
 <span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Console</span><span class="p">(</span><span class="n">RichConsole</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">Singleton</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Singleton wrapper around Rich&#39;s Console.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Singleton wrapper around Rich's Console."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3333,7 +3333,7 @@ apply in non-interactive mode.</p>
     <span class="n">non_interactive</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">ni_only</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that NI-only options are not provided without -N/--non-interactive.</span>
+<span class="w">    </span><span class="sd">"""Validate that NI-only options are not provided without -N/--non-interactive.</span>
 
 <span class="sd">    Raises an error when any option that only applies in non-interactive mode is explicitly</span>
 <span class="sd">    passed on the command line without the -N/--non-interactive flag.</span>
@@ -3343,7 +3343,7 @@ apply in non-interactive mode.</p>
 <span class="sd">        non_interactive: Value of the -N/--non-interactive flag.</span>
 <span class="sd">        ni_only: Mapping of Python parameter name → CLI flag name for options that only</span>
 <span class="sd">            apply in non-interactive mode.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">non_interactive</span><span class="p">:</span>
         <span class="k">return</span>
 
@@ -3355,8 +3355,8 @@ apply in non-interactive mode.</p>
     <span class="k">if</span> <span class="n">ni_options</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">sereto.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeretoValueError</span>
 
-        <span class="n">options</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ni_options</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Options </span><span class="si">{</span><span class="n">options</span><span class="si">}</span><span class="s2"> require -N/--non-interactive flag.&quot;</span><span class="p">)</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ni_options</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Options </span><span class="si">{</span><span class="n">options</span><span class="si">}</span><span class="s2"> require -N/--non-interactive flag."</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3388,9 +3388,9 @@ apply in non-interactive mode.</p>
 <span class="normal">92</span>
 <span class="normal">93</span>
 <span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_enum</span><span class="p">[</span><span class="n">E</span><span class="p">:</span> <span class="n">Enum</span><span class="p">](</span><span class="n">enum</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">E</span><span class="p">],</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">E</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Let user select a value from enum.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Let user select a value from enum."""</span>
     <span class="n">choice</span> <span class="o">=</span> <span class="n">radiolist_dialog</span><span class="p">(</span>
-        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Select value&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">"Select value"</span><span class="p">,</span>
         <span class="n">text</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
         <span class="n">values</span><span class="o">=</span><span class="p">[(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">enum</span><span class="p">],</span>
     <span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>

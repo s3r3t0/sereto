@@ -2935,16 +2935,16 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="n">target_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">uname</span> <span class="o">+</span> <span class="n">version</span><span class="o">.</span><span class="n">path_suffix</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating target directory: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">target_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Creating target directory: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">target_path</span><span class="p">)</span>
         <span class="n">target_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 
-        <span class="n">category_templates</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">&quot;categories&quot;</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">category</span>
+        <span class="n">category_templates</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">"categories"</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">category</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">category_templates</span> <span class="o">/</span> <span class="s2">&quot;skel&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Populating new target directory from: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">category_templates</span> <span class="o">/</span> <span class="s2">&quot;skel&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">category_templates</span> <span class="o">/</span> <span class="s2">"skel"</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Populating new target directory from: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">category_templates</span> <span class="o">/</span> <span class="s2">"skel"</span><span class="p">)</span>
             <span class="n">copy_skel</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">category_templates</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">target_path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No &#39;skel&#39; directory found: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">category_templates</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No 'skel' directory found: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">category_templates</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
 
@@ -2954,36 +2954,36 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uname</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unique name for the target instance.</span>
+<span class="w">        </span><span class="sd">"""Unique name for the target instance.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The unique name of the target.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uname</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">path_suffix</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">        </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of locators of the specified type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DocumentModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter documents by type.</span>
+<span class="w">        </span><span class="sd">"""Filter documents by type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            type: The document type(s) to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of documents of the specified type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">documents</span> <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -3130,14 +3130,14 @@
 <span class="normal">89</span>
 <span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DocumentModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter documents by type.</span>
+<span class="w">    </span><span class="sd">"""Filter documents by type.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The document type(s) to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of documents of the specified type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">documents</span> <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -3229,14 +3229,14 @@
 <span class="normal">76</span>
 <span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">    </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of locators of the specified type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>

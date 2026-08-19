@@ -2967,10 +2967,10 @@ keyring.</p>
 <span class="normal">91</span>
 <span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_source_archive</span><span class="p">(</span><span class="n">project_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a source archive for the project.</span>
+<span class="w">    </span><span class="sd">"""Create a source archive for the project.</span>
 
 <span class="sd">    This function creates a source archive for the project by copying all the files not matching any ignore pattern in</span>
-<span class="sd">    the project directory to a compressed archive file. The archive is encrypted if the password is set in the system&#39;s</span>
+<span class="sd">    the project directory to a compressed archive file. The archive is encrypted if the password is set in the system's</span>
 <span class="sd">    keyring.</span>
 
 <span class="sd">    Args:</span>
@@ -2979,22 +2979,22 @@ keyring.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The path to the created source archive.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Read the ignore patterns from the &#39;.seretoignore&#39; file</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">seretoignore_path</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;.seretoignore&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+<span class="sd">    """</span>
+    <span class="c1"># Read the ignore patterns from the '.seretoignore' file</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">seretoignore_path</span> <span class="o">:=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">".seretoignore"</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
         <span class="n">assert_file_size_within_range</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">seretoignore_path</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">10_485_760</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">seretoignore_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">seretoignore</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">seretoignore_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">seretoignore</span><span class="p">:</span>
             <span class="n">ignore_lines</span> <span class="o">=</span> <span class="n">seretoignore</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;File &#39;</span><span class="si">{}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">,</span> <span class="n">seretoignore_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"File '</span><span class="si">{}</span><span class="s2">' does not exist"</span><span class="p">,</span> <span class="n">seretoignore_path</span><span class="p">)</span>
         <span class="n">ignore_lines</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Create a temporary file to store the source archive</span>
-    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.tgz&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">".tgz"</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
         <span class="n">archive_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating source archive at &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Creating source archive at '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">archive_path</span><span class="p">)</span>
 
         <span class="c1"># Determine the original project ID (store the project always with the original ID)</span>
         <span class="n">original_id</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">first_config</span><span class="o">.</span><span class="n">id</span>
@@ -3005,15 +3005,15 @@ keyring.</p>
         <span class="n">skipped_items</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Create the source archive</span>
-        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive_path</span><span class="p">,</span> <span class="s2">&quot;w:gz&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">project_path</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive_path</span><span class="p">,</span> <span class="s2">"w:gz"</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">project_path</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">):</span>
                 <span class="n">relative_path</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
                 <span class="n">relative_path_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">relative_path</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">or</span> <span class="n">item</span><span class="o">.</span><span class="n">is_symlink</span><span class="p">():</span>
                     <span class="n">skipped_items</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s2">&quot;[yellow]-[/yellow] Skipping directory or symlink: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                        <span class="s2">"[yellow]-[/yellow] Skipping directory or symlink: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span>
                         <span class="n">escape</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">),</span>
                         <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="p">)</span>
@@ -3021,15 +3021,15 @@ keyring.</p>
 
                 <span class="k">if</span> <span class="n">ignore_spec</span><span class="o">.</span><span class="n">match_file</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">):</span>
                     <span class="n">ignored_items</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[yellow]-[/yellow] Skipping item: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"[yellow]-[/yellow] Skipping item: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="k">continue</span>
 
                 <span class="n">added_items</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[green]+[/green] Adding item: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"[green]+[/green] Adding item: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="n">relative_path_str</span><span class="p">),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">original_id</span><span class="p">)</span> <span class="o">/</span> <span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">project_path</span><span class="p">)))</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s2">&quot;Created source archive with </span><span class="si">{}</span><span class="s2"> files added, </span><span class="si">{}</span><span class="s2"> ignored, and </span><span class="si">{}</span><span class="s2"> directories or symlinks skipped&quot;</span><span class="p">,</span>
+            <span class="s2">"Created source archive with </span><span class="si">{}</span><span class="s2"> files added, </span><span class="si">{}</span><span class="s2"> ignored, and </span><span class="si">{}</span><span class="s2"> directories or symlinks skipped"</span><span class="p">,</span>
             <span class="n">added_items</span><span class="p">,</span>
             <span class="n">ignored_items</span><span class="p">,</span>
             <span class="n">skipped_items</span><span class="p">,</span>
@@ -3180,14 +3180,14 @@ keyring.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">embed_attachment_to_pdf</span><span class="p">(</span>
     <span class="n">pdf</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">attachment</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Embed the attachment to the PDF.</span>
+<span class="w">    </span><span class="sd">"""Embed the attachment to the PDF.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pdf: The path to the PDF file where the attachment will be embedded.</span>
 <span class="sd">        attachment: The path to the attahcment.</span>
-<span class="sd">        name: The name of the attachment in the PDF. If None, the attachment&#39;s name is used. Defaults to None.</span>
+<span class="sd">        name: The name of the attachment in the PDF. If None, the attachment's name is used. Defaults to None.</span>
 <span class="sd">        keep_original: If True, the original source archive is kept. Defaults to True.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Initialize PDF reader and writer</span>
     <span class="n">reader</span> <span class="o">=</span> <span class="n">PdfReader</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">writer</span> <span class="o">=</span> <span class="n">PdfWriter</span><span class="p">()</span>
@@ -3200,10 +3200,10 @@ keyring.</p>
     <span class="n">writer</span><span class="o">.</span><span class="n">add_attachment</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">attachment_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attachment</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
 
     <span class="c1"># Write the output PDF</span>
-    <span class="k">with</span> <span class="n">pdf</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_pdf</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">pdf</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_pdf</span><span class="p">:</span>
         <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_pdf</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s2">&quot;[green]+[/green] Embedded attachment &#39;</span><span class="si">{}</span><span class="s2">&#39; into &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+            <span class="s2">"[green]+[/green] Embedded attachment '</span><span class="si">{}</span><span class="s2">' into '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span>
             <span class="n">escape</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
             <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pdf</span><span class="p">)),</span>
             <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -3212,7 +3212,7 @@ keyring.</p>
     <span class="c1"># Delete the source archive if `keep_original=False`</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
         <span class="n">attachment</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[red]-[/red] Deleted original file: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attachment</span><span class="p">)),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[red]-[/red] Deleted original file: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attachment</span><span class="p">)),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3359,7 +3359,7 @@ keyring.</p>
 <span class="normal">242</span>
 <span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_source_archive</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts the project sources from a given tarball file.</span>
+<span class="w">    </span><span class="sd">"""Extracts the project sources from a given tarball file.</span>
 
 <span class="sd">    Expects the tarball file to be Gzip-compressed.</span>
 
@@ -3367,13 +3367,13 @@ keyring.</p>
 <span class="sd">        file: The path to the .tgz file.</span>
 <span class="sd">        output_dir: The directory where the sources will be extracted.</span>
 <span class="sd">        keep_original: If True, the original tarball file is kept. Defaults to True.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting archive ...&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Extracting archive ..."</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;r:gz&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"r:gz"</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
         <span class="c1"># Check for empty source archive</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">getmembers</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Empty source archive: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Empty source archive: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># Get the common directory in the tar archive</span>
@@ -3381,32 +3381,32 @@ keyring.</p>
 
         <span class="c1"># There should always be a top level directory with the project ID</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_dir</span><span class="o">.</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;corrupted source archive (multiple top-level directories found)&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"corrupted source archive (multiple top-level directories found)"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
         <span class="c1"># Validate project ID</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ta_id</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypeProjectId</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypeProjectId</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
             <span class="n">project_id</span> <span class="o">=</span> <span class="n">ta_id</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">common_dir</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;corrupted source archive (invalid project ID)&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"corrupted source archive (invalid project ID)"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="c1"># Check that this is a valid sereto project</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">/.sereto&quot;</span><span class="p">)</span>
-            <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">/config.json&quot;</span><span class="p">)</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">/.sereto"</span><span class="p">)</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">/config.json"</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;corrupted source archive (missing core project files)&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"corrupted source archive (missing core project files)"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected project with ID: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Detected project with ID: </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
 
         <span class="c1"># Make sure the project directory does not already exist</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">project_id</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;project directory already exists: &#39;</span><span class="si">{</span><span class="n">output_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">project_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"project directory already exists: '</span><span class="si">{</span><span class="n">output_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">project_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
         <span class="c1"># Extract the source archive</span>
-        <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s2">"data"</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s2">&quot;[green]+[/green] Extracted sources from &#39;</span><span class="si">{}</span><span class="s2">&#39; to &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+            <span class="s2">"[green]+[/green] Extracted sources from '</span><span class="si">{}</span><span class="s2">' to '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span>
             <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)),</span>
             <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">project_id</span><span class="p">)),</span>
             <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -3415,7 +3415,7 @@ keyring.</p>
     <span class="c1"># Delete the original tarball</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
         <span class="n">file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[red]-[/red] Deleted tarball: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[red]-[/red] Deleted tarball: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3581,7 +3581,7 @@ keyring.</p>
 <span class="normal">181</span>
 <span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_source_archive</span><span class="p">(</span><span class="n">pdf</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts an attachment from a given PDF file and writes it to a temporary file.</span>
+<span class="w">    </span><span class="sd">"""Extracts an attachment from a given PDF file and writes it to a temporary file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pdf: The path to the PDF file from which to extract the attachment.</span>
@@ -3592,35 +3592,35 @@ keyring.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If no or multiple attachments with the same name are found in the PDF.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">pdf</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;file not found: &#39;</span><span class="si">{</span><span class="n">pdf</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file not found: '</span><span class="si">{</span><span class="n">pdf</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
     <span class="c1"># Read the PDF file</span>
     <span class="n">reader</span> <span class="o">=</span> <span class="n">PdfReader</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Check if the attachment is present</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reader</span><span class="o">.</span><span class="n">attachments</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No &#39;</span><span class="si">{}</span><span class="s2">&#39; attachment found in &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">pdf</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Manually inspect the file to make sure the attachment &#39;</span><span class="si">{}</span><span class="s2">&#39; is present&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; attachment found in &#39;</span><span class="si">{</span><span class="n">pdf</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"No '</span><span class="si">{}</span><span class="s2">' attachment found in '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">pdf</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Manually inspect the file to make sure the attachment '</span><span class="si">{}</span><span class="s2">' is present"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' attachment found in '</span><span class="si">{</span><span class="n">pdf</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
     <span class="c1"># PDF attachment names are not unique; check if there is only one attachment with the expected name</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reader</span><span class="o">.</span><span class="n">attachments</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Only a single &#39;</span><span class="si">{}</span><span class="s2">&#39; attachment should be present&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Manually extract the correct file and use `sereto decrypt` command instead&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;multiple &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; attachments found&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Only a single '</span><span class="si">{}</span><span class="s2">' attachment should be present"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Manually extract the correct file and use `sereto decrypt` command instead"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"multiple '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' attachments found"</span><span class="p">)</span>
 
-    <span class="c1"># Extract the attachment&#39;s content</span>
+    <span class="c1"># Extract the attachment's content</span>
     <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">attachments</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Write the content to a temporary file</span>
-    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="k">if</span> <span class="s2">"."</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
         <span class="n">output_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">output_file</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;[green]+[/green] Extracted attachment &#39;</span><span class="si">{}</span><span class="s2">&#39; from &#39;</span><span class="si">{}</span><span class="s2">&#39; to &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+        <span class="s2">"[green]+[/green] Extracted attachment '</span><span class="si">{}</span><span class="s2">' from '</span><span class="si">{}</span><span class="s2">' to '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span>
         <span class="n">escape</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
         <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pdf</span><span class="p">)),</span>
         <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">)),</span>

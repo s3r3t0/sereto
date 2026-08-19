@@ -2825,12 +2825,12 @@
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoBaseModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic BaseModel with custom strict configuration.</span>
+<span class="w">    </span><span class="sd">"""Pydantic BaseModel with custom strict configuration.</span>
 
-<span class="sd">    This class is a subclass of pydantic&#39;s BaseModel. It is used to define custom configuration for Pydantic models.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    This class is a subclass of pydantic's BaseModel. It is used to define custom configuration for Pydantic models.</span>
+<span class="sd">    """</span>
 
-    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validate_assignment</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s2">"forbid"</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validate_assignment</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2915,11 +2915,11 @@
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoBaseSettings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic&#39;s BaseSettings with custom configuration.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Pydantic's BaseSettings with custom configuration."""</span>
 
     <span class="n">model_config</span> <span class="o">=</span> <span class="n">SettingsConfigDict</span><span class="p">(</span>
-        <span class="n">env_prefix</span><span class="o">=</span><span class="s2">&quot;SERETO_&quot;</span><span class="p">,</span>
-        <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">,</span>
+        <span class="n">env_prefix</span><span class="o">=</span><span class="s2">"SERETO_"</span><span class="p">,</span>
+        <span class="n">extra</span><span class="o">=</span><span class="s2">"forbid"</span><span class="p">,</span>
         <span class="c1"># strict=True,</span>
         <span class="n">validate_assignment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
@@ -2933,7 +2933,7 @@
         <span class="n">dotenv_settings</span><span class="p">:</span> <span class="n">PydanticBaseSettingsSource</span><span class="p">,</span>
         <span class="n">file_secret_settings</span><span class="p">:</span> <span class="n">PydanticBaseSettingsSource</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PydanticBaseSettingsSource</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the sources and their order for loading the settings values.</span>
+<span class="w">        </span><span class="sd">"""Define the sources and their order for loading the settings values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            settings_cls: The Settings class.</span>
@@ -2944,7 +2944,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A tuple containing the sources and their order for loading the settings values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">env_settings</span><span class="p">,</span> <span class="n">init_settings</span><span class="p">,</span> <span class="n">dotenv_settings</span><span class="p">,</span> <span class="n">file_secret_settings</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3130,7 +3130,7 @@
     <span class="n">dotenv_settings</span><span class="p">:</span> <span class="n">PydanticBaseSettingsSource</span><span class="p">,</span>
     <span class="n">file_secret_settings</span><span class="p">:</span> <span class="n">PydanticBaseSettingsSource</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PydanticBaseSettingsSource</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Define the sources and their order for loading the settings values.</span>
+<span class="w">    </span><span class="sd">"""Define the sources and their order for loading the settings values.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        settings_cls: The Settings class.</span>
@@ -3141,7 +3141,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A tuple containing the sources and their order for loading the settings values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">env_settings</span><span class="p">,</span> <span class="n">init_settings</span><span class="p">,</span> <span class="n">dotenv_settings</span><span class="p">,</span> <span class="n">file_secret_settings</span>
 </code></pre></div></td></tr></table></div>
             </details>

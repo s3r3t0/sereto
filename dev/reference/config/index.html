@@ -3542,16 +3542,16 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_model</span><span class="p">()</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_model</span><span class="p">()</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">versions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProjectVersion</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a sorted list of project versions in ascending order.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get a sorted list of project versions in ascending order."""</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">at_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">ProjectVersion</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the configuration at a specific version.</span>
+<span class="w">        </span><span class="sd">"""Return the configuration at a specific version.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            version: Selects which version of the configuration should be returned.</span>
@@ -3561,33 +3561,33 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the specified version is unknown.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">version</span> <span class="o">=</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">first_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProjectVersion</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the first version present in the configuration.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the first version present in the configuration."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">last_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProjectVersion</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the last version present in the configuration.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the last version present in the configuration."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">first_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the configuration for the first project version.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the configuration for the first project version."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">first_version</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">last_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the configuration for the last project version.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the configuration for the last project version."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_version</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">due_date</span><span class="p">(</span>
@@ -3596,11 +3596,11 @@
         <span class="n">exposure</span><span class="p">:</span> <span class="n">TargetExposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span><span class="p">,</span>
         <span class="n">reported_on</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level and target exposure.</span>
+<span class="w">        </span><span class="sd">"""Get the due date for a specific risk level and target exposure.</span>
 
 <span class="sd">        For findings discovered during a retest, the `reported_on` date can be specified.</span>
 <span class="sd">        Mixed exposure uses the stricter (external) deadlines.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">effective_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span> <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">mixed</span> <span class="k">else</span> <span class="n">exposure</span>
         <span class="n">due_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">effective_exposure</span><span class="p">,</span> <span class="p">{})</span>
 
@@ -3617,14 +3617,14 @@
         <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+        <span class="c1"># Calculate the due date by adding the risk's due timedelta to the report sent date</span>
         <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="n">due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_version_config</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new version configuration to the project.</span>
+<span class="w">        </span><span class="sd">"""Add a new version configuration to the project.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            version: The version of the new configuration.</span>
@@ -3635,9 +3635,9 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the specified version already exists.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' already exists"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">VersionConfig</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
@@ -3653,7 +3653,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">replace_version_config</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace an existing version configuration.</span>
+<span class="w">        </span><span class="sd">"""Replace an existing version configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            version: The version of the configuration to replace.</span>
@@ -3665,9 +3665,9 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the specified version does not exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">VersionConfig</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
@@ -3944,7 +3944,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">add_version_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a new version configuration to the project.</span>
+<span class="w">    </span><span class="sd">"""Add a new version configuration to the project.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        version: The version of the new configuration.</span>
@@ -3955,9 +3955,9 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the specified version already exists.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' already exists"</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">VersionConfig</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
@@ -4093,7 +4093,7 @@
 <span class="normal">533</span>
 <span class="normal">534</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">at_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">ProjectVersion</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the configuration at a specific version.</span>
+<span class="w">    </span><span class="sd">"""Return the configuration at a specific version.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        version: Selects which version of the configuration should be returned.</span>
@@ -4103,12 +4103,12 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the specified version is unknown.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4169,11 +4169,11 @@ Mixed exposure uses the stricter (external) deadlines.</p>
     <span class="n">exposure</span><span class="p">:</span> <span class="n">TargetExposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span><span class="p">,</span>
     <span class="n">reported_on</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level and target exposure.</span>
+<span class="w">    </span><span class="sd">"""Get the due date for a specific risk level and target exposure.</span>
 
 <span class="sd">    For findings discovered during a retest, the `reported_on` date can be specified.</span>
 <span class="sd">    Mixed exposure uses the stricter (external) deadlines.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">effective_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span> <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">mixed</span> <span class="k">else</span> <span class="n">exposure</span>
     <span class="n">due_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">effective_exposure</span><span class="p">,</span> <span class="p">{})</span>
 
@@ -4190,7 +4190,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
     <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+    <span class="c1"># Calculate the due date by adding the risk's due timedelta to the report sent date</span>
     <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="n">due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4355,7 +4355,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">replace_version_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">ProjectVersion</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">VersionConfigModel</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace an existing version configuration.</span>
+<span class="w">    </span><span class="sd">"""Replace an existing version configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        version: The version of the configuration to replace.</span>
@@ -4367,9 +4367,9 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the specified version does not exist.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"version '</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">version_configs</span><span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">VersionConfig</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
@@ -4921,10 +4921,10 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">due_date_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="n">Risk</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="n">TargetExposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level and target exposure.</span>
+<span class="w">        </span><span class="sd">"""Get the due date for a specific risk level and target exposure.</span>
 
 <span class="sd">        Mixed exposure uses the stricter (external) deadlines.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">effective_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span> <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">mixed</span> <span class="k">else</span> <span class="n">exposure</span>
         <span class="n">due_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">effective_exposure</span><span class="p">,</span> <span class="p">{})</span>
 
@@ -4937,7 +4937,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+        <span class="c1"># Calculate the due date by adding the risk's due timedelta to the report sent date</span>
         <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="n">due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
@@ -4947,9 +4947,9 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Target</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter targets based on specified criteria.</span>
+<span class="w">        </span><span class="sd">"""Filter targets based on specified criteria.</span>
 
-<span class="sd">        The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">        The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            category: The category of the target. Can be a single category, a list of categories, or None.</span>
@@ -4958,7 +4958,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of targets matching the criteria.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Prepare categories for filtering</span>
         <span class="k">match</span> <span class="n">category</span><span class="p">:</span>
             <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
@@ -4988,7 +4988,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;cannot select target; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span><span class="si">}</span><span class="s2"> targets present&quot;</span>
+                    <span class="sa">f</span><span class="s2">"cannot select target; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span><span class="si">}</span><span class="s2"> targets present"</span>
                 <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -4996,7 +4996,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">selector</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
             <span class="n">ix</span> <span class="o">=</span> <span class="n">selector</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ix</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;target index out of range&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"target index out of range"</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
 
@@ -5005,18 +5005,18 @@ Mixed exposure uses the stricter (external) deadlines.</p>
             <span class="n">filtered_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
             <span class="k">match</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_targets</span><span class="p">):</span>
                 <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> does not contain any target&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> does not contain any target"</span><span class="p">)</span>
                 <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">filtered_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> contains multiple targets, use unique name when querying&quot;</span>
+                        <span class="sa">f</span><span class="s2">"category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> contains multiple targets, use unique name when querying"</span>
                     <span class="p">)</span>
 
         <span class="c1"># by uname</span>
         <span class="n">filtered_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_targets</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">filtered_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
@@ -5066,7 +5066,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="n">last_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]</span> <span class="o">|</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter dates based on specified criteria.</span>
+<span class="w">        </span><span class="sd">"""Filter dates based on specified criteria.</span>
 
 <span class="sd">        The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps</span>
 <span class="sd">        with the specified range.</span>
@@ -5083,12 +5083,12 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            For first_date or last_date = True, returns SeretoDate or None. Otherwise, returns a list[Date].</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Check for invalid parameter combinations</span>
         <span class="k">if</span> <span class="n">first_date</span> <span class="ow">and</span> <span class="n">last_date</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify both first_date and last_date&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify both first_date and last_date"</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">first_date</span> <span class="ow">or</span> <span class="n">last_date</span><span class="p">)</span> <span class="ow">and</span> <span class="n">inverse</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify inverse with first_date or last_date&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify inverse with first_date or last_date"</span><span class="p">)</span>
 
         <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
             <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
@@ -5141,9 +5141,9 @@ Mixed exposure uses the stricter (external) deadlines.</p>
         <span class="n">role</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter people based on specified criteria.</span>
+<span class="w">        </span><span class="sd">"""Filter people based on specified criteria.</span>
 
-<span class="sd">        The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">        The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            type: The type of the person. Can be a single type, a list of types, or None.</span>
@@ -5155,7 +5155,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of people matching the criteria.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
             <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
                 <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="n">PersonType</span><span class="p">(</span><span class="nb">type</span><span class="p">)]</span>
@@ -5180,33 +5180,33 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a target to the configuration.</span>
+<span class="w">        </span><span class="sd">"""Add a target to the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            target: The target to add.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the added target.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a target from the configuration.</span>
+<span class="w">        </span><span class="sd">"""Delete a target from the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            index: The index of the target to delete. First item is 1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the target deleted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Convert to 0-based index</span>
         <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="c1"># Check if the index is in the allowed range</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
         <span class="c1"># Delete the target</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -5215,33 +5215,33 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a date to the configuration.</span>
+<span class="w">        </span><span class="sd">"""Add a date to the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            date: The date to add.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the added date.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a date from the configuration.</span>
+<span class="w">        </span><span class="sd">"""Delete a date from the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            index: The index of the date to delete. First item is 1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the date deleted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Convert to 0-based index</span>
         <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="c1"># Check if the index is in the allowed range</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
         <span class="c1"># Delete the date</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -5250,33 +5250,33 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_person</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">person</span><span class="p">:</span> <span class="n">Person</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a person to the configuration.</span>
+<span class="w">        </span><span class="sd">"""Add a person to the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            person: The person to add.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the added person.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_person</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a person from the configuration.</span>
+<span class="w">        </span><span class="sd">"""Delete a person from the configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            index: The index of the person to delete. First item is 1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The configuration with the person deleted.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Convert to 0-based index</span>
         <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="c1"># Check if the index is in the allowed range</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
         <span class="c1"># Delete the person</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -5285,10 +5285,10 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_sent_date</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the report sent date</span>
+<span class="w">        </span><span class="sd">"""Get the report sent date</span>
 
 <span class="sd">        It has fallback to the review date and last date of the pentest ongoing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">report_sent</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_dates</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">DateType</span><span class="o">.</span><span class="n">report_sent</span><span class="p">,</span> <span class="n">last_date</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">report_sent</span>
         <span class="k">else</span><span class="p">:</span>
@@ -5296,27 +5296,27 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">total_open_risks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonNegativeInt</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the total number of open risks across all risk levels.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the total number of open risks across all risk levels."""</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span><span class="o">.</span><span class="n">sum_open</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sum_risks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Risks</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the sum of risks across all targets.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the sum of risks across all targets."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Risks</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the report file name based on the project ID and version.&quot;&quot;&quot;</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&gt;</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - Report</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.pdf&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the report file name based on the project ID and version."""</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&gt;</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - Report</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.pdf"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sow_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the SoW file name based on the project ID and version.&quot;&quot;&quot;</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&gt;</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - Statement of Work</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.pdf&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the SoW file name based on the project ID and version."""</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&gt;</span> <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> - Statement of Work</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.pdf"</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -5527,14 +5527,14 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">375</span>
 <span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a date to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add a date to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        date: The date to add.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the added date.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
@@ -5626,14 +5626,14 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">410</span>
 <span class="normal">411</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_person</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">person</span><span class="p">:</span> <span class="n">Person</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a person to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add a person to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        person: The person to add.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the added person.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">person</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
@@ -5730,14 +5730,14 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">340</span>
 <span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a target to the configuration.</span>
+<span class="w">    </span><span class="sd">"""Add a target to the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        target: The target to add.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the added target.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
@@ -5838,20 +5838,20 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">397</span>
 <span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">delete_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete a date from the configuration.</span>
+<span class="w">    </span><span class="sd">"""Delete a date from the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        index: The index of the date to delete. First item is 1.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the date deleted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert to 0-based index</span>
     <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
     <span class="c1"># Check if the index is in the allowed range</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
     <span class="c1"># Delete the date</span>
     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -5955,20 +5955,20 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">432</span>
 <span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">delete_person</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete a person from the configuration.</span>
+<span class="w">    </span><span class="sd">"""Delete a person from the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        index: The index of the person to delete. First item is 1.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the person deleted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert to 0-based index</span>
     <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
     <span class="c1"># Check if the index is in the allowed range</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
     <span class="c1"># Delete the person</span>
     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">people</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -6072,20 +6072,20 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">362</span>
 <span class="normal">363</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">delete_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete a target from the configuration.</span>
+<span class="w">    </span><span class="sd">"""Delete a target from the configuration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        index: The index of the target to delete. First item is 1.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The configuration with the target deleted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert to 0-based index</span>
     <span class="n">index</span> <span class="o">-=</span> <span class="mi">1</span>
 
     <span class="c1"># Check if the index is in the allowed range</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;index out of range&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"index out of range"</span><span class="p">)</span>
 
     <span class="c1"># Delete the target</span>
     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -6133,10 +6133,10 @@ Mixed exposure uses the stricter (external) deadlines.</p>
 <span class="normal">88</span>
 <span class="normal">89</span>
 <span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">due_date_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk</span><span class="p">:</span> <span class="n">Risk</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="n">TargetExposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the due date for a specific risk level and target exposure.</span>
+<span class="w">    </span><span class="sd">"""Get the due date for a specific risk level and target exposure.</span>
 
 <span class="sd">    Mixed exposure uses the stricter (external) deadlines.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">effective_exposure</span> <span class="o">=</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">external</span> <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="n">TargetExposure</span><span class="o">.</span><span class="n">mixed</span> <span class="k">else</span> <span class="n">exposure</span>
     <span class="n">due_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">effective_exposure</span><span class="p">,</span> <span class="p">{})</span>
 
@@ -6149,7 +6149,7 @@ Mixed exposure uses the stricter (external) deadlines.</p>
     <span class="k">if</span> <span class="n">report_sent_date</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="c1"># Calculate the due date by adding the risk&#39;s due timedelta to the report sent date</span>
+    <span class="c1"># Calculate the due date by adding the risk's due timedelta to the report sent date</span>
     <span class="k">return</span> <span class="n">report_sent_date</span> <span class="o">+</span> <span class="n">due_dates</span><span class="p">[</span><span class="n">risk</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6399,7 +6399,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="n">last_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]</span> <span class="o">|</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter dates based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter dates based on specified criteria.</span>
 
 <span class="sd">    The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps</span>
 <span class="sd">    with the specified range.</span>
@@ -6416,12 +6416,12 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        For first_date or last_date = True, returns SeretoDate or None. Otherwise, returns a list[Date].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check for invalid parameter combinations</span>
     <span class="k">if</span> <span class="n">first_date</span> <span class="ow">and</span> <span class="n">last_date</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify both first_date and last_date&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify both first_date and last_date"</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">first_date</span> <span class="ow">or</span> <span class="n">last_date</span><span class="p">)</span> <span class="ow">and</span> <span class="n">inverse</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify inverse with first_date or last_date&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify inverse with first_date or last_date"</span><span class="p">)</span>
 
     <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
@@ -6675,9 +6675,9 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="n">role</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter people based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter people based on specified criteria.</span>
 
-<span class="sd">    The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">    The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The type of the person. Can be a single type, a list of types, or None.</span>
@@ -6689,7 +6689,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of people matching the criteria.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
             <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="n">PersonType</span><span class="p">(</span><span class="nb">type</span><span class="p">)]</span>
@@ -6868,9 +6868,9 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Target</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter targets based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter targets based on specified criteria.</span>
 
-<span class="sd">    The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">    The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        category: The category of the target. Can be a single category, a list of categories, or None.</span>
@@ -6879,7 +6879,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of targets matching the criteria.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Prepare categories for filtering</span>
     <span class="k">match</span> <span class="n">category</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>

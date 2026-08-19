@@ -2727,7 +2727,7 @@
 <h1 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h1>
 <h2 id="serving-the-documentation-locally">Serving the documentation locally<a class="headerlink" href="#serving-the-documentation-locally" title="Permanent link">&para;</a></h2>
 <p>Install dependencies and start the live preview server:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>--with<span class="w"> </span><span class="s1">&#39;.[docs]&#39;</span><span class="w"> </span>mkdocs<span class="w"> </span>serve
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>--with<span class="w"> </span><span class="s1">'.[docs]'</span><span class="w"> </span>mkdocs<span class="w"> </span>serve
 </code></pre></div>
 <p>Then open the URL shown in the terminal output (typically <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>).</p>
 <p>The server auto-reloads when you edit Markdown or configuration files.</p>
@@ -2745,7 +2745,7 @@
 docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>vhs<span class="w"> </span>-f<span class="w"> </span>vhs.Dockerfile<span class="w"> </span>.
 </code></pre></div></p>
 <p>With the following command, the GIF can be recorded based on the provided <code>.tape</code> file:
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/vhs&quot;</span><span class="w"> </span>vhs<span class="w"> </span>new-project.tape
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">:/vhs"</span><span class="w"> </span>vhs<span class="w"> </span>new-project.tape
 </code></pre></div></p>
 <p>Since the docker is running with a low-privileged user, <code>vhs</code> may have problems writing to the specified volume. On Linux, this can be fixed by adding extended permissions to the directory for user with UID 1001, e.g.:
 <div class="highlight"><pre><span></span><code>setfacl<span class="w"> </span>-m<span class="w"> </span>u:1001:rwx<span class="w"> </span>.

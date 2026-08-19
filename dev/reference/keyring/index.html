@@ -2777,7 +2777,7 @@
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_password</span><span class="p">(</span><span class="n">service_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve a password from the system keyring with fallback to plaintext file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Retrieve a password from the system keyring with fallback to plaintext file."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">keyring</span><span class="o">.</span><span class="n">get_password</span><span class="p">(</span><span class="n">service_name</span><span class="o">=</span><span class="n">service_name</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">keyring</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">InitError</span><span class="p">:</span>
@@ -2812,7 +2812,7 @@
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_password</span><span class="p">(</span><span class="n">service_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a password to the system keyring with fallback to plaintext file.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Set a password to the system keyring with fallback to plaintext file."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">keyring</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">service_name</span><span class="o">=</span><span class="n">service_name</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">keyring</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">InitError</span><span class="p">:</span>

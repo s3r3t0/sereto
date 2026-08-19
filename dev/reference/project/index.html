@@ -3041,7 +3041,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"config.json"</span><span class="p">,</span>
                 <span class="n">templates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">templates_path</span><span class="p">,</span>
                 <span class="n">risk_due_dates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">risk_due_dates</span><span class="p">,</span>
             <span class="p">)</span>
@@ -3049,10 +3049,10 @@
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure a directory inside the project exists, creating it if necessary.</span>
+<span class="w">        </span><span class="sd">"""Ensure a directory inside the project exists, creating it if necessary.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            relative_path: Path relative to the project root (e.g. &quot;pdf&quot; or &quot;reports/html&quot;).</span>
+<span class="sd">            relative_path: Path relative to the project root (e.g. "pdf" or "reports/html").</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Absolute Path to the ensured directory.</span>
@@ -3060,22 +3060,22 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the path is absolute or escapes the project root.</span>
 <span class="sd">            SeretoPathError: If a non-directory object exists at the target path.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rel</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">relative_path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
 
         <span class="k">if</span> <span class="n">rel</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;relative_path must be relative, not absolute&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"relative_path must be relative, not absolute"</span><span class="p">)</span>
 
         <span class="n">dest</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="n">rel</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
         <span class="n">project_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">project_root</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;relative_path points outside the project root&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"relative_path points outside the project root"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;a non-directory object already exists at the requested path&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"a non-directory object already exists at the requested path"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">dest</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -3084,13 +3084,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">config_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to the project configuration file.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the path to the project configuration file."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"config.json"</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_project_dir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;not a project directory&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"not a project directory"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">_project_path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3268,10 +3268,10 @@
 <span class="normal">87</span>
 <span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure a directory inside the project exists, creating it if necessary.</span>
+<span class="w">    </span><span class="sd">"""Ensure a directory inside the project exists, creating it if necessary.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        relative_path: Path relative to the project root (e.g. &quot;pdf&quot; or &quot;reports/html&quot;).</span>
+<span class="sd">        relative_path: Path relative to the project root (e.g. "pdf" or "reports/html").</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Absolute Path to the ensured directory.</span>
@@ -3279,22 +3279,22 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the path is absolute or escapes the project root.</span>
 <span class="sd">        SeretoPathError: If a non-directory object exists at the target path.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rel</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">relative_path</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
 
     <span class="k">if</span> <span class="n">rel</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;relative_path must be relative, not absolute&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"relative_path must be relative, not absolute"</span><span class="p">)</span>
 
     <span class="n">dest</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="n">rel</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="n">project_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">project_root</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;relative_path points outside the project root&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"relative_path points outside the project root"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;a non-directory object already exists at the requested path&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"a non-directory object already exists at the requested path"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="n">dest</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -3319,7 +3319,7 @@
 
 
 <h3 id="sereto.project.get_project_path_from_dir" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_project_path_from_dir</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_subtree</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">get_project_path_from_dir</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_subtree</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s1">'/'</span><span class="p">))</span></code>
 
 <a href="#sereto.project.get_project_path_from_dir" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3458,22 +3458,22 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_project_path_from_dir</span><span class="p">(</span><span class="nb">dir</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dir_subtree</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the path to the project directory.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_path_from_dir</span><span class="p">(</span><span class="nb">dir</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dir_subtree</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/"</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Get the path to the project directory.</span>
 
-<span class="sd">    Start the search from the &#39;dir&#39; directory and go up the directory tree until the project directory is</span>
-<span class="sd">    found or &#39;dir_subtree&#39; is reached.</span>
+<span class="sd">    Start the search from the 'dir' directory and go up the directory tree until the project directory is</span>
+<span class="sd">    found or 'dir_subtree' is reached.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dir: The directory to start the search from. Defaults to the current working directory.</span>
 <span class="sd">        dir_subtree: The directory to stop the search at. Defaults to the root directory.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        SeretoPathError: If the current working directory is not inside the project&#39;s (sub)directory.</span>
+<span class="sd">        SeretoPathError: If the current working directory is not inside the project's (sub)directory.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The path to the project directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
 
@@ -3488,7 +3488,7 @@ found or 'dir_subtree' is reached.</p>
             <span class="c1"># stop the search before leaving the subtree</span>
             <span class="k">break</span>
 
-    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;Not inside project&#39;s (sub)directory&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"Not inside project's (sub)directory"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3533,12 +3533,12 @@ found or 'dir_subtree' is reached.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_build_dir</span><span class="p">(</span>
     <span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Target</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the build directory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initialize the build directory."""</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">version_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">version_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;either &#39;version_config&#39; or &#39;target&#39; must be specified&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"either 'version_config' or 'target' must be specified"</span><span class="p">)</span>
 
     <span class="c1"># Ensure .build/ directory exists even when there are no targets</span>
-    <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">&quot;.build&quot;</span><span class="p">)</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">".build"</span><span class="p">)</span>
 
     <span class="c1"># Create target directories in .build/</span>
     <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -3547,7 +3547,7 @@ found or 'dir_subtree' is reached.</p>
         <span class="k">assert</span> <span class="n">version_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># guaranteed by the check above</span>
         <span class="n">targets</span> <span class="o">=</span> <span class="n">version_config</span><span class="o">.</span><span class="n">targets</span>
     <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
-        <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.build/</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="sa">f</span><span class="s2">".build/</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">uname</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3639,7 +3639,7 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">113</span>
 <span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_project_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the provided path is a root directory of a project.</span>
+<span class="w">    </span><span class="sd">"""Check if the provided path is a root directory of a project.</span>
 
 <span class="sd">    A project directory contains at least `.sereto` and `config.json` files.</span>
 
@@ -3648,8 +3648,8 @@ found or 'dir_subtree' is reached.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        True if the path is a project directory, False otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;.sereto&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">".sereto"</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">"config.json"</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3872,7 +3872,7 @@ found or 'dir_subtree' is reached.</p>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">people</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a new project with the specified ID.</span>
+<span class="w">    </span><span class="sd">"""Generates a new project with the specified ID.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        projects_path: The path to the projects directory.</span>
@@ -3884,32 +3884,32 @@ found or 'dir_subtree' is reached.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If a project with the specified ID already exists in the `projects` directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generating a new project with ID &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Generating a new project with ID '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">new_path</span> <span class="o">:=</span> <span class="n">projects_path</span> <span class="o">/</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;project with specified ID already exists&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">skel_path</span> <span class="o">:=</span> <span class="n">templates_path</span> <span class="o">/</span> <span class="s2">&quot;skel&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;skel path &#39;</span><span class="si">{</span><span class="n">skel_path</span><span class="si">}</span><span class="s2">&#39; does not exist or is not a directory&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"project with specified ID already exists"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">skel_path</span> <span class="o">:=</span> <span class="n">templates_path</span> <span class="o">/</span> <span class="s2">"skel"</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"skel path '</span><span class="si">{</span><span class="n">skel_path</span><span class="si">}</span><span class="s2">' does not exist or is not a directory"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">new_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
 
-    <span class="n">sereto_ver</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;sereto&quot;</span><span class="p">)</span>
+    <span class="n">sereto_ver</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">"sereto"</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Copying project skeleton&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Copying project skeleton"</span><span class="p">)</span>
     <span class="n">copy_skel</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates_path</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">new_path</span><span class="p">)</span>
 
-    <span class="n">config_path</span> <span class="o">=</span> <span class="n">new_path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span>
+    <span class="n">config_path</span> <span class="o">=</span> <span class="n">new_path</span> <span class="o">/</span> <span class="s2">"config.json"</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the config &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Writing the config '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
     <span class="n">Config</span><span class="p">(</span>
         <span class="n">sereto_version</span><span class="o">=</span><span class="n">SeretoVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">sereto_ver</span><span class="p">),</span>
         <span class="n">version_configs</span><span class="o">=</span><span class="p">{</span>
-            <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">):</span> <span class="n">VersionConfig</span><span class="p">(</span>
-                <span class="n">version</span><span class="o">=</span><span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">&quot;v1.0&quot;</span><span class="p">),</span>
+            <span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">):</span> <span class="n">VersionConfig</span><span class="p">(</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">ProjectVersion</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s2">"v1.0"</span><span class="p">),</span>
                 <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">version_description</span><span class="o">=</span><span class="s2">&quot;Initial&quot;</span><span class="p">,</span>
+                <span class="n">version_description</span><span class="o">=</span><span class="s2">"Initial"</span><span class="p">,</span>
                 <span class="n">risk_due_dates</span><span class="o">=</span><span class="n">risk_due_dates</span><span class="p">,</span>
                 <span class="n">people</span><span class="o">=</span><span class="n">people</span><span class="p">,</span>
             <span class="p">),</span>
@@ -4013,20 +4013,20 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">221</span>
 <span class="normal">222</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">project_create_missing</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span> <span class="n">version_config</span><span class="p">:</span> <span class="n">VersionConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates missing content in the project.</span>
+<span class="w">    </span><span class="sd">"""Creates missing content in the project.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        project: The project instance.</span>
 <span class="sd">        version_config: Configuration for a specific project version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Initialize the build directory</span>
     <span class="n">init_build_dir</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">version_config</span><span class="o">=</span><span class="n">version_config</span><span class="p">)</span>
 
-    <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">&quot;layouts/generated&quot;</span><span class="p">)</span>
+    <span class="n">project</span><span class="o">.</span><span class="n">ensure_dir</span><span class="p">(</span><span class="s2">"layouts/generated"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">version_config</span><span class="o">.</span><span class="n">targets</span><span class="p">:</span>
         <span class="c1"># Generate risks plot for the target</span>
-        <span class="n">risks_plot</span><span class="p">(</span><span class="n">risks</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;.build&quot;</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span> <span class="o">/</span> <span class="s2">&quot;risks.png&quot;</span><span class="p">)</span>
+        <span class="n">risks_plot</span><span class="p">(</span><span class="n">risks</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">risks</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">".build"</span> <span class="o">/</span> <span class="n">target</span><span class="o">.</span><span class="n">uname</span> <span class="o">/</span> <span class="s2">"risks.png"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4090,11 +4090,11 @@ Otherwise, all project directories are scanned and their configurations loaded t
     <span class="o">*</span><span class="p">,</span>
     <span class="n">templates_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a project identifier to an on-disk path.</span>
+<span class="w">    </span><span class="sd">"""Resolve a project identifier to an on-disk path.</span>
 
 <span class="sd">    First match wins: if a directory with the exact name of `project_id` exists, it is returned.</span>
 <span class="sd">    Otherwise, all project directories are scanned and their configurations loaded to find a matching project ID.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">direct_candidate</span> <span class="o">=</span> <span class="n">projects_path</span> <span class="o">/</span> <span class="n">project_id</span>
     <span class="k">if</span> <span class="n">is_project_dir</span><span class="p">(</span><span class="n">direct_candidate</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">direct_candidate</span>
@@ -4105,7 +4105,7 @@ Otherwise, all project directories are scanned and their configurations loaded t
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span>
-                <span class="n">entry</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">,</span>
+                <span class="n">entry</span> <span class="o">/</span> <span class="s2">"config.json"</span><span class="p">,</span>
                 <span class="n">templates</span><span class="o">=</span><span class="n">templates_path</span><span class="p">,</span>
                 <span class="n">risk_due_dates</span><span class="o">=</span><span class="p">{},</span>
             <span class="p">)</span>
@@ -4115,7 +4115,7 @@ Otherwise, all project directories are scanned and their configurations loaded t
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">config</span><span class="o">.</span><span class="n">at_version</span><span class="p">(</span><span class="n">ver</span><span class="p">)</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">project_id</span> <span class="k">for</span> <span class="n">ver</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">versions</span><span class="p">]):</span>
             <span class="k">return</span> <span class="n">entry</span>
 
-    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;project &#39;</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">&#39; does not exist. Use &#39;ls&#39; to list all projects&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"project '</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">' does not exist. Use 'ls' to list all projects"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

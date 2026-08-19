@@ -2986,14 +2986,14 @@
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseLocatorModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Common base model for all locator types.</span>
+<span class="w">    </span><span class="sd">"""Common base model for all locator types.</span>
 
 <span class="sd">    You should typically use `LocatorModel` instead of this class directly.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        type: The type of locator (discriminator field).</span>
 <span class="sd">        description: An optional description of the locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3107,15 +3107,15 @@
 <span class="normal">61</span>
 <span class="normal">62</span>
 <span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DomainLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a domain locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing a domain locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;domain&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "domain".</span>
 <span class="sd">        value: The domain of the locator.</span>
 <span class="sd">        description: Optional description of the domain locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;domain&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"domain"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"domain"</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Domain as a string</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3227,15 +3227,15 @@
 <span class="normal">91</span>
 <span class="normal">92</span>
 <span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FileLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a file locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing a file locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;file&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "file".</span>
 <span class="sd">        value: The path to the file, may contain specific line.</span>
 <span class="sd">        description: Optional description of the file locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;file&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"file"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"file"</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Path to the file</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3347,15 +3347,15 @@
 <span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HostnameLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a hostname locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing a hostname locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;hostname&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "hostname".</span>
 <span class="sd">        value: The hostname of the locator.</span>
 <span class="sd">        description: Optional description of the hostname locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;hostname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hostname&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"hostname"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"hostname"</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Hostname as a string</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3471,18 +3471,18 @@
 <span class="normal">78</span>
 <span class="normal">79</span>
 <span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IpLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing an IP locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing an IP locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;ip&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "ip".</span>
 <span class="sd">        value: The IP address or network of the locator.</span>
 <span class="sd">        description: Optional description of the IP locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ip&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"ip"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"ip"</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">IPvAnyAddress</span> <span class="o">|</span> <span class="n">IPvAnyNetwork</span>  <span class="c1"># ty: ignore[unsupported-operator]</span>
 
-    <span class="nd">@field_serializer</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+    <span class="nd">@field_serializer</span><span class="p">(</span><span class="s2">"value"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">serialize_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">IPvAnyAddress</span> <span class="o">|</span> <span class="n">IPvAnyNetwork</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># ty: ignore[unsupported-operator]</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3595,15 +3595,15 @@
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PlatformLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a platform locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing a platform locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;platform&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "platform".</span>
 <span class="sd">        value: The platform name.</span>
 <span class="sd">        description: Optional description of the platform locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;platform&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;platform&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"platform"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"platform"</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3719,18 +3719,18 @@
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">UrlLocatorModel</span><span class="p">(</span><span class="n">BaseLocatorModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a URL locator.</span>
+<span class="w">    </span><span class="sd">"""Model representing a URL locator.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        type: The discriminator for the locator type, which is always &quot;url&quot;.</span>
+<span class="sd">        type: The discriminator for the locator type, which is always "url".</span>
 <span class="sd">        value: The URL of the locator.</span>
 <span class="sd">        description: Optional description of the URL locator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;url&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"url"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"url"</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">AnyUrl</span>
 
-    <span class="nd">@field_serializer</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+    <span class="nd">@field_serializer</span><span class="p">(</span><span class="s2">"value"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">serialize_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">AnyUrl</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3847,22 +3847,22 @@
 <span class="normal">137</span>
 <span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dump_locators_to_toml</span><span class="p">(</span><span class="n">locators</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dump locators to a TOML string.</span>
+<span class="w">    </span><span class="sd">"""Dump locators to a TOML string.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        locators: An iterable of LocatorModel instances.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A TOML formatted string representing the locators.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loc_list</span> <span class="o">:=</span> <span class="nb">list</span><span class="p">(</span><span class="n">locators</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;[]&quot;</span>
+        <span class="k">return</span> <span class="s2">"[]"</span>
 
     <span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">loc_list</span><span class="p">:</span>
-        <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;, description=&quot;</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s1">&quot;&#39;</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="s1">type=&quot;</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s1">&quot;, value=&quot;</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="se">}}</span><span class="s1">,&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">&quot;[</span><span class="se">\n</span><span class="s2">    &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">]&quot;</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">', description="</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s1">"'</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">{{</span><span class="s1">type="</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s1">", value="</span><span class="si">{</span><span class="n">loc</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1">"</span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="se">}}</span><span class="s1">,'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"[</span><span class="se">\n</span><span class="s2">    "</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">    "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">]"</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3890,10 +3890,10 @@
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_locator_types</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all locator types defined in LocatorModel.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get all locator types defined in LocatorModel."""</span>
     <span class="n">union_type</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">LocatorModel</span><span class="p">)</span>  <span class="c1"># first arg is `UrlLocatorModel | HostnameLocatorModel | ...`</span>
     <span class="n">locator_classes</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">union_type</span><span class="p">)</span>  <span class="c1"># the individual model classes</span>
-    <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">locator_classes</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span><span class="o">.</span><span class="n">default</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">locator_classes</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

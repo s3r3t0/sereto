@@ -2868,7 +2868,7 @@
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model representing a person.</span>
+<span class="w">    </span><span class="sd">"""Model representing a person.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        type: Type of the person in relation to the assessment.</span>
@@ -2876,7 +2876,7 @@
 <span class="sd">        business_unit: Business unit the person belongs to.</span>
 <span class="sd">        email: Email address of the person.</span>
 <span class="sd">        role: Role of the person within the organization.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nb">type</span><span class="p">:</span> <span class="n">PersonType</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># `strict=False` allows coercion from string</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3027,7 +3027,7 @@
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PersonType</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum representing a person&#39;s role in regards to the current assessment.</span>
+<span class="w">    </span><span class="sd">"""Enum representing a person's role in regards to the current assessment.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        author: Author of the report.</span>
@@ -3036,14 +3036,14 @@
 <span class="sd">        security_officer: Security officer responsible for the asset.</span>
 <span class="sd">        technical_contact: Person who can answer technical questions about the asset.</span>
 <span class="sd">        reviewer: Reviewer of the report.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">author</span> <span class="o">=</span> <span class="s2">&quot;author&quot;</span>
-    <span class="n">requestor</span> <span class="o">=</span> <span class="s2">&quot;requestor&quot;</span>
-    <span class="n">asset_owner</span> <span class="o">=</span> <span class="s2">&quot;asset_owner&quot;</span>
-    <span class="n">security_officer</span> <span class="o">=</span> <span class="s2">&quot;security_officer&quot;</span>
-    <span class="n">technical_contact</span> <span class="o">=</span> <span class="s2">&quot;technical_contact&quot;</span>
-    <span class="n">reviewer</span> <span class="o">=</span> <span class="s2">&quot;reviewer&quot;</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="s2">"author"</span>
+    <span class="n">requestor</span> <span class="o">=</span> <span class="s2">"requestor"</span>
+    <span class="n">asset_owner</span> <span class="o">=</span> <span class="s2">"asset_owner"</span>
+    <span class="n">security_officer</span> <span class="o">=</span> <span class="s2">"security_officer"</span>
+    <span class="n">technical_contact</span> <span class="o">=</span> <span class="s2">"technical_contact"</span>
+    <span class="n">reviewer</span> <span class="o">=</span> <span class="s2">"reviewer"</span>
 </code></pre></div></td></tr></table></div>
               </details>
 

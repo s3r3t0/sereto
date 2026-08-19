@@ -3165,8 +3165,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="p">[</span><span class="n">q</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">query</span> <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Highlight fuzzy matches in the given text.&quot;&quot;&quot;</span>
-        <span class="n">combined</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Highlight fuzzy matches in the given text."""</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="n">combined_lower</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">result_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
 
@@ -3178,14 +3178,14 @@
                     <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                         <span class="k">break</span>
                     <span class="n">end</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-                    <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;bold yellow&quot;</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                    <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold yellow"</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
                     <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
                 <span class="k">continue</span>
 
             <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span><span class="o">.</span><span class="n">spans</span><span class="p">:</span>
                 <span class="n">span_text</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">span</span><span class="o">.</span><span class="n">start</span> <span class="p">:</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">]</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">span_text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;bold yellow&quot;</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+                    <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold yellow"</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">result_text</span>
 </code></pre></div></td></tr></table></div>
@@ -3244,8 +3244,8 @@
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Highlight fuzzy matches in the given text.&quot;&quot;&quot;</span>
-    <span class="n">combined</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Highlight fuzzy matches in the given text."""</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="n">combined_lower</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">result_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
 
@@ -3257,14 +3257,14 @@
                 <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-                <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;bold yellow&quot;</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold yellow"</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
             <span class="k">continue</span>
 
         <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span><span class="o">.</span><span class="n">spans</span><span class="p">:</span>
             <span class="n">span_text</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">span</span><span class="o">.</span><span class="n">start</span> <span class="p">:</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">span_text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">&quot;bold yellow&quot;</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+                <span class="n">result_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold yellow"</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">span</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result_text</span>
 </code></pre></div></td></tr></table></div>
@@ -3323,7 +3323,7 @@
 <span class="normal">67</span>
 <span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParsedSearchQuery</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structured representation of the raw search bar input.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Structured representation of the raw search bar input."""</span>
 
     <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">free_terms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
@@ -3490,7 +3490,7 @@ bonuses.</p>
 <span class="normal">117</span>
 <span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SearchDiagnostics</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structured scoring details for one ranked result.</span>
+<span class="w">    </span><span class="sd">"""Structured scoring details for one ranked result.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        free_text_score: Aggregate contribution from untagged free-text terms.</span>
@@ -3501,7 +3501,7 @@ bonuses.</p>
 <span class="sd">            bonuses.</span>
 <span class="sd">        passed_threshold: Whether the final score passed the display cutoff.</span>
 <span class="sd">        field_scores: Weighted field contributions keyed by field name.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">free_text_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">clause_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -3570,7 +3570,7 @@ bonuses.</p>
 <span class="normal">75</span>
 <span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SearchDocument</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Searchable representation of one indexed finding template.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Searchable representation of one indexed finding template."""</span>
 
     <span class="n">payload</span><span class="p">:</span> <span class="n">T</span>
     <span class="n">fields</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
@@ -3755,7 +3755,7 @@ in the finding preview screen.</p>
 <span class="normal">54</span>
 <span class="normal">55</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SearchField</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Description of one searchable field in the finding index.</span>
+<span class="w">    </span><span class="sd">"""Description of one searchable field in the finding index.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: Canonical field name used internally and in the query syntax.</span>
@@ -3777,7 +3777,7 @@ in the finding preview screen.</p>
 <span class="sd">            also does not need to add up to `1` with the other weights.</span>
 <span class="sd">        previewable: Whether matches in this field should also be highlighted</span>
 <span class="sd">            in the finding preview screen.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
@@ -3867,14 +3867,14 @@ in the finding preview screen.</p>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SearchFieldRegistry</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Registry of supported search fields and their query operators.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Registry of supported search fields and their query operators."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchField</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="n">fields</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">by_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">field</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">allow_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SearchField</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a query operator to a registered search field.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resolve a query operator to a registered search field."""</span>
         <span class="n">normalized</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -3942,7 +3942,7 @@ in the finding preview screen.</p>
 <span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">allow_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SearchField</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a query operator to a registered search field.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Resolve a query operator to a registered search field."""</span>
     <span class="n">normalized</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -4008,7 +4008,7 @@ in the finding preview screen.</p>
 <span class="normal">84</span>
 <span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SearchReason</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Explanation of why a document matched a query.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Explanation of why a document matched a query."""</span>
 
     <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
@@ -4076,12 +4076,12 @@ in the finding preview screen.</p>
 <span class="normal">94</span>
 <span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SearchResult</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranked search result together with its scoring metadata.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Ranked search result together with its scoring metadata."""</span>
 
     <span class="n">document</span><span class="p">:</span> <span class="n">SearchDocument</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
     <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">reasons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchReason</span><span class="p">]</span>
-    <span class="n">diagnostics</span><span class="p">:</span> <span class="s2">&quot;SearchDiagnostics&quot;</span>
+    <span class="n">diagnostics</span><span class="p">:</span> <span class="s2">"SearchDiagnostics"</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4134,7 +4134,7 @@ in the finding preview screen.</p>
 <span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_matchers</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">ParsedSearchQuery</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="n">SearchFieldRegistry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FuzzyMatcher</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create field-specific matchers for highlighting query terms.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Create field-specific matchers for highlighting query terms."""</span>
     <span class="n">matchers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FuzzyMatcher</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">for</span> <span class="n">search_field</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
@@ -4170,7 +4170,7 @@ in the finding preview screen.</p>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_search_debug_visible</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether inline search diagnostics should be shown in the TUI.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return whether inline search diagnostics should be shown in the TUI."""</span>
 
     <span class="k">return</span> <span class="n">get_log_config</span><span class="p">()</span><span class="o">.</span><span class="n">level</span> <span class="ow">in</span> <span class="p">{</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">LogLevel</span><span class="o">.</span><span class="n">TRACE</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
@@ -4236,25 +4236,25 @@ field name or alias.</p>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_search_query</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="n">SearchFieldRegistry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParsedSearchQuery</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the raw search string into free-text terms and field clauses.</span>
+<span class="w">    </span><span class="sd">"""Parse the raw search string into free-text terms and field clauses.</span>
 
 <span class="sd">    Free-text terms are used for the default search mode, which primarily</span>
 <span class="sd">    targets finding names, keywords, and group hints. Tokens in the form</span>
 <span class="sd">    `field:value` are</span>
 <span class="sd">    parsed as explicit field clauses when `field` matches a registered</span>
 <span class="sd">    field name or alias.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tokens</span> <span class="o">=</span> <span class="n">_split_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
     <span class="n">free_terms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">field_terms</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">search_field</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">search_field</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">fields</span><span class="p">}</span>
 
     <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">":"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
                 <span class="n">free_terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="n">raw_field</span><span class="p">,</span> <span class="n">raw_value</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">raw_field</span><span class="p">,</span> <span class="n">raw_value</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">resolved</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">raw_field</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">resolved</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">free_terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
@@ -4331,7 +4331,7 @@ form a normalized distribution.</p>
     <span class="n">query</span><span class="p">:</span> <span class="n">ParsedSearchQuery</span><span class="p">,</span>
     <span class="n">fields</span><span class="p">:</span> <span class="n">SearchFieldRegistry</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchResult</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rank documents by combining free-text and field-specific matches.</span>
+<span class="w">    </span><span class="sd">"""Rank documents by combining free-text and field-specific matches.</span>
 
 <span class="sd">    The ranking pipeline has two main inputs:</span>
 
@@ -4341,7 +4341,7 @@ form a normalized distribution.</p>
 <span class="sd">    The returned score is a relative ranking value in the `0` to `100`</span>
 <span class="sd">    range. The weighting values are tuning multipliers and are not expected to</span>
 <span class="sd">    form a normalized distribution.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="o">.</span><span class="n">has_terms</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
@@ -4377,7 +4377,7 @@ form a normalized distribution.</p>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">should_display_result</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether a ranked result is strong enough to display.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return whether a ranked result is strong enough to display."""</span>
     <span class="k">return</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="n">_MATCH_THRESHOLD</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4419,21 +4419,21 @@ form a normalized distribution.</p>
 <span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">summarize_query</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">ParsedSearchQuery</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="n">SearchFieldRegistry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the parsed query back into a compact user-facing summary.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Render the parsed query back into a compact user-facing summary."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="o">.</span><span class="n">has_terms</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Search name, keywords, and group hints by default.&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s2">"Search name, keywords, and group hints by default."</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
 
     <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Text</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">free_terms</span><span class="p">:</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Text: &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;bold cyan&quot;</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">free_terms</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">"Text: "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"bold cyan"</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">free_terms</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">"white"</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">field_terms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">field</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">by_name</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">parts</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;  |  &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">: &quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;bold green&quot;</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">))</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">"  |  "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">: "</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"bold green"</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s2">"white"</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4462,9 +4462,9 @@ form a normalized distribution.</p>
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">supported_operator_text</span><span class="p">(</span><span class="n">fields</span><span class="p">:</span> <span class="n">SearchFieldRegistry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the static help text listing the supported field operators.&quot;&quot;&quot;</span>
-    <span class="n">field_list</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operators: </span><span class="si">{</span><span class="n">field_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Render the static help text listing the supported field operators."""</span>
+    <span class="n">field_list</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:"</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Operators: </span><span class="si">{</span><span class="n">field_list</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

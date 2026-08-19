@@ -3681,7 +3681,7 @@
 <span class="normal">397</span>
 <span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FindingGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a finding group.</span>
+<span class="w">    </span><span class="sd">"""Represents a finding group.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: The name of the finding group.</span>
@@ -3691,7 +3691,7 @@
 <span class="sd">        _finding_group_locators: A list of locators defined on the finding group.</span>
 <span class="sd">        _show_locator_types: A list of locator types to return from the locators() property.</span>
 <span class="sd">        extras: A dictionary of extra fields (e.g. from plugins).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">sub_findings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SubFinding</span><span class="p">]</span>
@@ -3711,7 +3711,7 @@
         <span class="n">target_locators</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">],</span>
         <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a finding group.</span>
+<span class="w">        </span><span class="sd">"""Load a finding group.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: The name of the finding group.</span>
@@ -3722,9 +3722,9 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The loaded finding group object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sub_findings</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">SubFinding</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2&quot;</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
+            <span class="n">SubFinding</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2"</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group_desc</span><span class="o">.</span><span class="n">findings</span>
         <span class="p">]</span>
 
@@ -3739,17 +3739,17 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dumps_toml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump the finding group to a TOML string.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Dump the finding group to a TOML string."""</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span>
         <span class="n">table</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">table</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;risk&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"risk"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># show_locator_types (force inline)</span>
         <span class="n">slt_array</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
         <span class="n">slt_array</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_show_locator_types</span><span class="p">)</span>
-        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;show_locator_types&quot;</span><span class="p">,</span> <span class="n">slt_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"show_locator_types"</span><span class="p">,</span> <span class="n">slt_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
 
         <span class="c1"># findings (preserve order)</span>
         <span class="n">findings_array</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
@@ -3757,7 +3757,7 @@
             <span class="n">findings_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span><span class="p">:</span>
             <span class="n">findings_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sf</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">findings_array</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">findings_array</span><span class="p">)</span>
 
         <span class="c1"># extras</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -3768,18 +3768,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">risk</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Risk</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the finding group risk.</span>
+<span class="w">        </span><span class="sd">"""Get the finding group risk.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The explicit risk if set, otherwise the highest risk from the sub-findings.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">sf</span><span class="o">.</span><span class="n">risk</span> <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">to_int</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">locators</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a de-duplicated list of locators for the finding group.</span>
+<span class="w">        </span><span class="sd">"""Return a de-duplicated list of locators for the finding group.</span>
 
 <span class="sd">        Applies filtering from the `show_locator_types` attribute.</span>
 
@@ -3790,7 +3790,7 @@
 <span class="sd">        3. If only some sub-findings define locators, merge their locators with the target</span>
 <span class="sd">           locators and return the unique union</span>
 <span class="sd">        4. Locators inherited from the target</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># 1. Explicit locators on the group</span>
         <span class="n">finding_group_locators</span> <span class="o">=</span> <span class="n">_filter_locators_by_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_finding_group_locators</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_locator_types</span><span class="p">)</span>
@@ -3820,7 +3820,7 @@
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">subfinding_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_finding</span><span class="p">:</span> <span class="n">SubFinding</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return locators that add information beyond what the group already surfaces.</span>
+<span class="w">        </span><span class="sd">"""Return locators that add information beyond what the group already surfaces.</span>
 
 <span class="sd">        Resolution order:</span>
 <span class="sd">            1. Sub-finding locators when they introduce new locators.</span>
@@ -3829,7 +3829,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of locators relevant for the given sub-finding, possibly empty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sub_locators</span> <span class="o">=</span> <span class="n">_unique_locators</span><span class="p">(</span><span class="n">_filter_locators_by_type</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">locators</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_locator_types</span><span class="p">))</span>
         <span class="n">group_locators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span>
 
@@ -3860,52 +3860,52 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reported_on</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the reported_on date from sub-findings, if available.</span>
+<span class="w">        </span><span class="sd">"""Get the reported_on date from sub-findings, if available.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The reported_on date if any sub-finding has it set, otherwise None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">reported_dates</span> <span class="o">=</span> <span class="p">[</span><span class="n">sf</span><span class="o">.</span><span class="n">reported_on</span> <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span> <span class="k">if</span> <span class="n">sf</span><span class="o">.</span><span class="n">reported_on</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">reported_dates</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reported_dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">        </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of locators of the specified type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">suggested_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display name for the finding group.</span>
+<span class="w">        </span><span class="sd">"""Display name for the finding group.</span>
 
 <span class="sd">        When the group contains a single sub-finding whose name differs from the group</span>
-<span class="sd">        name, returns ``&quot;&lt;group name&gt;: &lt;subfinding name&gt;&quot;``.  If the single sub-finding</span>
+<span class="sd">        name, returns ``"&lt;group name&gt;: &lt;subfinding name&gt;"``.  If the single sub-finding</span>
 <span class="sd">        shares the same name as the group, or there are multiple sub-findings, the</span>
 <span class="sd">        group name is returned as-is.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">sf_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
             <span class="k">if</span> <span class="n">sf_name</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">casefold</span><span class="p">():</span>
-                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sf_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sf_name</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
     <span class="nd">@property</span>
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uname</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unique name of the finding group.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding_group_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Unique name of the finding group."""</span>
+        <span class="k">return</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding_group_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">matches_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if this group matches the given hint.</span>
+<span class="w">        </span><span class="sd">"""Check if this group matches the given hint.</span>
 
-<span class="sd">        The comparison is done by computing the unique name from the hint and comparing it to the group&#39;s unique name,</span>
+<span class="sd">        The comparison is done by computing the unique name from the hint and comparing it to the group's unique name,</span>
 <span class="sd">        or by comparing the group name case-insensitively.</span>
 
 <span class="sd">        Args:</span>
@@ -3913,8 +3913,8 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            True if the group matches the hint.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">hint_uname</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding_group_</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">hint_uname</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding_group_</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">hint_uname</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="n">hint</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4143,17 +4143,17 @@ group name is returned as-is.</p>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dumps_toml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dump the finding group to a TOML string.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Dump the finding group to a TOML string."""</span>
     <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span>
     <span class="n">table</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">table</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;risk&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"risk"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_risk</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
     <span class="c1"># show_locator_types (force inline)</span>
     <span class="n">slt_array</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
     <span class="n">slt_array</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_show_locator_types</span><span class="p">)</span>
-    <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;show_locator_types&quot;</span><span class="p">,</span> <span class="n">slt_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"show_locator_types"</span><span class="p">,</span> <span class="n">slt_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
 
     <span class="c1"># findings (preserve order)</span>
     <span class="n">findings_array</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
@@ -4161,7 +4161,7 @@ group name is returned as-is.</p>
         <span class="n">findings_array</span><span class="o">.</span><span class="n">multiline</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_findings</span><span class="p">:</span>
         <span class="n">findings_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sf</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-    <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">findings_array</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">findings_array</span><span class="p">)</span>
 
     <span class="c1"># extras</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -4258,14 +4258,14 @@ group name is returned as-is.</p>
 <span class="normal">361</span>
 <span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">    </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of locators of the specified type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -4457,7 +4457,7 @@ group name is returned as-is.</p>
     <span class="n">target_locators</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">],</span>
     <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a finding group.</span>
+<span class="w">    </span><span class="sd">"""Load a finding group.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: The name of the finding group.</span>
@@ -4468,9 +4468,9 @@ group name is returned as-is.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The loaded finding group object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sub_findings</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">SubFinding</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2&quot;</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
+        <span class="n">SubFinding</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2"</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">group_desc</span><span class="o">.</span><span class="n">findings</span>
     <span class="p">]</span>
 
@@ -4575,9 +4575,9 @@ or by comparing the group name case-insensitively.</p>
 <span class="normal">396</span>
 <span class="normal">397</span>
 <span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">matches_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if this group matches the given hint.</span>
+<span class="w">    </span><span class="sd">"""Check if this group matches the given hint.</span>
 
-<span class="sd">    The comparison is done by computing the unique name from the hint and comparing it to the group&#39;s unique name,</span>
+<span class="sd">    The comparison is done by computing the unique name from the hint and comparing it to the group's unique name,</span>
 <span class="sd">    or by comparing the group name case-insensitively.</span>
 
 <span class="sd">    Args:</span>
@@ -4585,8 +4585,8 @@ or by comparing the group name case-insensitively.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        True if the group matches the hint.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">hint_uname</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding_group_</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">hint_uname</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding_group_</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">hint_uname</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="n">hint</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4682,7 +4682,7 @@ or by comparing the group name case-insensitively.</p>
 <span class="normal">338</span>
 <span class="normal">339</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subfinding_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_finding</span><span class="p">:</span> <span class="n">SubFinding</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return locators that add information beyond what the group already surfaces.</span>
+<span class="w">    </span><span class="sd">"""Return locators that add information beyond what the group already surfaces.</span>
 
 <span class="sd">    Resolution order:</span>
 <span class="sd">        1. Sub-finding locators when they introduce new locators.</span>
@@ -4691,7 +4691,7 @@ or by comparing the group name case-insensitively.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of locators relevant for the given sub-finding, possibly empty.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sub_locators</span> <span class="o">=</span> <span class="n">_unique_locators</span><span class="p">(</span><span class="n">_filter_locators_by_type</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">locators</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_locator_types</span><span class="p">))</span>
     <span class="n">group_locators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span>
 
@@ -5123,13 +5123,13 @@ or by comparing the group name case-insensitively.</p>
 <span class="normal">706</span>
 <span class="normal">707</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Findings</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a collection of all finding groups inside a target.</span>
+<span class="w">    </span><span class="sd">"""Represents a collection of all finding groups inside a target.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        groups: A list of finding groups.</span>
 <span class="sd">        target_dir: The path to the target directory containing the findings.</span>
 <span class="sd">        target_locators: A list of locators used to find the target.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FindingGroup</span><span class="p">]</span>
     <span class="n">target_dir</span><span class="p">:</span> <span class="n">FilePath</span>
@@ -5140,7 +5140,7 @@ or by comparing the group name case-insensitively.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">target_locators</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">],</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load findings belonging to the same target.</span>
+<span class="w">        </span><span class="sd">"""Load findings belonging to the same target.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            target_dir: The path to the target directory.</span>
@@ -5149,14 +5149,14 @@ or by comparing the group name case-insensitively.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The loaded findings object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">FindingsConfigModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings.toml&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">FindingsConfigModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings.toml"</span><span class="p">)</span>
 
         <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">FindingGroup</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">group_desc</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
-                <span class="n">findings_dir</span><span class="o">=</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings&quot;</span><span class="p">,</span>
+                <span class="n">findings_dir</span><span class="o">=</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings"</span><span class="p">,</span>
                 <span class="n">target_locators</span><span class="o">=</span><span class="n">target_locators</span><span class="p">,</span>
                 <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">,</span>
             <span class="p">)</span>
@@ -5166,26 +5166,26 @@ or by comparing the group name case-insensitively.</p>
         <span class="c1"># ensure group names are unique</span>
         <span class="n">unique_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">uname</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">unique_names</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;finding group unique names must be unique&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"finding group unique names must be unique"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">target_dir</span><span class="o">=</span><span class="n">target_dir</span><span class="p">,</span> <span class="n">target_locators</span><span class="o">=</span><span class="n">target_locators</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">find_group_by_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FindingGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a finding group that matches the given hint.</span>
+<span class="w">        </span><span class="sd">"""Find a finding group that matches the given hint.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hint: The group hint string to match against.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The matching finding group, or None if no match is found.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">matches_hint</span><span class="p">(</span><span class="n">hint</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">group</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FilePath</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to a sub-finding by category and name.</span>
+<span class="w">        </span><span class="sd">"""Get the path to a sub-finding by category and name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            category: The category of the sub-finding.</span>
@@ -5193,8 +5193,8 @@ or by comparing the group name case-insensitively.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The path to the sub-finding file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2"</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_from_template</span><span class="p">(</span>
@@ -5209,7 +5209,7 @@ or by comparing the group name case-insensitively.</p>
         <span class="n">group_uname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a sub-finding from a template.</span>
+<span class="w">        </span><span class="sd">"""Add a sub-finding from a template.</span>
 
 <span class="sd">        When `group_uname` is provided, the sub-finding is appended to that existing finding group.</span>
 <span class="sd">        Otherwise a new finding group is created with the name `group_name` (defaults to the</span>
@@ -5227,13 +5227,13 @@ or by comparing the group name case-insensitively.</p>
 <span class="sd">            group_uname: Unique name of an existing finding group to add the sub-finding to.</span>
 <span class="sd">            group_name: Name for the new finding group. Only used when `group_uname` is None.</span>
 <span class="sd">                Defaults to the sub-finding name from the template.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span> <span class="ow">or</span> <span class="p">{}</span>
 
         <span class="c1"># Load template metadata and content</span>
         <span class="n">template_metadata</span> <span class="o">=</span> <span class="n">FindingTemplateFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span>
         <span class="n">finding_file_name</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="n">sub_finding_name</span> <span class="ow">or</span> <span class="n">template_metadata</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">frontmatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">frontmatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
         <span class="c1"># Determine sub-finding path</span>
         <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">finding_file_name</span><span class="p">)</span>
@@ -5245,13 +5245,13 @@ or by comparing the group name case-insensitively.</p>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Try to generate a unique filename with random suffix</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-                    <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-                    <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">finding_file_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">suffix</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+                    <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">finding_file_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;sub-finding already exists and could not generate a unique filename: </span><span class="si">{</span><span class="n">sub_finding_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"sub-finding already exists and could not generate a unique filename: </span><span class="si">{</span><span class="n">sub_finding_path</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
 
         <span class="c1"># Prepare sub-finding frontmatter</span>
@@ -5265,7 +5265,7 @@ or by comparing the group name case-insensitively.</p>
         <span class="p">)</span>
 
         <span class="c1"># Write sub-finding file</span>
-        <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;+++</span><span class="se">\n</span><span class="si">{</span><span class="n">sub_finding_metadata</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="s2">+++</span><span class="se">\n\n</span><span class="si">{</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"+++</span><span class="se">\n</span><span class="si">{</span><span class="n">sub_finding_metadata</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="s2">+++</span><span class="se">\n\n</span><span class="si">{</span><span class="n">content</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
         <span class="c1"># If overwriting, nothing else to do</span>
         <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
@@ -5277,23 +5277,23 @@ or by comparing the group name case-insensitively.</p>
         <span class="k">if</span> <span class="n">group_uname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="p">(</span><span class="n">group_uname</span><span class="p">)</span>
 
-            <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">table</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="n">doc</span><span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
-            <span class="k">if</span> <span class="s2">&quot;findings&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
+            <span class="k">if</span> <span class="s2">"findings"</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
                 <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
                     <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
                 <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
             <span class="n">group</span><span class="o">.</span><span class="n">sub_findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="p">)</span>
             <span class="k">return</span>
@@ -5304,23 +5304,23 @@ or by comparing the group name case-insensitively.</p>
         <span class="c1"># Check if a group with this name already exists - reuse it instead of creating a new one</span>
         <span class="n">existing_group</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">group_name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">existing_group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">existing_group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group </span><span class="si">{</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group </span><span class="si">{</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">table</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="n">doc</span><span class="p">[</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
-            <span class="k">if</span> <span class="s2">&quot;findings&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
+            <span class="k">if</span> <span class="s2">"findings"</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
                 <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
                     <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
                 <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
             <span class="n">existing_group</span><span class="o">.</span><span class="n">sub_findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="p">)</span>
             <span class="k">return</span>
@@ -5335,28 +5335,28 @@ or by comparing the group name case-insensitively.</p>
         <span class="p">)</span>
 
         <span class="c1"># Append to findings.toml</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Add to loaded groups</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">select_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FindingGroup</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select a finding group by index or name.</span>
+<span class="w">        </span><span class="sd">"""Select a finding group by index or name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            selector: The index or name of the finding group to select.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The selected finding group.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># only single finding group present</span>
         <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;cannot select finding group; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding &quot;</span>
-                    <span class="s2">&quot;groups present&quot;</span>
+                    <span class="sa">f</span><span class="s2">"cannot select finding group; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding "</span>
+                    <span class="s2">"groups present"</span>
                 <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -5364,28 +5364,28 @@ or by comparing the group name case-insensitively.</p>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">selector</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
             <span class="n">ix</span> <span class="o">=</span> <span class="n">selector</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ix</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;finding group index out of range&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"finding group index out of range"</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
 
         <span class="c1"># by unique name</span>
         <span class="n">matching_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">matching_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to the findings.toml configuration file&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings.toml&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the path to the findings.toml configuration file"""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings.toml"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">findings_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to the directory containing the findings&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the path to the directory containing the findings"""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings"</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_group_extras</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the extras of a finding group and persist to findings.toml.</span>
+<span class="w">        </span><span class="sd">"""Update the extras of a finding group and persist to findings.toml.</span>
 
 <span class="sd">        This method updates plugin-specific extra fields on a finding group and writes the changes back to the</span>
 <span class="sd">        findings.toml file while preserving formatting.</span>
@@ -5397,29 +5397,29 @@ or by comparing the group name case-insensitively.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the finding group cannot be found.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
 
         <span class="c1"># Update in-memory extras</span>
         <span class="n">group</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
 
         <span class="c1"># Read and parse the existing TOML file preserving formatting</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 
         <span class="c1"># Update the extras in the TOML document</span>
         <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group &#39;</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found in findings.toml&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group '</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found in findings.toml"</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">doc</span><span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="c1"># Write back to file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">risks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Risks</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the summary of risks for the specified version.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the summary of risks for the specified version."""</span>
         <span class="k">return</span> <span class="n">Risks</span><span class="p">(</span>
             <span class="n">critical</span><span class="o">=</span><span class="nb">len</span><span class="p">([</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">risk</span> <span class="o">==</span> <span class="n">Risk</span><span class="o">.</span><span class="n">critical</span><span class="p">]),</span>
             <span class="n">high</span><span class="o">=</span><span class="nb">len</span><span class="p">([</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">risk</span> <span class="o">==</span> <span class="n">Risk</span><span class="o">.</span><span class="n">high</span><span class="p">]),</span>
@@ -5846,7 +5846,7 @@ Defaults to the sub-finding name from the template.</p>
     <span class="n">group_uname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a sub-finding from a template.</span>
+<span class="w">    </span><span class="sd">"""Add a sub-finding from a template.</span>
 
 <span class="sd">    When `group_uname` is provided, the sub-finding is appended to that existing finding group.</span>
 <span class="sd">    Otherwise a new finding group is created with the name `group_name` (defaults to the</span>
@@ -5864,13 +5864,13 @@ Defaults to the sub-finding name from the template.</p>
 <span class="sd">        group_uname: Unique name of an existing finding group to add the sub-finding to.</span>
 <span class="sd">        group_name: Name for the new finding group. Only used when `group_uname` is None.</span>
 <span class="sd">            Defaults to the sub-finding name from the template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span> <span class="ow">or</span> <span class="p">{}</span>
 
     <span class="c1"># Load template metadata and content</span>
     <span class="n">template_metadata</span> <span class="o">=</span> <span class="n">FindingTemplateFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span>
     <span class="n">finding_file_name</span> <span class="o">=</span> <span class="n">lower_alphanum</span><span class="p">(</span><span class="n">sub_finding_name</span> <span class="ow">or</span> <span class="n">template_metadata</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">frontmatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">frontmatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="c1"># Determine sub-finding path</span>
     <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">finding_file_name</span><span class="p">)</span>
@@ -5882,13 +5882,13 @@ Defaults to the sub-finding name from the template.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Try to generate a unique filename with random suffix</span>
             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-                <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-                <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">finding_file_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+                <span class="n">sub_finding_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">finding_file_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;sub-finding already exists and could not generate a unique filename: </span><span class="si">{</span><span class="n">sub_finding_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"sub-finding already exists and could not generate a unique filename: </span><span class="si">{</span><span class="n">sub_finding_path</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
 
     <span class="c1"># Prepare sub-finding frontmatter</span>
@@ -5902,7 +5902,7 @@ Defaults to the sub-finding name from the template.</p>
     <span class="p">)</span>
 
     <span class="c1"># Write sub-finding file</span>
-    <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;+++</span><span class="se">\n</span><span class="si">{</span><span class="n">sub_finding_metadata</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="s2">+++</span><span class="se">\n\n</span><span class="si">{</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">sub_finding_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"+++</span><span class="se">\n</span><span class="si">{</span><span class="n">sub_finding_metadata</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="s2">+++</span><span class="se">\n\n</span><span class="si">{</span><span class="n">content</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="c1"># If overwriting, nothing else to do</span>
     <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
@@ -5914,23 +5914,23 @@ Defaults to the sub-finding name from the template.</p>
     <span class="k">if</span> <span class="n">group_uname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="p">(</span><span class="n">group_uname</span><span class="p">)</span>
 
-        <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">table</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="n">doc</span><span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="s2">&quot;findings&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
+        <span class="k">if</span> <span class="s2">"findings"</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
             <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
                 <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
             <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
         <span class="n">group</span><span class="o">.</span><span class="n">sub_findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="p">)</span>
         <span class="k">return</span>
@@ -5941,23 +5941,23 @@ Defaults to the sub-finding name from the template.</p>
     <span class="c1"># Check if a group with this name already exists - reuse it instead of creating a new one</span>
     <span class="n">existing_group</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">group_name</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">existing_group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">existing_group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group </span><span class="si">{</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group </span><span class="si">{</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">table</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="n">doc</span><span class="p">[</span><span class="n">existing_group</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="s2">&quot;findings&quot;</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
+        <span class="k">if</span> <span class="s2">"findings"</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">())</span>
             <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
                 <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">array</span><span class="p">()</span>
             <span class="n">arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="o">.</span><span class="n">uname</span><span class="p">)</span>
-            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;findings&quot;</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
         <span class="n">existing_group</span><span class="o">.</span><span class="n">sub_findings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_finding</span><span class="p">)</span>
         <span class="k">return</span>
@@ -5972,8 +5972,8 @@ Defaults to the sub-finding name from the template.</p>
     <span class="p">)</span>
 
     <span class="c1"># Append to findings.toml</span>
-    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">dumps_toml</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Add to loaded groups</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
@@ -6071,14 +6071,14 @@ Defaults to the sub-finding name from the template.</p>
 <span class="normal">460</span>
 <span class="normal">461</span>
 <span class="normal">462</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_group_by_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FindingGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a finding group that matches the given hint.</span>
+<span class="w">    </span><span class="sd">"""Find a finding group that matches the given hint.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        hint: The group hint string to match against.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The matching finding group, or None if no match is found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">matches_hint</span><span class="p">(</span><span class="n">hint</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">group</span>
@@ -6186,7 +6186,7 @@ Defaults to the sub-finding name from the template.</p>
 <span class="normal">472</span>
 <span class="normal">473</span>
 <span class="normal">474</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FilePath</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the path to a sub-finding by category and name.</span>
+<span class="w">    </span><span class="sd">"""Get the path to a sub-finding by category and name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        category: The category of the sub-finding.</span>
@@ -6194,8 +6194,8 @@ Defaults to the sub-finding name from the template.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The path to the sub-finding file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">findings_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.md.j2"</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6346,7 +6346,7 @@ Defaults to the sub-finding name from the template.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">target_locators</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">],</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load findings belonging to the same target.</span>
+<span class="w">    </span><span class="sd">"""Load findings belonging to the same target.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        target_dir: The path to the target directory.</span>
@@ -6355,14 +6355,14 @@ Defaults to the sub-finding name from the template.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The loaded findings object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">FindingsConfigModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings.toml&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">FindingsConfigModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings.toml"</span><span class="p">)</span>
 
     <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">FindingGroup</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
             <span class="n">group_desc</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
-            <span class="n">findings_dir</span><span class="o">=</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">&quot;findings&quot;</span><span class="p">,</span>
+            <span class="n">findings_dir</span><span class="o">=</span><span class="n">target_dir</span> <span class="o">/</span> <span class="s2">"findings"</span><span class="p">,</span>
             <span class="n">target_locators</span><span class="o">=</span><span class="n">target_locators</span><span class="p">,</span>
             <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">,</span>
         <span class="p">)</span>
@@ -6372,7 +6372,7 @@ Defaults to the sub-finding name from the template.</p>
     <span class="c1"># ensure group names are unique</span>
     <span class="n">unique_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="o">.</span><span class="n">uname</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">unique_names</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;finding group unique names must be unique&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"finding group unique names must be unique"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">target_dir</span><span class="o">=</span><span class="n">target_dir</span><span class="p">,</span> <span class="n">target_locators</span><span class="o">=</span><span class="n">target_locators</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -6488,20 +6488,20 @@ Defaults to the sub-finding name from the template.</p>
 <span class="normal">650</span>
 <span class="normal">651</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FindingGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select a finding group by index or name.</span>
+<span class="w">    </span><span class="sd">"""Select a finding group by index or name.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        selector: The index or name of the finding group to select.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The selected finding group.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># only single finding group present</span>
     <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;cannot select finding group; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding &quot;</span>
-                <span class="s2">&quot;groups present&quot;</span>
+                <span class="sa">f</span><span class="s2">"cannot select finding group; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> finding "</span>
+                <span class="s2">"groups present"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -6509,13 +6509,13 @@ Defaults to the sub-finding name from the template.</p>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">selector</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
         <span class="n">ix</span> <span class="o">=</span> <span class="n">selector</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ix</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;finding group index out of range&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"finding group index out of range"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
 
     <span class="c1"># by unique name</span>
     <span class="n">matching_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_groups</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">matching_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6646,7 +6646,7 @@ findings.toml file while preserving formatting.</p>
 <span class="normal">694</span>
 <span class="normal">695</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">update_group_extras</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the extras of a finding group and persist to findings.toml.</span>
+<span class="w">    </span><span class="sd">"""Update the extras of a finding group and persist to findings.toml.</span>
 
 <span class="sd">    This method updates plugin-specific extra fields on a finding group and writes the changes back to the</span>
 <span class="sd">    findings.toml file while preserving formatting.</span>
@@ -6658,25 +6658,25 @@ findings.toml file while preserving formatting.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the finding group cannot be found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
 
     <span class="c1"># Update in-memory extras</span>
     <span class="n">group</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
 
     <span class="c1"># Read and parse the existing TOML file preserving formatting</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
     <span class="n">doc</span> <span class="o">=</span> <span class="n">tomlkit</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 
     <span class="c1"># Update the extras in the TOML document</span>
     <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;finding group &#39;</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found in findings.toml&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"finding group '</span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found in findings.toml"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">doc</span><span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="c1"># Write back to file</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">config_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">tomlkit</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6834,7 +6834,7 @@ findings.toml file while preserving formatting.</p>
     <span class="nd">@classmethod</span>
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a sub-finding from a file.</span>
+<span class="w">        </span><span class="sd">"""Load a sub-finding from a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: The path to the sub-finding file.</span>
@@ -6842,7 +6842,7 @@ findings.toml file while preserving formatting.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The loaded sub-finding object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">frontmatter</span> <span class="o">=</span> <span class="n">SubFindingFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -6858,31 +6858,31 @@ findings.toml file while preserving formatting.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uname</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unique name of the finding.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.md.j2&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Unique name of the finding."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">".md.j2"</span><span class="p">)</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">        </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of locators of the specified type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the variables of the sub-finding against definition in the template.</span>
+<span class="w">        </span><span class="sd">"""Validate the variables of the sub-finding against definition in the template.</span>
 
 <span class="sd">        Works only if there is a template path defined, otherwise no validation is done.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SeretoValueError: If the variables are not valid.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># no template path, no validation</span>
             <span class="k">return</span>
@@ -6891,37 +6891,37 @@ findings.toml file while preserving formatting.</p>
         <span class="n">template_frontmatter</span> <span class="o">=</span> <span class="n">FindingTemplateFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
 
         <span class="c1"># report all errors at once</span>
-        <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">template_frontmatter</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
             <span class="c1"># check if variable is defined</span>
             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
-                    <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - missing required variable in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - missing required variable in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># TODO: logger</span>
                     <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;  - optional variable is not defined in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                        <span class="sa">f</span><span class="s2">"  - optional variable is not defined in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
                     <span class="p">)</span>
                 <span class="k">continue</span>
 
             <span class="c1"># variable should be a list and is not</span>
             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - variable must be a list in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - variable must be a list in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="k">continue</span>
 
             <span class="c1"># variable should not be a list and is</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - variable must not be a list in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - variable must not be a list in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="k">continue</span>
 
         <span class="c1"># report all errors at once</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid variables in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid variables in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -7043,14 +7043,14 @@ findings.toml file while preserving formatting.</p>
 <span class="normal">109</span>
 <span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_locators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">LocatorModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter locators by type.</span>
+<span class="w">    </span><span class="sd">"""Filter locators by type.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The type of locators to filter by. Can be a single type or an iterable of types.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of locators of the specified type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locators</span> <span class="k">if</span> <span class="n">loc</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
@@ -7175,7 +7175,7 @@ findings.toml file while preserving formatting.</p>
 <span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a sub-finding from a file.</span>
+<span class="w">    </span><span class="sd">"""Load a sub-finding from a file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path: The path to the sub-finding file.</span>
@@ -7183,7 +7183,7 @@ findings.toml file while preserving formatting.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The loaded sub-finding object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">frontmatter</span> <span class="o">=</span> <span class="n">SubFindingFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -7291,13 +7291,13 @@ findings.toml file while preserving formatting.</p>
 <span class="normal">158</span>
 <span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate the variables of the sub-finding against definition in the template.</span>
+<span class="w">    </span><span class="sd">"""Validate the variables of the sub-finding against definition in the template.</span>
 
 <span class="sd">    Works only if there is a template path defined, otherwise no validation is done.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoValueError: If the variables are not valid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># no template path, no validation</span>
         <span class="k">return</span>
@@ -7306,37 +7306,37 @@ findings.toml file while preserving formatting.</p>
     <span class="n">template_frontmatter</span> <span class="o">=</span> <span class="n">FindingTemplateFrontmatterModel</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
 
     <span class="c1"># report all errors at once</span>
-    <span class="n">error</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">template_frontmatter</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
         <span class="c1"># check if variable is defined</span>
         <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - missing required variable in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - missing required variable in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># TODO: logger</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;  - optional variable is not defined in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                    <span class="sa">f</span><span class="s2">"  - optional variable is not defined in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="k">continue</span>
 
         <span class="c1"># variable should be a list and is not</span>
         <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - variable must be a list in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - variable must be a list in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">continue</span>
 
         <span class="c1"># variable should not be a list and is</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span><span class="o">.</span><span class="n">is_list</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  - variable must not be a list in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">type_annotation</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="n">error</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  - variable must not be a list in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">continue</span>
 
     <span class="c1"># report all errors at once</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid variables in finding &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid variables in finding '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

@@ -3002,7 +3002,7 @@ Defaults to False.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">assert_file_size_within_range</span><span class="p">(</span>
     <span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">max_bytes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">min_bytes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluates if the file size is within the specified range.</span>
+<span class="w">    </span><span class="sd">"""Evaluates if the file size is within the specified range.</span>
 
 <span class="sd">    If `interactive` is True, the user is first prompted whether to continue if the file size is not within the range.</span>
 
@@ -3016,13 +3016,13 @@ Defaults to False.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoPathError: If the file does not exist.</span>
 <span class="sd">        SeretoValueError: If the file size is not within the specified range.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check the input values</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"File '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">min_bytes</span> <span class="o">&lt;=</span> <span class="n">max_bytes</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid size threshold range: </span><span class="si">{</span><span class="n">min_bytes</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">max_bytes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid size threshold range: </span><span class="si">{</span><span class="n">min_bytes</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">max_bytes</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Get the file size in bytes</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
@@ -3034,7 +3034,7 @@ Defaults to False.</p>
     <span class="c1"># File size is not within the range</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-        <span class="s2">&quot;File &#39;</span><span class="si">{}</span><span class="s2">&#39; size is </span><span class="si">{}</span><span class="s2">, which is outside the allowed range </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">"File '</span><span class="si">{}</span><span class="s2">' size is </span><span class="si">{}</span><span class="s2">, which is outside the allowed range </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">file</span><span class="p">,</span>
         <span class="n">naturalsize</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
         <span class="n">naturalsize</span><span class="p">(</span><span class="n">min_bytes</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
@@ -3042,11 +3042,11 @@ Defaults to False.</p>
     <span class="p">)</span>
 
     <span class="c1"># In interactive mode, user can choose to continue</span>
-    <span class="k">if</span> <span class="n">interactive</span> <span class="ow">and</span> <span class="n">click</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s2">&quot;Do you want to continue?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">interactive</span> <span class="ow">and</span> <span class="n">click</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s2">"Do you want to continue?"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">return</span>
 
     <span class="c1"># Otherwise, raise an error</span>
-    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39; size is not within the range </span><span class="si">{</span><span class="n">min_bytes</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">max_bytes</span><span class="si">}</span><span class="s2"> B&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"File '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">' size is not within the range </span><span class="si">{</span><span class="n">min_bytes</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">max_bytes</span><span class="si">}</span><span class="s2"> B"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3198,7 +3198,7 @@ if the destination already exists.</p>
 <span class="normal">248</span>
 <span class="normal">249</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">copy_skel</span><span class="p">(</span><span class="n">templates</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy the content of a templates `skel` directory to a destination directory.</span>
+<span class="w">    </span><span class="sd">"""Copy the content of a templates `skel` directory to a destination directory.</span>
 
 <span class="sd">    A `skel` directory is a directory that contains a set of files and directories that can be used as a template</span>
 <span class="sd">    for creating new projects. This function copies the contents of the `skel` directory located at</span>
@@ -3213,25 +3213,25 @@ if the destination already exists.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        SeretoPathError: If the destination directory already exists and `overwrite` is `False`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">skel_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">&quot;skel&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">skel_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">templates</span> <span class="o">/</span> <span class="s2">"skel"</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Copying &#39;skel&#39; directory: &#39;</span><span class="si">{}</span><span class="s2">&#39; -&gt; &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">skel_path</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Copying 'skel' directory: '</span><span class="si">{}</span><span class="s2">' -&gt; '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">skel_path</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">skel_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
         <span class="n">dst_item</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">dst</span> <span class="o">/</span> <span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span> <span class="ow">and</span> <span class="n">dst_item</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">&quot;Destination already exists&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="s2">"Destination already exists"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;findings.toml&quot;</span> <span class="ow">and</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"findings.toml"</span> <span class="ow">and</span> <span class="n">overwrite</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                    <span class="s2">&quot;[yellow]![/yellow] skipping file: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="s2">"[yellow]![/yellow] skipping file: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span>
                 <span class="p">)</span>
                 <span class="k">continue</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[green]+[/green] copy file: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[green]+[/green] copy file: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">copy2</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">dst_item</span><span class="p">,</span> <span class="n">follow_symlinks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[green]+[/green] copy dir: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[green]+[/green] copy dir: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">skel_path</span><span class="p">))),</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">copytree</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">dst_item</span><span class="p">,</span> <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3327,7 +3327,7 @@ if the destination already exists.</p>
 <span class="normal">135</span>
 <span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">lower_alphanum</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the input text to lowercase alphanumerical delimited by underscores.</span>
+<span class="w">    </span><span class="sd">"""Converts the input text to lowercase alphanumerical delimited by underscores.</span>
 
 <span class="sd">    Also all spaces are replaced with underscores.</span>
 
@@ -3336,11 +3336,11 @@ if the destination already exists.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The input text with the modifications applied.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">normalized</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">&quot;NFKD&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
-    <span class="n">ascii_text</span> <span class="o">=</span> <span class="n">normalized</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="n">ascii_text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^a-z0-9_\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ascii_text</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">ascii_text</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">normalized</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">"NFKD"</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">ascii_text</span> <span class="o">=</span> <span class="n">normalized</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">,</span> <span class="s2">"ignore"</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">ascii_text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^a-z0-9_\s]"</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">ascii_text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\s+"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="n">ascii_text</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3535,7 +3535,7 @@ string, respectively.</p>
 <span class="normal">117</span>
 <span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">replace_strings</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">replacements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;One-pass string replacement with values from dictionary.</span>
+<span class="w">    </span><span class="sd">"""One-pass string replacement with values from dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        text: The input text.</span>
@@ -3545,11 +3545,11 @@ string, respectively.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        String (or list of strings, depending on the input value) obtained by applying the replacements from the</span>
 <span class="sd">            `replacements` dictionary.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_clip</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_chars</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_chars</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="p">[:</span><span class="w"> </span><span class="n">max_chars</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_chars</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="p">[:</span><span class="w"> </span><span class="n">max_chars</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">..."</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preview_text</span><span class="p">(</span>
@@ -3562,10 +3562,10 @@ string, respectively.</p>
         <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
-                <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;... (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">max_items</span><span class="si">}</span><span class="s2"> more)&quot;</span><span class="p">)</span>
+                <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"... (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">max_items</span><span class="si">}</span><span class="s2"> more)"</span><span class="p">)</span>
                 <span class="k">break</span>
             <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_clip</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">))</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2">]"</span>
 
     <span class="nd">@validate_call</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preview_replacements</span><span class="p">(</span>
@@ -3574,17 +3574,17 @@ string, respectively.</p>
         <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">pattern_key</span><span class="p">,</span> <span class="n">pattern_value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">replacements</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
-                <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;... (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">max_items</span><span class="si">}</span><span class="s2"> more)&quot;</span><span class="p">)</span>
+                <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"... (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">max_items</span><span class="si">}</span><span class="s2"> more)"</span><span class="p">)</span>
                 <span class="k">break</span>
-            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_clip</span><span class="p">(</span><span class="n">pattern_key</span><span class="p">,</span><span class="w"> </span><span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">)</span><span class="si">}</span><span class="s2">-&gt;</span><span class="si">{</span><span class="n">_clip</span><span class="p">(</span><span class="n">pattern_value</span><span class="p">,</span><span class="w"> </span><span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_clip</span><span class="p">(</span><span class="n">pattern_key</span><span class="p">,</span><span class="w"> </span><span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">)</span><span class="si">}</span><span class="s2">-&gt;</span><span class="si">{</span><span class="n">_clip</span><span class="p">(</span><span class="n">pattern_value</span><span class="p">,</span><span class="w"> </span><span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
 
     <span class="n">text_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="n">replacements_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">replacements</span><span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span>
-        <span class="s2">&quot;replace_strings called (text_type=</span><span class="si">{}</span><span class="s2">, text_len=</span><span class="si">{}</span><span class="s2">, replacements_count=</span><span class="si">{}</span><span class="s2">, text_preview=&#39;</span><span class="si">{}</span><span class="s2">&#39;, &quot;</span>
-        <span class="s2">&quot;replacements_preview=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="s2">"replace_strings called (text_type=</span><span class="si">{}</span><span class="s2">, text_len=</span><span class="si">{}</span><span class="s2">, replacements_count=</span><span class="si">{}</span><span class="s2">, text_preview='</span><span class="si">{}</span><span class="s2">', "</span>
+        <span class="s2">"replacements_preview=</span><span class="si">{}</span><span class="s2">)"</span><span class="p">,</span>
         <span class="nb">type</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
         <span class="n">text_len</span><span class="p">,</span>
         <span class="n">replacements_count</span><span class="p">,</span>
@@ -3594,20 +3594,20 @@ string, respectively.</p>
 
     <span class="k">if</span> <span class="n">text_len</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">replacements_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;replace_strings returning input unchanged (text_len=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="s2">"replace_strings returning input unchanged (text_len=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">)"</span><span class="p">,</span>
             <span class="n">text_len</span><span class="p">,</span>
             <span class="n">replacements_count</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">text</span>
 
-    <span class="n">pattern_source</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">replacements</span><span class="p">])</span>
+    <span class="n">pattern_source</span> <span class="o">=</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">replacements</span><span class="p">])</span>
     <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern_source</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="n">replacements</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="n">text</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span>
-            <span class="s2">&quot;replace_strings applied to string (before_len=</span><span class="si">{}</span><span class="s2">, after_len=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">, before_preview=&#39;</span><span class="si">{}</span><span class="s2">&#39;, &quot;</span>
-            <span class="s2">&quot;after_preview=&#39;</span><span class="si">{}</span><span class="s2">&#39;)&quot;</span><span class="p">,</span>
+            <span class="s2">"replace_strings applied to string (before_len=</span><span class="si">{}</span><span class="s2">, after_len=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">, before_preview='</span><span class="si">{}</span><span class="s2">', "</span>
+            <span class="s2">"after_preview='</span><span class="si">{}</span><span class="s2">')"</span><span class="p">,</span>
             <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
             <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">),</span>
             <span class="n">replacements_count</span><span class="p">,</span>
@@ -3619,8 +3619,8 @@ string, respectively.</p>
     <span class="n">result_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="n">replacements</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">text</span><span class="p">]</span>
     <span class="n">changed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">original</span><span class="p">,</span> <span class="n">updated</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">result_list</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">original</span> <span class="o">!=</span> <span class="n">updated</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-        <span class="s2">&quot;replace_strings applied to list[str] (items=</span><span class="si">{}</span><span class="s2">, changed=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">, before_preview=</span><span class="si">{}</span><span class="s2">, &quot;</span>
-        <span class="s2">&quot;after_preview=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="s2">"replace_strings applied to list[str] (items=</span><span class="si">{}</span><span class="s2">, changed=</span><span class="si">{}</span><span class="s2">, replacements=</span><span class="si">{}</span><span class="s2">, before_preview=</span><span class="si">{}</span><span class="s2">, "</span>
+        <span class="s2">"after_preview=</span><span class="si">{}</span><span class="s2">)"</span><span class="p">,</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">result_list</span><span class="p">),</span>
         <span class="n">changed</span><span class="p">,</span>
         <span class="n">replacements_count</span><span class="p">,</span>
@@ -3742,7 +3742,7 @@ string, respectively.</p>
 <span class="normal">158</span>
 <span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_if_different</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes content to file only if the content is different from the existing file content.</span>
+<span class="w">    </span><span class="sd">"""Writes content to file only if the content is different from the existing file content.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        file: The path to the file.</span>
@@ -3750,16 +3750,16 @@ string, respectively.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        True if new content was written to the file, False otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check if the file exists and has the same size</span>
     <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
         <span class="n">assert_file_size_within_range</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">104_857_600</span><span class="p">)</span>  <span class="c1"># 100 MiB</span>
         <span class="c1"># Check if the content is the same</span>
-        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">content</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="o">==</span> <span class="n">content</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># Changes detected, write the content to the file</span>
-    <span class="n">file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">True</span>
 </code></pre></div></td></tr></table></div>
             </details>

@@ -2869,9 +2869,9 @@
 <h2 id="useful-methods-and-properties-of-the-versionconfig">Useful methods and properties of the <a href="../../reference/config/#sereto.config.VersionConfig">VersionConfig</a><a class="headerlink" href="#useful-methods-and-properties-of-the-versionconfig" title="Permanent link">&para;</a></h2>
 <p>The following methods can be invoked from the <code>c</code> object.</p>
 <p>Example usage:</p>
-<div class="highlight"><pre><span></span><code><span class="n">c</span><span class="o">.</span><span class="n">filter_targets</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dast&quot;</span><span class="p">,</span> <span class="s2">&quot;sast&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;^foo&quot;</span><span class="p">)]</span>
-<span class="n">c</span><span class="o">.</span><span class="n">filter_dates</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;pentest_ongoing&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;01-Jan-2024&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;31-Jan-2024&quot;</span><span class="p">)</span>
-<span class="n">c</span><span class="o">.</span><span class="n">filter_people</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;author&quot;</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;@foo.bar$&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">c</span><span class="o">.</span><span class="n">filter_targets</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"dast"</span><span class="p">,</span> <span class="s2">"sast"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"^foo"</span><span class="p">)]</span>
+<span class="n">c</span><span class="o">.</span><span class="n">filter_dates</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">"pentest_ongoing"</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">"01-Jan-2024"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"31-Jan-2024"</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">filter_people</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">"author"</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">"@foo.bar$"</span><span class="p">)</span>
 </code></pre></div>
 
 
@@ -3026,9 +3026,9 @@
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Target</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter targets based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter targets based on specified criteria.</span>
 
-<span class="sd">    The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">    The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        category: The category of the target. Can be a single category, a list of categories, or None.</span>
@@ -3037,7 +3037,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of targets matching the criteria.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Prepare categories for filtering</span>
     <span class="k">match</span> <span class="n">category</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
@@ -3304,7 +3304,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="n">last_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Date</span><span class="p">]</span> <span class="o">|</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter dates based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter dates based on specified criteria.</span>
 
 <span class="sd">    The start and end dates are inclusive. For date ranges, a date is considered matching if it completely overlaps</span>
 <span class="sd">    with the specified range.</span>
@@ -3321,12 +3321,12 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        For first_date or last_date = True, returns SeretoDate or None. Otherwise, returns a list[Date].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check for invalid parameter combinations</span>
     <span class="k">if</span> <span class="n">first_date</span> <span class="ow">and</span> <span class="n">last_date</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify both first_date and last_date&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify both first_date and last_date"</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">first_date</span> <span class="ow">or</span> <span class="n">last_date</span><span class="p">)</span> <span class="ow">and</span> <span class="n">inverse</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;cannot specify inverse with first_date or last_date&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"cannot specify inverse with first_date or last_date"</span><span class="p">)</span>
 
     <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
@@ -3580,9 +3580,9 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="n">role</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter people based on specified criteria.</span>
+<span class="w">    </span><span class="sd">"""Filter people based on specified criteria.</span>
 
-<span class="sd">    The regular expressions support the syntax of Python&#39;s `re` module.</span>
+<span class="sd">    The regular expressions support the syntax of Python's `re` module.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        type: The type of the person. Can be a single type, a list of types, or None.</span>
@@ -3594,7 +3594,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A list of people matching the criteria.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">match</span> <span class="nb">type</span><span class="p">:</span>
         <span class="k">case</span> <span class="nb">str</span><span class="p">():</span>
             <span class="nb">type</span> <span class="o">=</span> <span class="p">[</span><span class="n">PersonType</span><span class="p">(</span><span class="nb">type</span><span class="p">)]</span>
@@ -3685,7 +3685,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;cannot select target; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span><span class="si">}</span><span class="s2"> targets present&quot;</span>
+                <span class="sa">f</span><span class="s2">"cannot select target; no selector provided and there are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span><span class="si">}</span><span class="s2"> targets present"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -3693,7 +3693,7 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">selector</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
         <span class="n">ix</span> <span class="o">=</span> <span class="n">selector</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ix</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;target index out of range&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"target index out of range"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
 
@@ -3702,18 +3702,18 @@ is considered. The type returned is <code>SeretoDate</code> or None.</p>
         <span class="n">filtered_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">category</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
         <span class="k">match</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_targets</span><span class="p">):</span>
             <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> does not contain any target&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> does not contain any target"</span><span class="p">)</span>
             <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">filtered_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> contains multiple targets, use unique name when querying&quot;</span>
+                    <span class="sa">f</span><span class="s2">"category </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> contains multiple targets, use unique name when querying"</span>
                 <span class="p">)</span>
 
     <span class="c1"># by uname</span>
     <span class="n">filtered_targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">uname</span> <span class="o">==</span> <span class="n">selector</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_targets</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target with uname </span><span class="si">{</span><span class="n">selector</span><span class="si">!r}</span><span class="s2"> not found"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">filtered_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>

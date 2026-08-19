@@ -2830,7 +2830,7 @@
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DerivedKeyResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of the Argon2 key derivation function.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Result of the Argon2 key derivation function."""</span>
 
     <span class="n">key</span><span class="p">:</span> <span class="n">SecretBytes</span>
     <span class="n">salt</span><span class="p">:</span> <span class="n">TypeSalt16B</span>
@@ -3059,7 +3059,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 <span class="normal">216</span>
 <span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">decrypt_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.</span>
+<span class="w">    </span><span class="sd">"""Decrypts a .sereto file using AES-GCM encryption and saves it with a .tgz suffix.</span>
 
 <span class="sd">    This function retrieves a password from the system keyring, derives an encryption key using Argon2, parses the</span>
 <span class="sd">    header (contains nonce and seed), and decrypts the file content. The decrypted data is then saved with a .tgz</span>
@@ -3075,22 +3075,22 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to the decrypted file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"File '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s2">&quot;.sereto&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported file format for decryption (not a .sereto)&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s2">".sereto"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"Unsupported file format for decryption (not a .sereto)"</span><span class="p">)</span>
 
     <span class="c1"># Retrieve the password from the system keyring</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ta_password</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypePassword</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypePassword</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
-        <span class="n">password</span> <span class="o">=</span> <span class="n">ta_password</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">get_password</span><span class="p">(</span><span class="s2">&quot;sereto&quot;</span><span class="p">,</span> <span class="s2">&quot;encrypt_attached_archive&quot;</span><span class="p">))</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">ta_password</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">get_password</span><span class="p">(</span><span class="s2">"sereto"</span><span class="p">,</span> <span class="s2">"encrypt_attached_archive"</span><span class="p">))</span>
     <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid password for archive encryption: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>
-        <span class="k">raise</span> <span class="n">SeretoEncryptionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;encryption password is invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;msg&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Invalid password for archive encryption: </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"msg"</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">SeretoEncryptionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"encryption password is invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">'msg'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;:locked: Found password for archive decryption. Decrypting archive...&quot;</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">":locked: Found password for archive decryption. Decrypting archive..."</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">assert_file_size_within_range</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="n">min_bytes</span><span class="o">=</span><span class="mi">65</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">1_073_741_824</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -3098,8 +3098,8 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
     <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
 
     <span class="c1"># Extract the header</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;SeReTo&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">&quot;Encrypted file is corrupted or not encrypted with SeReTo&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">"SeReTo"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"Encrypted file is corrupted or not encrypted with SeReTo"</span><span class="p">)</span>
 
     <span class="c1"># - nonce</span>
     <span class="n">ta_nonce</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypeNonce12B</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypeNonce12B</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
@@ -3121,17 +3121,17 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
             <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">encrypted_data</span><span class="p">,</span> <span class="n">associated_data</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="n">InvalidTag</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SeretoDecryptionError</span><span class="p">(</span><span class="s2">&quot;Decryption failed due to incorrect password&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">raise</span> <span class="n">SeretoDecryptionError</span><span class="p">(</span><span class="s2">"Decryption failed due to incorrect password"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="c1"># Write the decrypted data</span>
-    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.tgz&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">".tgz"</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
         <span class="p">(</span><span class="n">output</span> <span class="o">:=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">name</span><span class="p">))</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">decrypted_data</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Decrypted archive to &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Decrypted archive to '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
         <span class="n">file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleted encrypted archive: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Deleted encrypted archive: '</span><span class="si">{}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
@@ -3328,7 +3328,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
     <span class="n">time_cost</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">parallelism</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DerivedKeyResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Derive a key using Argon2id from a password.</span>
+<span class="w">    </span><span class="sd">"""Derive a key using Argon2id from a password.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        password: Password to derive the key from.</span>
@@ -3339,7 +3339,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Derived key and salt.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Generate a salt if not provided (16 bytes)</span>
     <span class="k">if</span> <span class="n">salt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ta_salt</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypeSalt16B</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypeSalt16B</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
@@ -3356,7 +3356,7 @@ suffix and the original file is deleted (use <code>keep_original=True</code> to 
 
     <span class="c1"># Derive a key using Argon2id</span>
     <span class="n">ta_key</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">SecretBytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">SecretBytes</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="n">ta_key</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">kdf</span><span class="o">.</span><span class="n">derive</span><span class="p">(</span><span class="n">password</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)))</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">ta_key</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">kdf</span><span class="o">.</span><span class="n">derive</span><span class="p">(</span><span class="n">password</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)))</span>
 
     <span class="k">return</span> <span class="n">DerivedKeyResult</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">salt</span><span class="o">=</span><span class="n">salt</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -3576,7 +3576,7 @@ the file content. The encrypted data is then saved with a specific header and th
 <span class="normal">137</span>
 <span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">encrypt_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">keep_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.</span>
+<span class="w">    </span><span class="sd">"""Encrypts a given file using AES-GCM encryption and saves it with a .sereto suffix.</span>
 
 <span class="sd">    This function retrieves a password from the system keyring, derives an encryption key using Argon2, and encrypts</span>
 <span class="sd">    the file content. The encrypted data is then saved with a specific header and the original file is deleted (use</span>
@@ -3594,21 +3594,21 @@ the file content. The encrypted data is then saved with a specific header and th
 <span class="sd">        SeretoDecryptionError: If the decryption fails due to an invalid password.</span>
 <span class="sd">        SeretoPathError: If the provided file does not exist.</span>
 <span class="sd">        SeretoValueError: If the file size exceeds 1 GiB and the user chooses not to continue.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;file &#39;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
 
     <span class="c1"># Retrieve the password from the system keyring</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ta_password</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypePassword</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypePassword</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
-        <span class="n">password</span> <span class="o">=</span> <span class="n">ta_password</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">get_password</span><span class="p">(</span><span class="s2">&quot;sereto&quot;</span><span class="p">,</span> <span class="s2">&quot;encrypt_attached_archive&quot;</span><span class="p">))</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">ta_password</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">get_password</span><span class="p">(</span><span class="s2">"sereto"</span><span class="p">,</span> <span class="s2">"encrypt_attached_archive"</span><span class="p">))</span>
     <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid password for archive encryption: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;msg&quot;</span><span class="p">])</span>
-        <span class="k">raise</span> <span class="n">SeretoEncryptionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;encryption password is invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;msg&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Invalid password for archive encryption: </span><span class="si">{}</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"msg"</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">SeretoEncryptionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"encryption password is invalid: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">errors</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">'msg'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="n">assert_file_size_within_range</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">1_073_741_824</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;:locked: Found password for archive encryption. Encrypting archive...&quot;</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">":locked: Found password for archive encryption. Encrypting archive..."</span><span class="p">,</span> <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Read the file content</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
@@ -3627,18 +3627,18 @@ the file content. The encrypted data is then saved with a specific header and th
     <span class="p">)</span>
 
     <span class="c1"># Prepare the header (64 bytes long)</span>
-    <span class="n">header</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;SeReTo&quot;</span> <span class="o">+</span> <span class="n">nonce</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span> <span class="o">+</span> <span class="n">derived</span><span class="o">.</span><span class="n">salt</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span>
-    <span class="n">header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"SeReTo"</span> <span class="o">+</span> <span class="n">nonce</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span> <span class="o">+</span> <span class="n">derived</span><span class="o">.</span><span class="n">salt</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x00</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Write the encrypted data into a new file</span>
-    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.sereto&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">".sereto"</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
         <span class="p">(</span><span class="n">encrypted_path</span> <span class="o">:=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">name</span><span class="p">))</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="n">encrypted_data</span><span class="p">)</span>
 
     <span class="c1"># Delete the original file if `keep_file=False`</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_original</span><span class="p">:</span>
         <span class="n">file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">&quot;Archive successfully encrypted&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="s2">"Archive successfully encrypted"</span><span class="p">)</span>
 
     <span class="c1"># Return the path to the encrypted file</span>
     <span class="k">return</span> <span class="n">encrypted_path</span>

@@ -2775,7 +2775,7 @@
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the date type allows for a range.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Check if the date type allows for a range."""</span>
     <span class="k">return</span> <span class="n">date_type</span> <span class="ow">in</span> <span class="n">TYPES_WITH_ALLOWED_RANGE</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2886,7 +2886,7 @@
 <span class="normal">61</span>
 <span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">prompt_user_for_date</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="n">DateRange</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for a date or date range, depending on the provided date type.</span>
+<span class="w">    </span><span class="sd">"""Prompt user for a date or date range, depending on the provided date type.</span>
 
 <span class="sd">    Date format is DD-Mmm-YYYY.</span>
 
@@ -2895,21 +2895,21 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The date as provided by the user.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check if the date type allows for a range</span>
     <span class="n">allow_range</span> <span class="o">=</span> <span class="n">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span>
 
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="c1"># Prompt user for the start date</span>
-        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Date</span><span class="si">{</span><span class="s1">&#39; start&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">allow_range</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2"> (DD-Mmm-YYYY)&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">start_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">: &quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Date</span><span class="si">{</span><span class="s1">' start'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">allow_range</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2"> (DD-Mmm-YYYY)"</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">start_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">: "</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">continue</span>
 
         <span class="c1"># Prompt user for the end date, if the date type allows it</span>
         <span class="k">if</span> <span class="n">allow_range</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">end_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="s2">&quot;Date end (DD-Mmm-YYYY): &quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">start_date</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">end_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="s2">"Date end (DD-Mmm-YYYY): "</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">start_date</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">continue</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span>

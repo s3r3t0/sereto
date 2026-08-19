@@ -3017,9 +3017,9 @@
 </code></pre></div>
 <p>SeReTo will ask you about some details you would like to set. Make sure to include all necessary details, such as target locators, source IP addresses (<code>src_ips</code>), etc.</p>
 <p>Example locators configuration:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&quot;locators&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">  </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/&quot;</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ip&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.0.2.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Example target IP address&quot;</span><span class="p">},</span>
+<div class="highlight"><pre><span></span><code><span class="nt">"locators"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"url"</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/"</span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ip"</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"192.0.2.0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example target IP address"</span><span class="p">},</span>
 <span class="p">]</span>
 </code></pre></div>
 <p><img alt="" src="../assets/gifs/config-targets-add.gif" /></p>
@@ -3059,9 +3059,9 @@
 <h3 id="editing-the-finding-template">Editing the finding template<a class="headerlink" href="#editing-the-finding-template" title="Permanent link">&para;</a></h3>
 <h4 id="findingstoml"><em>findings.toml</em><a class="headerlink" href="#findingstoml" title="Permanent link">&para;</a></h4>
 <p>When you add a finding from the TUI, the file <em>findings.toml</em> in the target's directory, e.g. <code>target_dast_example_target</code>, is updated. It may look as follows:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[</span><span class="s2">&quot;Remote code execution&quot;</span><span class="k">]</span>
-<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-<span class="n">findings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;generic_test_finding&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="k">[</span><span class="s2">"Remote code execution"</span><span class="k">]</span>
+<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"critical"</span>
+<span class="n">findings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"generic_test_finding"</span><span class="p">]</span>
 </code></pre></div>
 <p>The <code>Remote code execution</code> is the name of the <strong>finding group</strong>, <code>risk</code> is the risk level of the finding group, and <code>findings</code> is a list of one or more <strong>nested findings</strong> that belong to the group. Specifying the risk for a group is optional. If not specified, it defaults to the highest risk within the finding group.</p>
 <h4 id="finding-file">Finding file<a class="headerlink" href="#finding-file" title="Permanent link">&para;</a></h4>
@@ -3081,9 +3081,9 @@
 </code></pre></div></p>
 <p>The file <code>generic_test_finding.md.j2</code> is a Jinja template that will be used to generate the report section for the given nested finding.</p>
 <p>You can rename the finding file to better reflect the nature of the finding, e.g. <code>rce.md.j2</code>. Remember to update the corresponding entry in the <em>findings.toml</em> file so that it matches the new filename, e.g.:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[</span><span class="s2">&quot;Remote code execution&quot;</span><span class="k">]</span>
-<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-<span class="n">findings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;rce&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="k">[</span><span class="s2">"Remote code execution"</span><span class="k">]</span>
+<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"critical"</span>
+<span class="n">findings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"rce"</span><span class="p">]</span>
 </code></pre></div>
 <p>Individual findings may require you to fill in extra information, such as screenshots, which will be used to customize the finding in automated way. Specify these in the frontmatter of the template file, which is a section at the top of the file enclosed between <code>+++</code> lines.</p>
 <p>The frontmatter is written in TOML and contains the following fields:</p>
@@ -3102,20 +3102,20 @@
 <p>Lastly, the frontmatter contains a TOML table <code>variables</code>, where the variables required by the finding can be defined.</p>
 <p>Example frontmatter:</p>
 <div class="highlight"><pre><span></span><code><span class="err">+++</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Remote code execution&quot;</span>
-<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-<span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;generic&quot;</span>
-<span class="n">template_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;categories/generic/findings/test_finding.md.j2&quot;</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Remote code execution"</span>
+<span class="n">risk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"critical"</span>
+<span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"generic"</span>
+<span class="n">template_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"categories/generic/findings/test_finding.md.j2"</span>
 <span class="n">locators</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="n">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://example.com/vulnerable-endpoint&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;Vulnerable endpoint&quot;</span>
+<span class="w">    </span><span class="n">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"url"</span><span class="p">,</span>
+<span class="w">    </span><span class="n">value</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"https://example.com/vulnerable-endpoint"</span><span class="p">,</span>
+<span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"Vulnerable endpoint"</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="p">]</span>
 
 <span class="k">[variables]</span>
-<span class="n">images</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;proof.png&#39;</span><span class="p">]</span>
+<span class="n">images</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s1">'proof.png'</span><span class="p">]</span>
 <span class="err">+++</span>
 </code></pre></div>
 <p>The main finding variables, such as <code>locators</code>, can be accessed in the template using the <code>f</code> object, e.g.:
@@ -3124,7 +3124,7 @@
 <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
 </code></pre></div></p>
 <p>For getting only a specific locator type, you can use the <code>f.filter_locators</code> method, e.g.:
-<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">for</span> <span class="nv">url</span> <span class="k">in</span> <span class="nv">f.filter_locators</span><span class="o">(</span><span class="s2">&quot;url&quot;</span><span class="o">)</span> <span class="cp">%}</span>
+<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">for</span> <span class="nv">url</span> <span class="k">in</span> <span class="nv">f.filter_locators</span><span class="o">(</span><span class="s2">"url"</span><span class="o">)</span> <span class="cp">%}</span>
 <span class="x">- &lt;</span><span class="cp">{{</span> <span class="nv">url.value</span> <span class="cp">}}</span><span class="x">&gt;</span>
 <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
 </code></pre></div></p>
@@ -3155,30 +3155,30 @@
 </ul>
 <p>In its simplest form, the finding file may look like this:</p>
 <div class="highlight"><pre><span></span><code><span class="x">+++</span>
-<span class="x">name = &quot;Remote code execution&quot;</span>
-<span class="x">risk = &quot;critical&quot;</span>
-<span class="x">category = &quot;generic&quot;</span>
-<span class="x">template_path = &quot;categories/generic/findings/test_finding.md.j2&quot;</span>
+<span class="x">name = "Remote code execution"</span>
+<span class="x">risk = "critical"</span>
+<span class="x">category = "generic"</span>
+<span class="x">template_path = "categories/generic/findings/test_finding.md.j2"</span>
 <span class="x">locators = [</span>
 <span class="x">  {</span>
-<span class="x">    type = &quot;url&quot;,</span>
-<span class="x">    value = &quot;https://example.com/vulnerable-endpoint&quot;,</span>
-<span class="x">    description = &quot;Vulnerable endpoint&quot;</span>
+<span class="x">    type = "url",</span>
+<span class="x">    value = "https://example.com/vulnerable-endpoint",</span>
+<span class="x">    description = "Vulnerable endpoint"</span>
 <span class="x">  },</span>
 <span class="x">]</span>
 
 <span class="x">[variables]</span>
-<span class="x">images = [&#39;proof.png&#39;]</span>
+<span class="x">images = ['proof.png']</span>
 <span class="x">+++</span>
 
-<span class="cp">{%</span> <span class="k">extends</span> <span class="s2">&quot;_base.md&quot;</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">extends</span> <span class="s2">"_base.md"</span> <span class="cp">%}</span>
 
 <span class="cp">{%</span> <span class="k">block</span> <span class="nv">description</span> -<span class="cp">%}</span>
 <span class="x">A brief description of the finding.</span>
 
 <span class="x">URLs:</span>
 
-<span class="cp">{%</span> <span class="k">for</span> <span class="nv">url</span> <span class="k">in</span> <span class="nv">f.filter_locators</span><span class="o">(</span><span class="s2">&quot;url&quot;</span><span class="o">)</span> -<span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">for</span> <span class="nv">url</span> <span class="k">in</span> <span class="nv">f.filter_locators</span><span class="o">(</span><span class="s2">"url"</span><span class="o">)</span> -<span class="cp">%}</span>
 <span class="x">- &lt;</span><span class="cp">{{</span> <span class="nv">url.value</span> <span class="cp">}}</span><span class="x">&gt;</span>
 <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
 
