@@ -32,11 +32,24 @@ ProjectBrowserScreen {
         height: auto;
         width: 1fr;
     }
+    #version-select {
+        height: auto;
+        width: 15;
+    }
     #new-project-btn {
         height: 3;
-        width: 5;
+        width: 7;
         min-width: 3;
-        margin-left: 1;
+        margin: 0 1 0 1;
+        text-align: center;
+        content-align: center middle;
+    }
+    #retest-btn {
+        height: 3;
+        width: 10;
+        min-width: 8;
+        text-align: center;
+        content-align: center middle;
     }
     #action-bar {
         height: auto;
@@ -51,8 +64,40 @@ ProjectBrowserScreen {
         padding: 1 2;
         scrollbar-gutter: stable;
     }
-    #content-static {
+    #content-container {
+        width: 1fr;
         height: auto;
+    }
+    .browser-stats-row {
+        width: 1fr;
+        height: auto;
+        margin-bottom: 0;
+        align: left middle;
+    }
+    .browser-stat-box {
+        width: auto;
+        height: auto;
+        margin-right: 2;
+        padding: 0;
+        border: none;
+        align: left middle;
+        content-align: left middle;
+    }
+    .browser-targets-list {
+        width: 1fr;
+        height: auto;
+    }
+    .browser-target-item {
+        width: 1fr;
+        height: auto;
+        padding: 1 0;
+        margin-bottom: 0;
+    }
+    .browser-finding-item {
+        width: 1fr;
+        height: auto;
+        padding: 0 0 1 2;
+        margin-bottom: 0;
     }
 }
 
@@ -116,41 +161,49 @@ RenderScreen {
     }
     #render-controls {
         height: auto;
-        margin-bottom: 1;
-        align: left top;
-    }
-    .render-field {
-        height: auto;
-        align: left middle;
-        margin-right: 2;
-        Label {
-            width: 10;
-            padding: 1 1;
-            text-align: right;
-        }
-        Select {
-            width: 20;
-        }
-    }
-    #render-log {
-        height: 1fr;
-    }
-    #open-pdf-btn {
         width: 1fr;
-        margin-top: 1;
+        margin-bottom: 1;
+        align: left middle;
     }
-    #render-buttons {
+    #render-type-select {
+        width: 30;
+        margin-right: 1;
+    }
+    #fg-filters {
         height: auto;
+        width: auto;
+        align: left middle;
+        margin-right: 1;
+    }
+    #fg-target-select {
+        width: 25;
+        margin-right: 1;
+    }
+    #fg-group-select {
+        width: 25;
+        margin-right: 1;
+    }
+    #fg-target-select > SelectOverlay,
+    #fg-group-select > SelectOverlay {
+        offset: 26 -3;
+    }
+    #render-btn {
+        width: auto;
+        margin-right: 1;
+    }
+    #render-clean-btn {
+        dock: right;
         margin-left: 2;
-        Button {
-            margin-bottom: 0;
-            margin-right: 1;
-        }
     }
     #render-log {
         height: 1fr;
         border: tall $panel;
         padding: 0 1;
+        scrollbar-gutter: stable;
+    }
+    #open-pdf-btn {
+        width: 1fr;
+        margin-top: 1;
     }
 }
 
@@ -173,10 +226,23 @@ ConfigScreen {
     #config-tabs {
         height: 1fr;
     }
+    .tab-container {
+        height: 1fr;
+        layers: base above;
+    }
+    .scroll-add-btn {
+        layer: above;
+        dock: right;
+        width: auto;
+        min-width: 10;
+        height: auto;
+        margin: 0 7 0 0;
+    }
     #general-form,
     #targets-form,
     #dates-form,
     #people-form {
+        layer: base;
         height: 1fr;
         padding: 1 2;
         scrollbar-gutter: stable;
@@ -188,21 +254,30 @@ ConfigScreen {
     }
     .config-add-row {
         height: auto;
-        margin-top: 1;
+        margin: 1 1 0 0;
         align: right middle;
     }
     .field-row {
         height: auto;
         margin-bottom: 1;
+        margin-right: 2;
         align: left middle;
         Label {
-            width: 14;
+            width: 12;
             padding: 1 1;
             text-align: right;
         }
         Select {
             width: 1fr;
         }
+    }
+    InputWithLabel {
+        margin-bottom: 1;
+        margin-right: 2;
+    }
+    .add-form-section {
+        height: auto;
+        margin-top: 1;
     }
     #targets-list,
     #dates-list,
@@ -211,22 +286,146 @@ ConfigScreen {
         margin-bottom: 1;
     }
     .config-row {
-        height: auto;
+        height: 3;
         margin-bottom: 1;
         align: left middle;
         padding: 0 0 0 1;
     }
     .config-row-label {
-        width: 1fr;
+        width: auto;
+        height: 100%;
         padding: 0 1;
+        content-align: left middle;
     }
-    .config-remove-btn {
+    .config-targets-remove-btn {
         width: auto;
         min-width: 5;
+        height: 3;
+        margin-right: 1;
+        padding: 0;
+        text-align: center;
+        content-align: center middle;
+    }
+    .config-ppl-remove-btn {
+        width: auto;
+        min-width: 5;
+        height: 3;
+        margin: 1 0 0 2;
+        padding: 0;
+        text-align: center;
+        content-align: center middle;
+    }
+    /* Timeline styles for dates */
+    .timeline-row {
+        height: auto;
+        width: 1fr;
+        margin: 0;
+        padding: 0; 
+    }
+    .timeline-line-row {
+        height: 1;
+        width: 1fr;
+        margin: 0;
+        padding: 0;
+        align: left middle;
+    }
+    .timeline-main-row {
+        height: 3;
+        width: 1fr;
+        margin: 0;
+        padding: 0;
+        align: left middle;
+    }
+    .timeline-date-spacer {
+        width: 28;
+        height: 100%;
+    }
+    .timeline-date {
+        width: 28;
+        height: 100%;
+        padding: 0 1 0 0;
+        text-align: right;
+        content-align: right middle;
+        color: $text-muted;
+        text-style: not italic;
+        overflow: hidden;
+    }
+    .timeline-line {
+        width: 3;
+        height: 100%;
+        text-align: center;
+        content-align: center middle;
+        color: $accent;
+    }
+    .timeline-dot {
+        width: 3;
+        height: 100%;
+        text-align: center;
+        content-align: center middle;
+        color: $accent;
+    }
+    .timeline-content-spacer {
+        width: 1fr;
+        height: 100%;
+    }
+    .timeline-type {
+        width: auto;
+        height: 100%;
+        text-style: bold;
+        padding: 0 1 0 1;
+        content-align: left middle;
+    }
+    .timeline-remove-btn {
+        width: auto;
+        min-width: 5;
+        height: 3;
+        margin-right: 1;
     }
     #add-target-btn,
     #add-date-btn,
     #add-person-btn {
         margin-top: 1;
+        margin-right: 2;
+    }
+    /* Person row styles */
+    .person-row {
+        height: auto;
+        width: 1fr;
+        margin-bottom: 1;
+        padding: 0;
+        align: left middle;
+    }
+    .person-content {
+        width: auto;
+        height: auto;
+        padding: 0;
+    }
+    .person-header-row {
+        height: 3;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        align: left middle;
+    }
+    .person-type-badge {
+        width: auto;
+        height: 100%;
+        padding: 0 1;
+        text-style: bold;
+        content-align: left middle;
+    }
+    .person-name {
+        width: auto;
+        height: 100%;
+        padding: 0 1;
+        content-align: left middle;
+    }
+    .person-details {
+        width: auto;
+        height: auto;
+        padding: 0 0 0 4;
+        margin-top: 0;
+        margin-bottom: 1;
+        color: $text-muted;
     }
 }
