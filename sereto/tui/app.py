@@ -124,6 +124,106 @@ class FindingSearchScreen(_PoppableScreen):
         self.query_one(SearchWidget).input_field.focus()
 
 
+# ── Config row widgets ─────────────────────────────────────────────────────────
+
+
+class _DateRow(Vertical):
+    """Single row in the dates list: formatted date text in timeline style + Remove button."""
+
+    def __init__(self, date: Date, index: int, is_first: bool = False, is_last: bool = False) -> None:
+        super().__init__(classes="timeline-row")
+        self._date = date
+        self._index = index  # 1-based
+        self._is_first = is_first
+        self._is_last = is_last
+
+    def compose(self) -> ComposeResult:
+        # Top connector line (if not first)
+        if not self._is_first:
+            with Horizontal(classes="timeline-line-row"):
+                yield Static("", classes="timeline-date-spacer")
+                yield Static("│", classes="timeline-line")
+                yield Static("", classes="timeline-content-spacer")
+        
+        # Main row: Date, Circle, Type, Button
+        with Horizontal(classes="timeline-main-row"):
+            # Date on left
+            match self._date.date:
+                case DateRange():
+                    date_text = f"{self._date.date.start} – {self._date.date.end}"
+                case _:
+                    date_text = str(self._date.date)
+            yield Static(date_text, classes="timeline-date")
+            
+            # Circle
+            yield Static("○", classes="timeline-dot")
+            
+            # Type label
+            type_label = self._date.type.value.replace('_', ' ').title()
+            yield Static(type_label, classes="timeline-type")
+            
+            # Remove button
+            yield Button("\u2715", variant="error", id=f"remove-date-{self._index}", classes="timeline-remove-btn")
+        
+        # Bottom connector line (if not last)
+        if not self._is_last:
+            with Horizontal(classes="timeline-line-row"):
+                yield Static("", classes="timeline-date-spacer")
+                yield Static("│", classes="timeline-line")
+                yield Static("", classes="timeline-content-spacer")
+
+class _TargetRow(Horizontal):
+    """Single row in the targets list: formatted target text + Remove button."""
+
+    def __init__(self, target: Target, index: int) -> None:
+        super().__init__(classes="config-row")
+        self._target = target
+        self._index = index  # 1-based
+
+    def compose(self) -> ComposeResult:
+        text = f"[bold cyan]{self._target.data.category.upper()}[/bold cyan]  {self._target.data.name}"
+        yield Static(text, classes="config-row-label", markup=True)
+        yield Button("\u2715", variant="error", id=f"remove-target-{self._index}", classes="config-targets-remove-btn")
+
+
+class _PersonRow(Horizontal):
+    """Single row in the people list: type badge + name on first line, details on indented second line, remove button on right."""
+
+    def __init__(self, person: Person, index: int) -> None:
+        super().__init__(classes="person-row")
+        self._person = person
+        self._index = index  # 1-based
+
+    def compose(self) -> ComposeResult:
+        # Left side: Content (type badge, name, details)
+        with Vertical(classes="person-content"):
+            # First line: Type badge + Name
+            with Horizontal(classes="person-header-row"):
+                # Type badge
+                type_label = self._person.type.value.replace('_', ' ').title()
+                yield Static(f"[bold cyan]{type_label}[/bold cyan]", classes="person-type-badge", markup=True)
+                
+                # Name
+                name = self._person.name or "[dim](no name)[/dim]"
+                yield Static(name, classes="person-name", markup=True)
+            
+            # Second line: Details (indented)
+            details: list[str] = []
+            if self._person.email:
+                details.append(f"📧 {self._person.email}")
+            if self._person.business_unit:
+                details.append(f"🏢 {self._person.business_unit}")
+            if self._person.role:
+                details.append(f"👔 {self._person.role}")
+            
+            # Always show details line, even if empty
+            detail_text = "  •  ".join(details) if details else "[dim](no details)[/dim]"
+            yield Static(detail_text, classes="person-details", markup=True)
+        
+        # Right side: Remove button (spans full height, centered)
+        yield Button("\u2715", variant="error", id=f"remove-person-{self._index}", classes="config-ppl-remove-btn")
+
+
 # ── Config screen ──────────────────────────────────────────────────────────────
 class ConfigScreen(_PoppableScreen):
     """Screen for managing the project configuration (general info, targets, dates, people)."""
@@ -140,8 +240,7 @@ class ConfigScreen(_PoppableScreen):
 
     @property
     def _active_vc(self) -> VersionConfig:
-        app: Any = self.app
-        return app.project.config.at_version(app.selected_project_version)
+        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -219,7 +318,6 @@ class ConfigScreen(_PoppableScreen):
             tab = f"tab-{app.entry_point}"
         if tab is not None:
             self.query_one("#config-tabs", TabbedContent).active = tab
-
         # Populate category select
         category_select = self.query_one("#target-category-select", Select)
         category_options = [(cat, cat.lower()) for cat in app.categories]
@@ -229,7 +327,7 @@ class ConfigScreen(_PoppableScreen):
         self._refresh_targets()
         self._refresh_dates()
         self._refresh_people()
-
+        
         # Initialize button visibility and set up periodic updates
         self.set_timer(0.1, self._update_button_visibility)
         self.set_interval(0.5, self._update_button_visibility)
@@ -287,7 +385,6 @@ class ConfigScreen(_PoppableScreen):
             container = self.query_one(f"#{container_id}", ScrollableContainer)
             form = self.query_one(f"#{form_id}")
             button = self.query_one(f"#{button_id}", Button)
-
             # Get the scroll position
             scroll_y = container.scroll_y
             viewport_height = container.size.height
@@ -382,6 +479,40 @@ class ConfigScreen(_PoppableScreen):
         self.set_timer(
             0.1, lambda: self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn")
         )
+
+    # ── List refresh ───────────────────────────────────────────────────────────
+
+    def _refresh_targets(self) -> None:
+        container = self.query_one("#targets-list", Vertical)
+        container.remove_children()
+        for i, t in enumerate(self._active_vc.targets, start=1):
+            container.mount(_TargetRow(t, i))
+        self.set_timer(0.1, lambda: self._check_form_visibility("targets-form", "target-add-form", "scroll-add-target-btn"))
+
+    def sort_key(self, d: Date) -> tuple[SeretoDate, SeretoDate]:
+        if isinstance(d.date, DateRange):
+            return (d.date.start, d.date.end)
+        else:
+            return (d.date, d.date)
+        
+    def _refresh_dates(self) -> None:
+        container = self.query_one("#dates-list", Vertical)
+        container.remove_children()
+        dates_list = list(self._active_vc.dates)
+        # sort by most recent start date first, then by end date if start dates are equal
+        sorted_dates = sorted(dates_list, key=self.sort_key, reverse=True)
+        for i, d in enumerate(sorted_dates, start=1):
+            is_first = (i == 1)
+            is_last = (i == len(sorted_dates))
+            container.mount(_DateRow(d, i, is_first, is_last))
+        self.set_timer(0.1, lambda: self._check_form_visibility("dates-form", "date-add-form", "scroll-add-date-btn"))
+
+    def _refresh_people(self) -> None:
+        container = self.query_one("#people-list", Vertical)
+        container.remove_children()
+        for i, p in enumerate(self._active_vc.people, start=1):
+            container.mount(_PersonRow(p, i))
+        self.set_timer(0.1, lambda: self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn"))
 
     # ── Targets tab actions ────────────────────────────────────────────────────
     def _do_add_target(self) -> None:
@@ -1180,6 +1311,16 @@ def _precursor_chain(action: _TuiEntry, _seen: frozenset[str] = frozenset()) -> 
     return [*_precursor_chain(precursor, _seen | {action.id}), precursor]
 
 
+def _precursor_chain(action: _TuiEntry, _seen: frozenset[str] = frozenset()) -> list[_TuiEntry]:
+    """Return ordered precursor entries for *action*, outermost first."""
+    if action.precursor_id is None or action.precursor_id in _seen:
+        return []  # no precursor, or cycle guard
+    precursor = next((a for a in _ACTION_REGISTRY if a.id == action.precursor_id), None)
+    if precursor is None:
+        return []
+    return [*_precursor_chain(precursor, _seen | {action.id}), precursor]
+
+
 class ProjectBrowserScreen(Screen[None]):
     """Dropdown project selector with a detail panel filling the remaining space."""
 
@@ -1324,6 +1465,12 @@ class ProjectBrowserScreen(Screen[None]):
         app.selected_project_version = str(event.value) if not isinstance(event.value, NoSelection) else None
         self.refresh_content()
 
+    @on(Select.Changed, "#version-select")
+    def on_render_version_selected(self, event: Select.Changed) -> None:
+        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app.selected_project_version = event.value
+        self.refresh_content()
+
     @on(Select.Changed, "#project-select")
     def on_project_selected(self, event: Select.Changed) -> None:
         container = self.query_one("#content-container", Vertical)
@@ -1428,7 +1575,6 @@ class ProjectBrowserScreen(Screen[None]):
                 )
                 target_item = Static(target_text, classes="browser-target-item")
                 targets_list.mount(target_item)
-
                 # Findings under this target
                 if target.findings.groups:
                     for group in target.findings.groups:
@@ -1600,6 +1746,10 @@ def _register_builtin_actions() -> None:
     """
     for plugin in _BUILTIN_PLUGINS:
         register_tui_plugin(plugin)
+    # Entry-point-only aliases (e.g. `sereto config targets add`); no button,
+    # and ConfigScreen itself resolves which tab to open from app.entry_point.
+    for entry_id in ConfigScreen.TABS:
+        _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))
 
     for entry_id in ConfigScreen.TABS:
         _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))

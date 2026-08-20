@@ -71,6 +71,10 @@ class SeretoDate(date):
         """Support deepcopy by creating a new instance with the same date components."""
         return SeretoDate(self.year, self.month, self.day)
 
+    def __deepcopy__(self) -> SeretoDate:
+        """Support deepcopy by creating a new instance with the same date components."""
+        return SeretoDate(self.year, self.month, self.day)
+
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
