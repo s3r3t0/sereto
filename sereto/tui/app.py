@@ -1,11 +1,11 @@
 """Unified SeReTo TUI application.
 
 This module provides the single continuous TUI that replaces/pushes screens on top
-of each other.  The entry point is :func:`launch_tui`.
+of each other. The entry point is :func:`launch_tui`.
 
 Screen stack (outermost → innermost):
   ProjectBrowserScreen  – always present
-  ConfigScreen / RenderScreen / FindingSearchScreen
+  ConfigScreen / RenderScreen / FindingSearchScreen / plugin's screen(s)
   FindingPreviewScreen  – modal pushed on top of FindingSearchScreen
   AddSubFindingScreen   – modal pushed on top of FindingSearchScreen
 """
@@ -20,8 +20,6 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from pydantic import TypeAdapter, ValidationError
-from rich.console import Group as RichGroup
-from rich.table import Table
 from rich.text import Text
 from textual import on, work
 from textual.app import App, ComposeResult
@@ -29,6 +27,7 @@ from textual.binding import Binding
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen, Screen
 from textual.types import NoSelection
+from textual.widget import Widget
 from textual.widgets import Button, Footer, Header, Input, Label, RichLog, Rule, Select, Static, TabbedContent, TabPane
 
 from sereto.config import VersionConfig
@@ -37,7 +36,6 @@ from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
-from sereto.models.version import ProjectVersion
 from sereto.project import Project, is_project_dir, new_project
 from sereto.retest import add_retest
 from sereto.sereto_types import TypeProjectId
@@ -46,9 +44,8 @@ from sereto.target import Target
 from sereto.tui.finding import SearchWidget
 from sereto.tui.widgets.input import InputWithLabel
 
-# ── Base screen for poppable screens ─────────────────────────────────────────
 
-
+# ── Parent screen for poppable screens ─────────────────────────────────────────
 class _PoppableScreen(Screen[None]):
     """Base for screens that exit via Escape with priority over child widgets."""
 
@@ -59,12 +56,10 @@ class _PoppableScreen(Screen[None]):
 
 
 # ── Delete Confirmation dialog ───────────────────────────────────────────────────────
-
-
 class DeleteConfirmationScreen(ModalScreen[bool]):
-    """Generic yes/no modal.  Dismisses with True on Confirm, False on Cancel."""
+    """Generic yes/no modal. Dismisses with 'True' on Confirm, 'False' on Cancel."""
 
-    BINDINGS = [Binding("escape", "dismiss_false", "Cancel")]
+    BINDINGS = [Binding("escape", "cancel", "Cancel")]
 
     def __init__(self, message: str) -> None:
         super().__init__()
@@ -80,12 +75,11 @@ class DeleteConfirmationScreen(ModalScreen[bool]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "confirm-yes")
 
-    def action_dismiss_false(self) -> None:
+    def action_cancel(self) -> None:
         self.dismiss(False)
 
 
 # ── Risk label helpers ─────────────────────────────────────────────────────────
-
 _RISK_STYLE: dict[Risk, str] = {
     Risk.critical: "bold red",
     Risk.high: "bold dark_orange",
@@ -100,8 +94,6 @@ def _risk_text(risk: Risk) -> Text:
 
 
 # ── Finding search screen ──────────────────────────────────────────────────────
-
-
 class FindingSearchScreen(_PoppableScreen):
     """Full-screen wrapper around :class:`SearchWidget` for the unified TUI.
 
@@ -120,8 +112,10 @@ class FindingSearchScreen(_PoppableScreen):
         app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
         if not all_targets:
-            self.notify("No targets found in this project.", severity="warning", timeout=3)
-            self.app.pop_screen()
+            self.notify(
+                "No targets found in this project. Add them via 'Config' button.", severity="warning", timeout=3
+            )
+            app.pop_screen()
             return
         self.query_one(SearchWidget).input_field.focus()
 
@@ -130,111 +124,9 @@ class FindingSearchScreen(_PoppableScreen):
         self.query_one(SearchWidget).input_field.focus()
 
 
-# ── Config row widgets ─────────────────────────────────────────────────────────
-
-
-class _DateRow(Vertical):
-    """Single row in the dates list: formatted date text in timeline style + Remove button."""
-
-    def __init__(self, date: Date, index: int, is_first: bool = False, is_last: bool = False) -> None:
-        super().__init__(classes="timeline-row")
-        self._date = date
-        self._index = index  # 1-based
-        self._is_first = is_first
-        self._is_last = is_last
-
-    def compose(self) -> ComposeResult:
-        # Top connector line (if not first)
-        if not self._is_first:
-            with Horizontal(classes="timeline-line-row"):
-                yield Static("", classes="timeline-date-spacer")
-                yield Static("│", classes="timeline-line")
-                yield Static("", classes="timeline-content-spacer")
-        
-        # Main row: Date, Circle, Type, Button
-        with Horizontal(classes="timeline-main-row"):
-            # Date on left
-            match self._date.date:
-                case DateRange():
-                    date_text = f"{self._date.date.start} – {self._date.date.end}"
-                case _:
-                    date_text = str(self._date.date)
-            yield Static(date_text, classes="timeline-date")
-            
-            # Circle
-            yield Static("○", classes="timeline-dot")
-            
-            # Type label
-            type_label = self._date.type.value.replace('_', ' ').title()
-            yield Static(type_label, classes="timeline-type")
-            
-            # Remove button
-            yield Button("\u2715", variant="error", id=f"remove-date-{self._index}", classes="timeline-remove-btn")
-        
-        # Bottom connector line (if not last)
-        if not self._is_last:
-            with Horizontal(classes="timeline-line-row"):
-                yield Static("", classes="timeline-date-spacer")
-                yield Static("│", classes="timeline-line")
-                yield Static("", classes="timeline-content-spacer")
-
-class _TargetRow(Horizontal):
-    """Single row in the targets list: formatted target text + Remove button."""
-
-    def __init__(self, target: Target, index: int) -> None:
-        super().__init__(classes="config-row")
-        self._target = target
-        self._index = index  # 1-based
-
-    def compose(self) -> ComposeResult:
-        text = f"[bold cyan]{self._target.data.category.upper()}[/bold cyan]  {self._target.data.name}"
-        yield Static(text, classes="config-row-label", markup=True)
-        yield Button("\u2715", variant="error", id=f"remove-target-{self._index}", classes="config-targets-remove-btn")
-
-
-class _PersonRow(Horizontal):
-    """Single row in the people list: type badge + name on first line, details on indented second line, remove button on right."""
-
-    def __init__(self, person: Person, index: int) -> None:
-        super().__init__(classes="person-row")
-        self._person = person
-        self._index = index  # 1-based
-
-    def compose(self) -> ComposeResult:
-        # Left side: Content (type badge, name, details)
-        with Vertical(classes="person-content"):
-            # First line: Type badge + Name
-            with Horizontal(classes="person-header-row"):
-                # Type badge
-                type_label = self._person.type.value.replace('_', ' ').title()
-                yield Static(f"[bold cyan]{type_label}[/bold cyan]", classes="person-type-badge", markup=True)
-                
-                # Name
-                name = self._person.name or "[dim](no name)[/dim]"
-                yield Static(name, classes="person-name", markup=True)
-            
-            # Second line: Details (indented)
-            details: list[str] = []
-            if self._person.email:
-                details.append(f"📧 {self._person.email}")
-            if self._person.business_unit:
-                details.append(f"🏢 {self._person.business_unit}")
-            if self._person.role:
-                details.append(f"👔 {self._person.role}")
-            
-            # Always show details line, even if empty
-            detail_text = "  •  ".join(details) if details else "[dim](no details)[/dim]"
-            yield Static(detail_text, classes="person-details", markup=True)
-        
-        # Right side: Remove button (spans full height, centered)
-        yield Button("\u2715", variant="error", id=f"remove-person-{self._index}", classes="config-ppl-remove-btn")
-
-
 # ── Config screen ──────────────────────────────────────────────────────────────
-
-
 class ConfigScreen(_PoppableScreen):
-    """Screen for managing the project configuration (general info, dates, people)."""
+    """Screen for managing the project configuration (general info, targets, dates, people)."""
 
     SUB_TITLE = "Project Configuration"
 
@@ -248,7 +140,8 @@ class ConfigScreen(_PoppableScreen):
 
     @property
     def _active_vc(self) -> VersionConfig:
-        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        app: Any = self.app
+        return app.project.config.at_version(app.selected_project_version)
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -256,61 +149,60 @@ class ConfigScreen(_PoppableScreen):
             with TabPane("General", id="tab-general"), ScrollableContainer(id="general-form"):
                 yield InputWithLabel(Input(id="cfg-id", placeholder=self._active_vc.id), "ID")
                 yield InputWithLabel(Input(id="cfg-name", placeholder=self._active_vc.name), "Name")
-                yield InputWithLabel(Input(id="cfg-version-desc", placeholder=self._active_vc.version_description), "Desc")
+                yield InputWithLabel(
+                    Input(id="cfg-version-desc", placeholder=self._active_vc.version_description), "Desc"
+                )
                 with Horizontal(classes="config-add-row"):
                     yield Button("Save", variant="success", id="save-general")
-            with TabPane("Targets", id="tab-targets"):
-                with Vertical(classes="tab-container"):
-                    yield Button("Add", id="scroll-add-target-btn", classes="scroll-add-btn", variant="primary")
-                    with ScrollableContainer(id="targets-form"):
-                        yield Vertical(id="targets-list")
-                        with Vertical(id="target-add-form", classes="add-form-section"):
-                            with Horizontal(classes="field-row"):
-                                yield Label("Category", classes="field-label")
-                                yield Select(
-                                    options=[],
-                                    id="target-category-select",
-                                    prompt="Select category…",
-                                )
-                            yield InputWithLabel(Input(id="target-name", placeholder="Target name…"), "Name")
-                            with Horizontal(classes="config-add-row"):
-                                yield Button("Add target", variant="success", id="add-target-btn")
-            with TabPane("Dates", id="tab-dates"):
-                with Vertical(classes="tab-container"):
-                    yield Button("Add", id="scroll-add-date-btn", classes="scroll-add-btn", variant="primary")
-                    with ScrollableContainer(id="dates-form"):
-                        yield Vertical(id="dates-list")
-                        with Vertical(id="date-add-form", classes="add-form-section"):
-                            with Horizontal(classes="field-row"):
-                                yield Label("Type", classes="field-label")
-                                yield Select(
-                                    options=[(dt.value.replace("_", " ").title(), dt) for dt in DateType],
-                                    id="date-type-select",
-                                    prompt="Select type\u2026",
-                                )
-                            yield InputWithLabel(Input(id="date-start", placeholder="DD-Mmm-YYYY"), "Start")
-                            yield InputWithLabel(Input(id="date-end", placeholder="DD-Mmm-YYYY (optional)"), "End")
-                            with Horizontal(classes="config-add-row"):
-                                yield Button("Add date", variant="success", id="add-date-btn")
-            with TabPane("People", id="tab-people"):
-                with Vertical(classes="tab-container"):
-                    yield Button("Add", id="scroll-add-person-btn", classes="scroll-add-btn", variant="primary")
-                    with ScrollableContainer(id="people-form"):
-                        yield Vertical(id="people-list")
-                        with Vertical(id="person-add-form", classes="add-form-section"):
-                            with Horizontal(classes="field-row"):
-                                yield Label("Type", classes="field-label")
-                                yield Select(
-                                    options=[(pt.value.replace("_", " ").title(), pt) for pt in PersonType],
-                                    id="person-type-select",
-                                    prompt="Select type\u2026",
-                                )
-                            yield InputWithLabel(Input(id="person-name", placeholder="Full name"), "Name")
-                            yield InputWithLabel(Input(id="person-bu", placeholder="Business unit"), "BU")
-                            yield InputWithLabel(Input(id="person-email", placeholder="user@example.com"), "Email")
-                            yield InputWithLabel(Input(id="person-role", placeholder="Role"), "Role")
-                            with Horizontal(classes="config-add-row"):
-                                yield Button("Add person", variant="success", id="add-person-btn")
+            with TabPane("Targets", id="tab-targets"), Vertical(classes="tab-container"):
+                yield Button("Add", id="scroll-add-targets-btn", classes="scroll-add-btn", variant="primary")
+                with ScrollableContainer(id="targets-form"):
+                    yield Vertical(id="targets-list")
+                    with Vertical(id="targets-add-form", classes="add-form-section"):
+                        with Horizontal(classes="field-row"):
+                            yield Label("Category", classes="field-label")
+                            yield Select(
+                                options=[],
+                                id="target-category-select",
+                                prompt="Select category…",
+                            )
+                        yield InputWithLabel(Input(id="target-name", placeholder="Target name…"), "Name")
+                        with Horizontal(classes="config-add-row"):
+                            yield Button("Add target", variant="success", id="add-target-btn")
+            with TabPane("Dates", id="tab-dates"), Vertical(classes="tab-container"):
+                yield Button("Add", id="scroll-add-dates-btn", classes="scroll-add-btn", variant="primary")
+                with ScrollableContainer(id="dates-form"):
+                    yield Vertical(id="dates-list")
+                    with Vertical(id="dates-add-form", classes="add-form-section"):
+                        with Horizontal(classes="field-row"):
+                            yield Label("Type", classes="field-label")
+                            yield Select(
+                                options=[(dt.value.replace("_", " ").title(), dt) for dt in DateType],
+                                id="date-type-select",
+                                prompt="Select type\u2026",
+                            )
+                        yield InputWithLabel(Input(id="date-start", placeholder="DD-Mmm-YYYY"), "Start")
+                        yield InputWithLabel(Input(id="date-end", placeholder="DD-Mmm-YYYY (optional)"), "End")
+                        with Horizontal(classes="config-add-row"):
+                            yield Button("Add date", variant="success", id="add-date-btn")
+            with TabPane("People", id="tab-people"), Vertical(classes="tab-container"):
+                yield Button("Add", id="scroll-add-people-btn", classes="scroll-add-btn", variant="primary")
+                with ScrollableContainer(id="people-form"):
+                    yield Vertical(id="people-list")
+                    with Vertical(id="people-add-form", classes="add-form-section"):
+                        with Horizontal(classes="field-row"):
+                            yield Label("Type", classes="field-label")
+                            yield Select(
+                                options=[(pt.value.replace("_", " ").title(), pt) for pt in PersonType],
+                                id="person-type-select",
+                                prompt="Select type\u2026",
+                            )
+                        yield InputWithLabel(Input(id="person-name", placeholder="Full name"), "Name")
+                        yield InputWithLabel(Input(id="person-bu", placeholder="Business unit"), "BU")
+                        yield InputWithLabel(Input(id="person-email", placeholder="user@example.com"), "Email")
+                        yield InputWithLabel(Input(id="person-role", placeholder="Role"), "Role")
+                        with Horizontal(classes="config-add-row"):
+                            yield Button("Add person", variant="success", id="add-person-btn")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -327,33 +219,32 @@ class ConfigScreen(_PoppableScreen):
             tab = f"tab-{app.entry_point}"
         if tab is not None:
             self.query_one("#config-tabs", TabbedContent).active = tab
-        
+
         # Populate category select
         category_select = self.query_one("#target-category-select", Select)
         category_options = [(cat, cat.lower()) for cat in app.categories]
         category_select.set_options(category_options)
-        
+
+        # Load project's configuration data
         self._refresh_targets()
         self._refresh_dates()
         self._refresh_people()
-        
+
         # Initialize button visibility and set up periodic updates
-        self.set_timer(0.1, self._update_all_button_visibility)
-        self.set_interval(0.5, self._update_all_button_visibility)
+        self.set_timer(0.1, self._update_button_visibility)
+        self.set_interval(0.5, self._update_button_visibility)
 
-    def _update_all_button_visibility(self) -> None:
-        """Update visibility of all Add buttons based on form positions."""
-        self._check_form_visibility("targets-form", "target-add-form", "scroll-add-target-btn")
-        self._check_form_visibility("dates-form", "date-add-form", "scroll-add-date-btn")
-        self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn")
-
-    @on(TabbedContent.TabActivated)
-    def on_tab_changed(self) -> None:
-        """Update button visibility when switching tabs."""
-        self.set_timer(0.1, self._update_all_button_visibility)
+    def _update_button_visibility(self) -> None:
+        """Update visibility of Add button for the currently active tab only."""
+        tabs = self.query_one("#config-tabs", TabbedContent)
+        active_tab = tabs.active
+        if active_tab:
+            active_tab = active_tab.removeprefix("tab-")
+        if active_tab != "general" and active_tab not in self.TABS:
+            raise RuntimeError(f"Unexpected tab ID: {tabs.active!r}")
+        self._check_form_visibility(f"{active_tab}-form", f"{active_tab}-add-form", f"scroll-add-{active_tab}-btn")
 
     # ── Button handlers ────────────────────────────────────────────────────────
-
     @on(Button.Pressed, "#save-general")
     def handle_save_general(self) -> None:
         self._do_save_general()
@@ -370,35 +261,25 @@ class ConfigScreen(_PoppableScreen):
     def handle_add_person(self) -> None:
         self._do_add_person()
 
-    @on(Button.Pressed, "#scroll-add-target-btn")
-    def handle_scroll_to_target_form(self) -> None:
-        # Focus and scroll to the first input in the target form
-        select = self.query_one("#target-category-select", Select)
-        container = self.query_one("#targets-form", ScrollableContainer)
-        select.focus()
-        self.call_after_refresh(lambda: container.scroll_to_widget(select, top=True))
-        # Hide the button after clicking
-        self.query_one("#scroll-add-target-btn", Button).display = False
+    @on(Button.Pressed, "#scroll-add-targets-btn, #scroll-add-dates-btn, #scroll-add-people-btn")
+    def handle_scroll_to_form(self, event: Button.Pressed) -> None:
+        """Focus and scroll to the form for the clicked tab."""
+        button_id = event.button.id or ""
+        tab_name = button_id.removeprefix("scroll-add-").removesuffix("-btn")
 
-    @on(Button.Pressed, "#scroll-add-date-btn")
-    def handle_scroll_to_date_form(self) -> None:
-        # Focus and scroll to the first input in the date form
-        select = self.query_one("#date-type-select", Select)
-        container = self.query_one("#dates-form", ScrollableContainer)
-        select.focus()
-        self.call_after_refresh(lambda: container.scroll_to_widget(select, top=True))
-        # Hide the button after clicking
-        self.query_one("#scroll-add-date-btn", Button).display = False
+        # Map tab names to their first input selector
+        select_map = {
+            "targets": "#target-category-select",
+            "dates": "#date-type-select",
+            "people": "#person-type-select",
+        }
 
-    @on(Button.Pressed, "#scroll-add-person-btn")
-    def handle_scroll_to_person_form(self) -> None:
-        # Focus and scroll to the first input in the person form
-        select = self.query_one("#person-type-select", Select)
-        container = self.query_one("#people-form", ScrollableContainer)
-        select.focus()
-        self.call_after_refresh(lambda: container.scroll_to_widget(select, top=True))
-        # Hide the button after clicking
-        self.query_one("#scroll-add-person-btn", Button).display = False
+        if tab_name in select_map:
+            select = self.query_one(select_map[tab_name], Select)
+            container = self.query_one(f"#{tab_name}-form", ScrollableContainer)
+            select.focus()
+            self.call_after_refresh(lambda: container.scroll_to_widget(select, top=True))
+            event.button.display = False
 
     def _check_form_visibility(self, container_id: str, form_id: str, button_id: str) -> None:
         """Check if form is visible and toggle button visibility accordingly."""
@@ -406,28 +287,28 @@ class ConfigScreen(_PoppableScreen):
             container = self.query_one(f"#{container_id}", ScrollableContainer)
             form = self.query_one(f"#{form_id}")
             button = self.query_one(f"#{button_id}", Button)
-            
+
             # Get the scroll position
             scroll_y = container.scroll_y
             viewport_height = container.size.height
             viewport_bottom = scroll_y + viewport_height
-            
+
             # Calculate form's position within the scroll container
             # Walk up from form to find its offset relative to the scrollable container
             form_offset_y = 0
-            node = form
+            node: Widget = form
             while node.parent is not None and node.parent != container:
                 form_offset_y += node.offset.y
-                node = node.parent
+                node = node.parent  # type: ignore
             if node.parent == container:
                 form_offset_y += node.offset.y
-            
+
             form_top = form_offset_y
             form_bottom = form_top + form.size.height
-            
+
             # Form is visible if any part overlaps with the viewport
             is_visible = (form_top < viewport_bottom) and (form_bottom > scroll_y)
-            
+
             # Show button only when form is NOT visible
             button.display = is_visible
         except Exception:
@@ -436,42 +317,39 @@ class ConfigScreen(_PoppableScreen):
     @on(Button.Pressed, ".config-ppl-remove-btn, .config-targets-remove-btn, .timeline-remove-btn")
     def handle_remove(self, event: Button.Pressed) -> None:
         button_id = event.button.id or ""
-        if button_id.startswith("remove-target-"):
-            index = int(button_id.removeprefix("remove-target-"))
-            target = self._active_vc.targets[index - 1]
-            name = target.data.name
-            self.app.push_screen(
-                DeleteConfirmationScreen(f"Remove target [b]{name}[/b]?"),
-                callback=lambda confirmed, i=index: self._do_remove_target(i) if confirmed else None,
-            )
-        elif button_id.startswith("remove-date-"):
-            index = int(button_id.removeprefix("remove-date-"))
-            self.app.push_screen(
-                DeleteConfirmationScreen("Remove this date?"),
-                callback=lambda confirmed, i=index: self._do_remove_date(i) if confirmed else None,
-            )
-        elif button_id.startswith("remove-person-"):
-            index = int(button_id.removeprefix("remove-person-"))
-            self.app.push_screen(
-                DeleteConfirmationScreen("Remove this person?"),
-                callback=lambda confirmed, i=index: self._do_remove_person(i) if confirmed else None,
-            )
+        button_id = button_id.removeprefix("remove-")
+
+        handler_map = {
+            "target": self._do_remove_target,
+            "date": self._do_remove_date,
+            "person": self._do_remove_person,
+        }
+
+        for type_prefix, handler in handler_map.items():
+            if button_id.startswith(f"{type_prefix}-"):
+                index = int(button_id.removeprefix(f"{type_prefix}-"))
+                self.app.push_screen(
+                    DeleteConfirmationScreen(f"Remove this {type_prefix}?"),
+                    callback=lambda confirmed, i=index, h=handler: h(i) if confirmed else None,
+                )
+                return
 
     # ── List refresh ───────────────────────────────────────────────────────────
-
     def _refresh_targets(self) -> None:
         container = self.query_one("#targets-list", Vertical)
         container.remove_children()
         for i, t in enumerate(self._active_vc.targets, start=1):
             container.mount(_TargetRow(t, i))
-        self.set_timer(0.1, lambda: self._check_form_visibility("targets-form", "target-add-form", "scroll-add-target-btn"))
+        self.set_timer(
+            0.1, lambda: self._check_form_visibility("targets-form", "target-add-form", "scroll-add-target-btn")
+        )
 
     def sort_key(self, d: Date) -> tuple[SeretoDate, SeretoDate]:
         if isinstance(d.date, DateRange):
             return (d.date.start, d.date.end)
         else:
             return (d.date, d.date)
-        
+
     def _refresh_dates(self) -> None:
         container = self.query_one("#dates-list", Vertical)
         container.remove_children()
@@ -479,20 +357,23 @@ class ConfigScreen(_PoppableScreen):
         # sort by most recent start date first, then by end date if start dates are equal
         sorted_dates = sorted(dates_list, key=self.sort_key, reverse=True)
         for i, d in enumerate(sorted_dates, start=1):
-            is_first = (i == 1)
-            is_last = (i == len(sorted_dates))
+            is_first = i == 1
+            is_last = i == len(sorted_dates)
             container.mount(_DateRow(d, i, is_first, is_last))
         self.set_timer(0.1, lambda: self._check_form_visibility("dates-form", "date-add-form", "scroll-add-date-btn"))
 
     def _refresh_people(self) -> None:
         container = self.query_one("#people-list", Vertical)
         container.remove_children()
-        for i, p in enumerate(self._active_vc.people, start=1):
+        people_list = list(self._active_vc.people)
+        sorted_people = sorted(people_list, key=lambda p: p.type.value)
+        for i, p in enumerate(sorted_people, start=1):
             container.mount(_PersonRow(p, i))
-        self.set_timer(0.1, lambda: self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn"))
+        self.set_timer(
+            0.1, lambda: self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn")
+        )
 
     # ── Targets tab actions ────────────────────────────────────────────────────
-
     def _do_add_target(self) -> None:
         cat_select = self.query_one("#target-category-select", Select)
         name_input = self.query_one("#target-name", Input)
@@ -560,7 +441,6 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to remove target", severity="error", markup=False)
 
     # ── General tab actions ────────────────────────────────────────────────────
-
     def _do_save_general(self) -> None:
         vc = self._active_vc
         id_val = self.query_one("#cfg-id", Input).value.strip()
@@ -600,7 +480,6 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Save failed", severity="error", markup=False)
 
     # ── Dates tab actions ──────────────────────────────────────────────────────
-
     def _do_add_date(self) -> None:
         type_select = self.query_one("#date-type-select", Select)
         start_input = self.query_one("#date-start", Input)
@@ -663,7 +542,6 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to remove date", severity="error", markup=False)
 
     # ── People tab actions ─────────────────────────────────────────────────────
-
     def _do_add_person(self) -> None:
         type_select = self.query_one("#person-type-select", Select)
         name_val = self.query_one("#person-name", Input).value.strip()
@@ -691,10 +569,12 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to add person", severity="error", markup=False)
             return
 
+        # Reset form fields after successful addition
         self.query_one("#person-name", Input).value = ""
         self.query_one("#person-bu", Input).value = ""
         self.query_one("#person-email", Input).value = ""
         self.query_one("#person-role", Input).value = ""
+
         self._refresh_people()
         self.notify("Person added.", timeout=3)
 
@@ -708,9 +588,107 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to remove person", severity="error", markup=False)
 
 
+# ── Config row widgets ─────────────────────────────────────────────────────────
+class _DateRow(Vertical):
+    """Single row in the dates list: formatted date text in timeline style + Remove button."""
+
+    def __init__(self, date: Date, index: int, is_first: bool = False, is_last: bool = False) -> None:
+        super().__init__(classes="timeline-row")
+        self._date = date
+        self._index = index  # 1-based
+        self._is_first = is_first
+        self._is_last = is_last
+
+    def compose(self) -> ComposeResult:
+        # Top connector line (if not first)
+        if not self._is_first:
+            with Horizontal(classes="timeline-line-row"):
+                yield Static("", classes="timeline-date-spacer")
+                yield Static("│", classes="timeline-line")
+                yield Static("", classes="timeline-content-spacer")
+
+        # Main row: Date, Circle, Type, Button
+        with Horizontal(classes="timeline-main-row"):
+            # Date on left
+            match self._date.date:
+                case DateRange():
+                    date_text = f"{self._date.date.start} – {self._date.date.end}"
+                case _:
+                    date_text = str(self._date.date)
+            yield Static(date_text, classes="timeline-date")
+
+            # Circle
+            yield Static("○", classes="timeline-dot")
+
+            # Type label
+            type_label = self._date.type.value.replace("_", " ").title()
+            yield Static(type_label, classes="timeline-type")
+
+            # Remove button
+            yield Button("\u2715", variant="error", id=f"remove-date-{self._index}", classes="timeline-remove-btn")
+
+        # Bottom connector line (if not last)
+        if not self._is_last:
+            with Horizontal(classes="timeline-line-row"):
+                yield Static("", classes="timeline-date-spacer")
+                yield Static("│", classes="timeline-line")
+                yield Static("", classes="timeline-content-spacer")
+
+
+class _TargetRow(Horizontal):
+    """Single row in the targets list: formatted target text + Remove button."""
+
+    def __init__(self, target: Target, index: int) -> None:
+        super().__init__(classes="config-row")
+        self._target = target
+        self._index = index  # 1-based
+
+    def compose(self) -> ComposeResult:
+        text = f"[bold cyan]{self._target.data.category.upper()}[/bold cyan]  {self._target.data.name}"
+        yield Static(text, classes="config-row-label", markup=True)
+        yield Button("\u2715", variant="error", id=f"remove-target-{self._index}", classes="config-targets-remove-btn")
+
+
+class _PersonRow(Horizontal):
+    """Single row in the people list: type badge + name on first line, details on
+    indented second line, remove button on right."""
+
+    def __init__(self, person: Person, index: int) -> None:
+        super().__init__(classes="person-row")
+        self._person = person
+        self._index = index  # 1-based
+
+    def compose(self) -> ComposeResult:
+        # Left side: Content (type badge, name, details)
+        with Vertical(classes="person-content"):
+            # First line: Type badge + Name
+            with Horizontal(classes="person-header-row"):
+                # Type badge
+                type_label = self._person.type.value.replace("_", " ").title()
+                yield Static(f"[bold cyan]{type_label}[/bold cyan]", classes="person-type-badge", markup=True)
+
+                # Name
+                name = self._person.name or "[dim](no name)[/dim]"
+                yield Static(name, classes="person-name", markup=True)
+
+            # Second line: Details (indented)
+            details: list[str] = []
+            if self._person.email:
+                details.append(f"📧 {self._person.email}")
+            if self._person.business_unit:
+                details.append(f"🏢 {self._person.business_unit}")
+            if self._person.role:
+                details.append(f"👔 {self._person.role}")
+
+            # Always show details line, even if empty
+            detail_text = "  |  ".join(details) if details else "[dim](no details)[/dim]"
+            yield Static(detail_text, classes="person-details", markup=True)
+
+        # Right side: Remove button (spans full height, centered)
+        yield Button("\u2715", variant="error", id=f"remove-person-{self._index}", classes="config-ppl-remove-btn")
+
+
 # ── Render screen ─────────────────────────────────────────────────────────────
-
-
 class RenderScreen(_PoppableScreen):
     """Screen for generating PDFs (report, SoW, targets, finding groups)."""
 
@@ -747,7 +725,6 @@ class RenderScreen(_PoppableScreen):
         self.query_one("#fg-filters", Vertical).display = False
 
     # ── helpers ───────────────────────────────────────────────────────────────
-
     def _log(self, text: str) -> None:
         self.query_one("#render-log", RichLog).write(text)
 
@@ -773,11 +750,6 @@ class RenderScreen(_PoppableScreen):
         target_select.clear()
         fg_select.set_options([])
 
-    @on(Select.Changed, "#version-select")
-    def on_render_version_changed(self, event: Select.Changed) -> None:
-        if not isinstance(event.value, NoSelection):
-            self._reload_fg_selectors()
-
     @on(Select.Changed, "#fg-target-select")
     def on_fg_target_changed(self, event: Select.Changed) -> None:
         fg_select = self.query_one("#fg-group-select", Select)
@@ -797,7 +769,6 @@ class RenderScreen(_PoppableScreen):
             fg_select.value = fg_options[0][1]
 
     # ── button handlers ───────────────────────────────────────────────────────
-
     @on(Select.Changed, "#render-type-select")
     def on_render_type_changed(self, event: Select.Changed) -> None:
         fg_filters = self.query_one("#fg-filters", Vertical)
@@ -825,7 +796,6 @@ class RenderScreen(_PoppableScreen):
         self._do_clean()
 
     # ── workers ───────────────────────────────────────────────────────────────
-
     @work(thread=True)
     def _run_render(self, kind: str) -> None:
         from loguru import logger
@@ -958,8 +928,6 @@ class RenderScreen(_PoppableScreen):
 
 
 # ── Project browser screen ─────────────────────────────────────────────────────
-
-
 class NewProjectScreen(Screen[bool]):
     """Full-page form for creating a new SeReTo project.
 
@@ -992,15 +960,15 @@ class NewProjectScreen(Screen[bool]):
         self.query_one("#new-project-id", Input).focus()
 
     @on(Input.Submitted)
-    def _on_submitted(self, event: Input.Submitted) -> None:
+    def _on_submitted(self) -> None:
         self._do_create()
 
     @on(Button.Pressed, "#new-project-create")
-    def _on_create(self, event: Button.Pressed) -> None:
+    def _on_create(self) -> None:
         self._do_create()
 
     @on(Button.Pressed, "#new-project-cancel")
-    def _on_cancel(self, event: Button.Pressed) -> None:
+    def _on_cancel(self) -> None:
         self.dismiss(False)
 
     def _do_create(self) -> None:
@@ -1055,9 +1023,7 @@ class NewProjectScreen(Screen[bool]):
         self.dismiss(False)
 
 
-# ── TUI plugin interface & internal registry ─────────────────────────────────
-
-
+# ── TUI plugin interface and internal registry ─────────────────────────────────
 class TuiPlugin:
     """Interface that every plugin which should be also part of the TUI must implement.
 
@@ -1068,16 +1034,15 @@ class TuiPlugin:
     used for CLI commands.
 
     Required class attributes:
-        label (str): Text shown on the action-bar button.
+        label (str): Text shown on the action-bar button within home page.
         screen (Callable[[SeretoUnifiedApp], Screen]): Factory invoked with the
             running app when the button is pressed (or the entry point is
             reached), and returning the :class:`~textual.screen.Screen` to
-            push.  A bare zero-arg ``Screen`` subclass also works as long as it
+            push. A bare zero-arg ``Screen`` subclass also works as long as it
             tolerates the extra call-site argument being ignored (use
-            ``staticmethod(lambda app: MyScreen())`` in that case).  Plugins
-            that need private state (e.g. API credentials) should build it
-            inside the factory and inject it into the screen's constructor,
-            rather than stashing attributes on ``app`` or ``app.project``.
+            ``staticmethod(lambda app: MyScreen())`` in that case). Plugins
+            that need private state should build it inside the factory and
+            inject it via launch_tui's ``plugin_context`` parameter.
 
     Optional class attributes:
         id (str): Unique key used for ``launch_tui(entry_point=…)`` routing.
@@ -1086,10 +1051,10 @@ class TuiPlugin:
             blocked if no project is currently selected.
         show_in_bar (bool): When ``True`` (the default) a button is rendered in
             the action bar.  Set to ``False`` for entry-point-only tokens.
-        precursor_id (str): Optional id of another registered plugin whose screen
+        precursor_id (str): Optional id of another registered plugin/screen which
             should be pushed onto the stack *before* this plugin's screen.  Use
             this when the current plugin's screen requires a parent screen below
-            it (e.g. a sub-screen that needs its menu screen reachable via Escape).
+            it (e.g. a sub-screen that needs its menu screen under it).
 
     Plugin module convention::
 
@@ -1104,17 +1069,17 @@ class TuiPlugin:
     Plugin :class:`TuiPlugin` subclass::
 
         from sereto.tui import TuiPlugin
-        from my_plugin.screens import CspScreen
+        from my_plugin.screens import MyScreen
 
-        class CspPlugin(TuiPlugin):
-            label = "CSP Scan"
-            screen = staticmethod(lambda app: CspScreen())
+        class MyPlugin(TuiPlugin):
+            label = "Just my plugin"
+            screen = staticmethod(lambda app: MyScreen())
             # requires_project = True   # default
             # show_in_bar = True        # default
     """
 
     label: ClassVar[str]
-    screen: ClassVar[Callable[[SeretoUnifiedApp], Screen[Any]]]
+    screen: ClassVar[Callable[[SeretoUnifiedApp], Screen[Any]] | Callable[[], Screen[Any]]]
     id: ClassVar[str | None] = None
     requires_project: ClassVar[bool] = True
     show_in_bar: ClassVar[bool] = True
@@ -1131,7 +1096,7 @@ class TuiPlugin:
 
 @dataclass(frozen=True)
 class _TuiEntry:
-    """Internal registry entry — not part of the public API."""
+    """Internal registry entry for ProjectBrowserScreen — not part of the public API."""
 
     id: str
     label: str
@@ -1166,21 +1131,23 @@ def register_tui_plugin(plugin: type[TuiPlugin]) -> None:
     SeReTo passes this function as the ``register_plugin`` argument when
     loading plugins via :func:`~sereto.cli.cli.load_plugins`.
 
-    Registering the same plugin id again (e.g. because ``launch_tui()`` is
-    called multiple times within the same process, as happens in the REPL)
-    replaces the existing entry instead of appending a duplicate.
+    Registering the same plugin id again replaces the existing entry
+    instead of appending a duplicate.
     """
     entry_id = plugin.id or plugin.__name__.lower()
     _register_entry(
         _TuiEntry(
-            entry_id, plugin.label, plugin.requires_project, plugin.screen, plugin.show_in_bar, plugin.precursor_id
+            entry_id,
+            plugin.label,
+            plugin.requires_project,
+            plugin.screen,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+            plugin.show_in_bar,
+            plugin.precursor_id,
         )
     )
 
 
 # ── Project browser screen ─────────────────────────────────────────────────────
-
-
 def _precursor_chain(action: _TuiEntry, _seen: frozenset[str] = frozenset()) -> list[_TuiEntry]:
     """Return ordered precursor entries for *action*, outermost first."""
     if action.precursor_id is None or action.precursor_id in _seen:
@@ -1221,13 +1188,15 @@ class ProjectBrowserScreen(Screen[None]):
 
     def on_mount(self) -> None:
         # Initially hide version select if no project
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
         if not app.current_project:
             self.query_one("#version-select", Select).display = False
             self.query_one("#retest-btn", Button).display = False
-        
+
         self._populate_action_bar()
         self._load_projects()
+
+        # If the app was launched with an entry point, try to activate right away
         if app.entry_point is not None:
             action = next((a for a in _ACTION_REGISTRY if a.id == app.entry_point), None)
             if action is not None:
@@ -1260,7 +1229,7 @@ class ProjectBrowserScreen(Screen[None]):
                 return
 
     @on(Button.Pressed, "#new-project-btn")
-    def _on_new_project_btn(self, event: Button.Pressed) -> None:
+    def _on_new_project_btn(self) -> None:
         def _on_created(created: bool | None) -> None:
             if created:
                 self._load_projects()
@@ -1268,12 +1237,12 @@ class ProjectBrowserScreen(Screen[None]):
         self.app.push_screen(NewProjectScreen(), _on_created)
 
     @on(Button.Pressed, "#retest-btn")
-    def _on_retest_btn(self, event: Button.Pressed) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]
+    def _on_retest_btn(self) -> None:
+        app: SeretoUnifiedApp = self.app  # type: ignore
         try:
-            add_retest(project=app.project)  # type: ignore[arg-type]  # ty: ignore[unresolved-argument]
+            add_retest(project=app.project)
             # Reload the project to update version list
-            project = Project.load_from(app.project.path)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            project = Project.load_from(app.project.path)
             version_select = self.query_one("#version-select", Select)
             version_select.set_options([(str(v), str(v)) for v in project.config.versions])
             version_select.value = str(project.config.last_version)
@@ -1283,9 +1252,8 @@ class ProjectBrowserScreen(Screen[None]):
             self.notify(f"Failed to add retest: {e}", severity="error", timeout=5)
 
     # ── Project loading ────────────────────────────────────────────────────────
-
     def _load_projects(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
         select = self.query_one("#project-select", Select)
         container = self.query_one("#content-container", Vertical)
 
@@ -1324,11 +1292,10 @@ class ProjectBrowserScreen(Screen[None]):
                     break
 
     # ── Selection handler ──────────────────────────────────────────────────────
-
     @on(Select.Changed, "#version-select")
     def on_render_version_selected(self, event: Select.Changed) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
-        app.selected_project_version = event.value
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        app.selected_project_version = str(event.value) if not isinstance(event.value, NoSelection) else None
         self.refresh_content()
 
     @on(Select.Changed, "#project-select")
@@ -1336,11 +1303,12 @@ class ProjectBrowserScreen(Screen[None]):
         container = self.query_one("#content-container", Vertical)
         version_select = self.query_one("#version-select", Select)
         retest_button = self.query_one("#retest-btn", Button)
-        
+
+        app: SeretoUnifiedApp = self.app  # type: ignore
+
         if isinstance(event.value, NoSelection):
             container.remove_children()
             container.mount(Static(self._welcome_text(), markup=True))
-            app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
             app.current_project = None
             app.categories = []
             app.selected_project_version = None
@@ -1348,28 +1316,29 @@ class ProjectBrowserScreen(Screen[None]):
             retest_button.display = False
             return
 
-        project_path: Path = event.value  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        project_path = Path(str(event.value))  # Guaranteed non-NoSelection after isinstance check above
         try:
             self._do_activate_project(project_path)
             version_select.display = True
             retest_button.display = True
         except Exception:
-            app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
             container.remove_children()
-            container.mount(Static(
-                self._error_content(
-                    title=f"Failed to load: {project_path.name}",
-                    detail=traceback.format_exc(),
-                ),
-                markup=True
-            ))
+            container.mount(
+                Static(
+                    self._error_content(
+                        title=f"Failed to load: {project_path.name}",
+                        detail=traceback.format_exc(),
+                    ),
+                    markup=True,
+                )
+            )
             version_select.display = False
             retest_button.display = False
             app.selected_project_version = None
 
     def _do_activate_project(self, project_path: Path) -> None:
         """Set the app's current project; skips reload if already active."""
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
         version_select = self.query_one("#version-select", Select)
         try:
             project = Project.load_from(project_path)
@@ -1386,16 +1355,17 @@ class ProjectBrowserScreen(Screen[None]):
             raise
 
     # ── Content builders ───────────────────────────────────────────────────────
-
     @staticmethod
     def _welcome_text() -> str:
         return "[dim]Select a project from the dropdown above to view its details.[/dim]"
 
     def _populate_content_panel(self, project: Project) -> None:
         """Populate the content panel with widgets: stats boxes and target list."""
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
-        version: ProjectVersion = app.selected_project_version  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
-        vc = project.config.at_version(version)
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        version_str = app.selected_project_version
+        if version_str is None:
+            return
+        vc = project.config.at_version(version_str)
         container = self.query_one("#content-container", Vertical)
         container.remove_children()
 
@@ -1408,7 +1378,7 @@ class ProjectBrowserScreen(Screen[None]):
         # Stats box row
         stats_row = Horizontal(classes="browser-stats-row")
         container.mount(stats_row)
-        
+
         for risk in [Risk.critical, Risk.high, Risk.medium, Risk.low, Risk.info]:
             count = risk_counts[risk]
             label = risk.value.capitalize()
@@ -1419,7 +1389,7 @@ class ProjectBrowserScreen(Screen[None]):
         # Targets list
         targets_list = Vertical(classes="browser-targets-list")
         container.mount(targets_list)
-        
+
         if not vc.targets:
             targets_list.mount(Static("[dim]No targets. Add them via 'Config' button.[/dim]", markup=True))
         else:
@@ -1432,7 +1402,7 @@ class ProjectBrowserScreen(Screen[None]):
                 )
                 target_item = Static(target_text, classes="browser-target-item")
                 targets_list.mount(target_item)
-                
+
                 # Findings under this target
                 if target.findings.groups:
                     for group in target.findings.groups:
@@ -1451,14 +1421,13 @@ class ProjectBrowserScreen(Screen[None]):
         text = Text()
         text.append(title, style="bold red")
         text.append("\n")
-        text.append("─" * 42, style="dim")
         text.append("\n\n")
         text.append(detail, style="dim")
         return text
 
     def refresh_content(self) -> None:
         """Refresh the project detail panel for the currently active project."""
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
         if app.current_project is None:
             return
         self._populate_content_panel(app.current_project)
@@ -1469,16 +1438,15 @@ class ProjectBrowserScreen(Screen[None]):
         Called after a project's ID or name has been changed in the ConfigScreen,
         so the dropdown label reflects the new values.
         """
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
         current_path = app.current_project.path if app.current_project is not None else None
         self._load_projects()
         if current_path is not None:
             self.query_one("#project-select", Select).value = current_path
 
-    # ── Actions ────────────────────────────────────────────────────────────────
-
+    # ── Base actions ────────────────────────────────────────────────────────────────
     def action_add_finding(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
 
         if app.current_project is None:
             self.notify("Select a project first.", severity="warning", timeout=3)
@@ -1487,7 +1455,7 @@ class ProjectBrowserScreen(Screen[None]):
         self.app.push_screen(FindingSearchScreen())
 
     def action_config(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
 
         if app.current_project is None:
             self.notify("Select a project first.", severity="warning", timeout=3)
@@ -1496,7 +1464,7 @@ class ProjectBrowserScreen(Screen[None]):
         self.app.push_screen(ConfigScreen())
 
     def action_render(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        app: SeretoUnifiedApp = self.app  # type: ignore
 
         if app.current_project is None:
             self.notify("Select a project first.", severity="warning", timeout=3)
@@ -1506,8 +1474,6 @@ class ProjectBrowserScreen(Screen[None]):
 
 
 # ── Unified app ────────────────────────────────────────────────────────────────
-
-
 class SeretoUnifiedApp(App[None]):
     """The single continuous SeReTo TUI.
 
@@ -1531,18 +1497,15 @@ class SeretoUnifiedApp(App[None]):
         super().__init__()
         self.settings = load_settings_function()
         self.entry_point = entry_point
-        # Opaque per-launch state for whichever plugin's entry point/action is active; the
-        # app never inspects this — only the plugin that set it knows its type (Extension Object).
         self.plugin_context = plugin_context
+        self.current_project: Project | None = None
+        self.selected_project_version: str | None = None
+        self.categories: list[str] = []
         try:
             if project is not None and is_project_dir(project.path):
-                self.current_project: Project | None = project
-                self.selected_project_version = project.config.last_version
-                self.categories: list[str] = sorted(c.upper() for c in project.settings.categories)
-            else:
-                self.current_project = None
-                self.selected_project_version = None
-                self.categories = []
+                self.current_project = project
+                self.selected_project_version = str(project.config.last_version)
+                self.categories = sorted(c.upper() for c in project.settings.categories)
         except Exception:
             self.current_project = None
             self.selected_project_version = None
@@ -1575,26 +1538,22 @@ class SeretoUnifiedApp(App[None]):
                 break
 
 
-
 # ── Built-in TuiPlugin registrations ──────────────────────────────────────────
-# Defined after all screen classes so the class-body references resolve.
-
-
 class _FindingsAddPlugin(TuiPlugin):
     label = "Add finding"
-    screen = staticmethod(lambda app: FindingSearchScreen())
+    screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: FindingSearchScreen())  # type: ignore
     id = "findings_add"
 
 
 class _ConfigPlugin(TuiPlugin):
     label = "Config"
-    screen = staticmethod(lambda app: ConfigScreen())
+    screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: ConfigScreen())  # type: ignore
     id = "config"
 
 
 class _RenderPlugin(TuiPlugin):
     label = "Render PDF"
-    screen = staticmethod(lambda app: RenderScreen())
+    screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: RenderScreen())  # type: ignore
     id = "render"
 
 
@@ -1610,20 +1569,17 @@ def _register_builtin_actions() -> None:
 
     Plugin TUI actions are registered earlier, during
     :func:`~sereto.cli.cli.load_plugins`, by calling each plugin module's
-    ``register_tui_actions(register_plugin)`` function.  This function only
+    ``register_tui_actions(register_plugin)`` function. This function only
     handles the built-in actions that are always present.
     """
     for plugin in _BUILTIN_PLUGINS:
         register_tui_plugin(plugin)
-    # Entry-point-only aliases (e.g. `sereto config targets add`); no button,
-    # and ConfigScreen itself resolves which tab to open from app.entry_point.
+
     for entry_id in ConfigScreen.TABS:
         _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
-
-
 async def launch_tui(
     entry_point: str | None = None,
     project: Project | None = None,
