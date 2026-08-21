@@ -38,6 +38,8 @@ def build_subfinding(
         intermediate_format: The desired output format (e.g., FileFormat.tex).
         converter: The convert recipe used for file format transformations. If None, the first recipe is used.
     """
+    sub_finding.validate_vars()
+
     # Initialize the build directory
     init_build_dir(project=project, target=target)
 
