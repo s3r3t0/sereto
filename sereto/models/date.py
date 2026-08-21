@@ -67,6 +67,10 @@ class SeretoDate(date):
     def __reduce__(self) -> tuple[type[SeretoDate], tuple[int, int, int]]:
         return (self.__class__, (self.year, self.month, self.day))
 
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> SeretoDate:
+        """Support deepcopy by creating a new instance with the same date components."""
+        return SeretoDate(self.year, self.month, self.day)
+
     @classmethod
     def __get_pydantic_core_schema__(
         cls,

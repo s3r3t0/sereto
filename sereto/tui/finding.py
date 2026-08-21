@@ -11,6 +11,7 @@ from rich.syntax import Syntax
 from rich.text import Text
 from textual import events, on
 from textual.app import App, ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen
 from textual.types import NoSelection
@@ -84,14 +85,15 @@ class FindingPreviewScreen(ModalScreen[None]):
     }
     """
     BINDINGS = [
-        ("ctrl+s", "add_sub_finding", "Add sub-finding"),
-        ("escape", "dismiss", "Dismiss preview"),
+        Binding("ctrl+s", "add_sub_finding", "Add sub-finding"),
+        Binding("escape", "dismiss", "Dismiss preview"),
     ]
 
-    def __init__(self, title: str, code: str | Text) -> None:
+    def __init__(self, title: str, code: str | Text, finding: FindingMetadata | None = None) -> None:
         super().__init__()
         self.code = code
         self.title = title
+        self._finding = finding
 
     def compose(self) -> ComposeResult:
         with ScrollableContainer(id="code"):
@@ -107,13 +109,22 @@ class FindingPreviewScreen(ModalScreen[None]):
         code_widget.border_subtitle = "^s to add sub-finding; Esc to close"
 
     def action_add_sub_finding(self) -> None:
-        self.dismiss()
+        if self._finding is None:
+            self.dismiss()
+            return
         app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
-        app.query_one("#search", SearchWidget).action_add_sub_finding()
+        self.dismiss()
+        app.push_screen(
+            AddSubFindingScreen(
+                templates=app.project.settings.templates_path,
+                finding=self._finding,
+                title="Add sub-finding",
+            )
+        )
 
 
 class AddSubFindingScreen(ModalScreen[None]):
-    BINDINGS = [("escape", "dismiss", "Dismiss finding")]
+    BINDINGS = [Binding("escape", "dismiss", "Dismiss finding")]
 
     def __init__(self, templates: DirectoryPath, finding: FindingMetadata, title: str) -> None:
         super().__init__()
@@ -225,7 +236,8 @@ class AddSubFindingScreen(ModalScreen[None]):
                             yield Input(id=f"var-{var.name}", classes="m-1")
                 yield Rule()
 
-            yield Button.success("Save", id="save-sub-finding", classes="m-1")
+            with Horizontal(id="save-button-row"):
+                yield Button.success("Save", id="save-sub-finding", classes="m-1")
 
     def on_mount(self) -> None:
         add_sub_finding = self.query_one("#add-sub-finding")
@@ -484,9 +496,9 @@ class AddSubFindingScreen(ModalScreen[None]):
 
 class SearchWidget(Widget):
     BINDINGS = [
-        ("ctrl+s", "add_sub_finding", "Add sub-finding"),
-        ("down", "cursor_down", "Next result"),
-        ("up", "cursor_up", "Previous result"),
+        Binding("ctrl+s", "add_sub_finding", "Add sub-finding"),
+        Binding("down", "cursor_down", "Next result"),
+        Binding("up", "cursor_up", "Previous result"),
     ]
 
     def __init__(self) -> None:
@@ -745,6 +757,7 @@ class SearchWidget(Widget):
             FindingPreviewScreen(
                 title="Finding preview",
                 code=file,
+                finding=option.result.document.payload,
             )
         )
 
@@ -761,6 +774,7 @@ class SearchWidget(Widget):
             FindingPreviewScreen(
                 title="Finding preview",
                 code=file,
+                finding=option.result.document.payload,
             )
         )
 
@@ -860,8 +874,7 @@ class FindingOption(Option):
     @staticmethod
     def _build_match_hint(result: SearchResult[FindingMetadata]) -> Text | None:
         reason = next(
-            (reason for reason in result.reasons if reason.field_name not in {"name", "keyword", "group_hint"}),
-            None
+            (reason for reason in result.reasons if reason.field_name not in {"name", "keyword", "group_hint"}), None
         )
         if reason is None:
             return None
@@ -893,7 +906,7 @@ class SeretoApp(App[None]):
     CSS_PATH = "finding.tcss"
     TITLE = "SeReTo"
     SUB_TITLE = "Security Reporting Tool"
-    BINDINGS = [("/", "focus_search", "Focus on search")]
+    BINDINGS = [Binding("/", "focus_search", "Focus on search")]
 
     def __init__(
         self,

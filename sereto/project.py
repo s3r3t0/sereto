@@ -230,7 +230,7 @@ def new_project(
     id: TypeProjectId,
     name: str,
     people: list[Person],
-) -> None:
+) -> Project:
     """Generates a new project with the specified ID.
 
     Args:
@@ -276,3 +276,5 @@ def new_project(
         path=config_path,
         risk_due_dates=risk_due_dates,
     ).save()
+
+    return Project.load_from(new_path)
