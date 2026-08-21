@@ -293,6 +293,12 @@ class ConfigScreen(_PoppableScreen):
             viewport_height = container.size.height
             viewport_bottom = scroll_y + viewport_height
 
+            # Only show button if there's enough total content that scrolling is needed
+            total_content_height = container.virtual_size.height
+            if total_content_height <= viewport_height * 1.2:
+                button.display = False
+                return
+
             # Calculate form's position within the scroll container
             # Walk up from form to find its offset relative to the scrollable container
             form_offset_y = 0
@@ -306,11 +312,15 @@ class ConfigScreen(_PoppableScreen):
             form_top = form_offset_y
             form_bottom = form_top + form.size.height
 
-            # Form is visible if any part overlaps with the viewport
-            is_visible = (form_top < viewport_bottom) and (form_bottom > scroll_y)
+            # Calculate how much of the form is visible in the viewport
+            visible_top = max(form_top, scroll_y)
+            visible_bottom = min(form_bottom, viewport_bottom)
+            visible_height = max(0, visible_bottom - visible_top)
 
-            # Show button only when form is NOT visible
-            button.display = is_visible
+            # Show button only if less than 30% of form is visible
+            # (meaning it's mostly scrolled out of view)
+            form_is_mostly_hidden = visible_height < (form.size.height * 0.5)
+            button.display = not form_is_mostly_hidden
         except Exception:
             pass
 
@@ -427,6 +437,12 @@ class ConfigScreen(_PoppableScreen):
 
         self.notify(name, title="Target added", timeout=3)
 
+        # Refresh the project browser to show the new target
+        for screen in self.app.screen_stack:
+            if isinstance(screen, ProjectBrowserScreen):
+                screen.refresh_content()
+                break
+
     def _do_remove_target(self, index: int) -> None:
         try:
             vc = self._active_vc
@@ -437,6 +453,11 @@ class ConfigScreen(_PoppableScreen):
                 shutil.rmtree(target_path)
             self._refresh_targets()
             self.notify("Target removed.", timeout=3)
+            # Refresh the project browser to show the updated targets
+            for screen in self.app.screen_stack:
+                if isinstance(screen, ProjectBrowserScreen):
+                    screen.refresh_content()
+                    break
         except Exception as exc:
             self.notify(str(exc), title="Failed to remove target", severity="error", markup=False)
 
@@ -979,12 +1000,12 @@ class NewProjectScreen(Screen[bool]):
         project_name = name_input.value.strip()
 
         if not project_id:
-            self.notify("Project ID is required.", severity="error")
+            self.notify("Project ID is required.", severity="warning")
             id_input.focus()
             return
 
         if not project_name:
-            self.notify("Project name is required.", severity="error")
+            self.notify("Project name is required.", severity="warning")
             name_input.focus()
             return
 
@@ -1001,7 +1022,7 @@ class NewProjectScreen(Screen[bool]):
 
         app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         try:
-            new_project(
+            project = new_project(
                 projects_path=app.settings.projects_path,
                 templates_path=app.settings.templates_path,
                 risk_due_dates=app.settings.risk_due_dates,
@@ -1009,6 +1030,7 @@ class NewProjectScreen(Screen[bool]):
                 name=project_name,
                 people=app.settings.default_people,
             )
+            app.current_project = project
         except SeretoPathError as exc:
             self.notify(str(exc), severity="error")
             return
@@ -1196,6 +1218,8 @@ class ProjectBrowserScreen(Screen[None]):
         self._populate_action_bar()
         self._load_projects()
 
+        self.query_one("#content-container", Vertical).mount(Static(self._welcome_text()))
+
         # If the app was launched with an entry point, try to activate right away
         if app.entry_point is not None:
             action = next((a for a in _ACTION_REGISTRY if a.id == app.entry_point), None)
@@ -1233,6 +1257,8 @@ class ProjectBrowserScreen(Screen[None]):
         def _on_created(created: bool | None) -> None:
             if created:
                 self._load_projects()
+                project_select = self.query_one("#project-select", Select)
+                project_select.value = self.app.project.path  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
 
         self.app.push_screen(NewProjectScreen(), _on_created)
 
