@@ -874,8 +874,7 @@ class FindingOption(Option):
     @staticmethod
     def _build_match_hint(result: SearchResult[FindingMetadata]) -> Text | None:
         reason = next(
-            (reason for reason in result.reasons if reason.field_name not in {"name", "keyword", "group_hint"}),
-            None
+            (reason for reason in result.reasons if reason.field_name not in {"name", "keyword", "group_hint"}), None
         )
         if reason is None:
             return None

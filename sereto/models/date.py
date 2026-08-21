@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import date, datetime
 from enum import StrEnum
-from typing import Any, SupportsIndex
+from typing import Any
 
 from pydantic import GetJsonSchemaHandler, field_serializer, model_validator
 from pydantic.json_schema import JsonSchemaValue
@@ -66,8 +66,8 @@ class SeretoDate(date):
 
     def __reduce__(self) -> tuple[type[SeretoDate], tuple[int, int, int]]:
         return (self.__class__, (self.year, self.month, self.day))
-    
-    def __deepcopy__(self, memo: dict[int, Any]) -> SeretoDate:
+
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> SeretoDate:
         """Support deepcopy by creating a new instance with the same date components."""
         return SeretoDate(self.year, self.month, self.day)
 
