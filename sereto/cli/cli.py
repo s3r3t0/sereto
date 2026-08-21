@@ -1195,24 +1195,8 @@ def templates_target_skel_copy(ctx: Project, target: str | None) -> None:
 # -----------
 
 
-def load_plugins() -> None:
-    """Load plugins from the plugins directory.
-
-    This function loads plugins from the configured directory and registers their commands with the CLI. The plugin
-    support needs to be enabled in the settings.
-    """
-    settings_path = Settings.get_path()
-    if not settings_path.is_file():
-        return
-    settings = Settings.load_from(settings_path)
-
-    # Check if plugins are enabled
-    if not settings.plugins.enabled:
-        return
-    # Get plugins directory
-    plugins_dir = Path(
-        replace_strings(text=settings.plugins.directory, replacements={"%TEMPLATES%": str(settings.templates_path)})
-    )
+def _load_plugins_from_directory(plugins_dir: Path, command_group: click.Group) -> None:
+    """Load filesystem plugins from a package directory into a Click command group."""
     if not plugins_dir.is_dir():
         raise SeretoPathError(f"Plugins directory not found: '{plugins_dir}'")
 
@@ -1228,8 +1212,8 @@ def load_plugins() -> None:
     if str(plugins_dir) not in sys.path:
         sys.path.append(str(plugins_dir))
 
-    # Load plugins from the directory
-    for file in plugins_dir.iterdir():
+    # Load plugins from the directory in a deterministic order.
+    for file in sorted(plugins_dir.iterdir(), key=lambda path: path.name):
         # Skip dunder files like __init__.py
         if file.name.startswith("__"):
             continue
@@ -1264,11 +1248,41 @@ def load_plugins() -> None:
         except ModuleNotFoundError as e:
             logger.error("Module '{}' referenced in plugin '{}' not found.", e.name, file.name)
             continue
+        except Exception as e:
+            logger.error("Failed to load plugin '{}': {}: {}", file.name, type(e).__name__, e)
+            continue
 
-        # Run the plugin's register_commands function
-        if hasattr(module, "register_commands"):
-            module.register_commands(cli)
-            logger.debug("Plugin registered: '{}'", file.name)
+        register_commands = getattr(module, "register_commands", None)
+        if register_commands is None:
+            logger.error("Plugin '{}' does not define register_commands(cli).", file.name)
+            continue
+        if not callable(register_commands):
+            logger.error("Plugin '{}': register_commands must be callable.", file.name)
+            continue
+
+        try:
+            register_commands(command_group)
+        except Exception as e:
+            logger.error("Failed to register plugin '{}': {}: {}", file.name, type(e).__name__, e)
+            continue
+
+        logger.debug("Plugin registered: '{}'", file.name)
+
+
+def load_plugins() -> None:
+    """Load configured filesystem plugins into the Sereto CLI."""
+    settings_path = Settings.get_path()
+    if not settings_path.is_file():
+        return
+    settings = Settings.load_from(settings_path)
+
+    if not settings.plugins.enabled:
+        return
+
+    plugins_dir = Path(
+        replace_strings(text=settings.plugins.directory, replacements={"%TEMPLATES%": str(settings.templates_path)})
+    )
+    _load_plugins_from_directory(plugins_dir=plugins_dir, command_group=cli)
 
 
 def entry_point() -> None:
