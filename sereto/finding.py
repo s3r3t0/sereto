@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Self, cast
 
 import frontmatter
+import jinja2
+import jinja2.nodes
 import tomlkit
 from pydantic import DirectoryPath, FilePath, validate_call
 from tomlkit.items import Table
@@ -18,10 +20,88 @@ from sereto.models.finding import (
     FindingsConfigModel,
     FindingTemplateFrontmatterModel,
     SubFindingFrontmatterModel,
+    VarsMetadataModel,
 )
 from sereto.models.locator import LocatorModel, get_locator_types
 from sereto.risk import Risks
 from sereto.utils import lower_alphanum
+
+
+def _referenced_template_variables(template: FilePath) -> set[str]:
+    _, content = frontmatter.parse(template.read_text(encoding="utf-8"), encoding="utf-8")
+    parsed_template = jinja2.Environment().parse(content)
+    variables: set[str] = set()
+
+    for attribute in parsed_template.find_all(jinja2.nodes.Getattr):
+        if not isinstance(attribute.node, jinja2.nodes.Getattr):
+            continue
+        if not isinstance(attribute.node.node, jinja2.nodes.Name):
+            continue
+        if attribute.node.node.name == "f" and attribute.node.attr == "vars":
+            variables.add(attribute.attr)
+
+    return variables
+
+
+def _matches_variable_type(value: object, variable: VarsMetadataModel) -> bool:
+    if variable.type == "string":
+        return isinstance(value, str)
+    if variable.type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if variable.type == "boolean":
+        return isinstance(value, bool)
+    raise ValueError(f"unsupported variable type: {variable.type}")
+
+
+def _validate_template_variables(template: FilePath, variables: dict[str, Any], finding_name: str) -> None:
+    template_frontmatter = FindingTemplateFrontmatterModel.load_from(template)
+    declared_variables = {variable.name: variable for variable in template_frontmatter.variables}
+    allowed_variables = set(declared_variables) | _referenced_template_variables(template)
+    errors: list[str] = []
+
+    for variable in template_frontmatter.variables:
+        if variable.name not in variables or variables[variable.name] is None:
+            if variable.required:
+                errors.append(
+                    f"{variable.name}: {variable.type_annotation} = {variable.description}\n"
+                    f"  - missing required variable in finding '{finding_name}'"
+                )
+            continue
+
+        value = variables[variable.name]
+        if variable.is_list:
+            if not isinstance(value, list):
+                errors.append(
+                    f"{variable.name}: {variable.type_annotation} = {variable.description}\n"
+                    f"  - variable must be a list in finding '{finding_name}'"
+                )
+                continue
+            if variable.required and not value:
+                errors.append(
+                    f"{variable.name}: {variable.type_annotation} = {variable.description}\n"
+                    f"  - required list variable must not be empty in finding '{finding_name}'"
+                )
+                continue
+            list_value = cast(list[object], value)
+            if any(not _matches_variable_type(item, variable) for item in list_value):
+                errors.append(
+                    f"{variable.name}: {variable.type_annotation} = {variable.description}\n"
+                    f"  - list items must be {variable.type} values in finding '{finding_name}'"
+                )
+            continue
+
+        if not _matches_variable_type(value, variable):
+            article = "an" if variable.type == "integer" else "a"
+            errors.append(
+                f"{variable.name}: {variable.type_annotation} = {variable.description}\n"
+                f"  - variable must be {article} {variable.type} value in finding '{finding_name}'"
+            )
+
+    for variable_name in sorted(set(variables) - allowed_variables):
+        errors.append(f"{variable_name}: unknown variable in finding '{finding_name}'")
+
+    if errors:
+        raise SeretoValueError(f"invalid variables in finding '{finding_name}'\n" + "\n".join(errors))
 
 
 def _unique_locators(seq: Iterable[LocatorModel]) -> list[LocatorModel]:
@@ -80,7 +160,7 @@ class SubFinding:
         """
         frontmatter = SubFindingFrontmatterModel.load_from(path)
 
-        return cls(
+        sub_finding = cls(
             name=frontmatter.name,
             risk=frontmatter.risk,
             vars=frontmatter.variables,
@@ -90,6 +170,8 @@ class SubFinding:
             format=frontmatter.format,
             reported_on=frontmatter.reported_on,
         )
+        sub_finding.validate_vars()
+        return sub_finding
 
     @property
     def uname(self) -> str:
@@ -119,44 +201,9 @@ class SubFinding:
             SeretoValueError: If the variables are not valid.
         """
         if self.template is None:
-            # no template path, no validation
             return
 
-        # read template frontmatter
-        template_frontmatter = FindingTemplateFrontmatterModel.load_from(self.template)
-
-        # report all errors at once
-        error = ""
-
-        for var in template_frontmatter.variables:
-            # check if variable is defined
-            if var.name not in self.vars:
-                if var.required:
-                    error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                    error += f"  - missing required variable in finding '{self.name}'\n"
-                else:
-                    # TODO: logger
-                    print(
-                        f"{var.name}: {var.type_annotation} = {var.description}\n"
-                        f"  - optional variable is not defined in finding '{self.name}'\n"
-                    )
-                continue
-
-            # variable should be a list and is not
-            if var.is_list and not isinstance(self.vars[var.name], list):
-                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                error += f"  - variable must be a list in finding '{self.name}'\n"
-                continue
-
-            # variable should not be a list and is
-            if not var.is_list and isinstance(self.vars[var.name], list):
-                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                error += f"  - variable must not be a list in finding '{self.name}'\n"
-                continue
-
-        # report all errors at once
-        if len(error) > 0:
-            raise SeretoValueError(f"invalid variables in finding '{self.name}'\n{error}")
+        _validate_template_variables(template=self.template, variables=self.vars, finding_name=self.name)
 
 
 @dataclass
@@ -461,6 +508,15 @@ class Findings:
                 return group
         return None
 
+    def validate_vars(self) -> int:
+        """Validate variables in every sub-finding and return the number checked."""
+        validated = 0
+        for group in self.groups:
+            for sub_finding in group.sub_findings:
+                sub_finding.validate_vars()
+                validated += 1
+        return validated
+
     def get_path(self, category: str, name: str) -> FilePath:
         """Get the path to a sub-finding by category and name.
 
@@ -509,6 +565,11 @@ class Findings:
 
         # Load template metadata and content
         template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
+        _validate_template_variables(
+            template=template_path,
+            variables=variables,
+            finding_name=sub_finding_name or template_metadata.name,
+        )
         finding_file_name = lower_alphanum(sub_finding_name or template_metadata.name)
         _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"), encoding="utf-8")
 

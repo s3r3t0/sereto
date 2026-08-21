@@ -792,6 +792,20 @@ def finding_show(ctx: Project, version: ProjectVersion | None) -> None:
     show_findings(version_config=ctx.config.at_version(version))
 
 
+@findings.command(name="validate")
+@handle_exceptions
+@click.pass_obj
+@validate_call
+def finding_validate(ctx: Project) -> None:
+    """Validate sub-finding variables across every project version."""
+    config = ctx.config
+    validated = sum(
+        target.findings.validate_vars() for version in config.versions for target in config.at_version(version).targets
+    )
+    finding_label = "finding" if validated == 1 else "findings"
+    Console().print(f"Validated variables for {validated} {finding_label}.")
+
+
 # -----------
 # sereto open
 # -----------
