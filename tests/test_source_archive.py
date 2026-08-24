@@ -3,9 +3,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from sereto.config import Config, VersionConfig
-from sereto.logging import logger
 from sereto.models.version import ProjectVersion, SeretoVersion
-from sereto.source_archive import GitIgnoreSpec, create_source_archive
+from sereto.source_archive import create_source_archive
 
 
 def _return_path(path: Path) -> Path:

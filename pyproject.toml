@@ -104,15 +104,6 @@ allow-direct-references = true
 [tool.hatch.build]
 reproducible = true
 
-[tool.black]
-line-length = 119
-
-[tool.flake8]
-max-line-length = 119
-
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 plugins = [
   "pydantic.mypy"
