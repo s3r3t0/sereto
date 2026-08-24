@@ -1,15 +1,11 @@
 # type: ignore
 
-from unittest.mock import patch
 
 import pytest
-from click.testing import CliRunner
 from git import Repo
 from prompt_toolkit.application import create_app_session
 from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
-
-from sereto.cli.cli import new as sereto_new
 
 
 @pytest.fixture(scope="session")
@@ -22,9 +18,8 @@ def sereto_templates(tmp_path_factory):
 
 @pytest.fixture(autouse=True, scope="function")
 def mock_input():
-    with create_pipe_input() as pipe_input:
-        with create_app_session(input=pipe_input, output=DummyOutput()):
-            yield pipe_input
+    with create_pipe_input() as pipe_input, create_app_session(input=pipe_input, output=DummyOutput()):
+        yield pipe_input
 
 
 # @patch("sereto.models.settings.Settings.get_path")
