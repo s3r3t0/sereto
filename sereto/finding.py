@@ -1,9 +1,11 @@
+import hashlib
 import random
 import string
+import tomllib
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Self, cast
+from typing import Any, Literal, Self, cast
 
 import frontmatter
 import tomlkit
@@ -11,7 +13,8 @@ from pydantic import DirectoryPath, FilePath, validate_call
 from tomlkit.items import Table
 
 from sereto.enums import FileFormat, Risk
-from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.exceptions import SeretoPathError, SeretoRuntimeError, SeretoValueError
+from sereto.file_transaction import AtomicFileTransaction, PendingFileWrite, file_digest
 from sereto.models.date import SeretoDate
 from sereto.models.finding import (
     FindingGroupModel,
@@ -53,6 +56,55 @@ def _locators_equal(
         return {(loc.type, loc.value) for loc in seq}
 
     return key_set(first) == key_set(second)
+
+
+def _validate_template_variables(
+    template: FindingTemplateFrontmatterModel,
+    variables: dict[str, Any],
+) -> None:
+    definitions = {variable.name: variable for variable in template.variables}
+    errors: list[str] = []
+
+    for name in sorted(variables.keys() - definitions.keys()):
+        errors.append(f"unknown variable {name!r}")
+
+    expected_types: dict[str, type[str] | type[int] | type[bool]] = {
+        "string": str,
+        "integer": int,
+        "boolean": bool,
+    }
+    for name, definition in definitions.items():
+        if name not in variables or variables[name] is None:
+            if definition.required:
+                errors.append(f"missing required variable {name!r}")
+            continue
+
+        value = variables[name]
+        value_is_list = isinstance(value, list)
+        list_value = cast(list[Any], value) if value_is_list else None
+        if definition.required and (value == "" or (list_value is not None and len(list_value) == 0)):
+            errors.append(f"required variable {name!r} must not be empty")
+            continue
+        if definition.is_list != value_is_list:
+            expected = f"list[{definition.type}]" if definition.is_list else definition.type
+            errors.append(f"variable {name!r} must be {expected}")
+            continue
+
+        values = list_value if list_value is not None else [value]
+        expected_type = expected_types[definition.type]
+        if any(type(item) is not expected_type for item in values):
+            expected = f"list[{definition.type}]" if definition.is_list else definition.type
+            errors.append(f"variable {name!r} must be {expected}")
+
+    if errors:
+        raise SeretoValueError("invalid template variables\n" + "\n".join(f"  - {error}" for error in errors))
+
+
+def _parse_findings_config(content: str) -> FindingsConfigModel:
+    try:
+        return FindingsConfigModel.model_validate(tomllib.loads(content))
+    except ValueError as error:
+        raise SeretoValueError("invalid findings.toml") from error
 
 
 @dataclass
@@ -122,41 +174,8 @@ class SubFinding:
             # no template path, no validation
             return
 
-        # read template frontmatter
         template_frontmatter = FindingTemplateFrontmatterModel.load_from(self.template)
-
-        # report all errors at once
-        error = ""
-
-        for var in template_frontmatter.variables:
-            # check if variable is defined
-            if var.name not in self.vars:
-                if var.required:
-                    error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                    error += f"  - missing required variable in finding '{self.name}'\n"
-                else:
-                    # TODO: logger
-                    print(
-                        f"{var.name}: {var.type_annotation} = {var.description}\n"
-                        f"  - optional variable is not defined in finding '{self.name}'\n"
-                    )
-                continue
-
-            # variable should be a list and is not
-            if var.is_list and not isinstance(self.vars[var.name], list):
-                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                error += f"  - variable must be a list in finding '{self.name}'\n"
-                continue
-
-            # variable should not be a list and is
-            if not var.is_list and isinstance(self.vars[var.name], list):
-                error += f"{var.name}: {var.type_annotation} = {var.description}\n"
-                error += f"  - variable must not be a list in finding '{self.name}'\n"
-                continue
-
-        # report all errors at once
-        if len(error) > 0:
-            raise SeretoValueError(f"invalid variables in finding '{self.name}'\n{error}")
+        _validate_template_variables(template_frontmatter, self.vars)
 
 
 @dataclass
@@ -398,6 +417,37 @@ class FindingGroup:
         return self.uname == hint_uname or self.name.casefold() == hint.casefold()
 
 
+@dataclass(frozen=True)
+class ExistingGroupDestination:
+    """Append a finding to the same existing group selected during preparation."""
+
+    uname: str
+    expected_name: str
+
+
+@dataclass(frozen=True)
+class NewGroupDestination:
+    """Create a group, optionally merging into an exact-name group created concurrently."""
+
+    name: str
+    on_conflict: Literal["fail", "merge"] = "merge"
+
+
+type FindingRegistration = ExistingGroupDestination | NewGroupDestination
+
+
+@dataclass(frozen=True)
+class PreparedFinding:
+    """Validated finding content and its semantic registration intent."""
+
+    target_dir: Path
+    sub_finding_path: Path
+    sub_finding_content: str
+    sub_finding_original_digest: str | None
+    registration: FindingRegistration | None
+    templates_root: Path
+
+
 @dataclass
 class Findings:
     """Represents a collection of all finding groups inside a target.
@@ -427,8 +477,38 @@ class Findings:
         Returns:
             The loaded findings object.
         """
+        transaction = AtomicFileTransaction(project_root=Path(target_dir).resolve().parent)
+        with transaction.locked():
+            return cls._load_from_unlocked(
+                target_dir=Path(target_dir),
+                target_locators=target_locators,
+                templates=Path(templates),
+            )
+
+    @classmethod
+    def _load_from_unlocked(
+        cls,
+        target_dir: Path,
+        target_locators: list[LocatorModel],
+        templates: Path,
+    ) -> Self:
         config = FindingsConfigModel.load_from(target_dir / "findings.toml")
 
+        return cls._from_config_unlocked(
+            config=config,
+            target_dir=target_dir,
+            target_locators=target_locators,
+            templates=templates,
+        )
+
+    @classmethod
+    def _from_config_unlocked(
+        cls,
+        config: FindingsConfigModel,
+        target_dir: Path,
+        target_locators: list[LocatorModel],
+        templates: Path,
+    ) -> Self:
         groups = [
             FindingGroup.load(
                 name=name,
@@ -474,6 +554,226 @@ class Findings:
         return self.findings_dir / f"{category.lower()}_{name}.md.j2"
 
     @validate_call
+    def prepare_from_template(
+        self,
+        templates: DirectoryPath,
+        template_path: FilePath,
+        category: str,
+        sub_finding_name: str | None = None,
+        risk: Risk | None = None,
+        variables: dict[str, Any] | None = None,
+        locators: list[LocatorModel] | None = None,
+        overwrite: bool = False,
+        group_uname: str | None = None,
+        group_name: str | None = None,
+    ) -> PreparedFinding:
+        """Validate and render a finding change without writing project files."""
+        if group_uname is not None and group_name is not None:
+            raise SeretoValueError("group_uname and group_name are mutually exclusive")
+
+        templates_root = Path(templates).resolve()
+        resolved_template_path = Path(template_path).resolve()
+        try:
+            relative_template_path = resolved_template_path.relative_to(templates_root)
+        except ValueError:
+            raise SeretoValueError("template is outside the templates directory") from None
+
+        variables = variables or {}
+        locators = locators or []
+
+        template_metadata = FindingTemplateFrontmatterModel.load_from(resolved_template_path)
+        _validate_template_variables(template_metadata, variables)
+        finding_file_name = lower_alphanum(sub_finding_name or template_metadata.name)
+        _, content = frontmatter.parse(resolved_template_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+        sub_finding_path = self.get_path(category=category, name=finding_file_name)
+        sub_finding_original_digest = file_digest(sub_finding_path)
+        replacing_existing = sub_finding_original_digest is not None and overwrite
+        if sub_finding_original_digest is not None and not overwrite:
+            for _ in range(5):
+                suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+                candidate = self.get_path(category=category, name=f"{finding_file_name}_{suffix}")
+                candidate_digest = file_digest(candidate)
+                if candidate_digest is None:
+                    sub_finding_path = candidate
+                    sub_finding_original_digest = candidate_digest
+                    break
+            else:
+                raise SeretoPathError(
+                    f"sub-finding already exists and could not generate a unique filename: {sub_finding_path}"
+                )
+
+        dynamic_risk = risk or template_metadata.risk
+        sub_finding_metadata = SubFindingFrontmatterModel(
+            name=sub_finding_name or template_metadata.name,
+            risk=dynamic_risk,
+            category=category,
+            variables=variables,
+            template_path=str(relative_template_path),
+            locators=locators,
+        )
+        sub_finding_content = f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}"
+
+        if replacing_existing:
+            registration: FindingRegistration | None = None
+        elif group_uname is not None:
+            group = self.select_group(group_uname)
+            registration = ExistingGroupDestination(
+                uname=group.uname,
+                expected_name=group.name,
+            )
+        else:
+            resolved_group_name = group_name or sub_finding_metadata.name
+            existing_group = next((group for group in self.groups if group.name == resolved_group_name), None)
+            if existing_group is not None:
+                registration = ExistingGroupDestination(
+                    uname=existing_group.uname,
+                    expected_name=existing_group.name,
+                )
+            else:
+                registration = NewGroupDestination(name=resolved_group_name)
+
+        return PreparedFinding(
+            target_dir=Path(self.target_dir).resolve(),
+            sub_finding_path=sub_finding_path,
+            sub_finding_content=sub_finding_content,
+            sub_finding_original_digest=sub_finding_original_digest,
+            registration=registration,
+            templates_root=templates_root,
+        )
+
+    def commit_prepared(self, prepared: PreparedFinding) -> None:
+        """Atomically persist a prepared finding and refresh loaded groups."""
+        target_dir = Path(self.target_dir).resolve()
+        if (
+            prepared.target_dir != target_dir
+            or prepared.sub_finding_path.parent.resolve() != self.findings_dir.resolve()
+        ):
+            raise SeretoValueError("prepared finding belongs to another target")
+
+        def plan_writes() -> tuple[PendingFileWrite, ...]:
+            writes = [
+                PendingFileWrite(
+                    path=prepared.sub_finding_path,
+                    content=prepared.sub_finding_content.encode("utf-8"),
+                    expected_digest=prepared.sub_finding_original_digest,
+                )
+            ]
+            if prepared.registration is not None:
+                writes.append(self._plan_registration(prepared))
+            return tuple(writes)
+
+        reloaded: Findings | None = None
+
+        def validate_generated_state() -> None:
+            nonlocal reloaded
+            reloaded = type(self)._load_from_unlocked(
+                target_dir=Path(self.target_dir),
+                target_locators=self.target_locators,
+                templates=prepared.templates_root,
+            )
+
+        AtomicFileTransaction(project_root=self.target_dir.parent).commit_planned(
+            planner=plan_writes,
+            validator=validate_generated_state,
+        )
+        if reloaded is None:
+            raise SeretoRuntimeError("finding transaction completed without validation")
+        self.groups[:] = reloaded.groups
+
+    def _plan_registration(self, prepared: PreparedFinding) -> PendingFileWrite:
+        current_config_bytes = self.config_file.read_bytes()
+        current_config_digest = hashlib.sha256(current_config_bytes).hexdigest()
+        try:
+            current_config_content = current_config_bytes.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise SeretoValueError("invalid findings.toml encoding") from error
+
+        current_config = _parse_findings_config(current_config_content)
+        current_findings = type(self)._from_config_unlocked(
+            config=current_config,
+            target_dir=Path(self.target_dir),
+            target_locators=self.target_locators,
+            templates=prepared.templates_root,
+        )
+        doc = tomlkit.parse(current_config_content)
+        registration = prepared.registration
+        if registration is None:
+            raise SeretoRuntimeError("missing finding registration intent")
+        finding_uname = prepared.sub_finding_path.name.removesuffix(".md.j2")
+        destination_group_name = (
+            registration.expected_name if isinstance(registration, ExistingGroupDestination) else registration.name
+        )
+        registered_group_name = next(
+            (group_name for group_name, group in current_config.items() if finding_uname in group.findings),
+            None,
+        )
+        if registered_group_name is not None and registered_group_name != destination_group_name:
+            raise SeretoValueError(
+                f"finding {finding_uname!r} was registered in group {registered_group_name!r} after preparation"
+            )
+
+        if isinstance(registration, ExistingGroupDestination):
+            matching_groups = [group for group in current_findings.groups if group.uname == registration.uname]
+            if len(matching_groups) != 1 or matching_groups[0].name != registration.expected_name:
+                raise SeretoValueError(f"finding group {registration.expected_name!r} changed after preparation")
+            group = matching_groups[0]
+            self._append_finding_to_group(doc, group.name, finding_uname)
+        else:
+            exact_group = next(
+                (group for group in current_findings.groups if group.name == registration.name),
+                None,
+            )
+            if exact_group is not None:
+                if registration.on_conflict == "fail":
+                    raise SeretoValueError(f"finding group {registration.name!r} was created after preparation")
+                self._append_finding_to_group(
+                    doc,
+                    exact_group.name,
+                    finding_uname,
+                )
+            else:
+                expected_uname = lower_alphanum(f"finding_group_{registration.name}")
+                if any(group.uname == expected_uname for group in current_findings.groups):
+                    raise SeretoValueError(
+                        f"finding group name {registration.name!r} conflicts with an existing group"
+                    )
+                sub_finding = SubFinding(
+                    name=registration.name,
+                    risk=Risk.info,
+                    vars={},
+                    path=prepared.sub_finding_path,
+                )
+                group = FindingGroup(
+                    name=registration.name,
+                    sub_findings=[sub_finding],
+                    _target_locators=self.target_locators,
+                    _finding_group_locators=[],
+                    _show_locator_types=get_locator_types(),
+                )
+                group_doc = tomlkit.parse(group.dumps_toml())
+                doc.add(group.name, group_doc[group.name])
+
+        merged_config_content = tomlkit.dumps(doc)
+        _parse_findings_config(merged_config_content)
+        return PendingFileWrite(
+            path=self.config_file,
+            content=merged_config_content.encode("utf-8"),
+            expected_digest=current_config_digest,
+        )
+
+    @staticmethod
+    def _append_finding_to_group(doc: tomlkit.TOMLDocument, group_name: str, finding_uname: str) -> None:
+        if group_name not in doc:
+            raise SeretoValueError(f"finding group {group_name!r} not found in findings.toml")
+        table = cast(Table, doc[group_name])
+        findings = cast(Any, table).get("findings", tomlkit.array())
+        if finding_uname not in [str(item) for item in findings]:
+            findings.append(finding_uname)
+        if "findings" not in table:
+            table.add("findings", findings)
+
+    @validate_call
     def add_from_template(
         self,
         templates: DirectoryPath,
@@ -505,118 +805,18 @@ class Findings:
             group_name: Name for the new finding group. Only used when `group_uname` is None.
                 Defaults to the sub-finding name from the template.
         """
-        variables = variables or {}
-
-        # Load template metadata and content
-        template_metadata = FindingTemplateFrontmatterModel.load_from(template_path)
-        finding_file_name = lower_alphanum(sub_finding_name or template_metadata.name)
-        _, content = frontmatter.parse(template_path.read_text(encoding="utf-8"), encoding="utf-8")
-
-        # Determine sub-finding path
-        sub_finding_path = self.get_path(category=category, name=finding_file_name)
-        suffix = None
-
-        if sub_finding_path.is_file():
-            if overwrite:
-                sub_finding_path.unlink()
-            else:
-                # Try to generate a unique filename with random suffix
-                for _ in range(5):
-                    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
-                    sub_finding_path = self.get_path(category=category, name=f"{finding_file_name}_{suffix}")
-                    if not sub_finding_path.is_file():
-                        break
-                else:
-                    raise SeretoPathError(
-                        f"sub-finding already exists and could not generate a unique filename: {sub_finding_path}"
-                    )
-
-        # Prepare sub-finding frontmatter
-        dynamic_risk = risk or template_metadata.risk
-        sub_finding_metadata = SubFindingFrontmatterModel(
-            name=sub_finding_name or template_metadata.name,
-            risk=dynamic_risk,
+        prepared = self.prepare_from_template(
+            templates=templates,
+            template_path=template_path,
             category=category,
+            sub_finding_name=sub_finding_name,
+            risk=risk,
             variables=variables,
-            template_path=str(template_path.relative_to(templates)),
+            overwrite=overwrite,
+            group_uname=group_uname,
+            group_name=group_name,
         )
-
-        # Write sub-finding file
-        sub_finding_path.write_text(f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}", encoding="utf-8")
-
-        # If overwriting, nothing else to do
-        if overwrite:
-            return
-
-        # Load the created sub-finding
-        sub_finding = SubFinding.load_from(path=sub_finding_path, templates=templates)
-
-        if group_uname is not None:
-            group = self.select_group(group_uname)
-
-            doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
-            if group.name not in doc:
-                raise SeretoValueError(f"finding group {group.name!r} not found in {self.config_file}")
-
-            table = cast(Table, doc[group.name])
-
-            if "findings" in table:
-                arr = table.get("findings", tomlkit.array())
-                current = [str(x) for x in arr]
-                if sub_finding.uname not in current:
-                    arr.append(sub_finding.uname)
-            else:
-                arr = tomlkit.array()
-                arr.append(sub_finding.uname)
-                table.add("findings", arr)
-
-            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
-
-            group.sub_findings.append(sub_finding)
-            return
-
-        # Determine group name
-        group_name = group_name or sub_finding.name
-
-        # Check if a group with this name already exists - reuse it instead of creating a new one
-        existing_group = next((g for g in self.groups if g.name == group_name), None)
-        if existing_group is not None:
-            doc = tomlkit.parse(self.config_file.read_text(encoding="utf-8"))
-            if existing_group.name not in doc:
-                raise SeretoValueError(f"finding group {existing_group.name!r} not found in {self.config_file}")
-
-            table = cast(Table, doc[existing_group.name])
-
-            if "findings" in table:
-                arr = table.get("findings", tomlkit.array())
-                current = [str(x) for x in arr]
-                if sub_finding.uname not in current:
-                    arr.append(sub_finding.uname)
-            else:
-                arr = tomlkit.array()
-                arr.append(sub_finding.uname)
-                table.add("findings", arr)
-
-            self.config_file.write_text(tomlkit.dumps(doc), encoding="utf-8")
-
-            existing_group.sub_findings.append(sub_finding)
-            return
-
-        # Create finding group
-        group = FindingGroup(
-            name=group_name,
-            sub_findings=[sub_finding],
-            _target_locators=self.target_locators,
-            _finding_group_locators=[],
-            _show_locator_types=get_locator_types(),
-        )
-
-        # Append to findings.toml
-        with self.config_file.open("a", encoding="utf-8") as f:
-            f.write(f"\n{group.dumps_toml()}\n")
-
-        # Add to loaded groups
-        self.groups.append(group)
+        self.commit_prepared(prepared)
 
     @validate_call
     def select_group(self, selector: int | str | None = None) -> FindingGroup:
