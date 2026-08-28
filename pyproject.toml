@@ -84,7 +84,8 @@ performance = [
   "pathspec[re2]~=1.1.1",
 ]
 dev = [
-  "ruff",
+  "pre-commit~=4.6.0",
+  "ruff~=0.16.0",
   "ty>=0.0.65",
   "textual-dev",
 ]
