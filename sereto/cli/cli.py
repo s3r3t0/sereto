@@ -52,7 +52,7 @@ from sereto.source_archive import (
     extract_source_archive,
     retrieve_source_archive,
 )
-from sereto.tui.finding import launch_finding_tui
+from sereto.tui.app import launch_tui, register_tui_plugin
 from sereto.utils import copy_skel, replace_strings
 
 
@@ -70,15 +70,16 @@ def cli(ctx: click.Context, log_level: LogLevel | None) -> None:
     """Security Reporting Tool.
 
     This tool provides various commands for managing and generating security reports.
+    Launches the interactive TUI when no subcommand is provided.
     """
     if log_level is not None or not is_logging_configured():
         setup_logging(log_level)
 
     ctx.obj = Project()
 
-    # If no subcommand is invoked, start the REPL session
+    # If no subcommand is invoked, launch the TUI
     if ctx.invoked_subcommand is None:
-        sereto_repl(cli=cli)
+        asyncio.run(launch_tui())
 
 
 def is_in_repl_shell() -> bool:
@@ -349,10 +350,13 @@ def config_dates_add(
         ni_only={"date_type": "--type", "start_date": "--date", "end_date": "--end"},
     )
 
+    if not non_interactive:
+        asyncio.run(launch_tui(entry_point="dates", project=ctx))
+        return
+
     add_dates_config(
         config=ctx.config,
         version=version,
-        non_interactive=non_interactive,
         date_type=DateType(date_type) if date_type else None,
         start_date=start_date,
         end_date=end_date,
@@ -481,10 +485,15 @@ def config_people_add(
         },
     )
 
+    if not non_interactive:
+        # Interactive mode, launch the TUI for adding a person
+        asyncio.run(launch_tui(entry_point="people", project=ctx))
+        return
+
+    # Non-interactive mode, build the person from the provided options
     add_people_config(
         config=ctx.config,
         version=version,
-        non_interactive=non_interactive,
         person_type=PersonType(person_type) if person_type else None,
         person_name=person_name,
         business_unit=business_unit,
@@ -603,13 +612,18 @@ def config_targets_add(
         ni_only={"category": "--category", "target_name": "--name", "extra_json": "--extra"},
     )
 
+    if not non_interactive:
+        # Interactive mode, launch the TUI for adding a target
+        asyncio.run(launch_tui(entry_point="targets", project=ctx))
+        return
+
+    # Non-interactive mode, add the target using the provided options
     add_target(
         project_path=ctx.path,
         templates=ctx.settings.templates_path,
         config=ctx.config,
         categories=ctx.settings.categories,
         version=version,
-        non_interactive=non_interactive,
         category=category,
         target_name=target_name,
         extra_json=extra_json,
@@ -755,7 +769,7 @@ def finding_add(
     )
 
     if not non_interactive:
-        asyncio.run(launch_finding_tui())
+        asyncio.run(launch_tui(entry_point="findings_add", project=ctx))
         return
 
     if not template_path:
@@ -1191,6 +1205,20 @@ def templates_target_skel_copy(ctx: Project, target: str | None) -> None:
 
 
 # -----------
+# sereto tui
+# -----------
+
+
+@cli.command()
+@handle_exceptions
+@click.pass_obj
+@validate_call
+def tui(ctx: Project) -> None:
+    """Launch the unified SeReTo TUI."""
+    asyncio.run(launch_tui(project=ctx))
+
+
+# -----------
 # entry point
 # -----------
 
@@ -1269,6 +1297,11 @@ def load_plugins() -> None:
         if hasattr(module, "register_commands"):
             module.register_commands(cli)
             logger.debug("Plugin registered: '{}'", file.name)
+
+        # Run the plugin's register_tui_actions function (optional TUI integration)
+        if hasattr(module, "register_tui_actions"):
+            module.register_tui_actions(register_tui_plugin)
+            logger.debug("Plugin TUI actions registered: '{}'", file.name)
 
 
 def entry_point() -> None:
