@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add an internal authenticated loopback WebSocket session for invoking isolated package-plugin SDK runners.
 - Merge prepared finding registrations into the latest `findings.toml` under the project lock, then persist it with
   finding content through a recoverable transaction to prevent partial project state.
 
@@ -18,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Implement `__reduce__` for `SeretoDate` to fix deepcopy and pickling.
+
+### Dependencies
+
+- Add websockets for managed package-plugin host sessions.
 
 ## [0.8.3] - 2026-08-05
 
