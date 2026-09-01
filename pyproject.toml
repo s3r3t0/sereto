@@ -72,6 +72,7 @@ dependencies = [
   "textual~=8.2.8",
   "toml~=0.10.2",
   "tomlkit~=0.15.1",
+  "websockets~=17.1",
 ]
 
 [project.optional-dependencies]
