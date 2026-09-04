@@ -49,8 +49,7 @@ def test_plugin_result_decodes_from_representative_text_json() -> None:
             id="non-finite-number",
         ),
         pytest.param(
-            '{"protocol_version":true,"type":"progress","request_id":"request-1",'
-            '"payload":{"sequence":1}}',
+            '{"protocol_version":true,"type":"progress","request_id":"request-1","payload":{"sequence":1}}',
             "invalid plugin protocol message",
             id="boolean-version",
         ),

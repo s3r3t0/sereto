@@ -610,9 +610,7 @@ def test_plugin_session_rejects_unauthorized_connection_without_consuming_token(
     monkeypatch.setattr(session_module.asyncio, "create_subprocess_exec", create_fake_process)
 
     result = asyncio.run(
-        PluginSession(launch=_launch(), sereto_version="0.8.3").run(
-            OperationRequest(operation_id="testssl.analyze")
-        )
+        PluginSession(launch=_launch(), sereto_version="0.8.3").run(OperationRequest(operation_id="testssl.analyze"))
     )
 
     assert isinstance(result, OperationResultPayload)

@@ -265,6 +265,7 @@ class PluginSession:
                     raise PluginProcessError("timed out launching plugin runner") from None
                 except OSError as error:
                     raise PluginProcessError(f"failed to launch plugin runner: {error}") from error
+
                 async def fail_on_process_exit() -> SessionResult:
                     exit_code = await process.wait()
                     if result_future.done():
@@ -434,10 +435,7 @@ class PluginSession:
             raise PluginProtocolError("plugin SDK API major does not match the selected runner")
         if PROTOCOL_VERSION not in message.payload.protocol_versions:
             raise PluginProtocolError("plugin does not support host protocol version 1")
-        if (
-            self.launch.expected_plugin_id is not None
-            and message.payload.plugin_id != self.launch.expected_plugin_id
-        ):
+        if self.launch.expected_plugin_id is not None and message.payload.plugin_id != self.launch.expected_plugin_id:
             raise PluginProtocolError("plugin ID does not match the expected identity")
 
     async def _receive(
