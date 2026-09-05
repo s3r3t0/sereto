@@ -4,7 +4,8 @@ import json
 import os
 import stat
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Generator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -20,6 +21,7 @@ from sereto.package_plugins.paths import PluginPaths
 from sereto.package_plugins.protocol_v1 import VersionOne
 
 MAX_REGISTRY_BYTES = 16 * 1024 * 1024
+LIFECYCLE_LOCK_TIMEOUT_SECONDS = 15 * 60.0
 
 
 class RegistryError(SeretoRuntimeError):
@@ -60,6 +62,9 @@ class RegistryIssue:
         "unhealthy-record",
         "missing-environment",
         "missing-python",
+        "orphaned-candidate",
+        "orphaned-plugin",
+        "orphaned-generation",
     ]
     message: str
 
@@ -84,6 +89,15 @@ class PluginRegistry:
         if content is None:
             return RegistrySnapshot(state=RegistryState(), digest=None, issues=())
         return self._load_content(content)
+
+    @contextmanager
+    def locked_lifecycle(self) -> Generator[None]:
+        """Serialize managed environment and registry mutations across processes."""
+        self._prepare_root()
+        with ProjectFileLock(self.paths.lifecycle_lock, timeout=LIFECYCLE_LOCK_TIMEOUT_SECONDS):
+            if os.name != "nt":
+                self.paths.lifecycle_lock.chmod(0o600)
+            yield
 
     def _load_content(self, content: bytes) -> RegistrySnapshot:
         digest = hashlib.sha256(content).hexdigest()
@@ -168,6 +182,32 @@ class PluginRegistry:
             digest=hashlib.sha256(content).hexdigest(),
             issues=(),
         )
+
+    def remove(self, plugin_id: str, expected_digest: str) -> RegistrySnapshot:
+        """Atomically remove one raw registry record without dropping unrelated invalid records."""
+        self._prepare_root()
+        with ProjectFileLock(self.paths.registry_lock):
+            if os.name != "nt":
+                self.paths.registry_lock.chmod(0o600)
+            current = self._read_registry_bytes()
+            if current is None or hashlib.sha256(current).hexdigest() != expected_digest:
+                raise RegistryConflictError("plugin registry changed after it was loaded")
+            raw_plugins = self._decode_document(current)
+            if plugin_id not in raw_plugins:
+                raise RegistryError(f"package plugin is not installed: {plugin_id!r}")
+            del raw_plugins[plugin_id]
+            content = json.dumps(
+                {"schema_version": 1, "plugins": raw_plugins},
+                allow_nan=False,
+                ensure_ascii=True,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+            try:
+                self._atomic_write(content)
+            except OSError as error:
+                raise RegistryError(f"cannot replace plugin registry: {error}") from error
+        return self._load_content(content)
 
     def doctor(self) -> tuple[RegistryIssue, ...]:
         """Return static cached-record and runtime-path diagnostics without mutation."""

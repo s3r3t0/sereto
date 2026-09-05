@@ -283,6 +283,20 @@ def test_plugin_record_rejects_environment_symlink_outside_generation(tmp_path: 
         validate_plugin_record(record.plugin_id, record, paths, sereto_version="0.9.0")
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX virtual environments use Python symlinks")
+def test_plugin_record_accepts_standard_virtual_environment_python_symlink(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    record = _record(paths)
+    record.runtime.python_path.parent.mkdir(parents=True)
+    base_python = tmp_path / "base-python"
+    base_python.touch()
+    record.runtime.python_path.symlink_to(base_python)
+
+    compatibility = validate_plugin_record(record.plugin_id, record, paths, sereto_version="0.9.0")
+
+    assert compatibility.selected_protocol_version == 1
+
+
 @pytest.mark.parametrize(
     "origin",
     [
@@ -535,6 +549,31 @@ def test_registry_isolates_invalid_record_from_valid_plugins(tmp_path: Path) -> 
         allow_repair=True,
     )
     assert list(repaired.state.plugins) == ["acme-testssl"]
+
+
+def test_registry_removes_one_invalid_raw_record_without_dropping_another(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    invalid_record = _record(paths).model_dump(mode="json")
+    invalid_record["manifest_digest"] = "b" * 64
+    document = {
+        "schema_version": 1,
+        "plugins": {
+            "broken-one": invalid_record,
+            "broken-two": invalid_record,
+        },
+    }
+    paths.root.mkdir()
+    paths.registry_file.write_text(json.dumps(document), encoding="utf-8")
+    if os.name != "nt":
+        paths.registry_file.chmod(0o600)
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    snapshot = registry.load()
+
+    removed = registry.remove("broken-one", expected_digest=cast(str, snapshot.digest))
+
+    assert [issue.plugin_id for issue in removed.issues] == ["broken-two"]
+    persisted = json.loads(paths.registry_file.read_text(encoding="utf-8"))
+    assert list(persisted["plugins"]) == ["broken-two"]
 
 
 def test_registry_isolates_record_incompatible_with_current_host(tmp_path: Path) -> None:

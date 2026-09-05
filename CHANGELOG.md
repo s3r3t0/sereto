@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add `sereto plugin install`, `remove`, `list`, `show`, and `doctor` with uv-managed isolated environments,
+  retained locks and source provenance, validated manifest discovery, and atomic activation.
 - Add an atomic managed package-plugin registry with cached manifest validation, compatibility checks, static
   diagnostics, and bounded target resources.
 - Add an internal authenticated loopback WebSocket session for invoking isolated package-plugin SDK runners.

@@ -17,6 +17,53 @@ You can also use help in the nested commands. For example, if you would like to 
 sereto config dates --help
 ```
 
+## Managing package plugins
+
+Package plugins are installed into separate uv-managed environments. Their dependencies do not change SeReTo's
+environment or the environments of other plugins. The `uv` executable must be available on `PATH`.
+
+Install a package requirement, wheel, source distribution, or local package directory:
+
+```sh
+sereto plugin install 'example-sereto-plugin>=1'
+sereto plugin install ./example-sereto-plugin.whl
+```
+
+VCS sources use a named PEP 508 direct requirement:
+
+```sh
+sereto plugin install 'example-sereto-plugin @ git+https://example.com/example-sereto-plugin.git@v1.0.0'
+```
+
+An organization-private package can be pinned to a named index. The pinned index is explicit, so dependencies do
+not resolve from it unless they are separately configured there:
+
+```sh
+sereto plugin install example-sereto-plugin \
+  --index private=https://packages.example.com/simple \
+  --source-index private \
+  --keyring-provider subprocess
+```
+
+Use uv's named-index environment variables or keyring support for credentials. Do not put credentials or tokens in
+source or index URLs. For an index named `private`, uv reads `UV_INDEX_PRIVATE_USERNAME` and
+`UV_INDEX_PRIVATE_PASSWORD`. The name used by `--default-index` is `sereto-default`, corresponding to
+`UV_INDEX_SERETO_DEFAULT_USERNAME` and `UV_INDEX_SERETO_DEFAULT_PASSWORD`.
+
+Inspect and remove managed plugins with:
+
+```sh
+sereto plugin list
+sereto plugin show example-sereto-plugin
+sereto plugin doctor
+sereto plugin remove example-sereto-plugin
+```
+
+Removal deletes the plugin environment and all data below its managed plugin directory. Installation and removal do
+not affect the legacy template filesystem plugins configured in global settings. `plugin doctor` reports invalid
+records, missing active environments, and orphaned state left by interrupted lifecycle operations; it does not delete
+or repair that state automatically.
+
 ## Create project
 
 To create a new project using SeReTo, you can use the `new` command. The command takes a unique identifier for the project as a positional argument. For example, to create a project with the identifier `TEST`, you would run the following command:

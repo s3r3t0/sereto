@@ -4,6 +4,7 @@ import inspect
 import json
 import math
 import os
+import re
 import secrets
 import tempfile
 import uuid
@@ -54,6 +55,7 @@ DEFAULT_HANDSHAKE_TIMEOUT_SECONDS = 5.0
 DEFAULT_INVOCATION_TIMEOUT_SECONDS = 15 * 60.0
 DEFAULT_CANCEL_GRACE_SECONDS = 3.0
 BOOTSTRAP_TTL_SECONDS = 30.0
+_UV_INDEX_CREDENTIAL = re.compile(r"^UV_INDEX_[A-Z0-9_]+_(?:USERNAME|PASSWORD)$")
 
 type SessionResult = ManifestResultPayload | OperationResultPayload
 type ProgressCallback = Callable[[ProgressPayload], None | Awaitable[None]]
@@ -257,6 +259,7 @@ class PluginSession:
                                 "-m",
                                 f"sereto_sdk.v{self.launch.sdk_api_major}.runner",
                                 bootstrap_path,
+                                env=self._runner_environment(),
                             ),
                             timeout=self._remaining(handshake_deadline),
                         ),
@@ -437,6 +440,10 @@ class PluginSession:
             raise PluginProtocolError("plugin does not support host protocol version 1")
         if self.launch.expected_plugin_id is not None and message.payload.plugin_id != self.launch.expected_plugin_id:
             raise PluginProtocolError("plugin ID does not match the expected identity")
+
+    @staticmethod
+    def _runner_environment() -> dict[str, str]:
+        return {key: value for key, value in os.environ.items() if not _UV_INDEX_CREDENTIAL.fullmatch(key)}
 
     async def _receive(
         self,

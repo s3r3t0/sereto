@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -210,10 +211,17 @@ def validate_plugin_record(
     if not expected_environment.is_relative_to(expected_generation):
         raise RegistryRecordError("plugin environment resolves outside its active generation")
     environment_path = record.runtime.environment_path.resolve()
-    python_path = record.runtime.python_path.resolve()
     if not record.runtime.environment_path.is_absolute() or environment_path != expected_environment:
         raise RegistryRecordError("plugin environment path is outside its active generation")
-    if not record.runtime.python_path.is_absolute() or not python_path.is_relative_to(environment_path):
+    executable_parts = ("Scripts", "python.exe") if os.name == "nt" else ("bin", "python")
+    expected_python_path = record.runtime.environment_path.joinpath(*executable_parts)
+    normalized_python_path = Path(os.path.abspath(record.runtime.python_path))
+    normalized_expected_python_path = Path(os.path.abspath(expected_python_path))
+    if (
+        not record.runtime.python_path.is_absolute()
+        or normalized_python_path != normalized_expected_python_path
+        or not record.runtime.python_path.parent.resolve().is_relative_to(environment_path)
+    ):
         raise RegistryRecordError("plugin Python path is outside its active environment")
 
     compatibility = check_manifest_compatibility(record.manifest, sereto_version=sereto_version)

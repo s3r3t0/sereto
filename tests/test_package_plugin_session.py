@@ -270,6 +270,8 @@ def test_plugin_session_runs_authenticated_operation_over_loopback(
 ) -> None:
     progress: list[ProgressPayload] = []
     launched_command: tuple[object, ...] | None = None
+    monkeypatch.setenv("UV_INDEX_PRIVATE_USERNAME", "plugin-must-not-see-this")
+    monkeypatch.setenv("UV_INDEX_PRIVATE_PASSWORD", "plugin-must-not-see-this")
 
     async def fake_runner(bootstrap_path: Path) -> None:
         bootstrap = json.loads(bootstrap_path.read_text(encoding="utf-8"))
@@ -328,7 +330,10 @@ def test_plugin_session_runs_authenticated_operation_over_loopback(
     async def create_fake_process(*command: object, **kwargs: object) -> FakeProcess:
         nonlocal launched_command
         launched_command = command
-        assert kwargs == {}
+        assert set(kwargs) == {"env"}
+        environment = cast(dict[str, str], kwargs["env"])
+        assert "UV_INDEX_PRIVATE_USERNAME" not in environment
+        assert "UV_INDEX_PRIVATE_PASSWORD" not in environment
         return FakeProcess(asyncio.create_task(fake_runner(Path(str(command[-1])))))
 
     monkeypatch.setattr(session_module.asyncio, "create_subprocess_exec", create_fake_process)
@@ -496,7 +501,7 @@ def test_plugin_session_removes_bootstrap_after_launch_failure(monkeypatch: pyte
 
     async def fail_to_launch(*command: object, **kwargs: object) -> FakeProcess:
         nonlocal bootstrap_path
-        assert kwargs == {}
+        assert set(kwargs) == {"env"}
         bootstrap_path = Path(str(command[-1]))
         assert bootstrap_path.is_file()
         if sys.platform != "win32":

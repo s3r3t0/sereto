@@ -24,6 +24,7 @@ from sereto.cli.config import (
     show_targets_config,
 )
 from sereto.cli.finding import add_finding, show_findings
+from sereto.cli.plugin import plugin
 from sereto.cli.settings import edit_settings
 from sereto.cli.utils import AliasedGroup, Console, guard_ni_only_options
 from sereto.crypto import decrypt_file
@@ -87,6 +88,9 @@ def is_in_repl_shell() -> bool:
     if ctx is None:
         return False
     return ctx.meta.get("in_repl", False)
+
+
+cli.add_command(plugin)
 
 
 @cli.command()
