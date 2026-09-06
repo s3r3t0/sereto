@@ -22,6 +22,7 @@ from sereto.package_plugins.protocol_v1 import VersionOne
 
 MAX_REGISTRY_BYTES = 16 * 1024 * 1024
 LIFECYCLE_LOCK_TIMEOUT_SECONDS = 15 * 60.0
+RUNTIME_LOCK_TIMEOUT_SECONDS = 16 * 60.0
 
 
 class RegistryError(SeretoRuntimeError):
@@ -97,6 +98,16 @@ class PluginRegistry:
         with ProjectFileLock(self.paths.lifecycle_lock, timeout=LIFECYCLE_LOCK_TIMEOUT_SECONDS):
             if os.name != "nt":
                 self.paths.lifecycle_lock.chmod(0o600)
+            yield
+
+    @contextmanager
+    def locked_runtime(self, plugin_id: str) -> Generator[None]:
+        """Keep one active plugin environment stable during invocation or removal."""
+        self._prepare_root()
+        lock_path = self.paths.runtime_lock(plugin_id)
+        with ProjectFileLock(lock_path, timeout=RUNTIME_LOCK_TIMEOUT_SECONDS):
+            if os.name != "nt":
+                lock_path.chmod(0o600)
             yield
 
     def _load_content(self, content: bytes) -> RegistrySnapshot:

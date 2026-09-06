@@ -136,6 +136,9 @@ def test_install_activates_valid_manifest_and_remove_deletes_managed_state(tmp_p
     assert lifecycle.remove("acme-testssl") == installed
     assert lifecycle.list_plugins() == ()
     assert not paths.plugin_dir("acme-testssl").exists()
+    assert paths.runtime_lock("acme-testssl").is_file()
+    if os.name != "nt":
+        assert paths.runtime_lock("acme-testssl").stat().st_mode & 0o777 == 0o600
 
 
 def test_install_discards_candidate_when_registry_changes_during_preparation(tmp_path: Path) -> None:

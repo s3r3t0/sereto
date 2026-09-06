@@ -167,7 +167,7 @@ class PluginLifecycle:
 
     def remove(self, plugin_id: str) -> PluginRecord | None:
         """Deactivate one plugin atomically, then remove its managed files."""
-        with self.registry.locked_lifecycle():
+        with self.registry.locked_lifecycle(), self.registry.locked_runtime(plugin_id):
             return self._remove_locked(plugin_id)
 
     def _remove_locked(self, plugin_id: str) -> PluginRecord | None:

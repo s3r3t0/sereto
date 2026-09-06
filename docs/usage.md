@@ -64,6 +64,27 @@ not affect the legacy template filesystem plugins configured in global settings.
 records, missing active environments, and orphaned state left by interrupted lifecycle operations; it does not delete
 or repair that state automatically.
 
+### Running package-plugin commands
+
+Commands declared by an installed plugin are registered from its cached manifest when SeReTo starts. Displaying
+`sereto --help` or command help does not import the plugin or start its process. For example, a manifest command path
+of `findings testssl` is invoked as:
+
+```sh
+sereto findings testssl --sereto-target external --json scan.json
+```
+
+`--sereto-target` is interpreted by SeReTo and selects one project target. All remaining arguments, including unknown
+options such as `--json`, are forwarded unchanged to the plugin as `arguments.argv`. The selected target crosses the
+plugin boundary as bounded `sereto.target.v1` JSON without project paths.
+
+Core commands take precedence over legacy filesystem plugins, which take precedence over managed package plugins.
+Managed commands may be top-level leaves or leaves beneath existing core command groups; they cannot create command
+groups. Conflicting commands are skipped and reported by `sereto plugin doctor`.
+
+The operation result is printed as JSON. Finding proposals are not written to the project in this iteration; core-owned
+review and persistence are added separately.
+
 ## Create project
 
 To create a new project using SeReTo, you can use the `new` command. The command takes a unique identifier for the project as a positional argument. For example, to create a project with the identifier `TEST`, you would run the following command:

@@ -5,6 +5,7 @@ from click.testing import CliRunner
 
 import sereto.cli.plugin as plugin_module
 from sereto.cli.plugin import plugin
+from sereto.package_plugins.commands import CommandRegistrationIssue
 from sereto.package_plugins.lifecycle import PluginInstallRequest
 
 
@@ -113,3 +114,31 @@ def test_plugin_doctor_exits_nonzero_for_registry_issue(monkeypatch: Any) -> Non
     assert result.exit_code == 1
     assert "uv: 0.12.3" in result.output
     assert "acme-testssl: missing-python: plugin Python does not exist" in result.output
+
+
+def test_plugin_doctor_reports_cached_command_collision(monkeypatch: Any) -> None:
+    class FakeLifecycle:
+        def package_manager_version(self) -> str:
+            return "0.12.3"
+
+        def doctor(self) -> tuple[Any, ...]:
+            return ()
+
+    monkeypatch.setattr(plugin_module, "_new_lifecycle", FakeLifecycle)
+    monkeypatch.setattr(
+        plugin_module,
+        "command_registration_issues",
+        lambda: (
+            CommandRegistrationIssue(
+                plugin_id="acme-testssl",
+                path=("findings", "add"),
+                code="command-collision",
+                message="managed command 'findings add' conflicts with an existing command",
+            ),
+        ),
+    )
+
+    result = CliRunner().invoke(plugin, ["doctor"])
+
+    assert result.exit_code == 1
+    assert "acme-testssl: command-collision" in result.output

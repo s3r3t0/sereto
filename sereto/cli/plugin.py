@@ -9,6 +9,7 @@ from rich.table import Table
 
 from sereto.cli.utils import AliasedGroup, Console
 from sereto.exceptions import SeretoValueError, handle_exceptions
+from sereto.package_plugins.commands import command_registration_issues
 from sereto.package_plugins.lifecycle import PluginIndex, PluginInstallRequest, PluginLifecycle
 from sereto.package_plugins.package_manager import PluginPackageManagerError, UvPackageManager
 from sereto.package_plugins.paths import PluginPaths
@@ -139,10 +140,13 @@ def plugin_doctor() -> None:
 
     click.echo(f"uv: {package_manager_version}")
     issues = lifecycle.doctor()
+    command_issues = command_registration_issues()
     if package_manager_error is not None:
         click.echo(f"host: {package_manager_error}")
     for issue in issues:
         click.echo(f"{issue.plugin_id}: {issue.code}: {issue.message}")
-    if package_manager_error is not None or issues:
+    for command_issue in command_issues:
+        click.echo(f"{command_issue.plugin_id}: {command_issue.code}: {command_issue.message}")
+    if package_manager_error is not None or issues or command_issues:
         raise click.exceptions.Exit(1)
     click.echo("No package-plugin issues found.")

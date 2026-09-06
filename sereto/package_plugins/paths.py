@@ -35,6 +35,9 @@ class PluginPaths:
     def lifecycle_lock(self) -> Path:
         return self.root / "lifecycle.lock"
 
+    def runtime_lock(self, plugin_id: str) -> Path:
+        return self.root / f".{self._segment(plugin_id, 'plugin ID')}.runtime.lock"
+
     def plugin_dir(self, plugin_id: str) -> Path:
         return self.root / self._segment(plugin_id, "plugin ID")
 

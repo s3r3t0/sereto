@@ -37,6 +37,13 @@ from sereto.models.person import PersonType
 from sereto.models.settings import Settings
 from sereto.models.version import ProjectVersion
 from sereto.oxipng import run_oxipng
+from sereto.package_plugins.commands import (
+    collect_group_paths,
+    load_cached_plugin_commands,
+    reserved_top_level_paths,
+    restore_command_tree,
+    snapshot_command_tree,
+)
 from sereto.pdf import (
     find_and_generate_pdf_finding_group,
     generate_all_pdf_finding_groups,
@@ -1277,8 +1284,18 @@ def load_plugins() -> None:
 
 def entry_point() -> None:
     setup_logging()
+    core_commands = snapshot_command_tree(cli)
+    core_group_paths = collect_group_paths(cli)
+    reserved_paths = reserved_top_level_paths("cd", "exit", "log")
 
     with suppress(SeretoException):
         load_plugins()
+    restore_command_tree(cli, core_commands)
+    with suppress(SeretoException):
+        load_cached_plugin_commands(
+            cli,
+            allowed_parent_paths=core_group_paths,
+            reserved_paths=reserved_paths,
+        )
 
     cli()
