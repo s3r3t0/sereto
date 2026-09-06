@@ -20,6 +20,7 @@ from sereto.models.finding import (
     FindingGroupModel,
     FindingsConfigModel,
     FindingTemplateFrontmatterModel,
+    PackagePluginFindingOriginModel,
     SubFindingFrontmatterModel,
 )
 from sereto.models.locator import LocatorModel, get_locator_types
@@ -117,6 +118,7 @@ class SubFinding:
     locators: list[LocatorModel] = field(default_factory=list)
     format: FileFormat = FileFormat.md
     reported_on: SeretoDate | None = None
+    origin: PackagePluginFindingOriginModel | None = None
 
     @classmethod
     @validate_call
@@ -141,6 +143,7 @@ class SubFinding:
             locators=frontmatter.locators,
             format=frontmatter.format,
             reported_on=frontmatter.reported_on,
+            origin=frontmatter.origin,
         )
 
     @property
@@ -566,6 +569,7 @@ class Findings:
         overwrite: bool = False,
         group_uname: str | None = None,
         group_name: str | None = None,
+        origin: PackagePluginFindingOriginModel | None = None,
     ) -> PreparedFinding:
         """Validate and render a finding change without writing project files."""
         if group_uname is not None and group_name is not None:
@@ -611,6 +615,7 @@ class Findings:
             variables=variables,
             template_path=str(relative_template_path),
             locators=locators,
+            origin=origin,
         )
         sub_finding_content = f"+++\n{sub_finding_metadata.dumps_toml()}+++\n\n{content}"
 
@@ -644,68 +649,103 @@ class Findings:
 
     def commit_prepared(self, prepared: PreparedFinding) -> None:
         """Atomically persist a prepared finding and refresh loaded groups."""
-        target_dir = Path(self.target_dir).resolve()
-        if (
-            prepared.target_dir != target_dir
-            or prepared.sub_finding_path.parent.resolve() != self.findings_dir.resolve()
-        ):
-            raise SeretoValueError("prepared finding belongs to another target")
+        self.commit_prepared_batch(((self, prepared),))
+
+    @staticmethod
+    def commit_prepared_batch(
+        items: Iterable[tuple["Findings", PreparedFinding]],
+    ) -> None:
+        """Atomically persist prepared findings across one project."""
+        entries = tuple(items)
+        if not entries:
+            return
+
+        targets: dict[Path, tuple[Findings, list[PreparedFinding]]] = {}
+        project_roots: set[Path] = set()
+        for findings, prepared in entries:
+            target_dir = Path(findings.target_dir).resolve()
+            if (
+                prepared.target_dir != target_dir
+                or prepared.sub_finding_path.parent.resolve() != findings.findings_dir.resolve()
+            ):
+                raise SeretoValueError("prepared finding belongs to another target")
+            project_roots.add(target_dir.parent)
+            target_entry = targets.get(target_dir)
+            if target_entry is None:
+                targets[target_dir] = (findings, [prepared])
+            else:
+                if target_entry[0] is not findings:
+                    raise SeretoValueError("prepared finding batch uses multiple owners for one target")
+                target_entry[1].append(prepared)
+        if len(project_roots) != 1:
+            raise SeretoValueError("prepared finding batch spans multiple projects")
+
+        reloaded: dict[Path, Findings] = {}
 
         def plan_writes() -> tuple[PendingFileWrite, ...]:
-            writes = [
-                PendingFileWrite(
-                    path=prepared.sub_finding_path,
-                    content=prepared.sub_finding_content.encode("utf-8"),
-                    expected_digest=prepared.sub_finding_original_digest,
+            writes: list[PendingFileWrite] = []
+            for findings, prepared_items in targets.values():
+                template_roots = {prepared.templates_root for prepared in prepared_items}
+                if len(template_roots) != 1:
+                    raise SeretoValueError("prepared findings for one target use different template roots")
+                writes.extend(
+                    PendingFileWrite(
+                        path=prepared.sub_finding_path,
+                        content=prepared.sub_finding_content.encode("utf-8"),
+                        expected_digest=prepared.sub_finding_original_digest,
+                    )
+                    for prepared in prepared_items
                 )
-            ]
-            if prepared.registration is not None:
-                writes.append(self._plan_registration(prepared))
+                registrations = [prepared for prepared in prepared_items if prepared.registration is not None]
+                if registrations:
+                    current_config_bytes = findings.config_file.read_bytes()
+                    current_config_digest = hashlib.sha256(current_config_bytes).hexdigest()
+                    try:
+                        merged_content = current_config_bytes.decode("utf-8")
+                    except UnicodeDecodeError as error:
+                        raise SeretoValueError("invalid findings.toml encoding") from error
+                    for prepared in registrations:
+                        merged_content = findings._merge_registration(merged_content, prepared)
+                    writes.append(
+                        PendingFileWrite(
+                            path=findings.config_file,
+                            content=merged_content.encode("utf-8"),
+                            expected_digest=current_config_digest,
+                        )
+                    )
             return tuple(writes)
 
-        reloaded: Findings | None = None
-
         def validate_generated_state() -> None:
-            nonlocal reloaded
-            reloaded = type(self)._load_from_unlocked(
-                target_dir=Path(self.target_dir),
-                target_locators=self.target_locators,
-                templates=prepared.templates_root,
-            )
+            for target_dir, (findings, prepared_items) in targets.items():
+                reloaded[target_dir] = type(findings)._load_from_unlocked(
+                    target_dir=target_dir,
+                    target_locators=findings.target_locators,
+                    templates=prepared_items[0].templates_root,
+                )
 
-        AtomicFileTransaction(project_root=self.target_dir.parent).commit_planned(
+        project_root = next(iter(project_roots))
+        AtomicFileTransaction(project_root=project_root).commit_planned(
             planner=plan_writes,
             validator=validate_generated_state,
         )
-        if reloaded is None:
-            raise SeretoRuntimeError("finding transaction completed without validation")
-        self.groups[:] = reloaded.groups
+        for target_dir, (findings, _) in targets.items():
+            findings.groups[:] = reloaded[target_dir].groups
 
-    def _plan_registration(self, prepared: PreparedFinding) -> PendingFileWrite:
-        current_config_bytes = self.config_file.read_bytes()
-        current_config_digest = hashlib.sha256(current_config_bytes).hexdigest()
-        try:
-            current_config_content = current_config_bytes.decode("utf-8")
-        except UnicodeDecodeError as error:
-            raise SeretoValueError("invalid findings.toml encoding") from error
-
+    def _merge_registration(self, current_config_content: str, prepared: PreparedFinding) -> str:
         current_config = _parse_findings_config(current_config_content)
-        current_findings = type(self)._from_config_unlocked(
-            config=current_config,
-            target_dir=Path(self.target_dir),
-            target_locators=self.target_locators,
-            templates=prepared.templates_root,
-        )
         doc = tomlkit.parse(current_config_content)
         registration = prepared.registration
         if registration is None:
             raise SeretoRuntimeError("missing finding registration intent")
+        group_names_by_uname: dict[str, list[str]] = {}
+        for group_name in current_config.root:
+            group_names_by_uname.setdefault(lower_alphanum(f"finding_group_{group_name}"), []).append(group_name)
         finding_uname = prepared.sub_finding_path.name.removesuffix(".md.j2")
         destination_group_name = (
             registration.expected_name if isinstance(registration, ExistingGroupDestination) else registration.name
         )
         registered_group_name = next(
-            (group_name for group_name, group in current_config.items() if finding_uname in group.findings),
+            (group_name for group_name, group in current_config.root.items() if finding_uname in group.findings),
             None,
         )
         if registered_group_name is not None and registered_group_name != destination_group_name:
@@ -714,27 +754,19 @@ class Findings:
             )
 
         if isinstance(registration, ExistingGroupDestination):
-            matching_groups = [group for group in current_findings.groups if group.uname == registration.uname]
-            if len(matching_groups) != 1 or matching_groups[0].name != registration.expected_name:
+            matching_group_names = group_names_by_uname.get(registration.uname, [])
+            if matching_group_names != [registration.expected_name]:
                 raise SeretoValueError(f"finding group {registration.expected_name!r} changed after preparation")
-            group = matching_groups[0]
-            self._append_finding_to_group(doc, group.name, finding_uname)
+            self._append_finding_to_group(doc, registration.expected_name, finding_uname)
         else:
-            exact_group = next(
-                (group for group in current_findings.groups if group.name == registration.name),
-                None,
-            )
+            exact_group = current_config.root.get(registration.name)
             if exact_group is not None:
                 if registration.on_conflict == "fail":
                     raise SeretoValueError(f"finding group {registration.name!r} was created after preparation")
-                self._append_finding_to_group(
-                    doc,
-                    exact_group.name,
-                    finding_uname,
-                )
+                self._append_finding_to_group(doc, registration.name, finding_uname)
             else:
                 expected_uname = lower_alphanum(f"finding_group_{registration.name}")
-                if any(group.uname == expected_uname for group in current_findings.groups):
+                if expected_uname in group_names_by_uname:
                     raise SeretoValueError(
                         f"finding group name {registration.name!r} conflicts with an existing group"
                     )
@@ -756,11 +788,7 @@ class Findings:
 
         merged_config_content = tomlkit.dumps(doc)
         _parse_findings_config(merged_config_content)
-        return PendingFileWrite(
-            path=self.config_file,
-            content=merged_config_content.encode("utf-8"),
-            expected_digest=current_config_digest,
-        )
+        return merged_config_content
 
     @staticmethod
     def _append_finding_to_group(doc: tomlkit.TOMLDocument, group_name: str, finding_uname: str) -> None:
@@ -785,6 +813,7 @@ class Findings:
         overwrite: bool = False,
         group_uname: str | None = None,
         group_name: str | None = None,
+        origin: PackagePluginFindingOriginModel | None = None,
     ) -> None:
         """Add a sub-finding from a template.
 
@@ -815,6 +844,7 @@ class Findings:
             overwrite=overwrite,
             group_uname=group_uname,
             group_name=group_name,
+            origin=origin,
         )
         self.commit_prepared(prepared)
 

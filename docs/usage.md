@@ -82,8 +82,40 @@ Core commands take precedence over legacy filesystem plugins, which take precede
 Managed commands may be top-level leaves or leaves beneath existing core command groups; they cannot create command
 groups. Conflicting commands are skipped and reported by `sereto plugin doctor`.
 
-The operation result is printed as JSON. Finding proposals are not written to the project in this iteration; core-owned
-review and persistence are added separately.
+The operation result is printed as JSON. Core-owned review validates every finding proposal before presenting it or
+changing project files. Interactive terminals can accept, reject, or edit proposals as JSON, followed by one
+confirmation for the accepted batch.
+
+Without an interactive terminal, proposals are reported without changing project files unless acceptance is explicit:
+
+```sh
+sereto findings testssl --sereto-target external --sereto-accept weak-tls-example --json scan.json
+sereto findings testssl --sereto-target external --sereto-accept-all --json scan.json
+```
+
+`--sereto-accept` may be repeated. It and `--sereto-accept-all` are mutually exclusive. SeReTo resolves each proposal's
+invocation-scoped target handle and logical `category/template_name` reference, validates template variables, locators,
+risk, grouping, and plugin-namespaced metadata, then commits all accepted findings in one recoverable project
+transaction. Invalid or rejected proposals leave project files unchanged. Accepted finding frontmatter records
+core-owned plugin, distribution, SDK, protocol, operation, and proposal origin details.
+
+Accepted proposal frontmatter includes a core-owned origin table:
+
+```toml
+[origin]
+kind = "package-plugin"
+plugin_id = "example-sereto-plugin"
+distribution_name = "example-sereto-plugin"
+distribution_version = "1.0.0"
+sdk_api_major = 1
+sdk_package_version = "0.1.0"
+protocol_version = 1
+operation_id = "example.analyze"
+proposal_id = "weak-tls-example"
+```
+
+SeReTo uses a temporary `.sereto-transactions` directory for recoverable finding commits and removes it after a
+successful transaction or recovery. The `.sereto` project marker remains a file.
 
 ## Create project
 

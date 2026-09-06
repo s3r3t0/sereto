@@ -53,7 +53,7 @@ class RegistryModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, validate_default=True)
 
 
-class SourceProvenance(RegistryModel):
+class SourceOrigin(RegistryModel):
     kind: SourceKind
     requirement: NonEmptyString
     origin: NonEmptyString
@@ -65,35 +65,35 @@ class SourceProvenance(RegistryModel):
     @classmethod
     def reject_credentials(cls, value: str) -> str:
         if any(ord(character) < 32 or ord(character) == 127 for character in value):
-            raise ValueError("source provenance contains control characters")
+            raise ValueError("source origin contains control characters")
         for raw_url in _URL.findall(value):
             parsed = urlsplit(raw_url.rstrip(",);]"))
             has_http_userinfo = parsed.scheme.endswith(("http", "https")) and (
                 parsed.username is not None or parsed.password is not None
             )
             if has_http_userinfo:
-                raise ValueError("source provenance must not contain HTTP userinfo")
+                raise ValueError("source origin must not contain HTTP userinfo")
             query_keys = {key.casefold() for key, _ in parse_qsl(parsed.query, keep_blank_values=True)}
             if query_keys & _SENSITIVE_QUERY_KEYS:
-                raise ValueError("source provenance must not contain credential query parameters")
+                raise ValueError("source origin must not contain credential query parameters")
         return value
 
     @model_validator(mode="after")
     def validate_kind_fields(self) -> Self:
         if self.kind == "index":
             if self.index_name is None:
-                raise ValueError("index source provenance requires index_name")
+                raise ValueError("index source origin requires index_name")
             if self.artifact_sha256 is not None or self.vcs_commit is not None:
-                raise ValueError("index source provenance must not define artifact or VCS fields")
+                raise ValueError("index source origin must not define artifact or VCS fields")
         elif self.kind == "artifact":
             if self.artifact_sha256 is None:
-                raise ValueError("artifact source provenance requires artifact_sha256")
+                raise ValueError("artifact source origin requires artifact_sha256")
             if self.index_name is not None or self.vcs_commit is not None:
-                raise ValueError("artifact source provenance must not define index or VCS fields")
+                raise ValueError("artifact source origin must not define index or VCS fields")
         elif self.vcs_commit is None:
-            raise ValueError("VCS source provenance requires vcs_commit")
+            raise ValueError("VCS source origin requires vcs_commit")
         elif self.index_name is not None or self.artifact_sha256 is not None:
-            raise ValueError("VCS source provenance must not define index or artifact fields")
+            raise ValueError("VCS source origin must not define index or artifact fields")
         return self
 
 
@@ -119,7 +119,7 @@ class PluginRecord(RegistryModel):
     plugin_id: Identifier
     distribution: DistributionIdentity
     entry_point: Identifier
-    source: SourceProvenance
+    source: SourceOrigin
     runtime: RuntimeRecord
     sdk_package_version: NonEmptyString
     sdk_api_major: VersionOne
@@ -176,7 +176,7 @@ class PluginRecord(RegistryModel):
         try:
             requirement = Requirement(self.source.requirement)
         except InvalidRequirement as error:
-            raise ValueError("source provenance requirement is invalid") from error
+            raise ValueError("source origin requirement is invalid") from error
         if str(canonicalize_name(requirement.name)) != self.plugin_id:
             raise ValueError("source requirement name does not match the plugin ID")
         return self

@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
@@ -8,6 +8,7 @@ import pytest
 from click.testing import CliRunner
 
 import sereto.package_plugins.commands as commands_module
+from sereto.exceptions import SeretoValueError
 from sereto.package_plugins.commands import (
     PluginCommandError,
     collect_group_paths,
@@ -109,6 +110,8 @@ def test_cached_command_invokes_active_plugin_with_target_and_opaque_argv(
             health="healthy",
             entry_point="acme-testssl",
             sdk_api_major=1,
+            sdk_package_version="0.1.0",
+            selected_protocol_version=1,
             manifest_digest="a" * 64,
             distribution=SimpleNamespace(name="Acme_TestSSL", version="2.4.1"),
             runtime=SimpleNamespace(
@@ -150,6 +153,11 @@ def test_cached_command_invokes_active_plugin_with_target_and_opaque_argv(
         lambda project, selected_operation, target_selector: SimpleNamespace(resources=(resource,)),
     )
     monkeypatch.setattr(commands_module, "PluginSession", FakeSession)
+    monkeypatch.setattr(
+        commands_module,
+        "review_finding_proposals",
+        lambda result, **kwargs: captured.setdefault("review", kwargs),
+    )
 
     @click.group()
     def root() -> None:
@@ -167,8 +175,17 @@ def test_cached_command_invokes_active_plugin_with_target_and_opaque_argv(
 
     result = CliRunner().invoke(
         root,
-        ["findings", "testssl", "--sereto-target", "external", "--target", "plugin-value"],
-        obj=Project(),
+        [
+            "findings",
+            "testssl",
+            "--sereto-target",
+            "external",
+            "--sereto-accept",
+            "proposal-1",
+            "--target",
+            "plugin-value",
+        ],
+        obj=Project(_settings=SimpleNamespace(templates_path=Path("/templates"))),
     )
 
     assert result.exit_code == 0
@@ -178,6 +195,90 @@ def test_cached_command_invokes_active_plugin_with_target_and_opaque_argv(
     assert request.resources == (resource,)  # type: ignore[union-attr]
     assert '"analyzed": true' in result.output
     assert captured["runtime_lock"] == "released"
+    review = captured["review"]
+    assert review["accept_ids"] == ("proposal-1",)  # type: ignore[index]
+    assert review["accept_all"] is False  # type: ignore[index]
+    assert review["resources"].resources == (resource,)  # type: ignore[index,union-attr]
+
+
+def test_proposal_review_failure_prevents_result_output(monkeypatch: pytest.MonkeyPatch) -> None:
+    declaration = Command(path=("scan",), operation_id="scan.run", summary="Scan")
+    operation = Operation(
+        id="scan.run",
+        capability="finding.propose",
+        resource_kinds=("sereto.target.v1",),
+    )
+    record = cast(
+        PluginRecord,
+        SimpleNamespace(
+            plugin_id="acme-scan",
+            health="healthy",
+            entry_point="acme-scan",
+            sdk_api_major=1,
+            sdk_package_version="0.1.0",
+            selected_protocol_version=1,
+            manifest_digest="a" * 64,
+            distribution=SimpleNamespace(name="acme-scan", version="1.0.0"),
+            runtime=SimpleNamespace(generation_id="generation-1", python_path="/managed/python"),
+            manifest=SimpleNamespace(commands=(declaration,), operations=(operation,)),
+        ),
+    )
+
+    class FakeSession:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        async def run(self, request: object, on_progress: object) -> OperationResultPayload:
+            return OperationResultPayload(output={"must_not_print": True})
+
+    monkeypatch.setattr(commands_module, "_locked_active_record", lambda cached: nullcontext(record))
+    monkeypatch.setattr(
+        commands_module,
+        "_target_resources",
+        lambda *args: SimpleNamespace(resources=()),
+    )
+    monkeypatch.setattr(commands_module, "PluginSession", FakeSession)
+    monkeypatch.setattr(
+        commands_module,
+        "review_finding_proposals",
+        lambda *args, **kwargs: (_ for _ in ()).throw(SeretoValueError("invalid proposal")),
+    )
+
+    @click.group()
+    def root() -> None:
+        pass
+
+    register_cached_plugin_commands(root, records=(record,), allowed_parent_paths=frozenset())
+    project = Project(_settings=SimpleNamespace(templates_path=Path("/templates")))
+
+    result = CliRunner().invoke(root, ["scan"], obj=project)
+
+    assert result.exit_code == 1
+    assert "must_not_print" not in result.output
+
+
+def test_conflicting_acceptance_flags_do_not_launch_plugin(monkeypatch: pytest.MonkeyPatch) -> None:
+    record = _record(Command(path=("scan",), operation_id="scan.run", summary="Scan"))
+
+    def fail_session(*args: object, **kwargs: object) -> None:
+        raise AssertionError("conflicting acceptance flags launched plugin")
+
+    monkeypatch.setattr(commands_module, "PluginSession", fail_session)
+
+    @click.group()
+    def root() -> None:
+        pass
+
+    register_cached_plugin_commands(root, records=(record,), allowed_parent_paths=frozenset())
+
+    result = CliRunner().invoke(
+        root,
+        ["scan", "--sereto-accept", "proposal-1", "--sereto-accept-all"],
+        obj=Project(),
+    )
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, SystemExit)
 
 
 def test_registration_rejects_duplicate_managed_paths_and_non_core_parent() -> None:

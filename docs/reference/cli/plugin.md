@@ -11,3 +11,8 @@ local protocol, forwards plugin arguments as `arguments.argv`, and passes the ho
 
 Core and legacy collisions, duplicate managed paths, invalid parent groups, and unsafe cached help text cause only the
 managed command to be skipped. `sereto plugin doctor` reports the reason.
+
+Managed commands validate all returned finding proposals before review. Use repeatable `--sereto-accept PROPOSAL_ID`
+or `--sereto-accept-all` for explicit non-interactive acceptance. Interactive review supports accept, reject, and JSON
+modification followed by one batch confirmation. Accepted findings are committed transactionally by SeReTo and include
+core-owned package-plugin origin details; plugins never write project files.

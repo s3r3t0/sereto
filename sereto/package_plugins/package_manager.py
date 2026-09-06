@@ -27,7 +27,7 @@ from packaging.version import InvalidVersion, Version
 
 from sereto.exceptions import SeretoRuntimeError
 from sereto.package_plugins.lifecycle import PluginInstallRequest, PreparedPluginEnvironment
-from sereto.package_plugins.manifest import SourceProvenance
+from sereto.package_plugins.manifest import SourceOrigin
 from sereto.package_plugins.paths import PluginPaths
 
 _INDEX_NAME = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$")
@@ -65,7 +65,7 @@ class _EntryPointConfigParser(configparser.ConfigParser):
 class _SourcePlan:
     distribution_name: str
     install_requirement: str
-    provenance_requirement: str
+    origin_requirement: str
     kind: Literal["index", "artifact", "vcs"]
     origin: str | None = None
     artifact_sha256: str | None = None
@@ -144,7 +144,7 @@ class UvPackageManager:
                 lock_content = lock_path.read_bytes()
                 self._make_private(lock_path)
                 locked_package = self._locked_package(lock_content, plugin_id)
-                source = self._source_provenance(source_plan, locked_package, request)
+                source = self._source_origin(source_plan, locked_package, request)
 
                 self._run_uv(
                     [
@@ -264,7 +264,7 @@ class UvPackageManager:
             return _SourcePlan(
                 distribution_name=distribution_name,
                 install_requirement=str(artifact_path),
-                provenance_requirement=f"{distribution_name} @ {resolved_path.as_uri()}",
+                origin_requirement=f"{distribution_name} @ {resolved_path.as_uri()}",
                 kind="artifact",
                 origin=resolved_path.as_uri(),
                 artifact_sha256=self._file_digest(artifact_path),
@@ -285,7 +285,7 @@ class UvPackageManager:
             return _SourcePlan(
                 distribution_name=requirement.name,
                 install_requirement=normalized_requirement,
-                provenance_requirement=normalized_requirement,
+                origin_requirement=normalized_requirement,
                 kind="index",
             )
 
@@ -294,7 +294,7 @@ class UvPackageManager:
         return _SourcePlan(
             distribution_name=requirement.name,
             install_requirement=normalized_requirement,
-            provenance_requirement=normalized_requirement,
+            origin_requirement=normalized_requirement,
             kind=kind,
             origin=requirement.url,
         )
@@ -313,7 +313,7 @@ class UvPackageManager:
         return _SourcePlan(
             distribution_name=plan.distribution_name,
             install_requirement=f"{plan.distribution_name} @ {destination.as_uri()}",
-            provenance_requirement=plan.provenance_requirement,
+            origin_requirement=plan.origin_requirement,
             kind=plan.kind,
             origin=plan.origin,
             artifact_sha256=retained_digest,
@@ -370,12 +370,12 @@ class UvPackageManager:
         config_path.write_text("", encoding="utf-8")
         self._make_private(config_path)
 
-    def _source_provenance(
+    def _source_origin(
         self,
         plan: _SourcePlan,
         locked_package: Mapping[str, object],
         request: PluginInstallRequest,
-    ) -> SourceProvenance:
+    ) -> SourceOrigin:
         source = locked_package.get("source")
         if not isinstance(source, dict):
             raise PluginPackageManagerError("uv lock does not identify the plugin package source")
@@ -383,9 +383,9 @@ class UvPackageManager:
             registry_url = source.get("registry")
             if not isinstance(registry_url, str):
                 raise PluginPackageManagerError("uv lock does not identify the plugin package index")
-            return SourceProvenance(
+            return SourceOrigin(
                 kind="index",
-                requirement=plan.provenance_requirement,
+                requirement=plan.origin_requirement,
                 origin=registry_url,
                 index_name=self._index_name(registry_url, request),
             )
@@ -396,9 +396,9 @@ class UvPackageManager:
             commit = locked_git.rsplit("#", 1)[1]
             if not re.fullmatch(r"[0-9a-fA-F]{40,64}", commit):
                 raise PluginPackageManagerError("uv lock contains an invalid resolved plugin VCS commit")
-            return SourceProvenance(
+            return SourceOrigin(
                 kind="vcs",
-                requirement=plan.provenance_requirement,
+                requirement=plan.origin_requirement,
                 origin=cast(str, plan.origin),
                 vcs_commit=commit.lower(),
             )
@@ -406,9 +406,9 @@ class UvPackageManager:
         artifact_digest = plan.artifact_sha256 or self._locked_artifact_digest(locked_package)
         if artifact_digest is None:
             raise PluginPackageManagerError("uv lock does not contain a SHA-256 plugin artifact hash")
-        return SourceProvenance(
+        return SourceOrigin(
             kind="artifact",
-            requirement=plan.provenance_requirement,
+            requirement=plan.origin_requirement,
             origin=cast(str, plan.origin),
             artifact_sha256=artifact_digest,
         )

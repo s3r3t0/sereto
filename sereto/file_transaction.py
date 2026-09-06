@@ -113,8 +113,7 @@ class AtomicFileTransaction:
     def __init__(self, project_root: Path, writes: tuple[PendingFileWrite, ...] = ()) -> None:
         self.project_root = project_root.resolve()
         self.writes = writes
-        self.state_dir = self.project_root / ".sereto"
-        self.transactions_dir = self.state_dir / "transactions"
+        self.transactions_dir = self.project_root / ".sereto-transactions"
         self.lock_path = _project_lock_path(self.project_root)
 
     def commit(self, validator: Callable[[], None] | None = None) -> None:
@@ -141,6 +140,7 @@ class AtomicFileTransaction:
         validator: Callable[[], None] | None,
     ) -> None:
         entries = self._validate_and_describe_writes(writes)
+        _ensure_private_directory(self.transactions_dir)
         transaction_dir = self.transactions_dir / uuid.uuid4().hex
         transaction_dir.mkdir(mode=0o700, parents=True)
 
@@ -220,8 +220,8 @@ class AtomicFileTransaction:
         writes: tuple[PendingFileWrite, ...],
         entries: list[TransactionEntry],
     ) -> None:
-        (transaction_dir / "staged").mkdir()
-        (transaction_dir / "backup").mkdir()
+        (transaction_dir / "staged").mkdir(mode=0o700)
+        (transaction_dir / "backup").mkdir(mode=0o700)
 
         for write, entry in zip(writes, entries, strict=True):
             staged = transaction_dir / str(entry["staged"])
@@ -241,6 +241,7 @@ class AtomicFileTransaction:
         if not self.transactions_dir.exists():
             self._cleanup_empty_state_dirs()
             return
+        _ensure_private_directory(self.transactions_dir)
         for transaction_dir in sorted(self.transactions_dir.iterdir()):
             if transaction_dir.is_dir():
                 self._recover_transaction(transaction_dir)
@@ -278,13 +279,8 @@ class AtomicFileTransaction:
         _fsync_directory(self.transactions_dir)
 
     def _cleanup_empty_state_dirs(self) -> None:
-        for directory in (self.transactions_dir, self.state_dir):
-            try:
-                directory.rmdir()
-            except FileNotFoundError:
-                continue
-            except OSError:
-                break
+        with suppress(FileNotFoundError, OSError):
+            self.transactions_dir.rmdir()
         _fsync_directory(self.project_root)
 
     @staticmethod

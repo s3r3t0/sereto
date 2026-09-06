@@ -102,6 +102,116 @@ def test_commit_prepared_persists_finding_and_config(tmp_path: Path) -> None:
     assert [finding.name for finding in findings.groups[0].sub_findings] == ["Prepared Finding"]
 
 
+def test_commit_prepared_preserves_real_project_marker_file(tmp_path: Path) -> None:
+    findings, templates, template_path = _make_findings(tmp_path)
+    project_marker = findings.target_dir.parent / ".sereto"
+    project_marker.touch()
+    prepared = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        variables={"proof": "validated"},
+    )
+
+    findings.commit_prepared(prepared)
+
+    assert project_marker.is_file()
+    assert prepared.sub_finding_path.is_file()
+    assert not (findings.target_dir.parent / ".sereto-transactions").exists()
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX mode check")
+def test_transaction_journal_directory_is_private_with_permissive_umask(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    findings, templates, template_path = _make_findings(tmp_path)
+    prepared = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        variables={"proof": "validated"},
+    )
+    captured_mode: int | None = None
+    real_write_journal = AtomicFileTransaction._write_journal
+
+    def capture_journal_mode(transaction_dir: Path, state: str, entries: list[dict[str, object]]) -> None:
+        nonlocal captured_mode
+        captured_mode = transaction_dir.parent.stat().st_mode & 0o777
+        real_write_journal(transaction_dir, state, entries)
+
+    monkeypatch.setattr(AtomicFileTransaction, "_write_journal", staticmethod(capture_journal_mode))
+    previous_umask = os.umask(0)
+    try:
+        findings.commit_prepared(prepared)
+    finally:
+        os.umask(previous_umask)
+
+    assert captured_mode == 0o700
+
+
+def test_commit_prepared_batch_merges_registrations_in_one_transaction(tmp_path: Path) -> None:
+    findings, templates, template_path = _make_findings(tmp_path)
+    first = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        sub_finding_name="First Prepared Finding",
+        variables={"proof": "first"},
+    )
+    second = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        sub_finding_name="Second Prepared Finding",
+        variables={"proof": "second"},
+    )
+
+    Findings.commit_prepared_batch(((findings, first), (findings, second)))
+
+    assert first.sub_finding_path.is_file()
+    assert second.sub_finding_path.is_file()
+    assert {group.name for group in findings.groups} == {
+        "First Prepared Finding",
+        "Second Prepared Finding",
+    }
+
+
+def test_commit_prepared_batch_rolls_back_all_findings_on_replacement_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    findings, templates, template_path = _make_findings(tmp_path)
+    first = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        sub_finding_name="First Prepared Finding",
+        variables={"proof": "first"},
+    )
+    second = findings.prepare_from_template(
+        templates=templates,
+        template_path=template_path,
+        category="test",
+        sub_finding_name="Second Prepared Finding",
+        variables={"proof": "second"},
+    )
+    before = _snapshot_tree(findings.target_dir.parent)
+    real_replace = file_transaction.os.replace
+
+    def fail_second_finding(source: Path, destination: Path) -> None:
+        if Path(destination) == second.sub_finding_path:
+            raise OSError("injected batch replacement failure")
+        real_replace(source, destination)
+
+    monkeypatch.setattr(file_transaction.os, "replace", fail_second_finding)
+
+    with pytest.raises(OSError, match="injected batch replacement failure"):
+        Findings.commit_prepared_batch(((findings, first), (findings, second)))
+
+    assert _snapshot_tree(findings.target_dir.parent) == before
+
+
 def test_commit_prepared_merges_unrelated_group_added_after_preparation(tmp_path: Path) -> None:
     findings, templates, template_path = _make_findings(tmp_path)
     prepared = findings.prepare_from_template(
@@ -647,6 +757,8 @@ def test_recover_restores_interrupted_overwrite(tmp_path: Path, monkeypatch: pyt
 
 def test_load_from_recovers_interrupted_transaction(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     findings, templates, template_path = _make_findings(tmp_path)
+    project_marker = findings.target_dir.parent / ".sereto"
+    project_marker.touch()
     existing_path = findings.findings_dir / "test_prepared_finding.md.j2"
     existing_path.write_text("original finding\n", encoding="utf-8")
     prepared = findings.prepare_from_template(
@@ -676,7 +788,8 @@ def test_load_from_recovers_interrupted_transaction(tmp_path: Path, monkeypatch:
 
     assert loaded.groups == []
     assert existing_path.read_text(encoding="utf-8") == "original finding\n"
-    assert not (findings.target_dir.parent / ".sereto").exists()
+    assert project_marker.is_file()
+    assert not (findings.target_dir.parent / ".sereto-transactions").exists()
 
 
 def test_recover_rejects_backup_path_outside_transaction(tmp_path: Path) -> None:
@@ -687,7 +800,7 @@ def test_recover_rejects_backup_path_outside_transaction(tmp_path: Path) -> None
     target.write_bytes(replacement)
     external_backup = project_root / "external-backup"
     external_backup.write_bytes(b"original finding\n")
-    transaction_dir = project_root / ".sereto" / "transactions" / "tampered"
+    transaction_dir = project_root / ".sereto-transactions" / "tampered"
     transaction_dir.mkdir(parents=True)
     (transaction_dir / "journal.json").write_text(
         json.dumps(
@@ -722,7 +835,7 @@ def test_recover_rejects_backup_with_wrong_digest(tmp_path: Path) -> None:
     target.parent.mkdir(parents=True)
     replacement = b"replacement finding\n"
     target.write_bytes(replacement)
-    transaction_dir = project_root / ".sereto" / "transactions" / "damaged"
+    transaction_dir = project_root / ".sereto-transactions" / "damaged"
     backup = transaction_dir / "backup" / "0"
     backup.parent.mkdir(parents=True)
     backup.write_bytes(b"damaged backup\n")

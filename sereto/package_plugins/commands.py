@@ -14,6 +14,7 @@ from sereto.cli.aliases import cli_aliases
 from sereto.exceptions import SeretoRuntimeError, handle_exceptions
 from sereto.package_plugins.manifest import PluginRecord
 from sereto.package_plugins.paths import PluginPaths
+from sereto.package_plugins.proposals import ProposalOrigin, review_finding_proposals
 from sereto.package_plugins.protocol_v1 import (
     Command,
     Operation,
@@ -60,7 +61,18 @@ class ManagedPluginCommand(click.Command):
                 click.Option(
                     ["--sereto-target", "target_selector"],
                     help="Target selector (index, category, or uname).",
-                )
+                ),
+                click.Option(
+                    ["--sereto-accept", "accepted_proposal_ids"],
+                    multiple=True,
+                    metavar="PROPOSAL_ID",
+                    help="Accept one finding proposal ID. May be repeated.",
+                ),
+                click.Option(
+                    ["--sereto-accept-all"],
+                    is_flag=True,
+                    help="Accept all validated finding proposals.",
+                ),
             ],
             context_settings={
                 "allow_extra_args": True,
@@ -70,7 +82,14 @@ class ManagedPluginCommand(click.Command):
         )
 
     @handle_exceptions
-    def _invoke(self, target_selector: str | None) -> None:
+    def _invoke(
+        self,
+        target_selector: str | None,
+        accepted_proposal_ids: tuple[str, ...],
+        sereto_accept_all: bool,
+    ) -> None:
+        if accepted_proposal_ids and sereto_accept_all:
+            raise PluginCommandError("--sereto-accept and --sereto-accept-all are mutually exclusive")
         context = click.get_current_context()
         project = context.find_object(Project)
         if project is None:
@@ -100,6 +119,14 @@ class ManagedPluginCommand(click.Command):
             )
         if not isinstance(result, OperationResultPayload):
             raise PluginCommandError("managed package-plugin operation returned a manifest result")
+        review_finding_proposals(
+            result,
+            resources=target_resources,
+            templates=project.settings.templates_path,
+            origin=ProposalOrigin.from_record(record, operation.id),
+            accept_ids=accepted_proposal_ids,
+            accept_all=sereto_accept_all,
+        )
         click.echo(json.dumps(result.model_dump(mode="json"), allow_nan=False, indent=2, sort_keys=True))
 
 

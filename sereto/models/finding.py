@@ -57,6 +57,18 @@ class FindingTemplateFrontmatterModel(SeretoBaseModel):
             raise SeretoValueError(f"invalid template frontmatter in '{path}'") from ex
 
 
+class PackagePluginFindingOriginModel(SeretoBaseModel):
+    kind: Literal["package-plugin"] = "package-plugin"
+    plugin_id: str
+    distribution_name: str
+    distribution_version: str
+    sdk_api_major: int = Field(strict=True, ge=1)
+    sdk_package_version: str
+    protocol_version: int = Field(strict=True, ge=1)
+    operation_id: str
+    proposal_id: str
+
+
 class SubFindingFrontmatterModel(SeretoBaseModel):
     """Frontmatter metadata for a sub-finding included in a project.
 
@@ -69,6 +81,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
         locators: A list of locators used to find the sub-finding.
         format: The file format of the sub-finding (defaults to markdown).
         reported_on: Date the finding was first reported. Only useful if introduced later.
+        origin: Optional core-owned package-plugin origin for accepted proposals.
     """
 
     name: str
@@ -79,6 +92,7 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
     locators: list[LocatorModel] = Field(default_factory=list)
     format: FileFormat = Field(default=FileFormat.md)
     reported_on: SeretoDate | None = None
+    origin: PackagePluginFindingOriginModel | None = None
 
     def dumps_toml(self) -> str:
         """Dump the model to a TOML-formatted string using a TOML library."""
@@ -93,6 +107,8 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             data["template_path"] = self.template_path
         if len(self.variables) > 0 and any(v is not None for v in self.variables.values()):
             data["variables"] = {k: v for k, v in self.variables.items() if v is not None}
+        if self.origin is not None:
+            data["origin"] = self.origin.model_dump(mode="json")
 
         # Dump to TOML string
         return toml_dumps(data)

@@ -8,7 +8,7 @@ from typing import Literal, Protocol
 
 from sereto.exceptions import SeretoRuntimeError
 from sereto.package_plugins.compatibility import check_manifest_compatibility
-from sereto.package_plugins.manifest import PluginRecord, RuntimeRecord, SourceProvenance, manifest_digest
+from sereto.package_plugins.manifest import PluginRecord, RuntimeRecord, SourceOrigin, manifest_digest
 from sereto.package_plugins.paths import PluginPaths
 from sereto.package_plugins.protocol_v1 import DistributionIdentity, Manifest, VersionOne
 from sereto.package_plugins.registry import PluginRegistry, RegistryIssue, RegistrySnapshot, RegistryState
@@ -52,7 +52,7 @@ class PreparedPluginEnvironment:
     sdk_package_version: str
     sdk_api_major: Literal[1]
     supported_protocol_versions: tuple[VersionOne, ...]
-    source: SourceProvenance
+    source: SourceOrigin
 
 
 class PackageManager(Protocol):

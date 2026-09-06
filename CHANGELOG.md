@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add core-owned review for package-plugin finding proposals with target and template resolution, in-memory
+  modification, explicit non-interactive acceptance, origin tracking, and atomic accepted-finding persistence.
 - Register managed plugin commands from cached manifests without starting plugin processes during startup or help,
   preserving core and legacy command precedence and reporting collisions through `sereto plugin doctor`.
 - Add `sereto plugin install`, `remove`, `list`, `show`, and `doctor` with uv-managed isolated environments,
-  retained locks and source provenance, validated manifest discovery, and atomic activation.
+  retained locks and source origin details, validated manifest discovery, and atomic activation.
 - Add an atomic managed package-plugin registry with cached manifest validation, compatibility checks, static
   diagnostics, and bounded target resources.
 - Add an internal authenticated loopback WebSocket session for invoking isolated package-plugin SDK runners.
@@ -24,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Store recoverable finding transaction journals outside the `.sereto` project marker file.
 - Implement `__reduce__` for `SeretoDate` to fix deepcopy and pickling.
 
 ### Dependencies

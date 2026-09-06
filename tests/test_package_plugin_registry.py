@@ -22,7 +22,7 @@ from sereto.package_plugins.manifest import (
     PluginRecord,
     RegistryRecordError,
     RuntimeRecord,
-    SourceProvenance,
+    SourceOrigin,
     manifest_digest,
     validate_plugin_record,
 )
@@ -134,7 +134,7 @@ def _record(paths: PluginPaths) -> PluginRecord:
         plugin_id=manifest.plugin_id,
         distribution={"name": "Acme_TestSSL", "version": "2.4.1"},
         entry_point="acme-testssl",
-        source=SourceProvenance(
+        source=SourceOrigin(
             kind="index",
             requirement="acme-testssl==2.4.1",
             origin="https://pypi.org/simple",
@@ -305,9 +305,9 @@ def test_plugin_record_accepts_standard_virtual_environment_python_symlink(tmp_p
         pytest.param("https://example.test/simple?X-Amz-Signature=secret", id="signed-query"),
     ],
 )
-def test_source_provenance_rejects_credential_shaped_urls(origin: str) -> None:
-    with pytest.raises(ValidationError, match="source provenance must not contain"):
-        SourceProvenance(
+def test_source_origin_rejects_credential_shaped_urls(origin: str) -> None:
+    with pytest.raises(ValidationError, match="source origin must not contain"):
+        SourceOrigin(
             kind="index",
             requirement="acme-testssl==2.4.1",
             origin=origin,
@@ -315,9 +315,9 @@ def test_source_provenance_rejects_credential_shaped_urls(origin: str) -> None:
         )
 
 
-def test_source_provenance_rejects_fields_from_another_source_kind() -> None:
-    with pytest.raises(ValidationError, match="index source provenance must not define artifact or VCS fields"):
-        SourceProvenance(
+def test_source_origin_rejects_fields_from_another_source_kind() -> None:
+    with pytest.raises(ValidationError, match="index source origin must not define artifact or VCS fields"):
+        SourceOrigin(
             kind="index",
             requirement="acme-testssl==2.4.1",
             origin="https://pypi.org/simple",

@@ -16,7 +16,7 @@ from sereto.package_plugins.lifecycle import (
     PluginLifecycleError,
     PreparedPluginEnvironment,
 )
-from sereto.package_plugins.manifest import SourceProvenance
+from sereto.package_plugins.manifest import SourceOrigin
 from sereto.package_plugins.package_manager import PluginPackageManagerError, UvPackageManager
 from sereto.package_plugins.paths import PluginPaths
 from sereto.package_plugins.protocol_v1 import Manifest
@@ -52,7 +52,7 @@ class FakePackageManager:
             sdk_package_version="0.1.0",
             sdk_api_major=1,
             supported_protocol_versions=(1,),
-            source=SourceProvenance(
+            source=SourceOrigin(
                 kind="index",
                 requirement=request.source,
                 origin="https://pypi.org/simple",
@@ -425,7 +425,7 @@ def test_uv_package_manager_builds_local_source_with_request_indexes(
     assert plan.artifact_sha256 == hashlib.sha256(b"wheel").hexdigest()
 
 
-def test_uv_package_manager_records_index_and_vcs_provenance(tmp_path: Path) -> None:
+def test_uv_package_manager_records_index_and_vcs_origin(tmp_path: Path) -> None:
     manager = UvPackageManager()
     index_request = PluginInstallRequest(
         source="acme-testssl>=2",
@@ -434,13 +434,13 @@ def test_uv_package_manager_records_index_and_vcs_provenance(tmp_path: Path) -> 
     )
     index_plan = manager._plan_source(index_request.source, tmp_path)
 
-    index_source = manager._source_provenance(
+    index_source = manager._source_origin(
         index_plan,
         {"source": {"registry": "https://packages.example.test/simple"}},
         index_request,
     )
 
-    assert index_source == SourceProvenance(
+    assert index_source == SourceOrigin(
         kind="index",
         requirement="acme-testssl>=2",
         origin="https://packages.example.test/simple",
@@ -449,7 +449,7 @@ def test_uv_package_manager_records_index_and_vcs_provenance(tmp_path: Path) -> 
 
     vcs_request = PluginInstallRequest(source="acme-testssl @ git+https://git.example.test/acme-testssl.git@main")
     vcs_plan = manager._plan_source(vcs_request.source, tmp_path)
-    vcs_source = manager._source_provenance(
+    vcs_source = manager._source_origin(
         vcs_plan,
         {"source": {"git": f"https://git.example.test/acme-testssl.git#{'a' * 40}"}},
         vcs_request,
@@ -459,7 +459,7 @@ def test_uv_package_manager_records_index_and_vcs_provenance(tmp_path: Path) -> 
     assert vcs_source.vcs_commit == "a" * 40
 
     with pytest.raises(PluginPackageManagerError, match="does not match the pinned source index"):
-        manager._source_provenance(
+        manager._source_origin(
             index_plan,
             {"source": {"registry": "https://other.example.test/simple"}},
             index_request,
@@ -471,7 +471,7 @@ def test_uv_package_manager_records_direct_artifact_hash(tmp_path: Path) -> None
     request = PluginInstallRequest(source="acme-testssl @ https://packages.example.test/acme-testssl.whl")
     plan = manager._plan_source(request.source, tmp_path)
 
-    source = manager._source_provenance(
+    source = manager._source_origin(
         plan,
         {
             "source": {"url": "https://packages.example.test/acme-testssl.whl"},
