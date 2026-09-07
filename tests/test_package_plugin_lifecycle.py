@@ -9,6 +9,8 @@ from typing import Any
 
 import pytest
 
+import sereto.package_plugins.lifecycle as lifecycle_module
+from sereto.package_plugins.compatibility import CompatibilityError
 from sereto.package_plugins.lifecycle import (
     PluginIndex,
     PluginInstallRequest,
@@ -24,24 +26,55 @@ from sereto.package_plugins.registry import PluginRegistry, RegistryConflictErro
 
 
 class FakePackageManager:
+    def __init__(self) -> None:
+        self.prepare_count = 0
+        self.lock_revision = ""
+        self.plugin_id = "acme-testssl"
+        self.distribution_name = "Acme_TestSSL"
+        self.requests: list[PluginInstallRequest] = []
+
     def prepare(
         self,
         request: PluginInstallRequest,
         paths: PluginPaths,
     ) -> PreparedPluginEnvironment:
-        generation_id = "generation-1"
-        generation_path = paths.generation_dir("acme-testssl", generation_id)
+        self.prepare_count += 1
+        self.requests.append(request)
+        generation_id = f"generation-{self.prepare_count}"
+        generation_path = paths.generation_dir(self.plugin_id, generation_id)
         environment_path = generation_path / "environment"
         python_path = environment_path / "bin" / "python"
         python_path.parent.mkdir(parents=True)
         python_path.touch()
-        lock_content = b"version = 1\n"
+        lock_content = f"version = 1\nsource = {request.source!r}\nrevision = {self.lock_revision!r}\n".encode()
         (generation_path / "uv.lock").write_bytes(lock_content)
+        if request.source_index is not None:
+            source_index = next(index for index in request.indexes if index.name == request.source_index)
+            source_origin = SourceOrigin(
+                kind="index",
+                requirement=request.source,
+                origin=source_index.url,
+                index_name=source_index.name,
+            )
+        elif request.default_index is not None:
+            source_origin = SourceOrigin(
+                kind="index",
+                requirement=request.source,
+                origin=request.default_index,
+                index_name="sereto-default",
+            )
+        else:
+            source_origin = SourceOrigin(
+                kind="index",
+                requirement=request.source,
+                origin="https://pypi.org/simple",
+                index_name="pypi",
+            )
         return PreparedPluginEnvironment(
-            plugin_id="acme-testssl",
-            distribution_name="Acme_TestSSL",
-            distribution_version="2.4.1",
-            entry_point="acme-testssl",
+            plugin_id=self.plugin_id,
+            distribution_name=self.distribution_name,
+            distribution_version=request.source.rpartition("==")[2] or "2.4.1",
+            entry_point=self.plugin_id,
             generation_id=generation_id,
             generation_path=generation_path,
             environment_path=environment_path,
@@ -52,12 +85,7 @@ class FakePackageManager:
             sdk_package_version="0.1.0",
             sdk_api_major=1,
             supported_protocol_versions=(1,),
-            source=SourceOrigin(
-                kind="index",
-                requirement=request.source,
-                origin="https://pypi.org/simple",
-                index_name="pypi",
-            ),
+            source=source_origin,
         )
 
     def version(self) -> str:
@@ -188,6 +216,419 @@ def test_install_preserves_generation_after_post_replace_durability_failure(
     active = registry.load().state.plugins["acme-testssl"]
     assert active.runtime.generation_id == "generation-1"
     assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+
+
+def test_update_atomically_activates_new_generation_and_removes_previous(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    discoveries = 0
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        nonlocal discoveries
+        discoveries += 1
+        if discoveries == 2:
+            active = registry.load().state.plugins["acme-testssl"]
+            assert active.runtime.generation_id == "generation-1"
+            assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    result = asyncio.run(
+        lifecycle.update(
+            "acme-testssl",
+            PluginInstallRequest(source="acme-testssl==2.5.0"),
+        )
+    )
+
+    assert result.changed is True
+    assert result.record.distribution.version == "2.5.0"
+    assert result.record.runtime.generation_id == "generation-2"
+    assert result.record.installed_at == installed.installed_at
+    assert result.record.checked_at >= installed.checked_at
+    assert registry.load().state.plugins["acme-testssl"] == result.record
+    assert not paths.generation_dir("acme-testssl", "generation-1").exists()
+    assert paths.generation_dir("acme-testssl", "generation-2").is_dir()
+
+
+def test_update_discards_unchanged_candidate_without_rewriting_registry(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+    registry_content = paths.registry_file.read_bytes()
+
+    result = asyncio.run(lifecycle.update("acme-testssl"))
+
+    assert result.changed is False
+    assert result.record == installed
+    assert paths.registry_file.read_bytes() == registry_content
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert not paths.generation_dir("acme-testssl", "generation-2").exists()
+
+
+def test_update_activates_dependency_lock_change_at_same_plugin_version(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    manager = FakePackageManager()
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=manager,
+        discover_manifest=discover_manifest,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+    manager.lock_revision = "dependency-update"
+
+    result = asyncio.run(lifecycle.update("acme-testssl"))
+
+    assert result.changed is True
+    assert result.record.distribution == installed.distribution
+    assert result.record.source == installed.source
+    assert result.record.runtime.lock_digest != installed.runtime.lock_digest
+    assert result.record.runtime.generation_id == "generation-2"
+
+
+def test_update_reconstructs_cached_private_source_index(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    manager = FakePackageManager()
+    private_index = PluginIndex(name="private", url="https://packages.example.test/simple")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=manager,
+        discover_manifest=discover_manifest,
+    )
+    request = PluginInstallRequest(
+        source="acme-testssl==2.4.1",
+        indexes=(private_index,),
+        source_index="private",
+    )
+    asyncio.run(lifecycle.install(request))
+
+    result = asyncio.run(lifecycle.update("acme-testssl"))
+
+    assert result.changed is False
+    assert manager.requests == [request, request]
+
+
+def test_update_reconstructs_local_source_without_double_decoding(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+    local_source = tmp_path / "acme%20 testssl-2.4.1.whl"
+    artifact_source = SourceOrigin(
+        kind="artifact",
+        requirement=f"acme-testssl @ {local_source.as_uri()}",
+        origin=local_source.as_uri(),
+        artifact_sha256="a" * 64,
+    )
+    artifact_record = installed.model_copy(update={"source": artifact_source})
+
+    request = lifecycle._update_request(artifact_record)
+
+    assert request.source == str(local_source)
+
+
+def test_update_swaps_and_cleans_up_while_holding_runtime_lock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+    events: list[str] = []
+
+    class TrackedRuntimeLock:
+        def __enter__(self) -> None:
+            events.append("lock-enter")
+
+        def __exit__(self, *args: object) -> None:
+            events.append("lock-exit")
+
+    monkeypatch.setattr(registry, "locked_runtime", lambda plugin_id: TrackedRuntimeLock())
+    original_replace = registry.replace
+
+    def tracked_replace(*args: Any, **kwargs: Any) -> Any:
+        events.append("registry-replace")
+        return original_replace(*args, **kwargs)
+
+    monkeypatch.setattr(registry, "replace", tracked_replace)
+    original_rmtree = lifecycle_module.shutil.rmtree
+
+    def tracked_rmtree(path: Path, *args: Any, **kwargs: Any) -> None:
+        if path.name == "generation-1":
+            events.append("generation-remove")
+        original_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(lifecycle_module.shutil, "rmtree", tracked_rmtree)
+
+    result = asyncio.run(
+        lifecycle.update(
+            "acme-testssl",
+            PluginInstallRequest(source="acme-testssl==2.5.0"),
+        )
+    )
+
+    assert result.changed is True
+    assert events == ["lock-enter", "registry-replace", "generation-remove", "lock-exit"]
+
+
+def test_update_failure_preserves_active_generation(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    discoveries = 0
+
+    async def fail_second_discovery(prepared: PreparedPluginEnvironment) -> Manifest:
+        nonlocal discoveries
+        discoveries += 1
+        if discoveries == 2:
+            raise RuntimeError("manifest probe failed")
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=fail_second_discovery,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    with pytest.raises(RuntimeError, match="manifest probe failed"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="acme-testssl==2.5.0"),
+            )
+        )
+
+    assert registry.load().state.plugins["acme-testssl"] == installed
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert not paths.generation_dir("acme-testssl", "generation-2").exists()
+
+
+def test_update_incompatible_manifest_preserves_active_generation(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    discoveries = 0
+
+    async def discover_incompatible_update(prepared: PreparedPluginEnvironment) -> Manifest:
+        nonlocal discoveries
+        discoveries += 1
+        manifest = _manifest()
+        if discoveries == 2:
+            return manifest.model_copy(update={"requires_sereto": ">=1"})
+        return manifest
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_incompatible_update,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    with pytest.raises(CompatibilityError, match="requires SeReTo >=1"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="acme-testssl==2.5.0"),
+            )
+        )
+
+    assert registry.load().state.plugins["acme-testssl"] == installed
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert not paths.generation_dir("acme-testssl", "generation-2").exists()
+
+
+def test_update_registry_conflict_preserves_previous_generation(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    discoveries = 0
+
+    async def discover_after_concurrent_write(prepared: PreparedPluginEnvironment) -> Manifest:
+        nonlocal discoveries
+        discoveries += 1
+        if discoveries == 2:
+            snapshot = registry.load()
+            current = snapshot.state.plugins["acme-testssl"]
+            changed = current.model_copy(update={"health": "unhealthy", "health_message": "concurrent change"})
+            registry.replace(
+                RegistryState(plugins={"acme-testssl": changed}),
+                expected_digest=snapshot.digest,
+            )
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_after_concurrent_write,
+    )
+    asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    with pytest.raises(RegistryConflictError, match="changed after it was loaded"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="acme-testssl==2.5.0"),
+            )
+        )
+
+    active = registry.load().state.plugins["acme-testssl"]
+    assert active.runtime.generation_id == "generation-1"
+    assert active.health == "unhealthy"
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert not paths.generation_dir("acme-testssl", "generation-2").exists()
+
+
+def test_update_preserves_both_generations_after_post_replace_durability_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    def fail_directory_fsync(path: Path) -> None:
+        raise OSError("injected directory fsync failure")
+
+    monkeypatch.setattr(registry, "_fsync_directory", fail_directory_fsync)
+
+    with pytest.raises(RegistryError, match="cannot replace plugin registry"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="acme-testssl==2.5.0"),
+            )
+        )
+
+    active = registry.load().state.plugins["acme-testssl"]
+    assert active.runtime.generation_id == "generation-2"
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert paths.generation_dir("acme-testssl", "generation-2").is_dir()
+
+
+def test_update_preserves_candidate_when_activation_state_cannot_be_read(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=FakePackageManager(),
+        discover_manifest=discover_manifest,
+    )
+    asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+
+    def fail_directory_fsync(path: Path) -> None:
+        raise OSError("injected directory fsync failure")
+
+    original_load = registry.load
+    load_count = 0
+
+    def fail_second_load() -> Any:
+        nonlocal load_count
+        load_count += 1
+        if load_count == 2:
+            raise RegistryError("injected registry read failure")
+        return original_load()
+
+    monkeypatch.setattr(registry, "_fsync_directory", fail_directory_fsync)
+    monkeypatch.setattr(registry, "load", fail_second_load)
+
+    with pytest.raises(RegistryError, match="cannot replace plugin registry"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="acme-testssl==2.5.0"),
+            )
+        )
+
+    monkeypatch.setattr(registry, "load", original_load)
+    active = registry.load().state.plugins["acme-testssl"]
+    assert active.runtime.generation_id == "generation-2"
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert paths.generation_dir("acme-testssl", "generation-2").is_dir()
+
+
+def test_update_rejects_source_for_another_plugin(tmp_path: Path) -> None:
+    paths = PluginPaths(root=tmp_path / "plugins")
+    registry = PluginRegistry(paths=paths, sereto_version="0.9.0")
+    manager = FakePackageManager()
+
+    async def discover_manifest(prepared: PreparedPluginEnvironment) -> Manifest:
+        return _manifest()
+
+    lifecycle = PluginLifecycle(
+        registry=registry,
+        package_manager=manager,
+        discover_manifest=discover_manifest,
+    )
+    installed = asyncio.run(lifecycle.install(PluginInstallRequest(source="acme-testssl==2.4.1")))
+    manager.plugin_id = "other-plugin"
+    manager.distribution_name = "Other_Plugin"
+
+    with pytest.raises(PluginLifecycleError, match="provides plugin 'other-plugin'"):
+        asyncio.run(
+            lifecycle.update(
+                "acme-testssl",
+                PluginInstallRequest(source="other-plugin==1.0.0"),
+            )
+        )
+
+    assert registry.load().state.plugins["acme-testssl"] == installed
+    assert paths.generation_dir("acme-testssl", "generation-1").is_dir()
+    assert not paths.plugin_dir("other-plugin").exists()
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX symbolic link check")

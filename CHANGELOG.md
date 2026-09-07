@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add atomic managed-plugin updates with staged validation, dependency and source change detection, no-op handling,
+  per-plugin runtime locking, and preservation of the active generation on failed updates.
 - Add core-owned review for package-plugin finding proposals with target and template resolution, in-memory
   modification, explicit non-interactive acceptance, origin tracking, and atomic accepted-finding persistence.
 - Register managed plugin commands from cached manifests without starting plugin processes during startup or help,

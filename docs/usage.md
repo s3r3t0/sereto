@@ -59,10 +59,24 @@ sereto plugin doctor
 sereto plugin remove example-sereto-plugin
 ```
 
+A plugin can be updated from its recorded source, or from a new package requirement or local source:
+
+```sh
+sereto plugin update example-sereto-plugin
+sereto plugin update example-sereto-plugin 'example-sereto-plugin>=2'
+```
+
+A source-less update reuses the recorded requirement and index origin. To change index or keyring options, provide
+`SOURCE` and the same options accepted by `plugin install`. SeReTo prepares and validates the replacement in a new
+generation while the current generation remains active. An unchanged distribution, dependency lock, source, SDK,
+and manifest is reported as already up to date without rewriting the registry. Otherwise, activation swaps the
+registry under the plugin runtime lock and removes the previous generation only after the swap succeeds.
+
 Removal deletes the plugin environment and all data below its managed plugin directory. Installation and removal do
-not affect the legacy template filesystem plugins configured in global settings. `plugin doctor` reports invalid
-records, missing active environments, and orphaned state left by interrupted lifecycle operations; it does not delete
-or repair that state automatically.
+not affect the legacy template filesystem plugins configured in global settings. Installation and updates retain
+plugin data outside the versioned environment generations. `plugin doctor` reports invalid records, missing active
+environments, and orphaned state left by interrupted lifecycle operations; it does not delete or repair that state
+automatically.
 
 ### Running package-plugin commands
 

@@ -77,6 +77,56 @@ def plugin_install(
     click.echo(f"Installed {record.plugin_id} {record.distribution.version}")
 
 
+@plugin.command(name="update")
+@click.argument("plugin_id")
+@click.argument("source", required=False)
+@click.option(
+    "--index",
+    "indexes",
+    multiple=True,
+    metavar="NAME=URL",
+    help="Add a named package index. May be repeated.",
+)
+@click.option("--default-index", metavar="URL", help="Replace PyPI as the default package index.")
+@click.option("--source-index", metavar="NAME", help="Pin the plugin package itself to a named index.")
+@click.option(
+    "--keyring-provider",
+    type=click.Choice(["disabled", "subprocess"]),
+    default="disabled",
+    show_default=True,
+    help="Select uv's package-index credential provider.",
+)
+@handle_exceptions
+def plugin_update(
+    plugin_id: str,
+    source: str | None,
+    indexes: tuple[str, ...],
+    default_index: str | None,
+    source_index: str | None,
+    keyring_provider: Literal["disabled", "subprocess"],
+) -> None:
+    """Atomically update PLUGIN_ID, optionally from a new SOURCE."""
+    has_source_options = bool(indexes or default_index or source_index or keyring_provider != "disabled")
+    if source is None and has_source_options:
+        raise SeretoValueError("SOURCE is required when changing plugin source options")
+    request = (
+        PluginInstallRequest(
+            source=source,
+            indexes=_parse_indexes(indexes),
+            default_index=default_index,
+            source_index=source_index,
+            keyring_provider=keyring_provider,
+        )
+        if source is not None
+        else None
+    )
+    result = asyncio.run(_new_lifecycle().update(plugin_id, request))
+    if result.changed:
+        click.echo(f"Updated {result.record.plugin_id} to {result.record.distribution.version}")
+    else:
+        click.echo(f"{result.record.plugin_id} {result.record.distribution.version} is already up to date")
+
+
 @plugin.command(name="remove")
 @click.argument("plugin_id")
 @click.option("-y", "--yes", is_flag=True, help="Remove without confirmation.")

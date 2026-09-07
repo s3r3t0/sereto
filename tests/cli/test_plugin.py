@@ -19,6 +19,7 @@ def test_plugin_help_does_not_construct_lifecycle(monkeypatch: Any) -> None:
 
     assert result.exit_code == 0
     assert "install" in result.output
+    assert "update" in result.output
 
 
 def test_plugin_install_translates_index_options(monkeypatch: Any) -> None:
@@ -63,6 +64,94 @@ def test_plugin_install_translates_index_options(monkeypatch: Any) -> None:
             keyring_provider="subprocess",
         )
     ]
+
+
+def test_plugin_update_translates_source_options(monkeypatch: Any) -> None:
+    captured: list[tuple[str, PluginInstallRequest | None]] = []
+
+    class FakeLifecycle:
+        async def update(self, plugin_id: str, request: PluginInstallRequest | None) -> Any:
+            captured.append((plugin_id, request))
+            return SimpleNamespace(
+                changed=True,
+                record=SimpleNamespace(
+                    plugin_id="acme-testssl",
+                    distribution=SimpleNamespace(version="2.5.0"),
+                ),
+            )
+
+    monkeypatch.setattr(plugin_module, "_new_lifecycle", FakeLifecycle)
+
+    result = CliRunner().invoke(
+        plugin,
+        [
+            "update",
+            "acme-testssl",
+            "acme-testssl>=2.5",
+            "--index",
+            "private=https://packages.example.test/simple",
+            "--source-index",
+            "private",
+            "--keyring-provider",
+            "subprocess",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.output == "Updated acme-testssl to 2.5.0\n"
+    assert captured == [
+        (
+            "acme-testssl",
+            PluginInstallRequest(
+                source="acme-testssl>=2.5",
+                indexes=(
+                    plugin_module.PluginIndex(
+                        name="private",
+                        url="https://packages.example.test/simple",
+                    ),
+                ),
+                source_index="private",
+                keyring_provider="subprocess",
+            ),
+        )
+    ]
+
+
+def test_plugin_update_uses_cached_source_and_reports_no_op(monkeypatch: Any) -> None:
+    captured: list[tuple[str, PluginInstallRequest | None]] = []
+
+    class FakeLifecycle:
+        async def update(self, plugin_id: str, request: PluginInstallRequest | None) -> Any:
+            captured.append((plugin_id, request))
+            return SimpleNamespace(
+                changed=False,
+                record=SimpleNamespace(
+                    plugin_id="acme-testssl",
+                    distribution=SimpleNamespace(version="2.4.1"),
+                ),
+            )
+
+    monkeypatch.setattr(plugin_module, "_new_lifecycle", FakeLifecycle)
+
+    result = CliRunner().invoke(plugin, ["update", "acme-testssl"])
+
+    assert result.exit_code == 0
+    assert result.output == "acme-testssl 2.4.1 is already up to date\n"
+    assert captured == [("acme-testssl", None)]
+
+
+def test_plugin_update_requires_source_with_source_options(monkeypatch: Any) -> None:
+    def fail() -> None:
+        raise AssertionError("invalid update constructed lifecycle state")
+
+    monkeypatch.setattr(plugin_module, "_new_lifecycle", fail)
+
+    result = CliRunner().invoke(
+        plugin,
+        ["update", "acme-testssl", "--keyring-provider", "subprocess"],
+    )
+
+    assert result.exit_code == 1
 
 
 def test_plugin_remove_yes_skips_confirmation(monkeypatch: Any) -> None:

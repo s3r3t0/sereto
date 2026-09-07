@@ -2,6 +2,9 @@
 
 ::: sereto.cli.plugin
 
+Updates are staged in a separate managed generation. SeReTo validates the resolved environment and manifest before
+atomically replacing the cached active record. A failed or unchanged candidate does not replace the active generation.
+
 ## Managed commands
 
 Installed plugin command leaves are registered from validated cached manifests after core and legacy commands.

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal, Protocol
+from urllib.parse import urlsplit
+from urllib.request import url2pathname
 
 from sereto.exceptions import SeretoRuntimeError
 from sereto.package_plugins.compatibility import check_manifest_compatibility
@@ -55,6 +57,12 @@ class PreparedPluginEnvironment:
     source: SourceOrigin
 
 
+@dataclass(frozen=True)
+class PluginUpdateResult:
+    record: PluginRecord
+    changed: bool
+
+
 class PackageManager(Protocol):
     def prepare(
         self,
@@ -98,35 +106,10 @@ class PluginLifecycle:
                 raise PluginLifecycleError(
                     f"plugin {prepared.plugin_id!r} is already installed; use plugin update instead"
                 )
-            manifest = await self._discover_manifest(prepared)
-            compatibility = check_manifest_compatibility(
-                manifest,
-                sereto_version=self.registry.sereto_version,
-            )
             activated_at = datetime.now(UTC)
-            record = PluginRecord(
-                plugin_id=prepared.plugin_id,
-                distribution=DistributionIdentity(
-                    name=prepared.distribution_name,
-                    version=prepared.distribution_version,
-                ),
-                entry_point=prepared.entry_point,
-                source=prepared.source,
-                runtime=RuntimeRecord(
-                    generation_id=prepared.generation_id,
-                    environment_path=prepared.environment_path,
-                    python_path=prepared.python_path,
-                    python_version=prepared.python_version,
-                    uv_version=prepared.uv_version,
-                    lock_digest=prepared.lock_digest,
-                ),
-                sdk_package_version=prepared.sdk_package_version,
-                sdk_api_major=prepared.sdk_api_major,
-                supported_protocol_versions=prepared.supported_protocol_versions,
-                selected_protocol_version=compatibility.selected_protocol_version,
-                manifest=manifest,
-                manifest_digest=manifest_digest(manifest),
-                health="healthy",
+            record = self._build_record(
+                prepared,
+                await self._discover_manifest(prepared),
                 installed_at=activated_at,
                 checked_at=activated_at,
             )
@@ -139,9 +122,149 @@ class PluginLifecycle:
             activated = True
             return record
         finally:
-            if not activated and not self._generation_is_active(prepared):
+            if not activated and self._generation_is_active(prepared) is False:
                 shutil.rmtree(prepared.generation_path, ignore_errors=True)
                 self._remove_empty_parents(prepared.plugin_id)
+
+    async def update(
+        self,
+        plugin_id: str,
+        request: PluginInstallRequest | None = None,
+    ) -> PluginUpdateResult:
+        """Prepare and atomically activate a replacement plugin generation."""
+        self.registry.paths.plugin_dir(plugin_id)
+        with self.registry.locked_lifecycle():
+            snapshot = self.registry.load()
+            if snapshot.issues:
+                raise PluginLifecycleError("plugin registry requires repair before updating plugins")
+            try:
+                current = snapshot.state.plugins[plugin_id]
+            except KeyError:
+                raise PluginLifecycleError(f"package plugin is not installed: {plugin_id!r}") from None
+
+            prepared = self.package_manager.prepare(request or self._update_request(current), self.registry.paths)
+            activated = False
+            try:
+                if prepared.plugin_id != plugin_id:
+                    raise PluginLifecycleError(
+                        f"update source provides plugin {prepared.plugin_id!r}, expected {plugin_id!r}"
+                    )
+                if prepared.generation_id == current.runtime.generation_id:
+                    raise PluginLifecycleError("plugin update did not create a new generation")
+
+                checked_at = datetime.now(UTC)
+                candidate = self._build_record(
+                    prepared,
+                    await self._discover_manifest(prepared),
+                    installed_at=current.installed_at,
+                    checked_at=checked_at,
+                )
+                if self._same_installation(current, candidate):
+                    return PluginUpdateResult(record=current, changed=False)
+
+                plugins = dict(snapshot.state.plugins)
+                plugins[plugin_id] = candidate
+                with self.registry.locked_runtime(plugin_id):
+                    self.registry.replace(
+                        RegistryState(plugins=plugins),
+                        expected_digest=snapshot.digest,
+                    )
+                    activated = True
+                    previous_generation = self.registry.paths.generation_dir(
+                        plugin_id,
+                        current.runtime.generation_id,
+                    )
+                    try:
+                        shutil.rmtree(previous_generation)
+                    except FileNotFoundError:
+                        pass
+                    except OSError as error:
+                        raise PluginLifecycleError(
+                            f"plugin {plugin_id!r} was updated, but its previous generation "
+                            f"could not be removed: {error}"
+                        ) from error
+                return PluginUpdateResult(record=candidate, changed=True)
+            finally:
+                if not activated and self._generation_is_active(prepared) is False:
+                    shutil.rmtree(prepared.generation_path, ignore_errors=True)
+                    self._remove_empty_parents(prepared.plugin_id)
+
+    def _build_record(
+        self,
+        prepared: PreparedPluginEnvironment,
+        manifest: Manifest,
+        *,
+        installed_at: datetime,
+        checked_at: datetime,
+    ) -> PluginRecord:
+        compatibility = check_manifest_compatibility(
+            manifest,
+            sereto_version=self.registry.sereto_version,
+        )
+        return PluginRecord(
+            plugin_id=prepared.plugin_id,
+            distribution=DistributionIdentity(
+                name=prepared.distribution_name,
+                version=prepared.distribution_version,
+            ),
+            entry_point=prepared.entry_point,
+            source=prepared.source,
+            runtime=RuntimeRecord(
+                generation_id=prepared.generation_id,
+                environment_path=prepared.environment_path,
+                python_path=prepared.python_path,
+                python_version=prepared.python_version,
+                uv_version=prepared.uv_version,
+                lock_digest=prepared.lock_digest,
+            ),
+            sdk_package_version=prepared.sdk_package_version,
+            sdk_api_major=prepared.sdk_api_major,
+            supported_protocol_versions=prepared.supported_protocol_versions,
+            selected_protocol_version=compatibility.selected_protocol_version,
+            manifest=manifest,
+            manifest_digest=manifest_digest(manifest),
+            health="healthy",
+            installed_at=installed_at,
+            checked_at=checked_at,
+        )
+
+    @staticmethod
+    def _same_installation(current: PluginRecord, candidate: PluginRecord) -> bool:
+        return (
+            current.distribution == candidate.distribution
+            and current.entry_point == candidate.entry_point
+            and current.source == candidate.source
+            and current.runtime.python_version == candidate.runtime.python_version
+            and current.runtime.lock_digest == candidate.runtime.lock_digest
+            and current.sdk_package_version == candidate.sdk_package_version
+            and current.sdk_api_major == candidate.sdk_api_major
+            and current.supported_protocol_versions == candidate.supported_protocol_versions
+            and current.selected_protocol_version == candidate.selected_protocol_version
+            and current.manifest_digest == candidate.manifest_digest
+            and current.health == candidate.health
+            and current.health_message == candidate.health_message
+        )
+
+    @staticmethod
+    def _update_request(record: PluginRecord) -> PluginInstallRequest:
+        source = record.source
+        if source.kind == "index":
+            if source.index_name == "pypi":
+                return PluginInstallRequest(source=source.requirement)
+            if source.index_name == "sereto-default":
+                return PluginInstallRequest(source=source.requirement, default_index=source.origin)
+            if source.index_name in (None, "unknown"):
+                raise PluginLifecycleError("plugin source must be provided to update from an unknown index")
+            index = PluginIndex(name=source.index_name, url=source.origin)
+            return PluginInstallRequest(source=source.requirement, indexes=(index,), source_index=index.name)
+
+        parsed_origin = urlsplit(source.origin)
+        if source.kind == "artifact" and parsed_origin.scheme == "file":
+            if parsed_origin.netloc not in ("", "localhost"):
+                raise PluginLifecycleError("plugin source must be provided to update a non-local file URL")
+            local_source = url2pathname(parsed_origin.path)
+            return PluginInstallRequest(source=local_source)
+        return PluginInstallRequest(source=source.requirement)
 
     def snapshot(self) -> RegistrySnapshot:
         """Return the current validated registry snapshot without mutation."""
@@ -245,11 +368,11 @@ class PluginLifecycle:
             with suppress(OSError):
                 path.rmdir()
 
-    def _generation_is_active(self, prepared: PreparedPluginEnvironment) -> bool:
+    def _generation_is_active(self, prepared: PreparedPluginEnvironment) -> bool | None:
         try:
             record = self.registry.load().state.plugins.get(prepared.plugin_id)
         except SeretoRuntimeError:
-            return False
+            return None
         return record is not None and record.runtime.generation_id == prepared.generation_id
 
     async def _discover_with_session(self, prepared: PreparedPluginEnvironment) -> Manifest:
