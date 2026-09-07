@@ -104,9 +104,7 @@ def prepare_finding_proposals(
             raise SeretoValueError("package-plugin finding proposals span multiple projects")
         category, template_path = _resolve_template(templates, proposal.template.id)
         if category != target.data.category:
-            raise SeretoValueError(
-                f"proposal {proposal.proposal_id!r} template category does not match its target"
-            )
+            raise SeretoValueError(f"proposal {proposal.proposal_id!r} template category does not match its target")
         try:
             locators = _LOCATORS.validate_python(
                 [locator.model_dump(mode="json", exclude_none=True) for locator in proposal.locators]
@@ -129,9 +127,7 @@ def prepare_finding_proposals(
         )
         prepared_path = finding.sub_finding_path.resolve()
         if prepared_path in prepared_paths:
-            raise SeretoValueError(
-                f"proposal {proposal.proposal_id!r} conflicts with another prepared finding path"
-            )
+            raise SeretoValueError(f"proposal {proposal.proposal_id!r} conflicts with another prepared finding path")
         prepared_paths.add(prepared_path)
         prepared.append(PreparedProposal(proposal=proposal, target=target, finding=finding))
     return tuple(prepared)
@@ -168,8 +164,8 @@ def review_finding_proposals(
         _commit_proposals(accepted)
         return ProposalReviewOutcome(proposal_ids=proposal_ids, accepted_ids=accepted_ids, committed=bool(accepted))
 
-    resolved_interactive = sys.stdin.isatty() if interactive is None else interactive
-    if not resolved_interactive:
+    is_interactive = sys.stdin.isatty() if interactive is None else interactive
+    if not is_interactive:
         click.echo(
             f"{len(prepared)} finding proposal(s) require explicit acceptance; project unchanged.",
             err=True,
@@ -178,17 +174,9 @@ def review_finding_proposals(
 
     accepted_proposals: list[FindingProposal] = []
     for item in prepared:
-        click.echo(json.dumps(item.proposal.model_dump(mode="json"), allow_nan=False, indent=2, sort_keys=True))
-        decision = click.prompt(
-            f"Review proposal {item.proposal.proposal_id}",
-            type=click.Choice(("accept", "reject", "modify")),
-            default="reject",
-            show_choices=True,
-        )
-        if decision == "accept":
-            accepted_proposals.append(item.proposal)
-        elif decision == "modify":
-            accepted_proposals.append(_edit_proposal(item.proposal))
+        reviewed = _review_proposal(item.proposal)
+        if reviewed is not None:
+            accepted_proposals.append(reviewed)
 
     if not accepted_proposals:
         return ProposalReviewOutcome(proposal_ids=proposal_ids, accepted_ids=(), committed=False)
@@ -198,6 +186,21 @@ def review_finding_proposals(
         return ProposalReviewOutcome(proposal_ids=proposal_ids, accepted_ids=accepted_ids, committed=False)
     _commit_proposals(accepted)
     return ProposalReviewOutcome(proposal_ids=proposal_ids, accepted_ids=accepted_ids, committed=True)
+
+
+def _review_proposal(proposal: FindingProposal) -> FindingProposal | None:
+    click.echo(json.dumps(proposal.model_dump(mode="json"), allow_nan=False, indent=2, sort_keys=True))
+    decision = click.prompt(
+        f"Review proposal {proposal.proposal_id}",
+        type=click.Choice(("accept", "reject", "modify")),
+        default="reject",
+        show_choices=True,
+    )
+    if decision == "accept":
+        return proposal
+    if decision == "modify":
+        return _edit_proposal(proposal)
+    return None
 
 
 def _edit_proposal(proposal: FindingProposal) -> FindingProposal:
@@ -256,14 +259,10 @@ def _validate_metadata_namespace(proposal: FindingProposal, plugin_id: str) -> N
     invalid_keys = sorted(
         key
         for key in proposal.metadata
-        if len(key) > MAX_DISPLAY_TEXT_LENGTH
-        or not key.startswith(prefix)
-        or _contains_unsafe_text(key)
+        if len(key) > MAX_DISPLAY_TEXT_LENGTH or not key.startswith(prefix) or _contains_unsafe_text(key)
     )
     if invalid_keys:
-        raise SeretoValueError(
-            f"proposal {proposal.proposal_id!r} metadata keys must use the {prefix!r} namespace"
-        )
+        raise SeretoValueError(f"proposal {proposal.proposal_id!r} metadata keys must use the {prefix!r} namespace")
     metadata_content = json.dumps(
         proposal.metadata,
         allow_nan=False,
@@ -286,17 +285,14 @@ def _validate_proposal_text(proposal: FindingProposal) -> None:
     if proposal.grouping is not None:
         for value in (proposal.grouping.suggested_name, proposal.grouping.hint):
             if value is not None and (
-                not value.strip()
-                or len(value) > MAX_DISPLAY_TEXT_LENGTH
-                or _contains_unsafe_text(value)
+                not value.strip() or len(value) > MAX_DISPLAY_TEXT_LENGTH or _contains_unsafe_text(value)
             ):
                 raise SeretoValueError(f"proposal {proposal.proposal_id!r} has invalid grouping text")
 
 
 def _contains_unsafe_text(value: str) -> bool:
     return any(
-        unicodedata.category(character).startswith("C")
-        or unicodedata.category(character) in {"Zl", "Zp"}
+        unicodedata.category(character).startswith("C") or unicodedata.category(character) in {"Zl", "Zp"}
         for character in value
     )
 
@@ -307,13 +303,17 @@ def _normalize_proposal_text(proposal: FindingProposal) -> FindingProposal:
         None
         if grouping is None
         else Grouping(
-            suggested_name=grouping.suggested_name.strip() if grouping.suggested_name is not None else None,
-            hint=grouping.hint.strip() if grouping.hint is not None else None,
+            suggested_name=_strip_optional(grouping.suggested_name),
+            hint=_strip_optional(grouping.hint),
         )
     )
     return proposal.model_copy(
         update={
-            "suggested_name": proposal.suggested_name.strip() if proposal.suggested_name is not None else None,
+            "suggested_name": _strip_optional(proposal.suggested_name),
             "grouping": normalized_grouping,
         }
     )
+
+
+def _strip_optional(value: str | None) -> str | None:
+    return value.strip() if value is not None else None

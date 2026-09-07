@@ -90,7 +90,7 @@ class Manifest(ProtocolModel):
     commands: tuple[Command, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_manifest_links(self) -> Self:
+    def validate_command_declarations(self) -> Self:
         operation_ids = [operation.id for operation in self.operations]
         if len(operation_ids) != len(set(operation_ids)):
             raise ValueError("operation IDs must be unique")
@@ -101,7 +101,10 @@ class Manifest(ProtocolModel):
         for command in self.commands:
             if command.operation_id not in declared_operation_ids:
                 raise ValueError(f"command references unknown operation {command.operation_id!r}")
+        return self
 
+    @model_validator(mode="after")
+    def validate_capability_declarations(self) -> Self:
         declared_capabilities = set(self.capabilities)
         declared_resource_kinds = set(self.resource_kinds)
         if len(self.protocol_versions) != len(set(self.protocol_versions)):

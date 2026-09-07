@@ -215,60 +215,7 @@ class UvPackageManager:
 
         local_path = Path(source).expanduser()
         if local_path.exists():
-            resolved_path = local_path.resolve()
-            if resolved_path.is_dir():
-                if request is not None and request.source_index is not None:
-                    raise PluginPackageManagerError(
-                        "plugin source index cannot be used with a local package directory"
-                    )
-                artifacts = build_directory / "artifacts"
-                artifacts.mkdir()
-                build_arguments = [
-                    "build",
-                    "--wheel",
-                    "--out-dir",
-                    str(artifacts),
-                    "--python",
-                    str(self.python_executable),
-                    "--no-python-downloads",
-                    "--no-config",
-                    "--index-strategy",
-                    "first-index",
-                ]
-                credential_index_names: tuple[str, ...] = ()
-                if request is not None:
-                    for index in request.indexes:
-                        build_arguments.extend(("--index", f"{index.name}={index.url}"))
-                    if request.default_index is not None:
-                        build_arguments.extend(("--default-index", f"sereto-default={request.default_index}"))
-                    build_arguments.extend(("--keyring-provider", request.keyring_provider))
-                    credential_index_names = (
-                        *(index.name for index in request.indexes),
-                        *(("sereto-default",) if request.default_index is not None else ()),
-                    )
-                build_arguments.append(str(resolved_path))
-                self._run_uv(
-                    build_arguments,
-                    environment=self._command_environment(credential_index_names=credential_index_names),
-                    phase="build local plugin source",
-                )
-                wheels = tuple(artifacts.glob("*.whl"))
-                if len(wheels) != 1:
-                    raise PluginPackageManagerError("local plugin source must build exactly one wheel")
-                artifact_path = wheels[0]
-            elif resolved_path.is_file() and resolved_path.name.endswith(_ARCHIVE_SUFFIXES):
-                artifact_path = resolved_path
-            else:
-                raise PluginPackageManagerError("local plugin source must be a package directory, wheel, or sdist")
-            distribution_name = self._archive_distribution_name(artifact_path)
-            return _SourcePlan(
-                distribution_name=distribution_name,
-                install_requirement=str(artifact_path),
-                origin_requirement=f"{distribution_name} @ {resolved_path.as_uri()}",
-                kind="artifact",
-                origin=resolved_path.as_uri(),
-                artifact_sha256=self._file_digest(artifact_path),
-            )
+            return self._plan_local_source(local_path.resolve(), build_directory, request)
 
         try:
             requirement = Requirement(source)
@@ -297,6 +244,65 @@ class UvPackageManager:
             origin_requirement=normalized_requirement,
             kind=kind,
             origin=requirement.url,
+        )
+
+    def _plan_local_source(
+        self,
+        source_path: Path,
+        build_directory: Path,
+        request: PluginInstallRequest | None,
+    ) -> _SourcePlan:
+        if source_path.is_dir():
+            if request is not None and request.source_index is not None:
+                raise PluginPackageManagerError("plugin source index cannot be used with a local package directory")
+            artifacts = build_directory / "artifacts"
+            artifacts.mkdir()
+            build_arguments = [
+                "build",
+                "--wheel",
+                "--out-dir",
+                str(artifacts),
+                "--python",
+                str(self.python_executable),
+                "--no-python-downloads",
+                "--no-config",
+                "--index-strategy",
+                "first-index",
+            ]
+            credential_index_names: tuple[str, ...] = ()
+            if request is not None:
+                for index in request.indexes:
+                    build_arguments.extend(("--index", f"{index.name}={index.url}"))
+                if request.default_index is not None:
+                    build_arguments.extend(("--default-index", f"sereto-default={request.default_index}"))
+                build_arguments.extend(("--keyring-provider", request.keyring_provider))
+                credential_index_names = (
+                    *(index.name for index in request.indexes),
+                    *(("sereto-default",) if request.default_index is not None else ()),
+                )
+            build_arguments.append(str(source_path))
+            self._run_uv(
+                build_arguments,
+                environment=self._command_environment(credential_index_names=credential_index_names),
+                phase="build local plugin source",
+            )
+            wheels = tuple(artifacts.glob("*.whl"))
+            if len(wheels) != 1:
+                raise PluginPackageManagerError("local plugin source must build exactly one wheel")
+            artifact_path = wheels[0]
+        elif source_path.is_file() and source_path.name.endswith(_ARCHIVE_SUFFIXES):
+            artifact_path = source_path
+        else:
+            raise PluginPackageManagerError("local plugin source must be a package directory, wheel, or sdist")
+
+        distribution_name = self._archive_distribution_name(artifact_path)
+        return _SourcePlan(
+            distribution_name=distribution_name,
+            install_requirement=str(artifact_path),
+            origin_requirement=f"{distribution_name} @ {source_path.as_uri()}",
+            kind="artifact",
+            origin=source_path.as_uri(),
+            artifact_sha256=self._file_digest(artifact_path),
         )
 
     def _retain_local_artifact(self, plan: _SourcePlan, generation_path: Path) -> _SourcePlan:

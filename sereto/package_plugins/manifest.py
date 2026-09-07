@@ -149,7 +149,7 @@ class PluginRecord(RegistryModel):
         return value
 
     @model_validator(mode="after")
-    def validate_identity(self) -> Self:
+    def validate_distribution_identity(self) -> Self:
         normalized_distribution = str(canonicalize_name(self.distribution.name))
         try:
             Version(self.distribution.version)
@@ -159,6 +159,10 @@ class PluginRecord(RegistryModel):
             raise ValueError("plugin ID must equal the normalized distribution name")
         if self.entry_point != normalized_distribution:
             raise ValueError("entry-point name must equal the normalized distribution name")
+        return self
+
+    @model_validator(mode="after")
+    def validate_manifest_identity(self) -> Self:
         if self.manifest.plugin_id != self.plugin_id:
             raise ValueError("manifest plugin ID does not match the registry record")
         if self.manifest.sdk_api_major != self.sdk_api_major:
@@ -171,6 +175,10 @@ class PluginRecord(RegistryModel):
             raise ValueError("supported protocol versions must be unique")
         if self.manifest_digest != manifest_digest(self.manifest):
             raise ValueError("cached manifest digest does not match the manifest")
+        return self
+
+    @model_validator(mode="after")
+    def validate_source_and_timestamps(self) -> Self:
         if self.checked_at < self.installed_at:
             raise ValueError("checked_at must not precede installed_at")
         try:

@@ -68,17 +68,16 @@ def check_manifest_compatibility(
         raise CompatibilityError(f"plugin SDK API {manifest.sdk_api_major} has no mutually supported protocol version")
 
     selected_protocol = supported_protocols[0]
+    supported_capability_resources = {
+        (combination.capability, combination.resource_kind)
+        for combination in supported_combinations
+        if combination.protocol_version == selected_protocol and combination.sdk_api_major == manifest.sdk_api_major
+    }
     unsupported_operations = [
         operation.id
         for operation in manifest.operations
         if not any(
-            CompatibilityTuple(
-                protocol_version=selected_protocol,
-                sdk_api_major=manifest.sdk_api_major,
-                capability=operation.capability,
-                resource_kind=resource_kind,
-            )
-            in supported_combinations
+            (operation.capability, resource_kind) in supported_capability_resources
             for resource_kind in operation.resource_kinds
         )
     ]
