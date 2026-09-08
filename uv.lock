@@ -2059,7 +2059,7 @@ requires-dist = [
     { name = "pydantic", specifier = "~=2.13.4" },
     { name = "pydantic", extras = ["email"] },
     { name = "pydantic-settings", specifier = "~=2.15.0" },
-    { name = "pypdf", specifier = ">=6.16.1,<6.18.0" },
+    { name = "pypdf", specifier = "~=6.17.0" },
     { name = "python-frontmatter", specifier = "~=1.3.0" },
     { name = "rapidfuzz", specifier = "~=3.14.5" },
     { name = "rich", specifier = "~=15.0.0" },
