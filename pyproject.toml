@@ -49,7 +49,7 @@ classifiers = [
 ]
 dependencies = [
   "annotated-types~=0.8.0",
-  "click~=8.4.2",
+  "click>=8.4.2,<8.6.0",
   "cryptography~=50.0.0",
   "humanize~=4.16.0",
   "loguru~=0.7.3",
