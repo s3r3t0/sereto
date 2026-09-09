@@ -2568,6 +2568,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#install-the-git-hook-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install the git hook scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#format" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2660,6 +2671,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#install-the-git-hook-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install the git hook scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#format" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2701,6 +2723,24 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 
 <span class="c1"># install template dependencies</span>
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>&lt;path&gt;/templates/requirements.txt
+</code></pre></div>
+<h2 id="install-the-git-hook-scripts">Install the git hook scripts<a class="headerlink" href="#install-the-git-hook-scripts" title="Permanent link">&para;</a></h2>
+<p>The project uses <a href="https://pre-commit.com/">pre-commit</a> to run automated checks before each commit. The hooks are configured in <code>.pre-commit-config.yaml</code> and include:</p>
+<ul>
+<li>Trailing whitespace removal</li>
+<li>End-of-file fixer</li>
+<li>TOML validation</li>
+<li>Ruff formatting</li>
+</ul>
+<p>To install the git hook scripts:</p>
+<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>install
+</code></pre></div>
+<p>Once installed, the hooks will run automatically before each commit. You can also run them manually:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run on all files</span>
+pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+
+<span class="c1"># Run on staged files only</span>
+pre-commit<span class="w"> </span>run
 </code></pre></div>
 <h2 id="format">Format<a class="headerlink" href="#format" title="Permanent link">&para;</a></h2>
 <p>We are using <code>ruff</code> to automatically format the code. The command is defined as an environment in Tox:</p>

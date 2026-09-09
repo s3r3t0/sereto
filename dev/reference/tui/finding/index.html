@@ -4151,8 +4151,7 @@
 <span class="normal">883</span>
 <span class="normal">884</span>
 <span class="normal">885</span>
-<span class="normal">886</span>
-<span class="normal">887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingOption</span><span class="p">(</span><span class="n">Option</span><span class="p">):</span>
+<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FindingOption</span><span class="p">(</span><span class="n">Option</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""An Option representing a finding, with name and keywords optionally highlighted."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -4230,8 +4229,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_match_hint</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">SearchResult</span><span class="p">[</span><span class="n">FindingMetadata</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">reason</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">reason</span> <span class="k">for</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">reasons</span> <span class="k">if</span> <span class="n">reason</span><span class="o">.</span><span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"keyword"</span><span class="p">,</span> <span class="s2">"group_hint"</span><span class="p">}),</span>
-            <span class="kc">None</span>
+            <span class="p">(</span><span class="n">reason</span> <span class="k">for</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">reasons</span> <span class="k">if</span> <span class="n">reason</span><span class="o">.</span><span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"keyword"</span><span class="p">,</span> <span class="s2">"group_hint"</span><span class="p">}),</span> <span class="kc">None</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">reason</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -4991,7 +4989,8 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">890</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">889</span>
+<span class="normal">890</span>
 <span class="normal">891</span>
 <span class="normal">892</span>
 <span class="normal">893</span>
@@ -5023,8 +5022,7 @@
 <span class="normal">919</span>
 <span class="normal">920</span>
 <span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoApp</span><span class="p">(</span><span class="n">App</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+<span class="normal">922</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoApp</span><span class="p">(</span><span class="n">App</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""A SeReTo Textual CLI interface."""</span>
 
     <span class="n">CSS_PATH</span> <span class="o">=</span> <span class="s2">"finding.tcss"</span>
@@ -5090,9 +5088,9 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">921</span>
-<span class="normal">922</span>
-<span class="normal">923</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">action_focus_search</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Focus on the search input field."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">query_one</span><span class="p">(</span><span class="s2">"#search"</span><span class="p">,</span> <span class="n">SearchWidget</span><span class="p">)</span><span class="o">.</span><span class="n">input_field</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -5117,7 +5115,8 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/tui/finding.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">907</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">906</span>
+<span class="normal">907</span>
 <span class="normal">908</span>
 <span class="normal">909</span>
 <span class="normal">910</span>
@@ -5128,8 +5127,7 @@
 <span class="normal">915</span>
 <span class="normal">916</span>
 <span class="normal">917</span>
-<span class="normal">918</span>
-<span class="normal">919</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
+<span class="normal">918</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComposeResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Add widgets to the app."""</span>
     <span class="c1"># adding findings only works if there is at least one target</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">last_config</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
