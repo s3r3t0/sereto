@@ -25,9 +25,9 @@ class InputWithLabel(Widget):
     }
     """
 
-    def __init__(self, input: Input, label: str) -> None:
+    def __init__(self, input: Input, label: str, *, id: str | None = None) -> None:
         """Initialize the widget from provided Input and label"""
-        super().__init__()
+        super().__init__(id=id)
         self.input = input
         self.label = label
 

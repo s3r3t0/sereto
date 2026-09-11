@@ -12,28 +12,30 @@ Screen stack (outermost → innermost):
 
 from __future__ import annotations
 
+import re
 import shutil
 import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 from pydantic import TypeAdapter, ValidationError
+from rich.console import RenderableType
+from rich.markup import escape
 from rich.text import Text
-from textual import on, work
+from textual import events, on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen, Screen
 from textual.types import NoSelection
-from textual.widget import Widget
 from textual.widgets import Button, Footer, Header, Input, Label, RichLog, Rule, Select, Static, TabbedContent, TabPane
 
 from sereto.config import VersionConfig
 from sereto.enums import Risk
 from sereto.exceptions import SeretoPathError, SeretoValueError
-from sereto.models.date import Date, DateRange, DateType, SeretoDate
+from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.project import Project, is_project_dir, new_project
@@ -59,6 +61,7 @@ class _PoppableScreen(Screen[None]):
 class DeleteConfirmationScreen(ModalScreen[bool]):
     """Generic yes/no modal. Dismisses with 'True' on Confirm, 'False' on Cancel."""
 
+    AUTO_FOCUS = "#confirm-yes"
     BINDINGS = [Binding("escape", "cancel", "Cancel")]
 
     def __init__(self, message: str) -> None:
@@ -69,8 +72,8 @@ class DeleteConfirmationScreen(ModalScreen[bool]):
         with Vertical(id="confirm-dialog"):
             yield Static(self._message, id="confirm-message", markup=True)
             with Horizontal(id="confirm-buttons"):
-                yield Button("Confirm", variant="success", id="confirm-yes")
                 yield Button("Cancel", variant="default", id="confirm-no")
+                yield Button("Confirm", variant="success", id="confirm-yes")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "confirm-yes")
@@ -79,13 +82,309 @@ class DeleteConfirmationScreen(ModalScreen[bool]):
         self.dismiss(False)
 
 
+# ── Target JSON view modal ─────────────────────────────────────────────────────
+class RecordDetailScreen(ModalScreen[None]):
+    """Read-only modal showing plain content or labeled detail rows."""
+
+    BINDINGS = [Binding("escape", "close", "Close", priority=True)]
+
+    def __init__(
+        self,
+        title: str,
+        content: RenderableType | None = None,
+        *,
+        details: tuple[tuple[str, str, str | None], ...] | None = None,
+    ) -> None:
+        super().__init__()
+        self._title = title
+        self._content = content
+        self._details = details
+
+    def compose(self) -> ComposeResult:
+        title_escaped = escape(self._title)
+        title_prefix, separator, title_suffix = title_escaped.partition("  ")
+
+        title_markup = f"[cyan]{title_prefix}[/cyan]{separator}{title_suffix}"
+
+        with Vertical(id="record-detail-dialog"):
+            yield Label(f"[b]{title_markup}[/b]", id="record-detail-title")
+            with ScrollableContainer(id="record-detail-body"):
+                if self._details is None:
+                    yield Static(self._content or "", id="record-detail-content", expand=True)
+                else:
+                    for icon, tooltip, value in self._details:
+                        with Horizontal(classes="record-detail-row"):
+                            icon_widget = Static(icon, classes="record-detail-icon")
+                            icon_widget.tooltip = tooltip
+                            yield icon_widget
+                            yield Static(value or "—", classes="record-detail-value")
+            with Horizontal(id="record-detail-buttons"):
+                yield Button("Close", variant="default", id="record-detail-close")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(None)
+
+    def action_close(self) -> None:
+        self.dismiss(None)
+
+
+def _highlight_json(json_text: str) -> Text:
+    """Highlight serialized JSON using one style for keys and one for everything else."""
+    text = Text(json_text, style="white")
+    key_pattern = r'(?m)^\s*(?P<key>"(?:\\.|[^"\\])*")(?=\s*:)'
+    for match in re.finditer(key_pattern, json_text):
+        text.stylize("medium_purple4", *match.span("key"))
+    return text
+
+
+@dataclass(frozen=True)
+class _TargetFormData:
+    category: str
+    name: str
+
+
+@dataclass(frozen=True)
+class _DateFormData:
+    type: DateType
+    start: str
+    end: str
+
+
+@dataclass(frozen=True)
+class _PersonFormData:
+    type: PersonType
+    name: str
+    business_unit: str
+    email: str
+    role: str
+
+
+type _ConfigFormData = _TargetFormData | _DateFormData | _PersonFormData
+
+
+class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
+    """Modal form for adding or editing a target, date, or person."""
+
+    BINDINGS = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("enter", "submit", "Submit", priority=True),
+    ]
+
+    def __init__(
+        self,
+        kind: str,
+        *,
+        categories: list[str] | None = None,
+        initial: _ConfigFormData | None = None,
+    ) -> None:
+        super().__init__()
+        self._kind = kind
+        self._categories = categories or []
+        self._initial = initial
+
+    def compose(self) -> ComposeResult:
+        action = "Edit" if self._initial is not None else "Add"
+        with Vertical(id="config-record-dialog"):
+            yield Label(f"{action} {self._kind}", id="config-record-title")
+            with ScrollableContainer(id="config-record-fields"):
+                if self._kind == "target":
+                    target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
+                    with Horizontal(classes="field-row"):
+                        yield Label("Category", classes="field-label")
+                        yield Select[str](
+                            [(category, category.lower()) for category in self._categories],
+                            id="modal-target-category",
+                            prompt="Select category…",
+                            value=target_initial.category if target_initial else Select.NULL,
+                            disabled=target_initial is not None,
+                        )
+                    yield InputWithLabel(
+                        Input(
+                            value=target_initial.name if target_initial else "",
+                            id="modal-target-name",
+                            placeholder="Target name…",
+                        ),
+                        "Name",
+                    )
+                elif self._kind == "date":
+                    date_initial = self._initial if isinstance(self._initial, _DateFormData) else None
+                    with Horizontal(classes="field-row"):
+                        yield Label("Type", classes="field-label")
+                        yield Select[DateType](
+                            [(date_type.value.replace("_", " ").title(), date_type) for date_type in DateType],
+                            value=date_initial.type if date_initial else Select.NULL,
+                            id="modal-date-type",
+                            prompt="Select type…",
+                        )
+                    yield InputWithLabel(
+                        Input(
+                            value=date_initial.start if date_initial else "",
+                            id="modal-date-start",
+                            placeholder="DD-Mmm-YYYY",
+                        ),
+                        "Start",
+                    )
+                    yield InputWithLabel(
+                        Input(
+                            value=date_initial.end if date_initial else "",
+                            id="modal-date-end",
+                            placeholder="DD-Mmm-YYYY (optional)",
+                        ),
+                        "End",
+                        id="modal-date-end-row",
+                    )
+                else:
+                    person_initial = self._initial if isinstance(self._initial, _PersonFormData) else None
+                    with Horizontal(classes="field-row"):
+                        yield Label("Type", classes="field-label")
+                        yield Select[PersonType](
+                            [(person_type.value.replace("_", " ").title(), person_type) for person_type in PersonType],
+                            value=person_initial.type if person_initial else Select.NULL,
+                            id="modal-person-type",
+                            prompt="Select type…",
+                        )
+                    yield InputWithLabel(
+                        Input(
+                            value=person_initial.name if person_initial else "",
+                            id="modal-person-name",
+                            placeholder="Full name",
+                        ),
+                        "Name",
+                    )
+                    yield InputWithLabel(
+                        Input(
+                            value=person_initial.business_unit if person_initial else "",
+                            id="modal-person-bu",
+                            placeholder="Business unit",
+                        ),
+                        "BU",
+                    )
+                    yield InputWithLabel(
+                        Input(
+                            value=person_initial.email if person_initial else "",
+                            id="modal-person-email",
+                            placeholder="user@example.com",
+                        ),
+                        "Email",
+                    )
+                    yield InputWithLabel(
+                        Input(
+                            value=person_initial.role if person_initial else "",
+                            id="modal-person-role",
+                            placeholder="Role",
+                        ),
+                        "Role",
+                    )
+            with Horizontal(id="config-record-buttons"):
+                yield Button("Cancel", id="config-record-cancel")
+                yield Button("Save", variant="success", id="config-record-save")
+
+    def on_mount(self) -> None:
+        if self._kind == "date":
+            date_type = cast(DateType | NoSelection, self.query_one("#modal-date-type", Select).value)
+            self._set_date_end_visibility(date_type)
+
+    @on(Select.Changed, "#modal-date-type")
+    def handle_date_type_changed(self, event: Select.Changed) -> None:
+        self._set_date_end_visibility(cast(DateType | NoSelection, event.value))
+
+    def _set_date_end_visibility(self, date_type: DateType | NoSelection) -> None:
+        end_row = self.query_one("#modal-date-end-row", InputWithLabel)
+        end_input = self.query_one("#modal-date-end", Input)
+        end_row.display = date_type in TYPES_WITH_ALLOWED_RANGE
+        if not end_row.display:
+            end_input.value = ""
+
+    @on(Button.Pressed, "#config-record-cancel")
+    def handle_cancel(self) -> None:
+        self.dismiss(None)
+
+    @on(Button.Pressed, "#config-record-save")
+    def handle_save(self) -> None:
+        if self._kind == "target":
+            target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
+            if target_initial is not None:
+                category = target_initial.category
+            else:
+                selected_category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
+                if isinstance(selected_category, NoSelection):
+                    self.notify("Select a category.", severity="warning", timeout=3)
+                    return
+                category = selected_category
+            name = self.query_one("#modal-target-name", Input).value.strip()
+            if not name:
+                self.notify("Enter a target name.", severity="warning", timeout=3)
+                return
+            self.dismiss(_TargetFormData(category, name))
+        elif self._kind == "date":
+            date_type = cast(DateType | NoSelection, self.query_one("#modal-date-type", Select).value)
+            if isinstance(date_type, NoSelection):
+                self.notify("Select a date type.", severity="warning", timeout=3)
+                return
+            start_text = self.query_one("#modal-date-start", Input).value.strip()
+            end_text = self.query_one("#modal-date-end", Input).value.strip()
+            if not start_text:
+                self.notify("Start date is required.", severity="warning", timeout=3)
+                return
+            try:
+                start = SeretoDate(start_text)
+                date_value: SeretoDate | DateRange = start
+                if end_text:
+                    date_value = DateRange(start=start, end=SeretoDate(end_text))
+                Date(type=DateType(date_type), date=date_value)
+            except (ValueError, ValidationError) as exc:
+                self.notify(str(exc), title="Invalid date", severity="error", markup=False)
+                return
+            self.dismiss(
+                _DateFormData(
+                    DateType(date_type),
+                    start_text,
+                    end_text,
+                )
+            )
+        else:
+            person_type = cast(PersonType | NoSelection, self.query_one("#modal-person-type", Select).value)
+            if isinstance(person_type, NoSelection):
+                self.notify("Select a person type.", severity="warning", timeout=3)
+                return
+            if not self.query_one("#modal-person-name", Input).value.strip():
+                self.notify("Person name is required.", severity="warning", timeout=3)
+                return
+            result = _PersonFormData(
+                PersonType(person_type),
+                self.query_one("#modal-person-name", Input).value.strip(),
+                self.query_one("#modal-person-bu", Input).value.strip(),
+                self.query_one("#modal-person-email", Input).value.strip(),
+                self.query_one("#modal-person-role", Input).value.strip(),
+            )
+            try:
+                Person(
+                    type=result.type,
+                    name=result.name or None,
+                    business_unit=result.business_unit or None,
+                    email=result.email or None,
+                    role=result.role or None,
+                )
+            except ValidationError as exc:
+                self.notify(str(exc), title="Invalid person", severity="error", markup=False)
+                return
+            self.dismiss(result)
+
+    # ── Actions ───────────────────────────────────────────────────────────────
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    def action_submit(self) -> None:
+        self.handle_save()
+
+
 # ── Risk label helpers ─────────────────────────────────────────────────────────
 _RISK_STYLE: dict[Risk, str] = {
-    Risk.critical: "bold red",
+    Risk.critical: "bold red3",
     Risk.high: "bold dark_orange",
     Risk.medium: "bold yellow1",
-    Risk.low: "bold green1",
-    Risk.info: "bold slate_blue1",
+    Risk.low: "bold chartreuse2",
+    Risk.info: "bold dodger_blue2",
 }
 
 
@@ -130,6 +429,8 @@ class ConfigScreen(_PoppableScreen):
 
     SUB_TITLE = "Project Configuration"
 
+    BINDINGS = [Binding("a", "add_new", "Add")]
+
     # Entry points that just select their matching tab (`tab-<entry_point>`),
     # e.g. `sereto config targets add` → launch_tui(entry_point="targets").
     TABS: ClassVar[frozenset[str]] = frozenset({"targets", "dates", "people"})
@@ -142,66 +443,48 @@ class ConfigScreen(_PoppableScreen):
     def _active_vc(self) -> VersionConfig:
         return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
 
+    @staticmethod
+    def _table_header(add_btn_id: str, *columns: tuple[str, str]) -> ComposeResult:
+        """Yield a light-table header row: (label, css-class) column pairs + a trailing 'Add new' button."""
+        with Horizontal(classes="table-header"):
+            for label, css_class in columns:
+                yield Static(label, classes=f"table-header-cell {css_class}")
+            yield Button("Add new", id=add_btn_id, variant="success", classes="table-header-add-btn")
+
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(id="config-tabs"):
             with TabPane("General", id="tab-general"), ScrollableContainer(id="general-form"):
-                yield InputWithLabel(Input(id="cfg-id", placeholder=self._active_vc.id), "ID")
-                yield InputWithLabel(Input(id="cfg-name", placeholder=self._active_vc.name), "Name")
-                yield InputWithLabel(
-                    Input(id="cfg-version-desc", placeholder=self._active_vc.version_description), "Desc"
-                )
+                yield InputWithLabel(Input(value=self._active_vc.id, id="cfg-id"), "ID")
+                yield InputWithLabel(Input(value=self._active_vc.name, id="cfg-name"), "Name")
+                yield InputWithLabel(Input(value=self._active_vc.version_description, id="cfg-version-desc"), "Desc")
                 with Horizontal(classes="config-add-row"):
                     yield Button("Save", variant="success", id="save-general")
             with TabPane("Targets", id="tab-targets"), Vertical(classes="tab-container"):
-                yield Button("Add", id="scroll-add-targets-btn", classes="scroll-add-btn", variant="primary")
+                yield from self._table_header(
+                    "scroll-add-targets-btn",
+                    ("Category", "table-header-category"),
+                    ("Name", "table-header-name"),
+                )
                 with ScrollableContainer(id="targets-form"):
                     yield Vertical(id="targets-list")
-                    with Vertical(id="targets-add-form", classes="add-form-section"):
-                        with Horizontal(classes="field-row"):
-                            yield Label("Category", classes="field-label")
-                            yield Select(
-                                options=[],
-                                id="target-category-select",
-                                prompt="Select category…",
-                            )
-                        yield InputWithLabel(Input(id="target-name", placeholder="Target name…"), "Name")
-                        with Horizontal(classes="config-add-row"):
-                            yield Button("Add target", variant="success", id="add-target-btn")
             with TabPane("Dates", id="tab-dates"), Vertical(classes="tab-container"):
-                yield Button("Add", id="scroll-add-dates-btn", classes="scroll-add-btn", variant="primary")
+                yield from self._table_header(
+                    "scroll-add-dates-btn",
+                    ("Type", "table-header-type"),
+                    ("Start date", "table-header-start"),
+                    ("End date", "table-header-end"),
+                )
                 with ScrollableContainer(id="dates-form"):
                     yield Vertical(id="dates-list")
-                    with Vertical(id="dates-add-form", classes="add-form-section"):
-                        with Horizontal(classes="field-row"):
-                            yield Label("Type", classes="field-label")
-                            yield Select(
-                                options=[(dt.value.replace("_", " ").title(), dt) for dt in DateType],
-                                id="date-type-select",
-                                prompt="Select type\u2026",
-                            )
-                        yield InputWithLabel(Input(id="date-start", placeholder="DD-Mmm-YYYY"), "Start")
-                        yield InputWithLabel(Input(id="date-end", placeholder="DD-Mmm-YYYY (optional)"), "End")
-                        with Horizontal(classes="config-add-row"):
-                            yield Button("Add date", variant="success", id="add-date-btn")
             with TabPane("People", id="tab-people"), Vertical(classes="tab-container"):
-                yield Button("Add", id="scroll-add-people-btn", classes="scroll-add-btn", variant="primary")
+                yield from self._table_header(
+                    "scroll-add-people-btn",
+                    ("Type", "table-header-type"),
+                    ("Name", "table-header-name"),
+                )
                 with ScrollableContainer(id="people-form"):
                     yield Vertical(id="people-list")
-                    with Vertical(id="people-add-form", classes="add-form-section"):
-                        with Horizontal(classes="field-row"):
-                            yield Label("Type", classes="field-label")
-                            yield Select(
-                                options=[(pt.value.replace("_", " ").title(), pt) for pt in PersonType],
-                                id="person-type-select",
-                                prompt="Select type\u2026",
-                            )
-                        yield InputWithLabel(Input(id="person-name", placeholder="Full name"), "Name")
-                        yield InputWithLabel(Input(id="person-bu", placeholder="Business unit"), "BU")
-                        yield InputWithLabel(Input(id="person-email", placeholder="user@example.com"), "Email")
-                        yield InputWithLabel(Input(id="person-role", placeholder="Role"), "Role")
-                        with Horizontal(classes="config-add-row"):
-                            yield Button("Add person", variant="success", id="add-person-btn")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -218,128 +501,87 @@ class ConfigScreen(_PoppableScreen):
             tab = f"tab-{app.entry_point}"
         if tab is not None:
             self.query_one("#config-tabs", TabbedContent).active = tab
-        # Populate category select
-        category_select = self.query_one("#target-category-select", Select)
-        category_options = [(cat, cat.lower()) for cat in app.categories]
-        category_select.set_options(category_options)
-
         # Load project's configuration data
         self._refresh_targets()
         self._refresh_dates()
         self._refresh_people()
-
-        # Initialize button visibility and set up periodic updates
-        self.set_timer(0.1, self._update_button_visibility)
-        self.set_interval(0.5, self._update_button_visibility)
-
-    def _update_button_visibility(self) -> None:
-        """Update visibility of Add button for the currently active tab only."""
-        tabs = self.query_one("#config-tabs", TabbedContent)
-        active_tab = tabs.active
-        if active_tab:
-            active_tab = active_tab.removeprefix("tab-")
-        if active_tab != "general" and active_tab not in self.TABS:
-            raise RuntimeError(f"Unexpected tab ID: {tabs.active!r}")
-        self._check_form_visibility(f"{active_tab}-form", f"{active_tab}-add-form", f"scroll-add-{active_tab}-btn")
 
     # ── Button handlers ────────────────────────────────────────────────────────
     @on(Button.Pressed, "#save-general")
     def handle_save_general(self) -> None:
         self._do_save_general()
 
-    @on(Button.Pressed, "#add-target-btn")
-    def handle_add_target(self) -> None:
-        self._do_add_target()
-
-    @on(Button.Pressed, "#add-date-btn")
-    def handle_add_date(self) -> None:
-        self._do_add_date()
-
-    @on(Button.Pressed, "#add-person-btn")
-    def handle_add_person(self) -> None:
-        self._do_add_person()
-
     @on(Button.Pressed, "#scroll-add-targets-btn, #scroll-add-dates-btn, #scroll-add-people-btn")
-    def handle_scroll_to_form(self, event: Button.Pressed) -> None:
-        """Focus and scroll to the form for the clicked tab."""
+    def handle_add_record(self, event: Button.Pressed) -> None:
+        """Open the matching record form from a table header's Add new button."""
         button_id = event.button.id or ""
         tab_name = button_id.removeprefix("scroll-add-").removesuffix("-btn")
+        if tab_name == "targets":
+            self._open_target_form()
+        elif tab_name == "dates":
+            self._open_date_form()
+        elif tab_name == "people":
+            self._open_person_form()
 
-        # Map tab names to their first input selector
-        select_map = {
-            "targets": "#target-category-select",
-            "dates": "#date-type-select",
-            "people": "#person-type-select",
-        }
-
-        if tab_name in select_map:
-            select = self.query_one(select_map[tab_name], Select)
-            container = self.query_one(f"#{tab_name}-form", ScrollableContainer)
-            select.focus()
-            self.call_after_refresh(lambda: container.scroll_to_widget(select, top=True))
-            event.button.display = False
-
-    def _check_form_visibility(self, container_id: str, form_id: str, button_id: str) -> None:
-        """Check if form is visible and toggle button visibility accordingly."""
-        try:
-            container = self.query_one(f"#{container_id}", ScrollableContainer)
-            form = self.query_one(f"#{form_id}")
-            button = self.query_one(f"#{button_id}", Button)
-            # Get the scroll position
-            scroll_y = container.scroll_y
-            viewport_height = container.size.height
-            viewport_bottom = scroll_y + viewport_height
-
-            # Only show button if there's enough total content that scrolling is needed
-            total_content_height = container.virtual_size.height
-            if total_content_height <= viewport_height * 1.2:
-                button.display = False
-                return
-
-            # Calculate form's position within the scroll container
-            # Walk up from form to find its offset relative to the scrollable container
-            form_offset_y = 0
-            node: Widget = form
-            while node.parent is not None and node.parent != container:
-                form_offset_y += node.offset.y
-                node = node.parent  # type: ignore
-            if node.parent == container:
-                form_offset_y += node.offset.y
-
-            form_top = form_offset_y
-            form_bottom = form_top + form.size.height
-
-            # Calculate how much of the form is visible in the viewport
-            visible_top = max(form_top, scroll_y)
-            visible_bottom = min(form_bottom, viewport_bottom)
-            visible_height = max(0, visible_bottom - visible_top)
-
-            # Show button only if less than 30% of form is visible
-            # (meaning it's mostly scrolled out of view)
-            form_is_mostly_hidden = visible_height < (form.size.height * 0.5)
-            button.display = not form_is_mostly_hidden
-        except Exception:
-            pass
-
-    @on(Button.Pressed, ".config-ppl-remove-btn, .config-targets-remove-btn, .timeline-remove-btn")
+    @on(Button.Pressed, ".config-ppl-remove-btn, .config-targets-remove-btn, .config-date-remove-btn")
     def handle_remove(self, event: Button.Pressed) -> None:
         button_id = event.button.id or ""
         button_id = button_id.removeprefix("remove-")
 
+        # focus the button that was pressed
+        event.button.focus()
+
+        for type_prefix in ("target", "date", "person"):
+            if button_id.startswith(f"{type_prefix}-"):
+                index = int(button_id.removeprefix(f"{type_prefix}-"))
+                self._confirm_remove(type_prefix, index)
+                return
+
+    def _confirm_remove(self, kind: str, index: int) -> None:
+        """Push a Yes/No confirmation, then delete the record of *kind* at *index* on confirm."""
         handler_map = {
             "target": self._do_remove_target,
             "date": self._do_remove_date,
             "person": self._do_remove_person,
         }
+        handler = handler_map[kind]
+        self.app.push_screen(
+            DeleteConfirmationScreen(f"Remove this {kind}?"),
+            callback=lambda confirmed, i=index, h=handler: h(i) if confirmed else None,
+        )
 
+    @on(Button.Pressed, ".config-ppl-edit-btn, .config-targets-edit-btn, .config-date-edit-btn")
+    def handle_edit(self, event: Button.Pressed) -> None:
+        button_id = event.button.id or ""
+        button_id = button_id.removeprefix("edit-")
+
+        # focus the button that was pressed
+        event.button.focus()
+
+        handler_map = {
+            "target": self._open_target_form,
+            "date": self._open_date_form,
+            "person": self._open_person_form,
+        }
         for type_prefix, handler in handler_map.items():
             if button_id.startswith(f"{type_prefix}-"):
-                index = int(button_id.removeprefix(f"{type_prefix}-"))
-                self.app.push_screen(
-                    DeleteConfirmationScreen(f"Remove this {type_prefix}?"),
-                    callback=lambda confirmed, i=index, h=handler: h(i) if confirmed else None,
-                )
+                handler(int(button_id.removeprefix(f"{type_prefix}-")))
                 return
+
+    def show_target_detail(self, target: Target) -> None:
+        title = f"{target.data.category.upper()}  {target.data.name}"
+        content = _highlight_json(target.data.model_dump_json(indent=2, exclude_none=True))
+        self.app.push_screen(RecordDetailScreen(title=title, content=content))
+
+    def show_person_detail(self, person: Person) -> None:
+        type_label = person.type.value.replace("_", " ").title()
+        title = f"{type_label}  {person.name or '(no name)'}"
+        details = (
+            ("🏢", "Business unit", person.business_unit),
+            ("📧", "Email", person.email),
+            ("👔", "Role", person.role),
+        )
+        self.app.push_screen(RecordDetailScreen(title=title, details=details))
 
     # ── List refresh ───────────────────────────────────────────────────────────
     def _refresh_targets(self) -> None:
@@ -347,9 +589,6 @@ class ConfigScreen(_PoppableScreen):
         container.remove_children()
         for i, t in enumerate(self._active_vc.targets, start=1):
             container.mount(_TargetRow(t, i))
-        self.set_timer(
-            0.1, lambda: self._check_form_visibility("targets-form", "target-add-form", "scroll-add-target-btn")
-        )
 
     def sort_key(self, d: Date) -> tuple[SeretoDate, SeretoDate]:
         if isinstance(d.date, DateRange):
@@ -360,44 +599,42 @@ class ConfigScreen(_PoppableScreen):
     def _refresh_dates(self) -> None:
         container = self.query_one("#dates-list", Vertical)
         container.remove_children()
-        dates_list = list(self._active_vc.dates)
-        # sort by most recent start date first, then by end date if start dates are equal
-        sorted_dates = sorted(dates_list, key=self.sort_key, reverse=True)
-        for i, d in enumerate(sorted_dates, start=1):
-            is_first = i == 1
-            is_last = i == len(sorted_dates)
-            container.mount(_DateRow(d, i, is_first, is_last))
-        self.set_timer(0.1, lambda: self._check_form_visibility("dates-form", "date-add-form", "scroll-add-date-btn"))
+        # Keep each date paired with its real (1-based) index in the underlying config list,
+        # since that's what add_date/delete_date/list-item-assignment expect — the display
+        # order below is sorted and does not match it.
+        indexed_dates = list(enumerate(self._active_vc.dates, start=1))
+        sorted_dates = sorted(indexed_dates, key=lambda pair: self.sort_key(pair[1]), reverse=True)
+        for index, d in sorted_dates:
+            container.mount(_DateRow(d, index))
 
     def _refresh_people(self) -> None:
         container = self.query_one("#people-list", Vertical)
         container.remove_children()
-        people_list = list(self._active_vc.people)
-        sorted_people = sorted(people_list, key=lambda p: p.type.value)
-        for i, p in enumerate(sorted_people, start=1):
-            container.mount(_PersonRow(p, i))
-        self.set_timer(
-            0.1, lambda: self._check_form_visibility("people-form", "person-add-form", "scroll-add-person-btn")
-        )
+        # Same real-index caveat as _refresh_dates — display order is sorted by type.
+        indexed_people = list(enumerate(self._active_vc.people, start=1))
+        sorted_people = sorted(indexed_people, key=lambda pair: pair[1].type.value)
+        for index, p in sorted_people:
+            container.mount(_PersonRow(p, index))
 
     # ── Targets tab actions ────────────────────────────────────────────────────
-    def _do_add_target(self) -> None:
-        cat_select = self.query_one("#target-category-select", Select)
-        name_input = self.query_one("#target-name", Input)
+    def _open_target_form(self, index: int | None = None) -> None:
+        target = self._active_vc.targets[index - 1] if index is not None else None
+        initial = _TargetFormData(target.data.category, target.data.name) if target is not None else None
+        app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        self.app.push_screen(
+            ConfigRecordFormScreen("target", categories=app.categories, initial=initial),
+            callback=lambda result: self._save_target(result, index),
+        )
 
-        if isinstance(cat_select.value, NoSelection):
-            self.notify("Select a category.", severity="warning", timeout=3)
+    def _save_target(self, result: _ConfigFormData | None, index: int | None) -> None:
+        if not isinstance(result, _TargetFormData):
             return
-
-        category: str = cat_select.value
-        name = name_input.value.strip()
-
-        if not name:
+        if not result.name:
             self.notify("Enter a target name.", severity="warning", timeout=3)
             return
 
         model_class: type[TargetModel]
-        match category:
+        match result.category:
             case "dast":
                 model_class = TargetDastModel
             case "sast":
@@ -408,9 +645,26 @@ class ConfigScreen(_PoppableScreen):
                 model_class = TargetModel
 
         try:
-            target_model = model_class.model_validate({"category": category, "name": name})
+            target_model = model_class.model_validate({"category": result.category, "name": result.name})
         except ValidationError as exc:
             self.notify(str(exc), title="Validation error", severity="error", markup=False)
+            return
+
+        if index is not None:
+            target = self._active_vc.targets[index - 1]
+            try:
+                target.data.name = target_model.name
+                self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            except Exception as exc:
+                self.notify(str(exc), title="Failed to update target", severity="error", markup=False)
+                return
+
+            self._refresh_targets()
+            self.notify(result.name, title="Target updated", timeout=3)
+            for screen in self.app.screen_stack:
+                if isinstance(screen, ProjectBrowserScreen):
+                    screen.refresh_content()
+                    break
             return
 
         project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
@@ -429,10 +683,8 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to create target", severity="error", markup=False)
             return
 
-        name_input.value = ""
         self._refresh_targets()
-
-        self.notify(name, title="Target added", timeout=3)
+        self.notify(result.name, title="Target added", timeout=3)
 
         # Refresh the project browser to show the new target
         for screen in self.app.screen_stack:
@@ -498,36 +750,41 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Save failed", severity="error", markup=False)
 
     # ── Dates tab actions ──────────────────────────────────────────────────────
-    def _do_add_date(self) -> None:
-        type_select = self.query_one("#date-type-select", Select)
-        start_input = self.query_one("#date-start", Input)
-        end_input = self.query_one("#date-end", Input)
+    def _open_date_form(self, index: int | None = None) -> None:
+        initial: _DateFormData | None = None
+        if index is not None:
+            date = self._active_vc.dates[index - 1]
+            match date.date:
+                case DateRange():
+                    start, end = str(date.date.start), str(date.date.end)
+                case _:
+                    start, end = str(date.date), ""
+            initial = _DateFormData(date.type, start, end)
+        self.app.push_screen(
+            ConfigRecordFormScreen("date", initial=initial),
+            callback=lambda result: self._save_date(result, index),
+        )
 
-        if isinstance(type_select.value, NoSelection):
-            self.notify("Select a date type.", severity="warning", timeout=3)
+    def _save_date(self, result: _ConfigFormData | None, index: int | None) -> None:
+        if not isinstance(result, _DateFormData):
             return
-
-        date_type: DateType = type_select.value
-        start_str = start_input.value.strip()
-
-        if not start_str:
+        if not result.start:
             self.notify("Start date is required.", severity="warning", timeout=3)
             return
 
         try:
-            start = SeretoDate(start_str)
+            start = SeretoDate(result.start)
         except ValueError:
-            self.notify(f"Invalid start date: {start_str!r}. Use DD-Mmm-YYYY.", severity="error", markup=False)
+            self.notify(f"Invalid start date: {result.start!r}. Use DD-Mmm-YYYY.", severity="error", markup=False)
             return
 
-        end_str = end_input.value.strip()
         date_value: SeretoDate | DateRange
 
-        if end_str:
+        if result.end:
             try:
-                end = SeretoDate(end_str)
+                end = SeretoDate(result.end)
             except ValueError:
-                self.notify(f"Invalid end date: {end_str!r}. Use DD-Mmm-YYYY.", severity="error", markup=False)
+                self.notify(f"Invalid end date: {result.end!r}. Use DD-Mmm-YYYY.", severity="error", markup=False)
                 return
             try:
                 date_value = DateRange(start=start, end=end)
@@ -538,17 +795,18 @@ class ConfigScreen(_PoppableScreen):
             date_value = start
 
         try:
-            new_date = Date(type=date_type, date=date_value)
-            self._active_vc.add_date(new_date)
+            new_date = Date(type=result.type, date=date_value)
+            if index is not None:
+                self._active_vc.dates[index - 1] = new_date
+            else:
+                self._active_vc.add_date(new_date)
             self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
         except Exception as exc:
-            self.notify(str(exc), title="Failed to add date", severity="error", markup=False)
+            self.notify(str(exc), title="Failed to save date", severity="error", markup=False)
             return
 
-        start_input.value = ""
-        end_input.value = ""
         self._refresh_dates()
-        self.notify("Date added.", timeout=3)
+        self.notify("Date updated." if index is not None else "Date added.", timeout=3)
 
     def _do_remove_date(self, index: int) -> None:
         try:
@@ -560,41 +818,47 @@ class ConfigScreen(_PoppableScreen):
             self.notify(str(exc), title="Failed to remove date", severity="error", markup=False)
 
     # ── People tab actions ─────────────────────────────────────────────────────
-    def _do_add_person(self) -> None:
-        type_select = self.query_one("#person-type-select", Select)
-        name_val = self.query_one("#person-name", Input).value.strip()
-        bu_val = self.query_one("#person-bu", Input).value.strip()
-        email_val = self.query_one("#person-email", Input).value.strip()
-        role_val = self.query_one("#person-role", Input).value.strip()
+    def _open_person_form(self, index: int | None = None) -> None:
+        person = self._active_vc.people[index - 1] if index is not None else None
+        initial = (
+            _PersonFormData(
+                person.type,
+                person.name or "",
+                person.business_unit or "",
+                person.email or "",
+                person.role or "",
+            )
+            if person is not None
+            else None
+        )
+        self.app.push_screen(
+            ConfigRecordFormScreen("person", initial=initial),
+            callback=lambda result: self._save_person(result, index),
+        )
 
-        if isinstance(type_select.value, NoSelection):
-            self.notify("Select a person type.", severity="warning", timeout=3)
+    def _save_person(self, result: _ConfigFormData | None, index: int | None) -> None:
+        if not isinstance(result, _PersonFormData):
             return
-
-        person_type: PersonType = type_select.value
 
         try:
             new_person = Person(
-                type=person_type,
-                name=name_val or None,
-                business_unit=bu_val or None,
-                email=email_val or None,
-                role=role_val or None,
+                type=result.type,
+                name=result.name or None,
+                business_unit=result.business_unit or None,
+                email=result.email or None,
+                role=result.role or None,
             )
-            self._active_vc.add_person(new_person)
+            if index is not None:
+                self._active_vc.people[index - 1] = new_person
+            else:
+                self._active_vc.add_person(new_person)
             self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
         except Exception as exc:
-            self.notify(str(exc), title="Failed to add person", severity="error", markup=False)
+            self.notify(str(exc), title="Failed to save person", severity="error", markup=False)
             return
 
-        # Reset form fields after successful addition
-        self.query_one("#person-name", Input).value = ""
-        self.query_one("#person-bu", Input).value = ""
-        self.query_one("#person-email", Input).value = ""
-        self.query_one("#person-role", Input).value = ""
-
         self._refresh_people()
-        self.notify("Person added.", timeout=3)
+        self.notify("Person updated." if index is not None else "Person added.", timeout=3)
 
     def _do_remove_person(self, index: int) -> None:
         try:
@@ -605,71 +869,118 @@ class ConfigScreen(_PoppableScreen):
         except Exception as exc:
             self.notify(str(exc), title="Failed to remove person", severity="error", markup=False)
 
+    # ── Actions ───────────────────────────────────────────────────────────────
+    def action_add_new(self) -> None:
+        active_tab = self.query_one("#config-tabs", TabbedContent).active
+        if active_tab == "tab-targets":
+            self._open_target_form()
+        elif active_tab == "tab-dates":
+            self._open_date_form()
+        elif active_tab == "tab-people":
+            self._open_person_form()
+
 
 # ── Config row widgets ─────────────────────────────────────────────────────────
-class _DateRow(Vertical):
-    """Single row in the dates list: formatted date text in timeline style + Remove button."""
+class _NonSelectableStatic(Static):
+    """A static widget that prevents selection of config row contents."""
 
-    def __init__(self, date: Date, index: int, is_first: bool = False, is_last: bool = False) -> None:
-        super().__init__(classes="timeline-row")
-        self._date = date
-        self._index = index  # 1-based
-        self._is_first = is_first
-        self._is_last = is_last
+    ALLOW_SELECT = False
+
+
+class _ButtonHitArea(Horizontal):
+    """Invisible container that expands a row button's clickable area."""
+
+    def __init__(self, button: Button) -> None:
+        super().__init__(classes="config-row-button-hit-area")
+        self._button = button
 
     def compose(self) -> ComposeResult:
-        # Top connector line (if not first)
-        if not self._is_first:
-            with Horizontal(classes="timeline-line-row"):
-                yield Static("", classes="timeline-date-spacer")
-                yield Static("│", classes="timeline-line")
-                yield Static("", classes="timeline-content-spacer")
+        yield self._button
 
-        # Main row: Date, Circle, Type, Button
-        with Horizontal(classes="timeline-main-row"):
-            # Date on left
-            match self._date.date:
-                case DateRange():
-                    date_text = f"{self._date.date.start} – {self._date.date.end}"
-                case _:
-                    date_text = str(self._date.date)
-            yield Static(date_text, classes="timeline-date")
+    def on_click(self, event: events.Click) -> None:
+        if event.widget is self:
+            self.post_message(Button.Pressed(self._button))
 
-            # Circle
-            yield Static("○", classes="timeline-dot")
 
-            # Type label
-            type_label = self._date.type.value.replace("_", " ").title()
-            yield Static(type_label, classes="timeline-type")
+class _DateRow(Horizontal):
+    """Single row in the dates table: type, start date, end date + Edit/Remove buttons."""
 
-            # Remove button
-            yield Button("\u2715", variant="error", id=f"remove-date-{self._index}", classes="timeline-remove-btn")
+    def __init__(self, date: Date, index: int) -> None:
+        super().__init__(classes="date-row")
+        self._date = date
+        self._index = index  # 1-based
 
-        # Bottom connector line (if not last)
-        if not self._is_last:
-            with Horizontal(classes="timeline-line-row"):
-                yield Static("", classes="timeline-date-spacer")
-                yield Static("│", classes="timeline-line")
-                yield Static("", classes="timeline-content-spacer")
+    def compose(self) -> ComposeResult:
+        type_label = self._date.type.value.replace("_", " ").title()
+        yield _NonSelectableStatic(f"[cyan]{type_label}[/cyan]", classes="date-type", markup=True)
+
+        match self._date.date:
+            case DateRange():
+                start_text, end_text = str(self._date.date.start), str(self._date.date.end)
+            case _:
+                start_text, end_text = str(self._date.date), "\u2014"
+        yield _NonSelectableStatic(start_text, classes="date-start")
+        yield _NonSelectableStatic(end_text, classes="date-end")
+
+        yield _ButtonHitArea(
+            Button(
+                "Edit",
+                variant="primary",
+                id=f"edit-date-{self._index}",
+                classes="config-date-edit-btn",
+                tooltip="Edit date",
+            )
+        )
+        yield _ButtonHitArea(
+            Button(
+                "Remove",
+                variant="error",
+                id=f"remove-date-{self._index}",
+                classes="config-date-remove-btn",
+                tooltip="Remove date",
+            )
+        )
 
 
 class _TargetRow(Horizontal):
-    """Single row in the targets list: formatted target text + Remove button."""
+    """Single row in the targets table: category, name + Edit/Remove buttons."""
 
     def __init__(self, target: Target, index: int) -> None:
-        super().__init__(classes="config-row")
+        super().__init__(classes="target-row")
         self._target = target
         self._index = index  # 1-based
 
     def compose(self) -> ComposeResult:
-        text = f"[bold cyan]{self._target.data.category.upper()}[/bold cyan]  {self._target.data.name}"
-        yield Static(text, classes="config-row-label", markup=True)
-        yield Button("\u2715", variant="error", id=f"remove-target-{self._index}", classes="config-targets-remove-btn")
+        yield _NonSelectableStatic(
+            f"[cyan]{self._target.data.category.upper()}[/cyan]", classes="target-category", markup=True
+        )
+        yield _NonSelectableStatic(self._target.data.name, classes="target-name")
+        yield _ButtonHitArea(
+            Button(
+                "Edit",
+                variant="primary",
+                id=f"edit-target-{self._index}",
+                classes="config-targets-edit-btn",
+                tooltip="Edit target",
+            )
+        )
+        yield _ButtonHitArea(
+            Button(
+                "Remove",
+                variant="error",
+                id=f"remove-target-{self._index}",
+                classes="config-targets-remove-btn",
+                tooltip="Remove target",
+            )
+        )
+
+    def on_click(self, event: events.Click) -> None:
+        if event.chain == 2 and isinstance(self.screen, ConfigScreen):
+            self.screen.show_target_detail(self._target)
 
 
 class _PersonRow(Horizontal):
-    """Single row in the people list: type badge + name on first line, details on
-    indented second line, remove button on right."""
+    """Single row in the people table: type, name + Edit/Remove buttons."""
 
     def __init__(self, person: Person, index: int) -> None:
         super().__init__(classes="person-row")
@@ -677,33 +988,31 @@ class _PersonRow(Horizontal):
         self._index = index  # 1-based
 
     def compose(self) -> ComposeResult:
-        # Left side: Content (type badge, name, details)
-        with Vertical(classes="person-content"):
-            # First line: Type badge + Name
-            with Horizontal(classes="person-header-row"):
-                # Type badge
-                type_label = self._person.type.value.replace("_", " ").title()
-                yield Static(f"[bold cyan]{type_label}[/bold cyan]", classes="person-type-badge", markup=True)
+        type_label = self._person.type.value.replace("_", " ").title()
+        yield _NonSelectableStatic(f"[cyan]{type_label}[/cyan]", classes="person-type-badge", markup=True)
+        yield _NonSelectableStatic(self._person.name or "[dim](no name)[/dim]", classes="person-name", markup=True)
+        yield _ButtonHitArea(
+            Button(
+                "Edit",
+                variant="primary",
+                id=f"edit-person-{self._index}",
+                classes="config-ppl-edit-btn",
+                tooltip="Edit person",
+            )
+        )
+        yield _ButtonHitArea(
+            Button(
+                "Remove",
+                variant="error",
+                id=f"remove-person-{self._index}",
+                classes="config-ppl-remove-btn",
+                tooltip="Remove person",
+            )
+        )
 
-                # Name
-                name = self._person.name or "[dim](no name)[/dim]"
-                yield Static(name, classes="person-name", markup=True)
-
-            # Second line: Details (indented)
-            details: list[str] = []
-            if self._person.email:
-                details.append(f"📧 {self._person.email}")
-            if self._person.business_unit:
-                details.append(f"🏢 {self._person.business_unit}")
-            if self._person.role:
-                details.append(f"👔 {self._person.role}")
-
-            # Always show details line, even if empty
-            detail_text = "  |  ".join(details) if details else "[dim](no details)[/dim]"
-            yield Static(detail_text, classes="person-details", markup=True)
-
-        # Right side: Remove button (spans full height, centered)
-        yield Button("\u2715", variant="error", id=f"remove-person-{self._index}", classes="config-ppl-remove-btn")
+    def on_click(self, event: events.Click) -> None:
+        if event.chain == 2 and isinstance(self.screen, ConfigScreen):
+            self.screen.show_person_detail(self._person)
 
 
 # ── Render screen ─────────────────────────────────────────────────────────────
@@ -724,7 +1033,7 @@ class RenderScreen(_PoppableScreen):
                         ("Render all finding groups", "all_fg"),
                     ],
                     id="render-type-select",
-                    prompt="Select render type…",
+                    allow_blank=False,
                 )
                 with Vertical(id="fg-filters"):
                     yield Select[str]([], id="fg-target-select", allow_blank=True, prompt="All targets")
@@ -1405,7 +1714,7 @@ class ProjectBrowserScreen(Screen[None]):
         for risk in [Risk.critical, Risk.high, Risk.medium, Risk.low, Risk.info]:
             count = risk_counts[risk]
             label = risk.value.capitalize()
-            stat_text = Text.assemble((f"{count}", _RISK_STYLE[risk]), f" {label}")
+            stat_text = Text.assemble(f"{count} ", (label, _RISK_STYLE[risk]))
             stat_box = Static(stat_text, classes=f"browser-stat-box browser-stat-{risk.value}")
             stats_row.mount(stat_box)
 
@@ -1419,7 +1728,7 @@ class ProjectBrowserScreen(Screen[None]):
             for target in vc.targets:
                 # Target header: CATEGORY + name
                 target_text = Text.assemble(
-                    (target.data.category.upper(), "bold dark_magenta"),
+                    (target.data.category.upper(), "bold medium_purple"),
                     " ",
                     (target.data.name, "bold"),
                 )
