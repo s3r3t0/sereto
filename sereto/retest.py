@@ -1,5 +1,4 @@
 import shutil
-from copy import deepcopy
 
 from pydantic import validate_call
 
@@ -20,8 +19,8 @@ def add_retest(project: Project) -> None:
         shutil.copytree(src=target.path, dst=new_target_dir)
 
     # Duplicate last version config
-    last_config = deepcopy(project.config.last_config)
-    last_config.version_description = "Retest"
+    last_model = project.config.last_config.to_model().model_copy(deep=True)
+    last_model.version_description = "Retest"
     project.config.add_version_config(
-        version=retest_version, config=last_config.to_model(), templates=project.settings.templates_path
+        version=retest_version, config=last_model, templates=project.settings.templates_path
     ).save()
