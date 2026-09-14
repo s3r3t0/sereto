@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Implement `__reduce__` for `SeretoDate` to fix deepcopy and pickling.
+- Make filesystem plugin loading deterministic and report malformed plugin modules clearly.
 
 ## [0.8.3] - 2026-08-05
 
