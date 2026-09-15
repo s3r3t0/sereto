@@ -2146,7 +2146,7 @@ performance = [
 [package.metadata]
 requires-dist = [
     { name = "annotated-types", specifier = "~=0.8.0" },
-    { name = "click", specifier = ">=8.4.2,<8.6.0" },
+    { name = "click", specifier = "~=8.5.0" },
     { name = "cryptography", specifier = "~=50.0.0" },
     { name = "humanize", specifier = "~=4.16.0" },
     { name = "jinja2", specifier = "~=3.1.6" },
