@@ -331,7 +331,9 @@ def generate_pdf_target(
         version = project.config.last_version
 
     # Select target
-    target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
+    target = project.config.at_version(version).select_target(
+        categories=project.settings.categories, selector=target_selector
+    )
 
     logger.info("Rendering partial report for target '{}'", target.uname)
 
