@@ -9,10 +9,8 @@ from pydantic import DirectoryPath, TypeAdapter, ValidationError, validate_call
 from rich import box
 from rich.table import Table
 
-from sereto.cli.date import allows_range, prompt_user_for_date
-from sereto.cli.person import prompt_user_for_person
-from sereto.cli.target import prompt_user_for_target
-from sereto.cli.utils import Console, load_enum
+from sereto.cli.date import allows_range
+from sereto.cli.utils import Console
 from sereto.config import Config, VersionConfig
 from sereto.enums import OutputFormat
 from sereto.exceptions import SeretoValueError
@@ -135,7 +133,6 @@ def show_config(
 def add_dates_config(
     config: Config,
     version: ProjectVersion | None = None,
-    non_interactive: bool = False,
     date_type: DateType | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
@@ -145,7 +142,6 @@ def add_dates_config(
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
-        non_interactive: If True, run non-interactively; fail if required inputs are missing.
         date_type: The type of the date event.
         start_date: The start date str in DD-Mmm-YYYY format.
         end_date: The end date str in DD-Mmm-YYYY format.
@@ -153,10 +149,7 @@ def add_dates_config(
     if version is None:
         version = config.last_version
 
-    if non_interactive:
-        new_date = _build_date_from_options(date_type=date_type, start_date=start_date, end_date=end_date)
-    else:
-        new_date = _prompt_for_date()
+    new_date = _build_date_from_options(date_type=date_type, start_date=start_date, end_date=end_date)
 
     # Add the date to the configuration
     config.at_version(version).add_date(new_date)
@@ -186,12 +179,6 @@ def _build_date_from_options(
         else parsed_start
     )
     return Date(type=date_type, date=value)
-
-
-def _prompt_for_date() -> Date:
-    """Prompt the user for a date interactively."""
-    date_type = load_enum(enum=DateType, message="Type:")
-    return Date(type=date_type, date=prompt_user_for_date(date_type=date_type))
 
 
 @validate_call
@@ -270,7 +257,6 @@ def show_dates_config(
 def add_people_config(
     config: Config,
     version: ProjectVersion | None = None,
-    non_interactive: bool = False,
     person_type: PersonType | None = None,
     person_name: str | None = None,
     business_unit: str | None = None,
@@ -282,7 +268,6 @@ def add_people_config(
     Args:
         config: Configuration of the project.
         version: The version of the project. If not provided, the last version is used.
-        non_interactive: If True, run non-interactively; fail if required inputs are missing.
         person_type: The type of the person.
         person_name: The name of the person.
         business_unit: The business unit of the person.
@@ -292,16 +277,13 @@ def add_people_config(
     if version is None:
         version = config.last_version
 
-    if non_interactive:
-        new_person = _build_person_from_options(
-            person_type=person_type,
-            person_name=person_name,
-            business_unit=business_unit,
-            email=email,
-            role=role,
-        )
-    else:
-        new_person = _prompt_for_person()
+    new_person = _build_person_from_options(
+        person_type=person_type,
+        person_name=person_name,
+        business_unit=business_unit,
+        email=email,
+        role=role,
+    )
 
     # Add the person to the configuration
     config.at_version(version).add_person(new_person)
@@ -327,12 +309,6 @@ def _build_person_from_options(
         email=email or None,
         role=role or None,
     )
-
-
-def _prompt_for_person() -> Person:
-    """Prompt the user for a person interactively."""
-    person_type = load_enum(enum=PersonType, message="Type:")
-    return prompt_user_for_person(person_type=person_type)
 
 
 @validate_call
@@ -409,7 +385,6 @@ def add_target(
     config: Config,
     categories: Iterable[str],
     version: ProjectVersion | None = None,
-    non_interactive: bool = False,
     category: str | None = None,
     target_name: str | None = None,
     extra_json: str | None = None,
@@ -422,7 +397,6 @@ def add_target(
         config: Configuration of the project.
         categories: List of all categories.
         version: The version of the project. If not provided, the last version is used.
-        non_interactive: If True, run non-interactively; fail if required inputs are missing.
         category: Category of the target.
         target_name: Name of the target.
         extra_json: Extra target fields as a JSON string.
@@ -430,12 +404,9 @@ def add_target(
     if version is None:
         version = config.last_version
 
-    if non_interactive:
-        new_target_model = _build_target_from_options(
-            category=category, target_name=target_name, categories=categories, extra_json=extra_json
-        )
-    else:
-        new_target_model = prompt_user_for_target(categories=categories)
+    new_target_model = _build_target_from_options(
+        category=category, target_name=target_name, categories=categories, extra_json=extra_json
+    )
 
     # Create the target instance, including on the filesystem
     new_target = Target.new(data=new_target_model, project_path=project_path, templates=templates, version=version)

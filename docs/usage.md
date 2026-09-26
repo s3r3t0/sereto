@@ -132,7 +132,7 @@ The findings TUI allows you to add findings for a target in an interactive way. 
 sereto findings add
 ```
 
-To exit the TUI at any point, press `Ctrl+Q`.
+To exit the TUI, press `Esc` from the project browser screen (press `Esc` repeatedly from any other screen to get back to it).
 
 The TUI utilizes fuzzy search to help you effectively locate the desired finding templates. You can filter the list by selecting specific categories.
 
