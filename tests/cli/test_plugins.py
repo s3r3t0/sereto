@@ -165,26 +165,36 @@ def test_load_plugins_registers_files_in_name_order(command_group: click.Group, 
     assert list(command_group.commands) == ["findings", "alpha", "zeta"]
 
 
-@pytest.mark.parametrize(
-    ("source", "expected_message"),
-    [
-        ("value = 1\n", "Plugin 'missing.py' does not define register_commands(cli)."),
-        ("register_commands = 1\n", "Plugin 'not_callable.py': register_commands must be callable."),
-    ],
-)
-def test_load_plugins_reports_invalid_registration_contract(
-    command_group: click.Group,
-    expected_message: str,
-    log_capture: LogCapture,
-    plugins_dir: Path,
-    source: str,
+def test_load_plugins_skips_helper_modules(
+    command_group: click.Group, log_capture: LogCapture, plugins_dir: Path
 ) -> None:
-    file_name = "missing.py" if "does not define" in expected_message else "not_callable.py"
-    write_plugin(plugins_dir, file_name, source)
+    write_plugin(plugins_dir, "http.py", 'command_name = "example"\n')
+    write_plugin(
+        plugins_dir,
+        "example.py",
+        "import click\n"
+        "from plugins.http import command_name\n\n"
+        "def register_commands(cli):\n"
+        "    cli.add_command(click.Command(command_name))\n",
+    )
 
     cli_module._load_plugins_from_directory(plugins_dir, command_group)
 
-    assert log_capture.error_messages == [expected_message]
+    assert list(command_group.commands) == ["findings", "example"]
+    assert log_capture.error_messages == []
+    assert log_capture.debug_messages == ["Plugin registered: 'example.py'"]
+
+
+def test_load_plugins_reports_non_callable_registration(
+    command_group: click.Group,
+    log_capture: LogCapture,
+    plugins_dir: Path,
+) -> None:
+    write_plugin(plugins_dir, "not_callable.py", "register_commands = 1\n")
+
+    cli_module._load_plugins_from_directory(plugins_dir, command_group)
+
+    assert log_capture.error_messages == ["Plugin 'not_callable.py': register_commands must be callable."]
 
 
 def test_load_plugins_reports_import_and_registration_failures(

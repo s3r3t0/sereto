@@ -1254,7 +1254,6 @@ def _load_plugins_from_directory(plugins_dir: Path, command_group: click.Group) 
 
         register_commands = getattr(module, "register_commands", None)
         if register_commands is None:
-            logger.error("Plugin '{}' does not define register_commands(cli).", file.name)
             continue
         if not callable(register_commands):
             logger.error("Plugin '{}': register_commands must be callable.", file.name)
