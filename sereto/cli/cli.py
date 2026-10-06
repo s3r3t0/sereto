@@ -1293,6 +1293,19 @@ def _load_plugins_from_directory(plugins_dir: Path, command_group: click.Group) 
             logger.error("Failed to register plugin '{}': {}: {}", file.name, type(e).__name__, e)
             continue
 
+        # Run the plugin's register_tui_actions function (optional TUI integration)
+        register_tui_actions = getattr(module, "register_tui_actions", None)
+        if register_tui_actions is not None:
+            if not callable(register_tui_actions):
+                logger.error("Plugin '{}': register_tui_actions must be callable.", file.name)
+                continue
+
+            try:
+                register_tui_actions(register_tui_plugin)
+            except Exception as e:
+                logger.error("Failed to register plugin TUI actions '{}': {}: {}", file.name, type(e).__name__, e)
+                continue
+
         logger.debug("Plugin registered: '{}'", file.name)
 
 
@@ -1310,11 +1323,6 @@ def load_plugins() -> None:
         replace_strings(text=settings.plugins.directory, replacements={"%TEMPLATES%": str(settings.templates_path)})
     )
     _load_plugins_from_directory(plugins_dir=plugins_dir, command_group=cli)
-
-        # Run the plugin's register_tui_actions function (optional TUI integration)
-        if hasattr(module, "register_tui_actions"):
-            module.register_tui_actions(register_tui_plugin)
-            logger.debug("Plugin TUI actions registered: '{}'", file.name)
 
 
 def entry_point() -> None:
