@@ -12,7 +12,6 @@ Screen stack (outermost → innermost):
 
 from __future__ import annotations
 
-import re
 import shutil
 import traceback
 from collections.abc import Callable
@@ -20,9 +19,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar, cast
 
+import click
 from pydantic import TypeAdapter, ValidationError
 from rich.console import RenderableType
 from rich.markup import escape
+from rich.syntax import Syntax
 from rich.text import Text
 from textual import events, on, work
 from textual.app import App, ComposeResult
@@ -126,15 +127,6 @@ class RecordDetailScreen(ModalScreen[None]):
 
     def action_close(self) -> None:
         self.dismiss(None)
-
-
-def _highlight_json(json_text: str) -> Text:
-    """Highlight serialized JSON using one style for keys and one for everything else."""
-    text = Text(json_text, style="white")
-    key_pattern = r'(?m)^\s*(?P<key>"(?:\\.|[^"\\])*")(?=\s*:)'
-    for match in re.finditer(key_pattern, json_text):
-        text.stylize("medium_purple4", *match.span("key"))
-    return text
 
 
 @dataclass(frozen=True)
@@ -428,20 +420,49 @@ class ConfigScreen(_PoppableScreen):
     """Screen for managing the project configuration (general info, targets, dates, people)."""
 
     SUB_TITLE = "Project Configuration"
+    RECORD_NAVIGATION_GROUP = Binding.Group("Prev/Next", compact=True)
 
-    BINDINGS = [Binding("a", "add_new", "Add")]
+    BINDINGS = [
+        Binding("a", "add_new", "Add"),
+        Binding("tab", "switch_tab", "Switch Tab"),
+        Binding(
+            "up",
+            "cursor_up",
+            "Prev record",
+            priority=True,
+            key_display="↑",
+            group=RECORD_NAVIGATION_GROUP,
+        ),
+        Binding(
+            "down",
+            "cursor_down",
+            "Next record",
+            priority=True,
+            key_display="↓",
+            group=RECORD_NAVIGATION_GROUP,
+        ),
+        Binding("enter", "view_selected", "View"),
+        Binding("e", "edit_selected", "Edit"),
+        Binding("r", "remove_selected", "Remove"),
+    ]
 
     # Entry points that just select their matching tab (`tab-<entry_point>`),
     # e.g. `sereto config targets add` → launch_tui(entry_point="targets").
     TABS: ClassVar[frozenset[str]] = frozenset({"targets", "dates", "people"})
 
-    def __init__(self, initial_tab: str | None = None) -> None:
+    def __init__(self, initial_tab: str | None = None, selected_record_row: Horizontal | None = None) -> None:
         super().__init__()
         self._initial_tab = initial_tab
+        self._selected_record_row = selected_record_row
+        self._record_rows: dict[str, list[Horizontal]] = {}
 
     @property
     def _active_vc(self) -> VersionConfig:
         return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+
+    @property
+    def _active_tab(self) -> str:
+        return self.query_one("#config-tabs", TabbedContent).active
 
     @staticmethod
     def _table_header(add_btn_id: str, *columns: tuple[str, str]) -> ComposeResult:
@@ -525,17 +546,12 @@ class ConfigScreen(_PoppableScreen):
 
     @on(Button.Pressed, ".config-ppl-remove-btn, .config-targets-remove-btn, .config-date-remove-btn")
     def handle_remove(self, event: Button.Pressed) -> None:
-        button_id = event.button.id or ""
-        button_id = button_id.removeprefix("remove-")
-
-        # focus the button that was pressed
         event.button.focus()
+        kind, index = (event.button.id or "").removeprefix("remove-").split("-", maxsplit=1)
+        self._remove_record(kind, int(index))
 
-        for type_prefix in ("target", "date", "person"):
-            if button_id.startswith(f"{type_prefix}-"):
-                index = int(button_id.removeprefix(f"{type_prefix}-"))
-                self._confirm_remove(type_prefix, index)
-                return
+    def _remove_record(self, kind: str, index: int) -> None:
+        self._confirm_remove(kind, index)
 
     def _confirm_remove(self, kind: str, index: int) -> None:
         """Push a Yes/No confirmation, then delete the record of *kind* at *index* on confirm."""
@@ -552,25 +568,44 @@ class ConfigScreen(_PoppableScreen):
 
     @on(Button.Pressed, ".config-ppl-edit-btn, .config-targets-edit-btn, .config-date-edit-btn")
     def handle_edit(self, event: Button.Pressed) -> None:
-        button_id = event.button.id or ""
-        button_id = button_id.removeprefix("edit-")
-
-        # focus the button that was pressed
         event.button.focus()
+        kind, index = (event.button.id or "").removeprefix("edit-").split("-", maxsplit=1)
+        self._edit_record(kind, int(index))
 
+    def _edit_record(self, kind: str, index: int) -> None:
         handler_map = {
             "target": self._open_target_form,
             "date": self._open_date_form,
             "person": self._open_person_form,
         }
-        for type_prefix, handler in handler_map.items():
-            if button_id.startswith(f"{type_prefix}-"):
-                handler(int(button_id.removeprefix(f"{type_prefix}-")))
-                return
+        handler_map[kind](index)
+
+    def view_record(self, row: _TargetRow | _DateRow | _PersonRow) -> None:
+        if isinstance(row, _TargetRow):
+            self.show_target_detail(self._active_vc.targets[row.index - 1])
+        elif isinstance(row, _PersonRow):
+            self.show_person_detail(self._active_vc.people[row.index - 1])
+        else:
+            return
+
+    def select_record(self, row: Horizontal) -> None:
+        self.query(".target-row.selected, .date-row.selected, .person-row.selected").remove_class("selected")
+        row.add_class("selected")
+        self._selected_record_row = row
+
+    @on(TabbedContent.TabActivated, "#config-tabs")
+    def handle_tab_activated(self) -> None:
+        self.query(".target-row.selected, .date-row.selected, .person-row.selected").remove_class("selected")
+        self._selected_record_row = None
 
     def show_target_detail(self, target: Target) -> None:
         title = f"{target.data.category.upper()}  {target.data.name}"
-        content = _highlight_json(target.data.model_dump_json(indent=2, exclude_none=True))
+        content = Syntax(
+            target.data.model_dump_json(indent=2, exclude_none=True),
+            "json",
+            line_numbers=False,
+            word_wrap=True,
+        )
         self.app.push_screen(RecordDetailScreen(title=title, content=content))
 
     def show_person_detail(self, person: Person) -> None:
@@ -587,8 +622,12 @@ class ConfigScreen(_PoppableScreen):
     def _refresh_targets(self) -> None:
         container = self.query_one("#targets-list", Vertical)
         container.remove_children()
+        rows: list[Horizontal] = []
         for i, t in enumerate(self._active_vc.targets, start=1):
-            container.mount(_TargetRow(t, i))
+            row = _TargetRow(t, i)
+            rows.append(row)
+            container.mount(row)
+        self._record_rows["tab-targets"] = rows
 
     def sort_key(self, d: Date) -> tuple[SeretoDate, SeretoDate]:
         if isinstance(d.date, DateRange):
@@ -604,8 +643,12 @@ class ConfigScreen(_PoppableScreen):
         # order below is sorted and does not match it.
         indexed_dates = list(enumerate(self._active_vc.dates, start=1))
         sorted_dates = sorted(indexed_dates, key=lambda pair: self.sort_key(pair[1]), reverse=True)
+        rows: list[Horizontal] = []
         for index, d in sorted_dates:
-            container.mount(_DateRow(d, index))
+            row = _DateRow(d, index)
+            rows.append(row)
+            container.mount(row)
+        self._record_rows["tab-dates"] = rows
 
     def _refresh_people(self) -> None:
         container = self.query_one("#people-list", Vertical)
@@ -613,8 +656,12 @@ class ConfigScreen(_PoppableScreen):
         # Same real-index caveat as _refresh_dates — display order is sorted by type.
         indexed_people = list(enumerate(self._active_vc.people, start=1))
         sorted_people = sorted(indexed_people, key=lambda pair: pair[1].type.value)
+        rows: list[Horizontal] = []
         for index, p in sorted_people:
-            container.mount(_PersonRow(p, index))
+            row = _PersonRow(p, index)
+            rows.append(row)
+            container.mount(row)
+        self._record_rows["tab-people"] = rows
 
     # ── Targets tab actions ────────────────────────────────────────────────────
     def _open_target_form(self, index: int | None = None) -> None:
@@ -700,6 +747,7 @@ class ConfigScreen(_PoppableScreen):
             self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
             if target_path.is_dir():
                 shutil.rmtree(target_path)
+            self._selected_record_row = None
             self._refresh_targets()
             self.notify("Target removed.", timeout=3)
             # Refresh the project browser to show the updated targets
@@ -871,13 +919,55 @@ class ConfigScreen(_PoppableScreen):
 
     # ── Actions ───────────────────────────────────────────────────────────────
     def action_add_new(self) -> None:
-        active_tab = self.query_one("#config-tabs", TabbedContent).active
-        if active_tab == "tab-targets":
+        if self._active_tab == "tab-targets":
             self._open_target_form()
-        elif active_tab == "tab-dates":
+        elif self._active_tab == "tab-dates":
             self._open_date_form()
-        elif active_tab == "tab-people":
+        elif self._active_tab == "tab-people":
             self._open_person_form()
+
+    def action_switch_tab(self) -> None:
+        tabs = self.query_one("#config-tabs", TabbedContent)
+        pane_ids = [pane.id for pane in tabs.query(TabPane) if pane.id is not None]
+
+        current_index = pane_ids.index(tabs.active)
+        tabs.active = pane_ids[(current_index + 1) % len(pane_ids)]
+
+    def _move_record_selection(self, offset: int) -> None:
+        rows = self._record_rows.get(self._active_tab, [])
+        if not rows:
+            return
+
+        selected_row = self._selected_record_row
+        if not isinstance(selected_row, (_TargetRow, _DateRow, _PersonRow)) or selected_row not in rows:
+            row = rows[0] if offset > 0 else rows[-1]
+        else:
+            current_index = rows.index(selected_row)
+            row = rows[(current_index + offset) % len(rows)]
+
+        self.select_record(row)
+        row.scroll_visible(animate=False)
+
+    def action_cursor_up(self) -> None:
+        self._move_record_selection(-1)
+
+    def action_cursor_down(self) -> None:
+        self._move_record_selection(1)
+
+    def action_edit_selected(self) -> None:
+        row = self._selected_record_row
+        if isinstance(row, (_TargetRow, _DateRow, _PersonRow)):
+            self._edit_record(row.kind, row.index)
+
+    def action_remove_selected(self) -> None:
+        row = self._selected_record_row
+        if isinstance(row, (_TargetRow, _DateRow, _PersonRow)):
+            self._remove_record(row.kind, row.index)
+
+    def action_view_selected(self) -> None:
+        row = self._selected_record_row
+        if isinstance(row, (_TargetRow, _PersonRow)):
+            self.view_record(row)
 
 
 # ── Config row widgets ─────────────────────────────────────────────────────────
@@ -910,6 +1000,14 @@ class _DateRow(Horizontal):
         self._date = date
         self._index = index  # 1-based
 
+    @property
+    def index(self) -> int:
+        return self._index
+
+    @property
+    def kind(self) -> str:
+        return "date"
+
     def compose(self) -> ComposeResult:
         type_label = self._date.type.value.replace("_", " ").title()
         yield _NonSelectableStatic(f"[cyan]{type_label}[/cyan]", classes="date-type", markup=True)
@@ -941,6 +1039,11 @@ class _DateRow(Horizontal):
             )
         )
 
+    def on_click(self, event: events.Click) -> None:
+        if not isinstance(self.screen, ConfigScreen):
+            return
+        self.screen.select_record(self)
+
 
 class _TargetRow(Horizontal):
     """Single row in the targets table: category, name + Edit/Remove buttons."""
@@ -949,6 +1052,14 @@ class _TargetRow(Horizontal):
         super().__init__(classes="target-row")
         self._target = target
         self._index = index  # 1-based
+
+    @property
+    def index(self) -> int:
+        return self._index
+
+    @property
+    def kind(self) -> str:
+        return "target"
 
     def compose(self) -> ComposeResult:
         yield _NonSelectableStatic(
@@ -975,8 +1086,11 @@ class _TargetRow(Horizontal):
         )
 
     def on_click(self, event: events.Click) -> None:
-        if event.chain == 2 and isinstance(self.screen, ConfigScreen):
-            self.screen.show_target_detail(self._target)
+        if not isinstance(self.screen, ConfigScreen):
+            return
+        self.screen.select_record(self)
+        if event.chain == 2:
+            self.screen.view_record(self)
 
 
 class _PersonRow(Horizontal):
@@ -986,6 +1100,14 @@ class _PersonRow(Horizontal):
         super().__init__(classes="person-row")
         self._person = person
         self._index = index  # 1-based
+
+    @property
+    def index(self) -> int:
+        return self._index
+
+    @property
+    def kind(self) -> str:
+        return "person"
 
     def compose(self) -> ComposeResult:
         type_label = self._person.type.value.replace("_", " ").title()
@@ -1011,8 +1133,11 @@ class _PersonRow(Horizontal):
         )
 
     def on_click(self, event: events.Click) -> None:
-        if event.chain == 2 and isinstance(self.screen, ConfigScreen):
-            self.screen.show_person_detail(self._person)
+        if not isinstance(self.screen, ConfigScreen):
+            return
+        self.screen.select_record(self)
+        if event.chain == 2:
+            self.screen.view_record(self)
 
 
 # ── Render screen ─────────────────────────────────────────────────────────────
@@ -1114,9 +1239,7 @@ class RenderScreen(_PoppableScreen):
     @on(Button.Pressed, "#open-pdf-btn")
     def handle_open_pdf(self) -> None:
         if self._last_pdf is not None:
-            import webbrowser
-
-            webbrowser.open(self._last_pdf.as_uri())
+            click.launch(str(self._last_pdf))
 
     @on(Button.Pressed, "#render-clean-btn")
     def handle_clean(self) -> None:
@@ -1907,9 +2030,6 @@ def _register_builtin_actions() -> None:
         register_tui_plugin(plugin)
     # Entry-point-only aliases (e.g. `sereto config targets add`); no button,
     # and ConfigScreen itself resolves which tab to open from app.entry_point.
-    for entry_id in ConfigScreen.TABS:
-        _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))
-
     for entry_id in ConfigScreen.TABS:
         _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))
 

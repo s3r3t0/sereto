@@ -347,7 +347,7 @@ def config_dates_add(
     guard_ni_only_options(
         click_ctx=click.get_current_context(),
         non_interactive=non_interactive,
-        ni_only={"date_type": "--type", "start_date": "--date", "end_date": "--end"},
+        ni_only={"version": "--version", "date_type": "--type", "start_date": "--date", "end_date": "--end"},
     )
 
     if not non_interactive:
@@ -477,6 +477,7 @@ def config_people_add(
         click_ctx=click.get_current_context(),
         non_interactive=non_interactive,
         ni_only={
+            "version": "--version",
             "person_type": "--type",
             "person_name": "--name",
             "business_unit": "--business-unit",
@@ -609,7 +610,7 @@ def config_targets_add(
     guard_ni_only_options(
         click_ctx=click.get_current_context(),
         non_interactive=non_interactive,
-        ni_only={"category": "--category", "target_name": "--name", "extra_json": "--extra"},
+        ni_only={"version": "--version", "category": "--category", "target_name": "--name", "extra_json": "--extra"},
     )
 
     if not non_interactive:

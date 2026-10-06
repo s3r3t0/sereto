@@ -438,8 +438,14 @@ ConfigScreen {
         align: left middle;
     }
     .target-row:hover,
+    .date-row:hover,
     .person-row:hover {
         background: $boost;
+    }
+    .target-row.selected,
+    .date-row.selected,
+    .person-row.selected {
+        background: $foreground 20%;
     }
     .target-category {
         width: 18;
