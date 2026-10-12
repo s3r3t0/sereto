@@ -2209,7 +2209,7 @@ requires-dist = [
     { name = "rapidfuzz", specifier = "~=3.14.5" },
     { name = "rich", specifier = "~=15.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "~=0.16.0" },
-    { name = "semver", specifier = ">=3.0.4,<3.2.0" },
+    { name = "semver", specifier = "~=3.1.0" },
     { name = "sereto-repl", specifier = "~=0.3.2" },
     { name = "textual", specifier = "~=8.2.8" },
     { name = "textual-dev", marker = "extra == 'dev'" },
