@@ -1278,17 +1278,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#sereto.cli.date.prompt_user_for_date" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        prompt_user_for_date
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1318,62 +1307,6 @@
     
   
     Finding
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../person/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Person
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Target
   
 
     
@@ -2686,17 +2619,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#sereto.cli.date.prompt_user_for_date" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        prompt_user_for_date
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2772,149 +2694,11 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/cli/date.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Check if the date type allows for a range."""</span>
     <span class="k">return</span> <span class="n">date_type</span> <span class="ow">in</span> <span class="n">TYPES_WITH_ALLOWED_RANGE</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="sereto.cli.date.prompt_user_for_date" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">prompt_user_for_date</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span></code>
-
-<a href="#sereto.cli.date.prompt_user_for_date" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Prompt user for a date or date range, depending on the provided date type.</p>
-<p>Date format is DD-Mmm-YYYY.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>date_type</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="DateType (sereto.models.date.DateType)" href="../../models/date/#sereto.models.date.DateType">DateType</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The type of date to prompt for.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="SeretoDate (sereto.models.date.SeretoDate)" href="../../models/date/#sereto.models.date.SeretoDate">SeretoDate</a> | <a class="autorefs autorefs-internal" title="DateRange (sereto.models.date.DateRange)" href="../../models/date/#sereto.models.date.DateRange">DateRange</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The date as provided by the user.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>sereto/cli/date.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">prompt_user_for_date</span><span class="p">(</span><span class="n">date_type</span><span class="p">:</span> <span class="n">DateType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="n">DateRange</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Prompt user for a date or date range, depending on the provided date type.</span>
-
-<span class="sd">    Date format is DD-Mmm-YYYY.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        date_type: The type of date to prompt for.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The date as provided by the user.</span>
-<span class="sd">    """</span>
-    <span class="c1"># Check if the date type allows for a range</span>
-    <span class="n">allow_range</span> <span class="o">=</span> <span class="n">allows_range</span><span class="p">(</span><span class="n">date_type</span><span class="p">)</span>
-
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="c1"># Prompt user for the start date</span>
-        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Date</span><span class="si">{</span><span class="s1">' start'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">allow_range</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2"> (DD-Mmm-YYYY)"</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">start_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">: "</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">continue</span>
-
-        <span class="c1"># Prompt user for the end date, if the date type allows it</span>
-        <span class="k">if</span> <span class="n">allow_range</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">end_date</span> <span class="o">:=</span> <span class="n">_prompt_date</span><span class="p">(</span><span class="s2">"Date end (DD-Mmm-YYYY): "</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">start_date</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">Console</span><span class="p">()</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[red]Invalid input, try again</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-                <span class="k">continue</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">end_date</span> <span class="o">=</span> <span class="n">start_date</span>
-
-        <span class="k">return</span> <span class="n">DateRange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_date</span><span class="p">)</span> <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="n">end_date</span> <span class="k">else</span> <span class="n">start_date</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

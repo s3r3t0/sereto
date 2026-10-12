@@ -1254,62 +1254,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/person/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Person
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cli/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Target
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../cli/utils/" class="md-nav__link">
         
   
@@ -3863,7 +3807,9 @@ found or 'dir_subtree' is reached.</p>
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
-<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">new_project</span><span class="p">(</span>
     <span class="n">projects_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
     <span class="n">templates_path</span><span class="p">:</span> <span class="n">DirectoryPath</span><span class="p">,</span>
@@ -3871,7 +3817,7 @@ found or 'dir_subtree' is reached.</p>
     <span class="nb">id</span><span class="p">:</span> <span class="n">TypeProjectId</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">people</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Project</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generates a new project with the specified ID.</span>
 
 <span class="sd">    Args:</span>
@@ -3917,6 +3863,8 @@ found or 'dir_subtree' is reached.</p>
         <span class="n">path</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
         <span class="n">risk_due_dates</span><span class="o">=</span><span class="n">risk_due_dates</span><span class="p">,</span>
     <span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">Project</span><span class="o">.</span><span class="n">load_from</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
