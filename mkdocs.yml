@@ -94,8 +94,6 @@ nav:
       - reference/cli/config.md
       - reference/cli/date.md
       - reference/cli/finding.md
-      - reference/cli/person.md
-      - reference/cli/target.md
       - reference/cli/utils.md
     - Models:
       - reference/models/base.md
