@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-13
+
 ### Added
 
 - Add `sereto tui`, a unified TUI for browsing and creating projects, adding retests, managing configuration and findings, and rendering and opening PDFs for selected project versions.
@@ -980,7 +982,8 @@ We registered a dummy package to PyPI to test the publishing. Therefore a versio
 Initial version
 
 
-[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.8.3...HEAD
+[unreleased]: https://github.com/s3r3t0/sereto/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/s3r3t0/sereto/compare/v0.8.3...v0.9.0
 [0.8.3]: https://github.com/s3r3t0/sereto/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/s3r3t0/sereto/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/s3r3t0/sereto/compare/v0.8.0...v0.8.1
