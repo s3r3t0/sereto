@@ -7,10 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `sereto tui`, a unified TUI for browsing and creating projects, adding retests, managing configuration and findings, and rendering and opening PDFs for selected project versions.
+- Add TUI plugin integration through `TuiPlugin`, `register_tui_plugin()`, and the optional `register_tui_actions` plugin hook.
+- Extend finding-template search to include group hints by default, with explicit `group_hint:`, `group:`, and `g:` search fields and highlighted group hints in results.
+- Add pre-commit hooks for whitespace cleanup, TOML validation, Ruff linting and formatting, with a `tox -e pre-commit` environment and CI enforcement.
+
+### Changed
+
+- Launch the unified TUI when `sereto` is run without a subcommand. The REPL remains available via `sereto repl`.
+- Route interactive `sereto findings add` and configuration commands for adding dates, people, and targets through the unified TUI. Non-interactive `-N` workflows remain available.
+- **Breaking:** The `--version` option for `sereto config dates add`, `sereto config people add`, and `sereto config targets add` now requires `-N`/`--non-interactive`.
+- **Breaking:** Remove the legacy date, person, and target prompt helpers from `sereto.cli.date`, `sereto.cli.person`, and `sereto.cli.target`. The `add_dates_config()`, `add_people_config()`, and `add_target()` helpers now build records from options and no longer accept `non_interactive`.
+- Return the created `Project` from `new_project()`.
+- Use Ruff alone for the `tox -e format` workflow, applying lint fixes as well as formatting, and pin the linting and formatting tools to the Ruff 0.16 series.
+- Switch Dependabot's Python package ecosystem from `pip` to `uv` and group CodeQL action updates.
+
 ### Fixed
 
 - Implement `__reduce__` for `SeretoDate` to fix deepcopy and pickling.
-- Make filesystem plugin loading deterministic and report malformed plugin modules clearly.
+- Make filesystem plugin loading deterministic, silently skip helper modules without `register_commands`, and report malformed hooks and import or registration failures without aborting loading of other plugins.
+- Select targets from the requested project version when rendering with `sereto pdf target`, rather than always using the latest version.
+- Open the add-sub-finding form directly from finding previews, preserving the selected template in the unified TUI.
+- Fix documentation generation by removing API references to deleted CLI prompt modules, and add the TUI search API reference to the documentation navigation.
+
+### Dependencies
+
+- Add pre-commit requirement ~=4.6.0 to the `dev` extra
+- Pin ruff requirement to ~=0.16.0
+- Change toml requirement from >=0.10.2 to ~=0.10.2
+- Update click requirement from ~=8.4.2 to ~=8.5.0
+- Update pydantic-settings requirement from ~=2.14.2 to ~=2.15.0
+- Update pypdf requirement from ~=6.14.2 to ~=6.20.0
+- Update semver requirement from ~=3.0.4 to ~=3.1.0
+- Bump hatchling from 1.31.0 to 1.32.4
+- Bump cryptography from 50.0.0 to 50.0.1
+- Bump matplotlib from 3.11.1 to 3.11.2
+- Bump mike from 2.1.3 to 2.2.0
+- Bump multidict from 6.7.0 to 6.9.1
+- Bump pydantic from 2.13.4 to 2.13.5
+- Bump pydantic-core from 2.46.4 to 2.46.5
+- Bump rapidfuzz from 3.14.5 to 3.14.6
+- Bump ruff from 0.14.0 to 0.16.10
+- Bump textual-dev from 1.7.0 to 1.8.0
+- Bump ty from 0.0.66 to 0.0.85
+- Bump urllib3 from 2.7.0 to 2.8.0
+- Update GitHub Actions versions.
 
 ## [0.8.3] - 2026-08-05
 
