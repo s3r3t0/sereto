@@ -90,6 +90,26 @@ ConfigRecordFormScreen {
             width: 1fr;
         }
     }
+    .target-field-row {
+        Input,
+        TextArea {
+            width: 1fr;
+        }
+        Switch {
+            width: auto;
+        }
+    }
+    .target-json-field {
+        height: 7;
+        background: #292929;
+        border: tall #292929;
+    }
+    .target-json-field:focus {
+        border: tall $primary;
+    }
+    #modal-target-specific-fields {
+        height: auto;
+    }
     InputWithLabel {
         margin-bottom: 1;
     }
