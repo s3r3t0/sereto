@@ -12,12 +12,13 @@ Screen stack (outermost → innermost):
 
 from __future__ import annotations
 
+import json
 import shutil
 import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, cast
 
 import click
 from pydantic import TypeAdapter, ValidationError
@@ -31,12 +32,28 @@ from textual.binding import Binding
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen, Screen
 from textual.types import NoSelection
-from textual.widgets import Button, Footer, Header, Input, Label, RichLog, Rule, Select, Static, TabbedContent, TabPane
+from textual.widget import Widget
+from textual.widgets import (
+    Button,
+    Footer,
+    Header,
+    Input,
+    Label,
+    RichLog,
+    Rule,
+    Select,
+    Static,
+    Switch,
+    TabbedContent,
+    TabPane,
+    TextArea,
+)
 
 from sereto.config import VersionConfig
-from sereto.enums import Risk
+from sereto.enums import Environment, Risk, TargetExposure
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
+from sereto.models.locator import get_locator_types
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.project import Project, is_project_dir, new_project
@@ -131,8 +148,7 @@ class RecordDetailScreen(ModalScreen[None]):
 
 @dataclass(frozen=True)
 class _TargetFormData:
-    category: str
-    name: str
+    model: TargetModel
 
 
 @dataclass(frozen=True)
@@ -154,12 +170,248 @@ class _PersonFormData:
 type _ConfigFormData = _TargetFormData | _DateFormData | _PersonFormData
 
 
+type _TargetFieldKind = Literal["input", "switch", "optional_bool", "select", "json", "presence_switch"]
+
+
+@dataclass(frozen=True)
+class _TargetFieldSpec:
+    path: str
+    label: str
+    kind: _TargetFieldKind
+    widget_id: str
+    placeholder: str = ""
+    options: tuple[tuple[str, object], ...] = ()
+    json_type: type[list[Any]] | type[dict[str, Any]] | None = None
+    allow_blank: bool = True
+    dependent_paths: tuple[str, ...] = ()
+
+
+_TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
+    "dast": (
+        _TargetFieldSpec(
+            "dst_ips_dynamic",
+            "Dynamic IPs",
+            "switch",
+            "modal-target-dst-ips-dynamic",
+            dependent_paths=("dst_ips_dynamic_details",),
+        ),
+        _TargetFieldSpec(
+            "dst_ips_dynamic_details", "Dynamic IPs details", "input", "modal-target-dst-ips-dynamic-details"
+        ),
+        _TargetFieldSpec(
+            "src_ips",
+            "Source IPs",
+            "json",
+            "modal-target-src-ips",
+            '["192.0.2.1", "198.51.100.0/24"]',
+            json_type=list,
+        ),
+        _TargetFieldSpec(
+            "ip_filtering",
+            "IP filtering",
+            "switch",
+            "modal-target-ip-filtering",
+            dependent_paths=("ip_allowed",),
+        ),
+        _TargetFieldSpec("ip_allowed", "IP allowed", "optional_bool", "modal-target-ip-allowed"),
+        _TargetFieldSpec(
+            "authentication",
+            "Authentication",
+            "switch",
+            "modal-target-authentication",
+            dependent_paths=("credentials_provided",),
+        ),
+        _TargetFieldSpec(
+            "credentials_provided", "Credentials provided", "optional_bool", "modal-target-credentials-provided"
+        ),
+        _TargetFieldSpec(
+            "exposure",
+            "Exposure",
+            "select",
+            "modal-target-exposure",
+            options=tuple((value.value.title(), value.value) for value in TargetExposure),
+            allow_blank=False,
+        ),
+        _TargetFieldSpec(
+            "environment",
+            "Environment",
+            "select",
+            "modal-target-environment",
+            options=tuple((value.value.title(), value.value) for value in Environment),
+            allow_blank=False,
+        ),
+        _TargetFieldSpec(
+            "waf_present",
+            "WAF present",
+            "switch",
+            "modal-target-waf-present",
+            dependent_paths=("waf_whitelisted",),
+        ),
+        _TargetFieldSpec("waf_whitelisted", "WAF whitelisted", "optional_bool", "modal-target-waf-whitelisted"),
+    ),
+    "sast": (
+        _TargetFieldSpec(
+            "code_origin",
+            "Code origin",
+            "select",
+            "modal-target-code-origin",
+            options=(("Version control", "vcs"), ("Archive", "archive")),
+            dependent_paths=("code_origin_name",),
+        ),
+        _TargetFieldSpec("code_origin_name", "Code origin name", "input", "modal-target-code-origin-name"),
+        _TargetFieldSpec(
+            "code_integrity",
+            "Code integrity",
+            "json",
+            "modal-target-code-integrity",
+            '{"file_1_name_with_hash_type": "hash1", "file_2_name_with_hash_type": "hash2"}',
+            json_type=dict,
+        ),
+        _TargetFieldSpec(
+            "source_code_analyzer_files",
+            "Src code analyzer files",
+            "json",
+            "modal-target-analyzer-files",
+            '["file1", "file2"]',
+            json_type=list,
+        ),
+    ),
+    "mobile": (
+        _TargetFieldSpec(
+            "android",
+            "Android",
+            "presence_switch",
+            "modal-target-android-enabled",
+            dependent_paths=(
+                "android.package_name",
+                "android.version_name",
+                "android.version_code",
+                "android.file_integrity",
+            ),
+        ),
+        _TargetFieldSpec("android.package_name", "Android package name", "input", "modal-target-package-name"),
+        _TargetFieldSpec("android.version_name", "Android version name", "input", "modal-target-version-name"),
+        _TargetFieldSpec("android.version_code", "Android version code", "input", "modal-target-version-code"),
+        _TargetFieldSpec(
+            "android.file_integrity",
+            "Android file integrity",
+            "json",
+            "modal-target-android-integrity",
+            '{"file_1_name_with_hash_type": "hash1", "file_2_name_with_hash_type": "hash2"}',
+            json_type=dict,
+        ),
+        _TargetFieldSpec(
+            "ios",
+            "iOS",
+            "presence_switch",
+            "modal-target-ios-enabled",
+            dependent_paths=(
+                "ios.bundle_id",
+                "ios.short_version_string",
+                "ios.version",
+                "ios.file_integrity",
+            ),
+        ),
+        _TargetFieldSpec("ios.bundle_id", "iOS Bundle ID", "input", "modal-target-bundle-id"),
+        _TargetFieldSpec(
+            "ios.short_version_string",
+            "iOS short version",
+            "input",
+            "modal-target-short-version-string",
+        ),
+        _TargetFieldSpec("ios.version", "iOS version", "input", "modal-target-ios-version"),
+        _TargetFieldSpec(
+            "ios.file_integrity",
+            "iOS file integrity",
+            "json",
+            "modal-target-ios-integrity",
+            '{"file_1_name_with_hash_type": "hash1", "file_2_name_with_hash_type": "hash2"}',
+            json_type=dict,
+        ),
+    ),
+}
+
+
+class _LocatorRow(Horizontal):
+    """Editable locator type, value, and description row."""
+
+    def __init__(self, locator: dict[str, Any] | None = None) -> None:
+        super().__init__(classes="locator-row")
+        locator = locator or {}
+        self._initial_type = str(locator.get("type", "url"))
+        self._initial_value = str(locator.get("value", ""))
+        self._initial_description = str(locator.get("description") or "")
+
+    def compose(self) -> ComposeResult:
+        locator_types = get_locator_types()
+        yield Select[str](
+            [(locator_type.replace("_", " ").title(), locator_type) for locator_type in locator_types],
+            value=self._initial_type,
+            allow_blank=False,
+            classes="locator-type",
+        )
+        yield Input(
+            value=self._initial_value,
+            placeholder="Value",
+            classes="locator-value",
+        )
+        yield Input(
+            value=self._initial_description,
+            placeholder="Description (optional)",
+            classes="locator-description",
+        )
+        yield Button("\u2716", variant="error", classes="locator-remove")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.has_class("locator-remove"):
+            self.remove()
+
+    def value(self) -> dict[str, str] | None:
+        locator_type = cast(str | NoSelection, self.query_one(".locator-type", Select).value)
+        locator_value = self.query_one(".locator-value", Input).value.strip()
+        description = self.query_one(".locator-description", Input).value.strip()
+        if not locator_value:
+            if description:
+                raise ValueError("Locator value is required.")
+            return None
+        if isinstance(locator_type, NoSelection):
+            raise ValueError("Locator type is required.")
+        locator = {"type": locator_type, "value": locator_value}
+        if description:
+            locator["description"] = description
+        return locator
+
+
+class _LocatorListWidget(Widget):
+    """Dynamic list of editable target locators."""
+
+    def __init__(self, locators: list[dict[str, Any]], *, id: str) -> None:
+        super().__init__(id=id, classes="locator-list")
+        self._initial_locators = locators
+
+    def compose(self) -> ComposeResult:
+        self._rows = Vertical(classes="locator-rows")
+        with self._rows:
+            for locator in self._initial_locators:
+                yield _LocatorRow(locator)
+        yield Button("Add locator", variant="primary", classes="locator-add")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.has_class("locator-add"):
+            row = _LocatorRow()
+            self._rows.mount(row)
+            row.call_after_refresh(row.query_one(".locator-type", Select).focus)
+
+    def values(self) -> list[dict[str, str]]:
+        return [value for row in self.query(_LocatorRow) if (value := row.value()) is not None]
+
+
 class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
     """Modal form for adding or editing a target, date, or person."""
 
     BINDINGS = [
         Binding("escape", "cancel", "Cancel"),
-        Binding("enter", "submit", "Submit", priority=True),
+        Binding("ctrl+s", "submit", "Submit", priority=True),
     ]
 
     def __init__(
@@ -175,28 +427,55 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
         self._initial = initial
 
     def compose(self) -> ComposeResult:
-        action = "Edit" if self._initial is not None else "Add"
         with Vertical(id="config-record-dialog"):
-            yield Label(f"{action} {self._kind}", id="config-record-title")
             with ScrollableContainer(id="config-record-fields"):
                 if self._kind == "target":
                     target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
+                    yield InputWithLabel(
+                        Input(
+                            value=target_initial.model.id or "" if target_initial else "",
+                            id="modal-target-id",
+                            placeholder="Optional target ID",
+                        ),
+                        "ID",
+                    )
+                    yield InputWithLabel(
+                        Input(
+                            value=target_initial.model.name if target_initial else "",
+                            id="modal-target-name",
+                            placeholder="Target name",
+                        ),
+                        "Name",
+                    )
                     with Horizontal(classes="field-row"):
                         yield Label("Category", classes="field-label")
                         yield Select[str](
                             [(category, category.lower()) for category in self._categories],
                             id="modal-target-category",
                             prompt="Select category…",
-                            value=target_initial.category if target_initial else Select.NULL,
+                            value=target_initial.model.category if target_initial else Select.NULL,
                             disabled=target_initial is not None,
                         )
-                    yield InputWithLabel(
-                        Input(
-                            value=target_initial.name if target_initial else "",
-                            id="modal-target-name",
-                            placeholder="Target name…",
+                    yield Vertical(id="modal-target-specific-fields")
+                    yield self._field_row(
+                        "Locators",
+                        _LocatorListWidget(
+                            target_initial.model.model_dump(mode="json")["locators"] if target_initial else [],
+                            id="modal-target-locators",
                         ),
-                        "Name",
+                    )
+                    yield self._json_field_row(
+                        "Documents",
+                        "modal-target-documents",
+                        target_initial.model.model_dump(mode="json")["documents"] if target_initial else [],
+                        '[{"type": "doc_type", "value": "doc_value", "description": "optional_description"}]',
+                    )
+                    extra = target_initial.model.model_extra if target_initial else None
+                    yield self._json_field_row(
+                        "Extra fields",
+                        "modal-target-extra",
+                        extra or {},
+                        "{}",
                     )
                 elif self._kind == "date":
                     date_initial = self._initial if isinstance(self._initial, _DateFormData) else None
@@ -272,6 +551,8 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                 yield Button("Save", variant="success", id="config-record-save")
 
     def on_mount(self) -> None:
+        action = "Edit" if self._initial is not None else "Add"
+        self.query_one("#config-record-dialog").border_title = f"{action} {self._kind}"
         if self._kind == "date":
             date_type = cast(DateType | NoSelection, self.query_one("#modal-date-type", Select).value)
             self._set_date_end_visibility(date_type)
@@ -287,6 +568,240 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
         if not end_row.display:
             end_input.value = ""
 
+    @on(Select.Changed, "#modal-target-category")
+    async def handle_target_category_changed(self, event: Select.Changed) -> None:
+        if isinstance(event.value, NoSelection):
+            self.query_one("#modal-target-specific-fields", Vertical).remove_children()
+            return
+        await self._rebuild_target_specific_fields(str(event.value))
+
+    @staticmethod
+    def _target_model_class(category: str) -> type[TargetModel]:
+        match category:
+            case "dast":
+                return TargetDastModel
+            case "sast":
+                return TargetSastModel
+            case "mobile":
+                return TargetMobileModel
+            case _:
+                return TargetModel
+
+    @staticmethod
+    def _field_row(label: str, widget: Widget) -> Horizontal:
+        return Horizontal(Label(label, classes="field-label"), widget, classes="field-row target-field-row")
+
+    @classmethod
+    def _json_field_row(cls, label: str, widget_id: str, value: object, placeholder: str) -> Horizontal:
+        return cls._field_row(
+            label,
+            TextArea(
+                json.dumps(value, indent=2) if value else "",
+                language="json",
+                id=widget_id,
+                classes="target-json-field",
+                placeholder=placeholder,
+            ),
+        )
+
+    @staticmethod
+    def _optional_bool_select(widget_id: str, value: bool | None) -> Select[bool]:
+        return Select(
+            [("Yes", True), ("No", False)],
+            id=widget_id,
+            prompt="Not specified",
+            value=value if value is not None else Select.NULL,
+        )
+
+    @staticmethod
+    def _value_at_path(data: dict[str, Any], path: str) -> Any:
+        value: Any = data
+        for part in path.split("."):
+            if not isinstance(value, dict):
+                return None
+            value = value.get(part)
+        return value
+
+    def _target_field_widget(self, spec: _TargetFieldSpec, value: Any) -> Widget:
+        widget: Widget
+        match spec.kind:
+            case "input":
+                widget = Input(value=str(value) if value is not None else "", id=spec.widget_id)
+            case "switch":
+                widget = Switch(value=bool(value), id=spec.widget_id)
+            case "presence_switch":
+                widget = Switch(value=value is not None, id=spec.widget_id)
+            case "optional_bool":
+                widget = self._optional_bool_select(spec.widget_id, value if isinstance(value, bool) else None)
+            case "select":
+                widget = Select(
+                    spec.options,
+                    value=value if value is not None else Select.NULL,
+                    prompt="Not specified",
+                    allow_blank=spec.allow_blank,
+                    id=spec.widget_id,
+                )
+            case "json":
+                widget = TextArea(
+                    json.dumps(value, indent=2) if value else "",
+                    language="json",
+                    id=spec.widget_id,
+                    classes="target-json-field",
+                    placeholder=spec.placeholder,
+                )
+        if spec.dependent_paths:
+            widget.add_class("target-visibility-controller")
+        return widget
+
+    async def _rebuild_target_specific_fields(self, category: str) -> None:
+        # Clear the container before rebuilding the target-specific fields
+        container = self.query_one("#modal-target-specific-fields", Vertical)
+        container.remove_children()
+        # Obtain the target model
+        target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
+        model = target_initial.model if target_initial and target_initial.model.category == category else None
+        if model is None:
+            model = self._target_model_class(category)(category=category, name="temporary")
+        # Extract values from the model
+        values = model.model_dump(mode="json")
+        rows = [
+            self._field_row(spec.label, self._target_field_widget(spec, self._value_at_path(values, spec.path)))
+            for spec in _TARGET_FIELD_SPECS.get(category, ())
+        ]
+
+        await container.mount(*rows)
+        # Set the initial visibility of dependent fields.
+        for spec in _TARGET_FIELD_SPECS.get(category, ()):
+            if spec.dependent_paths:
+                value = self._value_at_path(values, spec.path)
+                self._set_target_dependents_visibility(spec, self._target_dependency_enabled(spec, value))
+
+    @staticmethod
+    def _target_dependency_enabled(spec: _TargetFieldSpec, value: Any) -> bool:
+        if spec.kind in ("switch", "presence_switch"):
+            return bool(value)
+        if spec.kind == "select":
+            return value is not None and not isinstance(value, NoSelection)
+        return bool(value)
+
+    def _set_target_dependents_visibility(self, controller: _TargetFieldSpec, visible: bool) -> None:
+        category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
+        if isinstance(category, NoSelection):
+            return
+        specs_by_path = {spec.path: spec for spec in _TARGET_FIELD_SPECS.get(category, ())}
+        for dependent_path in controller.dependent_paths:
+            dependent = specs_by_path[dependent_path]
+            field_row = self.query_one(f"#{dependent.widget_id}").parent
+            if field_row is None:
+                raise RuntimeError(f"Target field {dependent.path!r} is not mounted")
+            field_row.display = visible
+
+    def _update_target_dependency(self, widget_id: str | None, value: Any) -> None:
+        category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
+        if isinstance(category, NoSelection):
+            return
+        for spec in _TARGET_FIELD_SPECS.get(category, ()):
+            if spec.widget_id == widget_id and spec.dependent_paths:
+                self._set_target_dependents_visibility(spec, self._target_dependency_enabled(spec, value))
+                return
+
+    @on(Switch.Changed, ".target-visibility-controller")
+    def handle_target_switch_dependency_changed(self, event: Switch.Changed) -> None:
+        self._update_target_dependency(event.switch.id, event.value)
+
+    @on(Select.Changed, ".target-visibility-controller")
+    def handle_target_select_dependency_changed(self, event: Select.Changed) -> None:
+        self._update_target_dependency(event.select.id, event.value)
+
+    def _read_json(self, widget_id: str, label: str, expected_type: type[list[Any]] | type[dict[str, Any]]) -> Any:
+        text = self.query_one(f"#{widget_id}", TextArea).text.strip()
+        if not text:
+            return expected_type()
+        try:
+            value = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"{label} contains invalid JSON: {exc.msg}") from exc
+        if not isinstance(value, expected_type):
+            raise ValueError(f"{label} must be a JSON {'array' if expected_type is list else 'object'}.")
+        return value
+
+    def _optional_bool_value(self, widget_id: str) -> bool | None:
+        value = cast(bool | NoSelection, self.query_one(f"#{widget_id}", Select).value)
+        return None if isinstance(value, NoSelection) else value
+
+    @staticmethod
+    def _set_value_at_path(data: dict[str, Any], path: str, value: Any) -> None:
+        parts = path.split(".")
+        parent = data
+        for part in parts[:-1]:
+            child = parent.get(part)
+            if not isinstance(child, dict):
+                child = {}
+                parent[part] = child
+            parent = child
+        parent[parts[-1]] = value
+
+    def _read_target_field(self, spec: _TargetFieldSpec) -> Any:
+        selector = f"#{spec.widget_id}"
+        match spec.kind:
+            case "input":
+                return self.query_one(selector, Input).value.strip() or None
+            case "switch" | "presence_switch":
+                return self.query_one(selector, Switch).value
+            case "optional_bool":
+                return self._optional_bool_value(spec.widget_id)
+            case "select":
+                value = self.query_one(selector, Select).value
+                return None if isinstance(value, NoSelection) else value
+            case "json":
+                if spec.json_type is None:
+                    raise TypeError(f"JSON field {spec.path!r} has no expected type")
+                return self._read_json(spec.widget_id, spec.label, spec.json_type)
+
+    def _build_target_model(self, category: str, name: str) -> TargetModel:
+        model_class = self._target_model_class(category)
+        extra = self._read_json("modal-target-extra", "Extra fields", dict)
+        conflicting = sorted(extra.keys() & set(model_class.model_fields))
+        if conflicting:
+            raise ValueError(f"Extra fields duplicate declared fields: {', '.join(conflicting)}")
+
+        payload: dict[str, Any] = {
+            **extra,
+            "id": self.query_one("#modal-target-id", Input).value.strip() or None,
+            "category": category,
+            "name": name,
+            "locators": self.query_one("#modal-target-locators", _LocatorListWidget).values(),
+            "documents": self._read_json("modal-target-documents", "Documents", list),
+        }
+
+        specs = _TARGET_FIELD_SPECS.get(category, ())
+        # Read and collect the values of all fields that other fields depend on
+        controller_values = {spec.path: self._read_target_field(spec) for spec in specs if spec.dependent_paths}
+        # Determine which dependent fields should be omitted based on its controller's enabled/disabled status
+        disabled_paths = {
+            dependent_path
+            for spec in specs
+            if spec.dependent_paths and not self._target_dependency_enabled(spec, controller_values[spec.path])
+            for dependent_path in spec.dependent_paths
+        }
+        presence_switch_specs: list[_TargetFieldSpec] = []
+        # Iterate over all fields
+        for spec in specs:
+            # Skip presence switch fields for now; they are handled separately at the end
+            if spec.kind == "presence_switch":
+                presence_switch_specs.append(spec)
+                continue
+            if spec.path in disabled_paths:
+                # Skip this field because it is dependent on a controller that is currently disabled
+                continue
+            value = controller_values[spec.path] if spec.path in controller_values else self._read_target_field(spec)
+            self._set_value_at_path(payload, spec.path, value)
+        for spec in presence_switch_specs:
+            if not controller_values[spec.path]:
+                self._set_value_at_path(payload, spec.path, None)
+
+        return model_class.model_validate(payload, strict=False)
+
     @on(Button.Pressed, "#config-record-cancel")
     def handle_cancel(self) -> None:
         self.dismiss(None)
@@ -296,7 +811,7 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
         if self._kind == "target":
             target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
             if target_initial is not None:
-                category = target_initial.category
+                category = target_initial.model.category
             else:
                 selected_category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
                 if isinstance(selected_category, NoSelection):
@@ -307,7 +822,12 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
             if not name:
                 self.notify("Enter a target name.", severity="warning", timeout=3)
                 return
-            self.dismiss(_TargetFormData(category, name))
+            try:
+                model = self._build_target_model(category, name)
+            except (ValueError, ValidationError) as exc:
+                self.notify(str(exc), title="Invalid target", severity="error", markup=False)
+                return
+            self.dismiss(_TargetFormData(model))
         elif self._kind == "date":
             date_type = cast(DateType | NoSelection, self.query_one("#modal-date-type", Select).value)
             if isinstance(date_type, NoSelection):
@@ -420,11 +940,13 @@ class ConfigScreen(_PoppableScreen):
     """Screen for managing the project configuration (general info, targets, dates, people)."""
 
     SUB_TITLE = "Project Configuration"
+    TAB_NAVIGATION_GROUP = Binding.Group("Switch tab", compact=True)
     RECORD_NAVIGATION_GROUP = Binding.Group("Prev/Next", compact=True)
 
     BINDINGS = [
         Binding("a", "add_new", "Add"),
-        Binding("tab", "switch_tab", "Switch Tab"),
+        Binding("left", "previous_tab", "Previous tab", key_display="←", group=TAB_NAVIGATION_GROUP, priority=True),
+        Binding("right", "next_tab", "Next tab", key_display="→", group=TAB_NAVIGATION_GROUP, priority=True),
         Binding(
             "up",
             "cursor_up",
@@ -463,6 +985,20 @@ class ConfigScreen(_PoppableScreen):
     @property
     def _active_tab(self) -> str:
         return self.query_one("#config-tabs", TabbedContent).active
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if not self.is_mounted:
+            return True
+        if self._active_tab == "tab-general":
+            return action not in {
+                "cursor_up",
+                "cursor_down",
+                "add_new",
+                "view_selected",
+                "edit_selected",
+                "remove_selected",
+            }
+        return not (self._active_tab == "tab-dates" and action == "view_selected")
 
     @staticmethod
     def _table_header(add_btn_id: str, *columns: tuple[str, str]) -> ComposeResult:
@@ -597,6 +1133,7 @@ class ConfigScreen(_PoppableScreen):
     def handle_tab_activated(self) -> None:
         self.query(".target-row.selected, .date-row.selected, .person-row.selected").remove_class("selected")
         self._selected_record_row = None
+        self.refresh_bindings()
 
     def show_target_detail(self, target: Target) -> None:
         title = f"{target.data.category.upper()}  {target.data.name}"
@@ -666,7 +1203,7 @@ class ConfigScreen(_PoppableScreen):
     # ── Targets tab actions ────────────────────────────────────────────────────
     def _open_target_form(self, index: int | None = None) -> None:
         target = self._active_vc.targets[index - 1] if index is not None else None
-        initial = _TargetFormData(target.data.category, target.data.name) if target is not None else None
+        initial = _TargetFormData(target.data) if target is not None else None
         app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
         self.app.push_screen(
             ConfigRecordFormScreen("target", categories=app.categories, initial=initial),
@@ -676,38 +1213,68 @@ class ConfigScreen(_PoppableScreen):
     def _save_target(self, result: _ConfigFormData | None, index: int | None) -> None:
         if not isinstance(result, _TargetFormData):
             return
-        if not result.name:
-            self.notify("Enter a target name.", severity="warning", timeout=3)
-            return
-
-        model_class: type[TargetModel]
-        match result.category:
-            case "dast":
-                model_class = TargetDastModel
-            case "sast":
-                model_class = TargetSastModel
-            case "mobile":
-                model_class = TargetMobileModel
-            case _:
-                model_class = TargetModel
-
-        try:
-            target_model = model_class.model_validate({"category": result.category, "name": result.name})
-        except ValidationError as exc:
-            self.notify(str(exc), title="Validation error", severity="error", markup=False)
-            return
+        target_model = result.model
 
         if index is not None:
-            target = self._active_vc.targets[index - 1]
+            project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            vc = self._active_vc
+            target = vc.targets[index - 1]
+            old_path = target.path
+            new_path = old_path.parent / (target_model.uname + target.version.path_suffix)
+
+            if new_path != old_path:
+                conflicting_target = any(
+                    existing.data.uname == target_model.uname
+                    for existing_index, existing in enumerate(vc.targets)
+                    if existing_index != index - 1
+                )
+                if conflicting_target:
+                    self.notify(
+                        f"A target named {target_model.name!r} already exists in this category.",
+                        title="Failed to update target",
+                        severity="error",
+                        markup=False,
+                    )
+                    return
+                if new_path.exists():
+                    self.notify(
+                        f"Target directory already exists: {new_path}",
+                        title="Failed to update target",
+                        severity="error",
+                        markup=False,
+                    )
+                    return
+
+            renamed = False
             try:
-                target.data.name = target_model.name
-                self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+                if new_path != old_path:
+                    old_path.rename(new_path)
+                    renamed = True
+
+                vc.targets[index - 1] = Target.load(
+                    data=target_model,
+                    path=new_path,
+                    version=target.version,
+                    templates=project.settings.templates_path,
+                )
+                project.config.save()
             except Exception as exc:
+                vc.targets[index - 1] = target
+                if renamed:
+                    try:
+                        new_path.rename(old_path)
+                    except OSError as rollback_exc:
+                        self.notify(
+                            str(rollback_exc),
+                            title="Failed to restore target directory",
+                            severity="error",
+                            markup=False,
+                        )
                 self.notify(str(exc), title="Failed to update target", severity="error", markup=False)
                 return
 
             self._refresh_targets()
-            self.notify(result.name, title="Target updated", timeout=3)
+            self.notify(target_model.name, title="Target updated", timeout=3)
             for screen in self.app.screen_stack:
                 if isinstance(screen, ProjectBrowserScreen):
                     screen.refresh_content()
@@ -731,7 +1298,7 @@ class ConfigScreen(_PoppableScreen):
             return
 
         self._refresh_targets()
-        self.notify(result.name, title="Target added", timeout=3)
+        self.notify(target_model.name, title="Target added", timeout=3)
 
         # Refresh the project browser to show the new target
         for screen in self.app.screen_stack:
@@ -926,12 +1493,18 @@ class ConfigScreen(_PoppableScreen):
         elif self._active_tab == "tab-people":
             self._open_person_form()
 
-    def action_switch_tab(self) -> None:
+    def _switch_tab(self, offset: int) -> None:
         tabs = self.query_one("#config-tabs", TabbedContent)
         pane_ids = [pane.id for pane in tabs.query(TabPane) if pane.id is not None]
 
         current_index = pane_ids.index(tabs.active)
-        tabs.active = pane_ids[(current_index + 1) % len(pane_ids)]
+        tabs.active = pane_ids[(current_index + offset) % len(pane_ids)]
+
+    def action_previous_tab(self) -> None:
+        self._switch_tab(-1)
+
+    def action_next_tab(self) -> None:
+        self._switch_tab(1)
 
     def _move_record_selection(self, offset: int) -> None:
         rows = self._record_rows.get(self._active_tab, [])
@@ -1233,8 +1806,15 @@ class RenderScreen(_PoppableScreen):
         if isinstance(render_type_select.value, NoSelection):
             self.notify("Select a render type.", severity="warning", timeout=3)
             return
-        render_type = render_type_select.value
-        self._run_render(render_type)
+        render_type = str(render_type_select.value)
+        target_uname: str | None = None
+        fg_uname: str | None = None
+        if render_type == "fg":
+            target_value = self.query_one("#fg-target-select", Select).value
+            group_value = self.query_one("#fg-group-select", Select).value
+            target_uname = None if isinstance(target_value, NoSelection) else str(target_value)
+            fg_uname = None if isinstance(group_value, NoSelection) else str(group_value)
+        self._run_render(render_type, target_uname, fg_uname)
 
     @on(Button.Pressed, "#open-pdf-btn")
     def handle_open_pdf(self) -> None:
@@ -1247,7 +1827,7 @@ class RenderScreen(_PoppableScreen):
 
     # ── workers ───────────────────────────────────────────────────────────────
     @work(thread=True)
-    def _run_render(self, kind: str) -> None:
+    def _run_render(self, kind: str, target_uname: str | None = None, fg_uname: str | None = None) -> None:
         from loguru import logger
 
         from sereto.pdf import (
@@ -1318,10 +1898,6 @@ class RenderScreen(_PoppableScreen):
                         f"[bold green]✔ SoW saved:[/bold green] {pdf_path}",
                     )
                 case "fg":
-                    target_sel = self.query_one("#fg-target-select", Select)
-                    fg_sel = self.query_one("#fg-group-select", Select)
-                    target_uname = None if isinstance(target_sel.value, NoSelection) else str(target_sel.value)
-                    fg_uname = None if isinstance(fg_sel.value, NoSelection) else str(fg_sel.value)
                     pdf_path = find_and_generate_pdf_finding_group(
                         project=project,
                         template="finding_group",
