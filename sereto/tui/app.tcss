@@ -73,7 +73,7 @@ ConfigRecordFormScreen {
         margin-bottom: 0;
         align: left middle;
         Label {
-            width: 12;
+            width: 17;
             padding: 1;
             text-align: right;
         }
@@ -129,6 +129,9 @@ ConfigRecordFormScreen {
     }
     InputWithLabel {
         margin-bottom: 0;
+        & > Label {
+            width: 17;
+        }
     }
     Input,
     Select > SelectCurrent {
