@@ -940,11 +940,13 @@ class ConfigScreen(_PoppableScreen):
     """Screen for managing the project configuration (general info, targets, dates, people)."""
 
     SUB_TITLE = "Project Configuration"
+    TAB_NAVIGATION_GROUP = Binding.Group("Switch tab", compact=True)
     RECORD_NAVIGATION_GROUP = Binding.Group("Prev/Next", compact=True)
 
     BINDINGS = [
         Binding("a", "add_new", "Add"),
-        Binding("ctrl+tab", "switch_tab", "Switch Tab"),
+        Binding("left", "previous_tab", "Previous tab", key_display="←", group=TAB_NAVIGATION_GROUP, priority=True),
+        Binding("right", "next_tab", "Next tab", key_display="→", group=TAB_NAVIGATION_GROUP, priority=True),
         Binding(
             "up",
             "cursor_up",
@@ -1491,12 +1493,18 @@ class ConfigScreen(_PoppableScreen):
         elif self._active_tab == "tab-people":
             self._open_person_form()
 
-    def action_switch_tab(self) -> None:
+    def _switch_tab(self, offset: int) -> None:
         tabs = self.query_one("#config-tabs", TabbedContent)
         pane_ids = [pane.id for pane in tabs.query(TabPane) if pane.id is not None]
 
         current_index = pane_ids.index(tabs.active)
-        tabs.active = pane_ids[(current_index + 1) % len(pane_ids)]
+        tabs.active = pane_ids[(current_index + offset) % len(pane_ids)]
+
+    def action_previous_tab(self) -> None:
+        self._switch_tab(-1)
+
+    def action_next_tab(self) -> None:
+        self._switch_tab(1)
 
     def _move_record_selection(self, offset: int) -> None:
         rows = self._record_rows.get(self._active_tab, [])
