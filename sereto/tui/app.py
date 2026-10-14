@@ -32,6 +32,7 @@ from textual.binding import Binding
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import ModalScreen, Screen
 from textual.types import NoSelection
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Footer,
@@ -52,6 +53,7 @@ from sereto.config import VersionConfig
 from sereto.enums import Environment, Risk, TargetExposure
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
+from sereto.models.locator import get_locator_types
 from sereto.models.person import Person, PersonType
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.project import Project, is_project_dir, new_project
@@ -181,12 +183,21 @@ class _TargetFieldSpec:
     options: tuple[tuple[str, object], ...] = ()
     json_type: type[list[Any]] | type[dict[str, Any]] | None = None
     allow_blank: bool = True
+    dependent_paths: tuple[str, ...] = ()
 
 
 _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
     "dast": (
-        _TargetFieldSpec("dst_ips_dynamic", "IPs", "switch", "modal-target-dst-ips-dynamic"),
-        _TargetFieldSpec("dst_ips_dynamic_details", "IPs details", "input", "modal-target-dst-ips-dynamic-details"),
+        _TargetFieldSpec(
+            "dst_ips_dynamic",
+            "Dynamic IPs",
+            "switch",
+            "modal-target-dst-ips-dynamic",
+            dependent_paths=("dst_ips_dynamic_details",),
+        ),
+        _TargetFieldSpec(
+            "dst_ips_dynamic_details", "Dynamic IPs details", "input", "modal-target-dst-ips-dynamic-details"
+        ),
         _TargetFieldSpec(
             "src_ips",
             "Source IPs",
@@ -195,10 +206,24 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
             '["192.0.2.1", "198.51.100.0/24"]',
             json_type=list,
         ),
-        _TargetFieldSpec("ip_filtering", "IP filtering", "switch", "modal-target-ip-filtering"),
+        _TargetFieldSpec(
+            "ip_filtering",
+            "IP filtering",
+            "switch",
+            "modal-target-ip-filtering",
+            dependent_paths=("ip_allowed",),
+        ),
         _TargetFieldSpec("ip_allowed", "IP allowed", "optional_bool", "modal-target-ip-allowed"),
-        _TargetFieldSpec("authentication", "Authentication", "switch", "modal-target-authentication"),
-        _TargetFieldSpec("credentials_provided", "Credentials", "optional_bool", "modal-target-credentials-provided"),
+        _TargetFieldSpec(
+            "authentication",
+            "Authentication",
+            "switch",
+            "modal-target-authentication",
+            dependent_paths=("credentials_provided",),
+        ),
+        _TargetFieldSpec(
+            "credentials_provided", "Credentials provided", "optional_bool", "modal-target-credentials-provided"
+        ),
         _TargetFieldSpec(
             "exposure",
             "Exposure",
@@ -215,8 +240,14 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
             options=tuple((value.value.title(), value.value) for value in Environment),
             allow_blank=False,
         ),
-        _TargetFieldSpec("waf_present", "WAF present", "switch", "modal-target-waf-present"),
-        _TargetFieldSpec("waf_whitelisted", "WAF allowlisted", "optional_bool", "modal-target-waf-whitelisted"),
+        _TargetFieldSpec(
+            "waf_present",
+            "WAF present",
+            "switch",
+            "modal-target-waf-present",
+            dependent_paths=("waf_whitelisted",),
+        ),
+        _TargetFieldSpec("waf_whitelisted", "WAF whitelisted", "optional_bool", "modal-target-waf-whitelisted"),
     ),
     "sast": (
         _TargetFieldSpec(
@@ -225,8 +256,9 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
             "select",
             "modal-target-code-origin",
             options=(("Version control", "vcs"), ("Archive", "archive")),
+            dependent_paths=("code_origin_name",),
         ),
-        _TargetFieldSpec("code_origin_name", "Origin name", "input", "modal-target-code-origin-name"),
+        _TargetFieldSpec("code_origin_name", "Code origin name", "input", "modal-target-code-origin-name"),
         _TargetFieldSpec(
             "code_integrity",
             "Code integrity",
@@ -237,7 +269,7 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
         ),
         _TargetFieldSpec(
             "source_code_analyzer_files",
-            "Analyzer files",
+            "Src code analyzer files",
             "json",
             "modal-target-analyzer-files",
             '["file1", "file2"]',
@@ -245,10 +277,21 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
         ),
     ),
     "mobile": (
-        _TargetFieldSpec("android", "Android", "presence_switch", "modal-target-android-enabled"),
-        _TargetFieldSpec("android.package_name", "Package name", "input", "modal-target-package-name"),
-        _TargetFieldSpec("android.version_name", "Version name", "input", "modal-target-version-name"),
-        _TargetFieldSpec("android.version_code", "Version code", "input", "modal-target-version-code"),
+        _TargetFieldSpec(
+            "android",
+            "Android",
+            "presence_switch",
+            "modal-target-android-enabled",
+            dependent_paths=(
+                "android.package_name",
+                "android.version_name",
+                "android.version_code",
+                "android.file_integrity",
+            ),
+        ),
+        _TargetFieldSpec("android.package_name", "Android package name", "input", "modal-target-package-name"),
+        _TargetFieldSpec("android.version_name", "Android version name", "input", "modal-target-version-name"),
+        _TargetFieldSpec("android.version_code", "Android version code", "input", "modal-target-version-code"),
         _TargetFieldSpec(
             "android.file_integrity",
             "Android file integrity",
@@ -257,9 +300,25 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
             '{"file_1_name_with_hash_type": "hash1", "file_2_name_with_hash_type": "hash2"}',
             json_type=dict,
         ),
-        _TargetFieldSpec("ios", "iOS", "presence_switch", "modal-target-ios-enabled"),
-        _TargetFieldSpec("ios.bundle_id", "Bundle ID", "input", "modal-target-bundle-id"),
-        _TargetFieldSpec("ios.short_version_string", "Short version", "input", "modal-target-short-version-string"),
+        _TargetFieldSpec(
+            "ios",
+            "iOS",
+            "presence_switch",
+            "modal-target-ios-enabled",
+            dependent_paths=(
+                "ios.bundle_id",
+                "ios.short_version_string",
+                "ios.version",
+                "ios.file_integrity",
+            ),
+        ),
+        _TargetFieldSpec("ios.bundle_id", "iOS Bundle ID", "input", "modal-target-bundle-id"),
+        _TargetFieldSpec(
+            "ios.short_version_string",
+            "iOS short version",
+            "input",
+            "modal-target-short-version-string",
+        ),
         _TargetFieldSpec("ios.version", "iOS version", "input", "modal-target-ios-version"),
         _TargetFieldSpec(
             "ios.file_integrity",
@@ -273,12 +332,86 @@ _TARGET_FIELD_SPECS: dict[str, tuple[_TargetFieldSpec, ...]] = {
 }
 
 
+class _LocatorRow(Horizontal):
+    """Editable locator type, value, and description row."""
+
+    def __init__(self, locator: dict[str, Any] | None = None) -> None:
+        super().__init__(classes="locator-row")
+        locator = locator or {}
+        self._initial_type = str(locator.get("type", "url"))
+        self._initial_value = str(locator.get("value", ""))
+        self._initial_description = str(locator.get("description") or "")
+
+    def compose(self) -> ComposeResult:
+        locator_types = get_locator_types()
+        yield Select[str](
+            [(locator_type.replace("_", " ").title(), locator_type) for locator_type in locator_types],
+            value=self._initial_type,
+            allow_blank=False,
+            classes="locator-type",
+        )
+        yield Input(
+            value=self._initial_value,
+            placeholder="Value",
+            classes="locator-value",
+        )
+        yield Input(
+            value=self._initial_description,
+            placeholder="Description (optional)",
+            classes="locator-description",
+        )
+        yield Button("\u2716", variant="error", classes="locator-remove")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.has_class("locator-remove"):
+            self.remove()
+
+    def value(self) -> dict[str, str] | None:
+        locator_type = cast(str | NoSelection, self.query_one(".locator-type", Select).value)
+        locator_value = self.query_one(".locator-value", Input).value.strip()
+        description = self.query_one(".locator-description", Input).value.strip()
+        if not locator_value:
+            if description:
+                raise ValueError("Locator value is required.")
+            return None
+        if isinstance(locator_type, NoSelection):
+            raise ValueError("Locator type is required.")
+        locator = {"type": locator_type, "value": locator_value}
+        if description:
+            locator["description"] = description
+        return locator
+
+
+class _LocatorListWidget(Widget):
+    """Dynamic list of editable target locators."""
+
+    def __init__(self, locators: list[dict[str, Any]], *, id: str) -> None:
+        super().__init__(id=id, classes="locator-list")
+        self._initial_locators = locators
+
+    def compose(self) -> ComposeResult:
+        self._rows = Vertical(classes="locator-rows")
+        with self._rows:
+            for locator in self._initial_locators:
+                yield _LocatorRow(locator)
+        yield Button("Add locator", variant="primary", classes="locator-add")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.has_class("locator-add"):
+            row = _LocatorRow()
+            self._rows.mount(row)
+            row.call_after_refresh(row.query_one(".locator-type", Select).focus)
+
+    def values(self) -> list[dict[str, str]]:
+        return [value for row in self.query(_LocatorRow) if (value := row.value()) is not None]
+
+
 class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
     """Modal form for adding or editing a target, date, or person."""
 
     BINDINGS = [
         Binding("escape", "cancel", "Cancel"),
-        Binding("enter", "submit", "Submit", priority=True),
+        Binding("ctrl+s", "submit", "Submit", priority=True),
     ]
 
     def __init__(
@@ -294,9 +427,7 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
         self._initial = initial
 
     def compose(self) -> ComposeResult:
-        action = "Edit" if self._initial is not None else "Add"
         with Vertical(id="config-record-dialog"):
-            yield Label(f"{action} {self._kind}", id="config-record-title")
             with ScrollableContainer(id="config-record-fields"):
                 if self._kind == "target":
                     target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
@@ -326,11 +457,12 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                             disabled=target_initial is not None,
                         )
                     yield Vertical(id="modal-target-specific-fields")
-                    yield self._json_field_row(
+                    yield self._field_row(
                         "Locators",
-                        "modal-target-locators",
-                        target_initial.model.model_dump(mode="json")["locators"] if target_initial else [],
-                        '[{"type": "url", "value": "https://example.com", "description": "optional_description"}]',
+                        _LocatorListWidget(
+                            target_initial.model.model_dump(mode="json")["locators"] if target_initial else [],
+                            id="modal-target-locators",
+                        ),
                     )
                     yield self._json_field_row(
                         "Documents",
@@ -419,6 +551,8 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                 yield Button("Save", variant="success", id="config-record-save")
 
     def on_mount(self) -> None:
+        action = "Edit" if self._initial is not None else "Add"
+        self.query_one("#config-record-dialog").border_title = f"{action} {self._kind}"
         if self._kind == "date":
             date_type = cast(DateType | NoSelection, self.query_one("#modal-date-type", Select).value)
             self._set_date_end_visibility(date_type)
@@ -454,7 +588,7 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                 return TargetModel
 
     @staticmethod
-    def _field_row(label: str, widget: Input | Select[Any] | Switch | TextArea) -> Horizontal:
+    def _field_row(label: str, widget: Widget) -> Horizontal:
         return Horizontal(Label(label, classes="field-label"), widget, classes="field-row target-field-row")
 
     @classmethod
@@ -488,18 +622,19 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
             value = value.get(part)
         return value
 
-    def _target_field_widget(self, spec: _TargetFieldSpec, value: Any) -> Input | Select[Any] | Switch | TextArea:
+    def _target_field_widget(self, spec: _TargetFieldSpec, value: Any) -> Widget:
+        widget: Widget
         match spec.kind:
             case "input":
-                return Input(value=str(value) if value is not None else "", id=spec.widget_id)
+                widget = Input(value=str(value) if value is not None else "", id=spec.widget_id)
             case "switch":
-                return Switch(value=bool(value), id=spec.widget_id)
+                widget = Switch(value=bool(value), id=spec.widget_id)
             case "presence_switch":
-                return Switch(value=value is not None, id=spec.widget_id)
+                widget = Switch(value=value is not None, id=spec.widget_id)
             case "optional_bool":
-                return self._optional_bool_select(spec.widget_id, value if isinstance(value, bool) else None)
+                widget = self._optional_bool_select(spec.widget_id, value if isinstance(value, bool) else None)
             case "select":
-                return Select(
+                widget = Select(
                     spec.options,
                     value=value if value is not None else Select.NULL,
                     prompt="Not specified",
@@ -507,13 +642,16 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                     id=spec.widget_id,
                 )
             case "json":
-                return TextArea(
+                widget = TextArea(
                     json.dumps(value, indent=2) if value else "",
                     language="json",
                     id=spec.widget_id,
                     classes="target-json-field",
                     placeholder=spec.placeholder,
                 )
+        if spec.dependent_paths:
+            widget.add_class("target-visibility-controller")
+        return widget
 
     async def _rebuild_target_specific_fields(self, category: str) -> None:
         # Clear the container before rebuilding the target-specific fields
@@ -532,29 +670,48 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
         ]
 
         await container.mount(*rows)
-        # Set the visibility of child fields based on the presence switches
+        # Set the initial visibility of dependent fields.
         for spec in _TARGET_FIELD_SPECS.get(category, ()):
-            if spec.kind == "presence_switch":
-                enabled = self._value_at_path(values, spec.path) is not None
-                self._set_target_children_visibility(spec.path, enabled)
+            if spec.dependent_paths:
+                value = self._value_at_path(values, spec.path)
+                self._set_target_dependents_visibility(spec, self._target_dependency_enabled(spec, value))
 
-    def _set_target_children_visibility(self, parent_path: str, visible: bool) -> None:
+    @staticmethod
+    def _target_dependency_enabled(spec: _TargetFieldSpec, value: Any) -> bool:
+        if spec.kind in ("switch", "presence_switch"):
+            return bool(value)
+        if spec.kind == "select":
+            return value is not None and not isinstance(value, NoSelection)
+        return bool(value)
+
+    def _set_target_dependents_visibility(self, controller: _TargetFieldSpec, visible: bool) -> None:
+        category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
+        if isinstance(category, NoSelection):
+            return
+        specs_by_path = {spec.path: spec for spec in _TARGET_FIELD_SPECS.get(category, ())}
+        for dependent_path in controller.dependent_paths:
+            dependent = specs_by_path[dependent_path]
+            field_row = self.query_one(f"#{dependent.widget_id}").parent
+            if field_row is None:
+                raise RuntimeError(f"Target field {dependent.path!r} is not mounted")
+            field_row.display = visible
+
+    def _update_target_dependency(self, widget_id: str | None, value: Any) -> None:
         category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
         if isinstance(category, NoSelection):
             return
         for spec in _TARGET_FIELD_SPECS.get(category, ()):
-            if spec.path.startswith(f"{parent_path}."):
-                field_row = self.query_one(f"#{spec.widget_id}").parent
-                if field_row is None:
-                    raise RuntimeError(f"Target field {spec.path!r} is not mounted")
-                field_row.display = visible
-
-    @on(Switch.Changed, "#modal-target-android-enabled, #modal-target-ios-enabled")
-    def handle_target_presence_changed(self, event: Switch.Changed) -> None:
-        for spec in _TARGET_FIELD_SPECS["mobile"]:
-            if spec.kind == "presence_switch" and spec.widget_id == event.switch.id:
-                self._set_target_children_visibility(spec.path, event.value)
+            if spec.widget_id == widget_id and spec.dependent_paths:
+                self._set_target_dependents_visibility(spec, self._target_dependency_enabled(spec, value))
                 return
+
+    @on(Switch.Changed, ".target-visibility-controller")
+    def handle_target_switch_dependency_changed(self, event: Switch.Changed) -> None:
+        self._update_target_dependency(event.switch.id, event.value)
+
+    @on(Select.Changed, ".target-visibility-controller")
+    def handle_target_select_dependency_changed(self, event: Select.Changed) -> None:
+        self._update_target_dependency(event.select.id, event.value)
 
     def _read_json(self, widget_id: str, label: str, expected_type: type[list[Any]] | type[dict[str, Any]]) -> Any:
         text = self.query_one(f"#{widget_id}", TextArea).text.strip()
@@ -613,20 +770,35 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
             "id": self.query_one("#modal-target-id", Input).value.strip() or None,
             "category": category,
             "name": name,
-            "locators": self._read_json("modal-target-locators", "Locators", list),
+            "locators": self.query_one("#modal-target-locators", _LocatorListWidget).values(),
             "documents": self._read_json("modal-target-documents", "Documents", list),
         }
 
-        presence: dict[str, bool] = {}
-        for spec in _TARGET_FIELD_SPECS.get(category, ()):
-            value = self._read_target_field(spec)
+        specs = _TARGET_FIELD_SPECS.get(category, ())
+        # Read and collect the values of all fields that other fields depend on
+        controller_values = {spec.path: self._read_target_field(spec) for spec in specs if spec.dependent_paths}
+        # Determine which dependent fields should be omitted based on its controller's enabled/disabled status
+        disabled_paths = {
+            dependent_path
+            for spec in specs
+            if spec.dependent_paths and not self._target_dependency_enabled(spec, controller_values[spec.path])
+            for dependent_path in spec.dependent_paths
+        }
+        presence_switch_specs: list[_TargetFieldSpec] = []
+        # Iterate over all fields
+        for spec in specs:
+            # Skip presence switch fields for now; they are handled separately at the end
             if spec.kind == "presence_switch":
-                presence[spec.path] = value
-            else:
-                self._set_value_at_path(payload, spec.path, value)
-        for path, enabled in presence.items():
-            if not enabled:
-                self._set_value_at_path(payload, path, None)
+                presence_switch_specs.append(spec)
+                continue
+            if spec.path in disabled_paths:
+                # Skip this field because it is dependent on a controller that is currently disabled
+                continue
+            value = controller_values[spec.path] if spec.path in controller_values else self._read_target_field(spec)
+            self._set_value_at_path(payload, spec.path, value)
+        for spec in presence_switch_specs:
+            if not controller_values[spec.path]:
+                self._set_value_at_path(payload, spec.path, None)
 
         return model_class.model_validate(payload, strict=False)
 
@@ -772,7 +944,7 @@ class ConfigScreen(_PoppableScreen):
 
     BINDINGS = [
         Binding("a", "add_new", "Add"),
-        Binding("tab", "switch_tab", "Switch Tab"),
+        Binding("ctrl+tab", "switch_tab", "Switch Tab"),
         Binding(
             "up",
             "cursor_up",
@@ -811,6 +983,20 @@ class ConfigScreen(_PoppableScreen):
     @property
     def _active_tab(self) -> str:
         return self.query_one("#config-tabs", TabbedContent).active
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if not self.is_mounted:
+            return True
+        if self._active_tab == "tab-general":
+            return action not in {
+                "cursor_up",
+                "cursor_down",
+                "add_new",
+                "view_selected",
+                "edit_selected",
+                "remove_selected",
+            }
+        return not (self._active_tab == "tab-dates" and action == "view_selected")
 
     @staticmethod
     def _table_header(add_btn_id: str, *columns: tuple[str, str]) -> ComposeResult:
@@ -945,6 +1131,7 @@ class ConfigScreen(_PoppableScreen):
     def handle_tab_activated(self) -> None:
         self.query(".target-row.selected, .date-row.selected, .person-row.selected").remove_class("selected")
         self._selected_record_row = None
+        self.refresh_bindings()
 
     def show_target_detail(self, target: Target) -> None:
         title = f"{target.data.category.upper()}  {target.data.name}"
@@ -1611,8 +1798,15 @@ class RenderScreen(_PoppableScreen):
         if isinstance(render_type_select.value, NoSelection):
             self.notify("Select a render type.", severity="warning", timeout=3)
             return
-        render_type = render_type_select.value
-        self._run_render(render_type)
+        render_type = str(render_type_select.value)
+        target_uname: str | None = None
+        fg_uname: str | None = None
+        if render_type == "fg":
+            target_value = self.query_one("#fg-target-select", Select).value
+            group_value = self.query_one("#fg-group-select", Select).value
+            target_uname = None if isinstance(target_value, NoSelection) else str(target_value)
+            fg_uname = None if isinstance(group_value, NoSelection) else str(group_value)
+        self._run_render(render_type, target_uname, fg_uname)
 
     @on(Button.Pressed, "#open-pdf-btn")
     def handle_open_pdf(self) -> None:
@@ -1625,7 +1819,7 @@ class RenderScreen(_PoppableScreen):
 
     # ── workers ───────────────────────────────────────────────────────────────
     @work(thread=True)
-    def _run_render(self, kind: str) -> None:
+    def _run_render(self, kind: str, target_uname: str | None = None, fg_uname: str | None = None) -> None:
         from loguru import logger
 
         from sereto.pdf import (
@@ -1696,10 +1890,6 @@ class RenderScreen(_PoppableScreen):
                         f"[bold green]✔ SoW saved:[/bold green] {pdf_path}",
                     )
                 case "fg":
-                    target_sel = self.query_one("#fg-target-select", Select)
-                    fg_sel = self.query_one("#fg-group-select", Select)
-                    target_uname = None if isinstance(target_sel.value, NoSelection) else str(target_sel.value)
-                    fg_uname = None if isinstance(fg_sel.value, NoSelection) else str(fg_sel.value)
                     pdf_path = find_and_generate_pdf_finding_group(
                         project=project,
                         template="finding_group",

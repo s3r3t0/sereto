@@ -59,19 +59,10 @@ RecordDetailScreen {
 }
 
 ConfigRecordFormScreen {
-    align: center middle;
     #config-record-dialog {
-        width: 70;
-        max-width: 95%;
-        height: 90%;
         border: heavy $primary;
-        padding: 1 2;
+        margin: 2 4;
         background: $surface;
-    }
-    #config-record-title {
-        height: 3;
-        content-align: center middle;
-        text-style: bold;
     }
     #config-record-fields {
         height: 1fr;
@@ -79,7 +70,7 @@ ConfigRecordFormScreen {
     }
     .field-row {
         height: auto;
-        margin-bottom: 1;
+        margin-bottom: 0;
         align: left middle;
         Label {
             width: 12;
@@ -99,10 +90,36 @@ ConfigRecordFormScreen {
             width: auto;
         }
     }
+    .locator-list {
+        width: 1fr;
+        height: auto;
+    }
+    .locator-rows {
+        height: auto;
+    }
+    .locator-row {
+        height: auto;
+        margin-bottom: 0;
+        .locator-type {
+            width: 16;
+        }
+        .locator-value {
+            width: 2fr;
+        }
+        .locator-description {
+            width: 2fr;
+        }
+        .locator-remove {
+            min-width: 7;
+        }
+    }
+    .locator-add {
+        width: auto;
+    }
     .target-json-field {
         height: 7;
         background: #292929;
-        border: tall #292929;
+        border: tall $surface;
     }
     .target-json-field:focus {
         border: tall $primary;
@@ -111,12 +128,12 @@ ConfigRecordFormScreen {
         height: auto;
     }
     InputWithLabel {
-        margin-bottom: 1;
+        margin-bottom: 0;
     }
     Input,
     Select > SelectCurrent {
         background: #292929;
-        border: tall #292929;
+        border: tall $surface;
     }
     Input:focus,
     Select:focus > SelectCurrent {
