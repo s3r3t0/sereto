@@ -64,6 +64,7 @@ from sereto.sereto_types import TypeProjectId
 from sereto.settings import load_settings_function
 from sereto.target import Target
 from sereto.tui.finding import SearchWidget
+from sereto.tui.merge import UnpackProjectScreen, get_unpack_context
 from sereto.tui.widgets.input import InputWithLabel
 
 _PROJECT_ID_ADAPTER = TypeAdapter(TypeProjectId)
@@ -1971,7 +1972,7 @@ class NewProjectScreen(Screen[bool]):
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="new-project-layout"):
-            yield Label("Create a New Project", id="new-project-title")
+            yield Label("Create New Project", id="new-project-title")
             yield Rule()
             yield InputWithLabel(
                 Input(placeholder="e.g. PT01234  (max 20 chars: a-z A-Z 0-9 . _ -)", id="new-project-id"),
@@ -1982,8 +1983,8 @@ class NewProjectScreen(Screen[bool]):
                 "Name",
             )
             with Horizontal(id="new-project-buttons"):
-                yield Button("Create", variant="success", id="new-project-create")
                 yield Button("Cancel", variant="default", id="new-project-cancel")
+                yield Button("Create", variant="success", id="new-project-create")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -2496,7 +2497,7 @@ class SeretoUnifiedApp(App[None]):
     :class:`ProjectBrowserScreen`.
     """
 
-    CSS_PATH = ["app.tcss", "finding.tcss"]
+    CSS_PATH = ["app.tcss", "finding.tcss", "merge.tcss"]
     TITLE = "SeReTo"
     SUB_TITLE = "Security Reporting Tool"
 
@@ -2577,10 +2578,23 @@ class _RenderPlugin(TuiPlugin):
     binding = "p"
 
 
+class _UnpackProjectPlugin(TuiPlugin):
+    label = "Unpack PDF"
+    screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(  # type: ignore[misc, assignment]
+        lambda app: UnpackProjectScreen(
+            projects_path=app.settings.projects_path,
+            pdf_path=get_unpack_context(app).pdf_path,
+        )
+    )
+    id = "unpack"
+    requires_project = False
+
+
 _BUILTIN_PLUGINS: list[type[TuiPlugin]] = [
     _FindingsAddPlugin,
     _ConfigPlugin,
     _RenderPlugin,
+    _UnpackProjectPlugin,
 ]
 
 
