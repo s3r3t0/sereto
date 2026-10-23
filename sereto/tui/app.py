@@ -945,8 +945,9 @@ class ConfigScreen(_PoppableScreen):
 
     BINDINGS = [
         Binding("a", "add_new", "Add"),
-        Binding("left", "previous_tab", "Previous tab", key_display="←", group=TAB_NAVIGATION_GROUP, priority=True),
-        Binding("right", "next_tab", "Next tab", key_display="→", group=TAB_NAVIGATION_GROUP, priority=True),
+        # Not `priority`, so the focused widget (e.g. an Input moving its cursor) handles the arrow keys first
+        Binding("left", "previous_tab", "Previous tab", key_display="←", group=TAB_NAVIGATION_GROUP),
+        Binding("right", "next_tab", "Next tab", key_display="→", group=TAB_NAVIGATION_GROUP),
         Binding(
             "up",
             "cursor_up",

@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Annotated, Literal, get_args
+from typing import Annotated, Any, Literal, get_args
 
 from pydantic import AnyUrl, Discriminator, IPvAnyAddress, IPvAnyNetwork, field_serializer, validate_call
 
@@ -16,7 +16,7 @@ class BaseLocatorModel(SeretoBaseModel):
         description: An optional description of the locator.
     """
 
-    type: str
+    type: Any  # Narrowed to a Literal in each subclass (discriminator)
     description: str | None = None
 
 
