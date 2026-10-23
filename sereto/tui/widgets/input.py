@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Hashable, Iterable
 
 from rich.console import RenderableType
 from textual.app import ComposeResult
@@ -95,7 +95,7 @@ class ListWidget[W: Widget](Widget):
         row.remove()
 
 
-class SelectWithLabel[T](Widget):
+class SelectWithLabel[T: Hashable](Widget):
     """A select with a label."""
 
     DEFAULT_CSS = """
