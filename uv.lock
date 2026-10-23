@@ -2164,6 +2164,7 @@ dependencies = [
     { name = "textual" },
     { name = "toml" },
     { name = "tomlkit" },
+    { name = "watchdog" },
 ]
 
 [package.optional-dependencies]
@@ -2216,6 +2217,7 @@ requires-dist = [
     { name = "toml", specifier = "~=0.10.2" },
     { name = "tomlkit", specifier = "~=0.15.1" },
     { name = "ty", marker = "extra == 'dev'", specifier = ">=0.0.65" },
+    { name = "watchdog", specifier = "~=6.0.0" },
 ]
 provides-extras = ["docs", "performance", "dev"]
 
