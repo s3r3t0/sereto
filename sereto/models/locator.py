@@ -29,7 +29,7 @@ class UrlLocatorModel(BaseLocatorModel):
         description: Optional description of the URL locator.
     """
 
-    type: Literal["url"] = "url"  # ty: ignore[invalid-mutable-override]
+    type: Literal["url"] = "url"
     value: AnyUrl
 
     @field_serializer("value")
@@ -46,7 +46,7 @@ class HostnameLocatorModel(BaseLocatorModel):
         description: Optional description of the hostname locator.
     """
 
-    type: Literal["hostname"] = "hostname"  # ty: ignore[invalid-mutable-override]
+    type: Literal["hostname"] = "hostname"
     value: str  # Hostname as a string
 
 
@@ -59,7 +59,7 @@ class DomainLocatorModel(BaseLocatorModel):
         description: Optional description of the domain locator.
     """
 
-    type: Literal["domain"] = "domain"  # ty: ignore[invalid-mutable-override]
+    type: Literal["domain"] = "domain"
     value: str  # Domain as a string
 
 
@@ -72,7 +72,7 @@ class IpLocatorModel(BaseLocatorModel):
         description: Optional description of the IP locator.
     """
 
-    type: Literal["ip"] = "ip"  # ty: ignore[invalid-mutable-override]
+    type: Literal["ip"] = "ip"
     value: IPvAnyAddress | IPvAnyNetwork  # ty: ignore[unsupported-operator]
 
     @field_serializer("value")
@@ -89,7 +89,7 @@ class FileLocatorModel(BaseLocatorModel):
         description: Optional description of the file locator.
     """
 
-    type: Literal["file"] = "file"  # ty: ignore[invalid-mutable-override]
+    type: Literal["file"] = "file"
     value: str  # Path to the file
 
 
@@ -102,7 +102,7 @@ class PlatformLocatorModel(BaseLocatorModel):
         description: Optional description of the platform locator.
     """
 
-    type: Literal["platform"] = "platform"  # ty: ignore[invalid-mutable-override]
+    type: Literal["platform"] = "platform"
     value: str
 
 
