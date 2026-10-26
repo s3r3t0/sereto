@@ -12,7 +12,6 @@ class BaseLocatorModel(SeretoBaseModel):
     You should typically use `LocatorModel` instead of this class directly.
 
     Attributes:
-        type: The type of locator (discriminator field).
         description: An optional description of the locator.
     """
 

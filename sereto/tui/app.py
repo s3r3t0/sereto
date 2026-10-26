@@ -2079,6 +2079,9 @@ class TuiPlugin:
             blocked if no project is currently selected.
         show_in_bar (bool): When ``True`` (the default) a button is rendered in
             the action bar.  Set to ``False`` for entry-point-only tokens.
+        binding (str): Optional key (e.g. ``"a"``) which opens the plugin's screen
+            from the project browser; shown in the footer with ``label`` as its
+            description.  No key binding is created when not set.
         precursor_id (str): Optional id of another registered plugin/screen which
             should be pushed onto the stack *before* this plugin's screen.  Use
             this when the current plugin's screen requires a parent screen below
@@ -2104,6 +2107,7 @@ class TuiPlugin:
             screen = staticmethod(lambda app: MyScreen())
             # requires_project = True   # default
             # show_in_bar = True        # default
+            # binding = "m"             # key which opens the screen from the project browser
     """
 
     label: ClassVar[str]
@@ -2112,6 +2116,7 @@ class TuiPlugin:
     requires_project: ClassVar[bool] = True
     show_in_bar: ClassVar[bool] = True
     precursor_id: ClassVar[str | None] = None
+    binding: ClassVar[str | None] = None
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
@@ -2132,6 +2137,7 @@ class _TuiEntry:
     screen: Callable[[SeretoUnifiedApp], Screen[Any]]
     show_in_bar: bool = field(default=True)
     precursor_id: str | None = field(default=None)
+    binding: str | None = field(default=None)
 
 
 # Module-level registry — populated from built-in TuiPlugin subclasses and
@@ -2171,6 +2177,7 @@ def register_tui_plugin(plugin: type[TuiPlugin]) -> None:
             plugin.screen,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
             plugin.show_in_bar,
             plugin.precursor_id,
+            plugin.binding,
         )
     )
 
@@ -2191,11 +2198,13 @@ class ProjectBrowserScreen(Screen[None]):
 
     SUB_TITLE = "Project Browser"
 
-    BINDINGS = [
-        Binding("a", "add_finding", "Add finding"),
-        Binding("c", "config", "Config"),
-        Binding("p", "render", "Render PDF"),
-    ]
+    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None) -> None:
+        super().__init__(name, id, classes)
+        for entry in _ACTION_REGISTRY:
+            if entry.binding:
+                self._bindings.bind(entry.binding, f"open_plugin({entry.id!r})", entry.label)
+        self._version_options: list[tuple[str, str]] = []
+        self._project_options: list[tuple[str, Path]] | None = None
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -2230,12 +2239,7 @@ class ProjectBrowserScreen(Screen[None]):
         if app.entry_point is not None:
             action = next((a for a in _ACTION_REGISTRY if a.id == app.entry_point), None)
             if action is not None:
-                if action.requires_project and app.current_project is None:
-                    self.notify("Select a project first.", severity="warning", timeout=3)
-                else:
-                    for precursor in _precursor_chain(action):
-                        self.app.push_screen(precursor.screen(app))
-                    self.app.push_screen(action.screen(app))
+                self._open_entry(action)
 
     def _populate_action_bar(self) -> None:
         """Inject one Button per registered action into the action bar."""
@@ -2247,16 +2251,22 @@ class ProjectBrowserScreen(Screen[None]):
     @on(Button.Pressed, ".action-btn")
     def _on_action_btn(self, event: Button.Pressed) -> None:
         entry_id = (event.button.id or "").removeprefix("action-")
+        self.action_open_plugin(entry_id)
+
+    def action_open_plugin(self, entry_id: str) -> None:
+        """Open the screen of the registered plugin with the given id."""
+        action = next((a for a in _ACTION_REGISTRY if a.id == entry_id), None)
+        if action is not None:
+            self._open_entry(action)
+
+    def _open_entry(self, action: _TuiEntry) -> None:
         app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
-        for action in _ACTION_REGISTRY:
-            if action.id == entry_id:
-                if action.requires_project and app.current_project is None:
-                    self.notify("Select a project first.", severity="warning", timeout=3)
-                    return
-                for precursor in _precursor_chain(action):
-                    self.app.push_screen(precursor.screen(app))
-                self.app.push_screen(action.screen(app))
-                return
+        if action.requires_project and app.current_project is None:
+            self.notify("Select a project first.", severity="warning", timeout=3)
+            return
+        for precursor in _precursor_chain(action):
+            self.app.push_screen(precursor.screen(app))
+        self.app.push_screen(action.screen(app))
 
     @on(Button.Pressed, "#new-project-btn")
     def _on_new_project_btn(self) -> None:
@@ -2475,34 +2485,6 @@ class ProjectBrowserScreen(Screen[None]):
         if current_path is not None:
             self.query_one("#project-select", Select).value = current_path
 
-    # ── Base actions ────────────────────────────────────────────────────────────────
-    def action_add_finding(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore
-
-        if app.current_project is None:
-            self.notify("Select a project first.", severity="warning", timeout=3)
-            return
-
-        self.app.push_screen(FindingSearchScreen())
-
-    def action_config(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore
-
-        if app.current_project is None:
-            self.notify("Select a project first.", severity="warning", timeout=3)
-            return
-
-        self.app.push_screen(ConfigScreen())
-
-    def action_render(self) -> None:
-        app: SeretoUnifiedApp = self.app  # type: ignore
-
-        if app.current_project is None:
-            self.notify("Select a project first.", severity="warning", timeout=3)
-            return
-
-        self.app.push_screen(RenderScreen())
-
 
 # ── Unified app ────────────────────────────────────────────────────────────────
 class SeretoUnifiedApp(App[None]):
@@ -2574,18 +2556,21 @@ class _FindingsAddPlugin(TuiPlugin):
     label = "Add finding"
     screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: FindingSearchScreen())  # type: ignore
     id = "findings_add"
+    binding = "a"
 
 
 class _ConfigPlugin(TuiPlugin):
     label = "Config"
     screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: ConfigScreen())  # type: ignore
     id = "config"
+    binding = "c"
 
 
 class _RenderPlugin(TuiPlugin):
     label = "Render PDF"
     screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(lambda app: RenderScreen())  # type: ignore
     id = "render"
+    binding = "p"
 
 
 _BUILTIN_PLUGINS: list[type[TuiPlugin]] = [
@@ -2608,7 +2593,7 @@ def _register_builtin_actions() -> None:
     # Entry-point-only aliases (e.g. `sereto config targets add`); no button,
     # and ConfigScreen itself resolves which tab to open from app.entry_point.
     for entry_id in ConfigScreen.TABS:
-        _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), False))
+        _register_entry(_TuiEntry(entry_id, "", True, lambda app: ConfigScreen(), show_in_bar=False))
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
