@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Propagate file-system changes to the TUI: the active project and all projects under projects_path are watched with `watchdog` and reloaded whenever its files change (including edits made outside the TUI), so renders and all screens reflect the current projects' states.
+
 ## [0.9.0] - 2026-10-13
 
 ### Added
