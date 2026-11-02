@@ -2580,7 +2580,7 @@ class _RenderPlugin(TuiPlugin):
 
 class _UnpackProjectPlugin(TuiPlugin):
     label = "Unpack PDF"
-    screen: Callable[[SeretoUnifiedApp], Screen[Any]] = staticmethod(  # type: ignore[misc, assignment]
+    screen: ClassVar[Callable[[SeretoUnifiedApp], Screen[Any]] | Callable[[], Screen[Any]]] = staticmethod(
         lambda app: UnpackProjectScreen(
             projects_path=app.settings.projects_path,
             pdf_path=get_unpack_context(app).pdf_path,
