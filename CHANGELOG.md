@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix first-run TUI startup failing with a nested asyncio event-loop error during settings setup.
+
 ## [0.9.0] - 2026-10-13
 
 ### Added
