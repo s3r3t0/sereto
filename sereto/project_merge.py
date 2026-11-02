@@ -4,12 +4,12 @@ import copy
 import json
 import shutil
 import tomllib
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, TypeGuard, cast
+from typing import Any, Literal, TypeGuard, cast
 
 import tomlkit
 
@@ -42,6 +42,10 @@ class PersonKey:
     email: str
 
 
+type MergeKey = DateKey | PersonKey | TargetKey | FindingKey
+type MergeValue = dict[str, Any] | bytes
+
+
 class MergeSource(StrEnum):
     LOCAL = "local"
     UNPACKED = "unpacked"
@@ -49,18 +53,57 @@ class MergeSource(StrEnum):
 
 
 class MergeStatus(StrEnum):
-    LOCAL = "local"
-    UNPACKED = "unpacked"
-    MERGED = "merged"
+    # Records present in only one project (`MergeSource.LOCAL` or `MergeSource.UNPACKED`)
+    INCLUDED = "included"
     EXCLUDED = "excluded"
+    # Records present in both projects (`MergeSource.BOTH`)
+    IDENTICAL = "identical"
+    CONFLICT = "conflict"
+    RESOLVED = "resolved"  # Once conflict is resolved by the user
 
 
 @dataclass(frozen=True)
-class MergeRecord[Key, Value]:
-    key: Key
+class MergeRecord[Value: MergeValue]:
+    """Record present in the local and/or unpacked project; the type of `key` determines the kind of the record."""
+
+    key: MergeKey
     local: Value | None
     unpacked: Value | None
-    merged: Value | None
+    # Directory of the target relative to the project root (only for targets)
+    path: Path | None = None
+
+    def __post_init__(self) -> None:
+        if self.local is None and self.unpacked is None:
+            raise ValueError(f"record {self.key!r} is absent from both projects")
+        if isinstance(self.key, TargetKey) != (self.path is not None):
+            raise ValueError(f"only target records must have a path: {self.key!r}")
+        for value in (self.local, self.unpacked):
+            if value is not None:
+                self.validate_value(value)
+
+    def validate_value(self, value: MergeValue) -> Value:
+        """Check the payload against the entity identity before accepting it."""
+        if not isinstance(value, bytes if isinstance(self.key, FindingKey) else dict):
+            raise TypeError(f"Invalid value for {self.key!r}")
+        return cast(Value, value)
+
+    @property
+    def parent_key(self) -> TargetKey | None:
+        """Key of the record this record depends on, if any (excluding the parent excludes this record too)."""
+        return self.key.target if isinstance(self.key, FindingKey) else None
+
+    @property
+    def target_dir(self) -> Path:
+        """Directory of the target relative to the project root.
+
+        Raises:
+            ValueError: If the record is not a target, or the target has no path set.
+        """
+        if not isinstance(self.key, TargetKey):
+            raise ValueError(f"target_dir is only available for target records: {self.key!r}")
+        if self.path is None:
+            raise ValueError(f"target record {self.key!r} has no path set")
+        return self.path
 
     @property
     def source(self) -> MergeSource:
@@ -81,196 +124,150 @@ class MergeRecord[Key, Value]:
         return self.in_local and self.in_unpacked and self.local == self.unpacked
 
     @property
-    def is_conflict(self) -> bool:
-        return self.in_local and self.in_unpacked and self.merged is None
-
-    @property
     def available_statuses(self) -> tuple[MergeStatus, ...]:
-        if self.source is MergeSource.LOCAL:
-            return (MergeStatus.LOCAL, MergeStatus.EXCLUDED)
-        if self.source is MergeSource.UNPACKED:
-            return (MergeStatus.UNPACKED, MergeStatus.EXCLUDED)
-        choices = (MergeStatus.LOCAL, MergeStatus.UNPACKED)
-        return (*choices, MergeStatus.MERGED) if self.merged is not None else choices
+        if self.source is not MergeSource.BOTH:
+            return (MergeStatus.INCLUDED, MergeStatus.EXCLUDED)
+        if self.is_identical:
+            return (MergeStatus.IDENTICAL,)
+        return (MergeStatus.CONFLICT, MergeStatus.RESOLVED)
 
     @property
     def default_status(self) -> MergeStatus:
-        if self.merged is not None:
-            return MergeStatus.MERGED
-        return self.available_statuses[0]
+        if self.source is not MergeSource.BOTH:
+            return MergeStatus.INCLUDED
+        return MergeStatus.IDENTICAL if self.is_identical else MergeStatus.CONFLICT
 
-    def value_for(self, status: MergeStatus) -> Value:
-        if status not in self.available_statuses or status is MergeStatus.EXCLUDED:
-            raise ValueError(f"status {status.value!r} is unavailable for {self.key!r}")
-        value = {
-            MergeStatus.LOCAL: self.local,
-            MergeStatus.UNPACKED: self.unpacked,
-            MergeStatus.MERGED: self.merged,
-        }[status]
-        if value is None or status not in self.available_statuses:
+    def value_for_status(self, status: MergeStatus, resolved: MergeValue | None = None) -> Value:
+        """Return the value that ends up in the merged project for the given status.
+
+        Args:
+            status: Status of the record.
+            resolved: Value explicitly chosen by the user for the `RESOLVED` status.
+
+        Raises:
+            ValueError: If the status is unavailable for the record or has no value.
+        """
+        value: Value | None = None
+        if status in self.available_statuses:
+            match status:
+                case MergeStatus.INCLUDED:
+                    value = self.local if self.local is not None else self.unpacked
+                case MergeStatus.IDENTICAL:
+                    value = self.local
+                case MergeStatus.RESOLVED:
+                    value = self.validate_value(resolved) if resolved is not None else None
+                case _:
+                    pass
+        if value is None:
             raise ValueError(f"status {status.value!r} is unavailable for {self.key!r}")
         return copy.deepcopy(value)
 
 
-@dataclass(frozen=True)
-class MergeDate(MergeRecord[DateKey, dict[str, Any]]):
-    pass
+@dataclass
+class MergeSelection:
+    """User choices, kept separate from immutable comparison records."""
 
+    statuses: dict[MergeKey, MergeStatus] = field(default_factory=dict)
+    resolved_values: dict[MergeKey, MergeValue] = field(default_factory=dict)
 
-@dataclass(frozen=True)
-class MergePerson(MergeRecord[PersonKey, dict[str, Any]]):
-    pass
+    def status(self, record: MergeRecord[MergeValue]) -> MergeStatus:
+        if record.key in self.statuses:
+            return self.statuses[record.key]
+        if record.key in self.resolved_values and MergeStatus.RESOLVED in record.available_statuses:
+            return MergeStatus.RESOLVED
+        return record.default_status
 
+    def parent_excluded(self, record: MergeRecord[MergeValue]) -> bool:
+        parent = record.parent_key
+        return parent is not None and self.statuses.get(parent) is MergeStatus.EXCLUDED
 
-@dataclass(frozen=True)
-class MergeTarget(MergeRecord[TargetKey, dict[str, Any]]):
-    path: Path
+    def effective_status(self, record: MergeRecord[MergeValue]) -> MergeStatus:
+        return MergeStatus.EXCLUDED if self.parent_excluded(record) else self.status(record)
 
+    def set_status(self, record: MergeRecord[MergeValue], status: MergeStatus) -> None:
+        if status not in record.available_statuses:
+            raise ValueError(f"status {status.value!r} is unavailable for {record.key!r}")
+        if status is MergeStatus.RESOLVED:
+            # Validate the resolved value for the record before setting the status
+            record.value_for_status(status, self.resolved_values.get(record.key))
+        self.statuses[record.key] = status
 
-@dataclass(frozen=True)
-class MergeFinding(MergeRecord[FindingKey, bytes]):
-    pass
+    def resolve(self, record: MergeRecord[MergeValue], value: MergeValue) -> None:
+        resolved = record.value_for_status(MergeStatus.RESOLVED, value)
+        self.resolved_values[record.key] = resolved
+        self.statuses[record.key] = MergeStatus.RESOLVED
 
+    def resolve_all_as(self, records: Sequence[MergeRecord[MergeValue]], source: Literal["local", "unpacked"]) -> None:
+        for record in records:
+            value = record.local if source == "local" else record.unpacked
+            if record.source is MergeSource.BOTH:
+                if value is not None and not record.is_identical:
+                    # Settle the conflict in favour of the chosen source
+                    self.resolve(record, value)
+            else:
+                self.set_status(record, MergeStatus.INCLUDED if value is not None else MergeStatus.EXCLUDED)
 
-ResolvedMergeValues = dict[DateKey | PersonKey | TargetKey | FindingKey, dict[str, Any] | bytes]
+    def has_conflicts(self, records: Sequence[MergeRecord[MergeValue]]) -> bool:
+        return any(self.effective_status(record) is MergeStatus.CONFLICT for record in records)
 
-
-_CONFLICT = object()
+    def resolve_selected_values(self, records: Sequence[MergeRecord[MergeValue]]) -> dict[MergeKey, MergeValue]:
+        """Validate all choices and resolve included records before any writes."""
+        keys = {record.key for record in records}
+        if len(keys) != len(records):
+            raise ValueError("Duplicate merge record keys")
+        selected: dict[MergeKey, MergeValue] = {}
+        for record in records:
+            if record.parent_key is not None and record.parent_key not in keys:
+                raise ValueError(f"Missing parent for {record.key!r}")
+            status = self.status(record)
+            if status not in record.available_statuses:
+                raise ValueError(f"status {status.value!r} is unavailable for {record.key!r}")
+            if record.key in self.resolved_values:
+                record.validate_value(self.resolved_values[record.key])
+            if self.effective_status(record) is not MergeStatus.EXCLUDED:
+                selected[record.key] = record.value_for_status(status, self.resolved_values.get(record.key))
+        return selected
 
 
 def _is_list(value: Any) -> TypeGuard[list[Any]]:
     return isinstance(value, list)
 
 
-def _merge_sequences[SequenceItem](
-    local: Sequence[SequenceItem],
-    unpacked: Sequence[SequenceItem],
-    key: Callable[[SequenceItem], str],
-) -> list[SequenceItem] | None:
-    """Combine changes in distinct regions of two sequences.
-    Returns the merged sequence if successful, or None if there are conflicts (different content).
+LOCAL_MARKER = "<<<<<<< local"
+SEPARATOR_MARKER = "======="
+UNPACKED_MARKER = ">>>>>>> unpacked"
+
+
+def render_conflict_markers(local: str, unpacked: str) -> str:
+    """Render both versions of a text in a single document, marking differing sections as git does.
+
+    Lines common to both versions are kept as they are, every differing section is wrapped in
+    `<<<<<<< local`, `=======` and `>>>>>>> unpacked` lines. Nothing is merged automatically.
     """
-    # Collect shared blocks
-    matcher = SequenceMatcher(
-        None,
-        [key(item) for item in local],
-        [key(item) for item in unpacked],
-        autojunk=False,
-    )
-    merged: list[SequenceItem] = []
-    local_index = 0
-    unpacked_index = 0
+    local_lines = local.splitlines(keepends=True)
+    unpacked_lines = unpacked.splitlines(keepends=True)
 
-    for block in matcher.get_matching_blocks():
-        # 1. Resolve the unmatched chunks (gaps) between the matched blocks
-        # Collect the (potentially conflicting) chunks in between the index of the last matching block and
-        # the current matching block in both sequences
-        local_chunk = list(local[local_index : block.a])
-        unpacked_chunk = list(unpacked[unpacked_index : block.b])
-        if local_chunk and unpacked_chunk:
-            # Both gap (unmatched) chunks exist, cannot automatically merge
-            return None
-        else:
-            # Only one of the gap chunks exists (has additional content), keep that one
-            merged.extend(local_chunk or unpacked_chunk)
+    def terminated(lines: list[str]) -> str:
+        text = "".join(lines)
+        return text if not text or text.endswith("\n") else text + "\n"
 
-        # 2. Add the matching block itself
-        merged.extend(local[block.a : block.a + block.size])
-        # Move past the matching block
-        local_index = block.a + block.size
-        unpacked_index = block.b + block.size
-
-    return merged
-
-
-def _person_identity(value: Any) -> str | None:
-    """Return a unique identity (which is assumed to be email) for a person, or None if it cannot be determined."""
-    if not isinstance(value, dict):
-        return None
-    person = cast(dict[str, Any], value)
-    email = person.get("email")
-    if not isinstance(email, str) or not email:
-        return None
-    return email.casefold()
-
-
-def _merge_people(local: list[Any], unpacked: list[Any]) -> list[Any] | object:
-    local_identities = [_person_identity(person) for person in local]
-    unpacked_identities = [_person_identity(person) for person in unpacked]
-    if None in local_identities or None in unpacked_identities:
-        # Cannot compare and therefore possibly merge people lists if any person lacks a unique identity
-        return _CONFLICT
-
-    # Create a mapping from identity to the corresponding person
-    unpacked_by_identity = dict(zip(unpacked_identities, unpacked, strict=True))
-    merged: list[Any] = []
-    for identity, local_person in zip(local_identities, local, strict=True):
-        if identity not in unpacked_by_identity:
-            merged.append(local_person)
+    parts: list[str] = []
+    matcher = SequenceMatcher(a=local_lines, b=unpacked_lines, autojunk=False)
+    for tag, local_start, local_end, unpacked_start, unpacked_end in matcher.get_opcodes():
+        if tag == "equal":
+            parts.append("".join(local_lines[local_start:local_end]))
             continue
-        # Same identity exists in both local and unpacked, attempt to merge
-        merged_person = _merge_values(local_person, unpacked_by_identity[identity])
-        if merged_person is _CONFLICT:
-            return _CONFLICT
-        merged.append(merged_person)
-
-    # Add any remaining (unmatched and unpacked-only) people in the unpacked list
-    local_identity_set = set(local_identities)
-    merged.extend(
-        person
-        for identity, person in zip(unpacked_identities, unpacked, strict=True)
-        if identity not in local_identity_set
-    )
-    return merged
+        parts.append(f"{LOCAL_MARKER}\n")
+        parts.append(terminated(local_lines[local_start:local_end]))
+        parts.append(f"{SEPARATOR_MARKER}\n")
+        parts.append(terminated(unpacked_lines[unpacked_start:unpacked_end]))
+        parts.append(f"{UNPACKED_MARKER}\n")
+    return "".join(parts)
 
 
-def _merge_values(local: Any, unpacked: Any, field_name: str | None = None) -> Any:
-    if local == unpacked:
-        return local
-    if isinstance(local, dict) and isinstance(unpacked, dict):
-        local_dict = cast(dict[str, Any], local)
-        unpacked_dict = cast(dict[str, Any], unpacked)
-        merged_dict: dict[str, Any] = {}
-        # Fetch all unique keys from both local and unpacked dictionaries
-        unique_keys = [*local_dict, *(key for key in unpacked_dict if key not in local_dict)]
-        for key in unique_keys:
-            if key not in local_dict:
-                merged_dict[key] = unpacked_dict[key]
-            elif key not in unpacked_dict:
-                merged_dict[key] = local_dict[key]
-            else:
-                # Both local and unpacked have this attribute, attempt to merge their values
-                value = _merge_values(local_dict[key], unpacked_dict[key], key)
-                if value is _CONFLICT:
-                    return _CONFLICT
-                merged_dict[key] = value
-        return merged_dict
-    if _is_list(local) and _is_list(unpacked):
-        if field_name == "people":
-            return _merge_people(local, unpacked)
-        merged_list = _merge_sequences(
-            local,
-            unpacked,
-            lambda value: json.dumps(value, sort_keys=True),
-        )
-        if merged_list is not None:
-            return merged_list
-    return _CONFLICT
-
-
-def _try_merge_text(local: bytes, unpacked: bytes) -> bytes | None:
-    try:
-        local_text = local.decode("utf-8")
-        unpacked_text = unpacked.decode("utf-8")
-    except UnicodeDecodeError:
-        return None
-
-    merged_lines = _merge_sequences(
-        local_text.splitlines(keepends=True),
-        unpacked_text.splitlines(keepends=True),
-        lambda line: line,
-    )
-    return None if merged_lines is None else "".join(merged_lines).encode()
+def has_conflict_markers(text: str) -> bool:
+    """Check whether the text still contains the opening or closing conflict marker line."""
+    return any(line.rstrip("\r\n") in (LOCAL_MARKER, UNPACKED_MARKER) for line in text.splitlines(keepends=True))
 
 
 def _load_config(project_dir: Path) -> ConfigModel:
@@ -330,69 +327,54 @@ def _finding_names(config: dict[str, Any]) -> list[str]:
     return names
 
 
-def discover_merge_targets(local_dir: Path, unpacked_dir: Path) -> list[MergeTarget]:
+def discover_merge_targets(local_dir: Path, unpacked_dir: Path) -> list[MergeRecord[dict[str, Any]]]:
     local = _target_records(_load_config(local_dir))
     unpacked = _target_records(_load_config(unpacked_dir))
-    targets: list[MergeTarget] = []
+    targets: list[MergeRecord[dict[str, Any]]] = []
     for key in sorted(local.keys() | unpacked.keys()):
         _, path = local.get(key) or unpacked[key]
         local_value = local.get(key, (None, path))[0]
         unpacked_value = unpacked.get(key, (None, path))[0]
-        merged = None
-        if local_value is not None and unpacked_value is not None:
-            value = _merge_values(local_value, unpacked_value)
-            merged = None if value is _CONFLICT else cast(dict[str, Any], value)
         targets.append(
-            MergeTarget(
+            MergeRecord(
                 key=key,
                 local=copy.deepcopy(local_value),
                 unpacked=copy.deepcopy(unpacked_value),
-                merged=copy.deepcopy(merged),
                 path=path,
             )
         )
     return targets
 
 
-def discover_merge_dates(local_dir: Path, unpacked_dir: Path) -> list[MergeDate]:
+def discover_merge_dates(local_dir: Path, unpacked_dir: Path) -> list[MergeRecord[dict[str, Any]]]:
     local = _date_records(_load_config(local_dir))
     unpacked = _date_records(_load_config(unpacked_dir))
-    dates: list[MergeDate] = []
+    dates: list[MergeRecord[dict[str, Any]]] = []
     for key in sorted(local.keys() | unpacked.keys()):
         local_value = local.get(key)
         unpacked_value = unpacked.get(key)
-        merged = None
-        if local_value is not None and unpacked_value is not None:
-            value = _merge_values(local_value, unpacked_value)
-            merged = None if value is _CONFLICT else cast(dict[str, Any], value)
         dates.append(
-            MergeDate(
+            MergeRecord(
                 key=key,
                 local=copy.deepcopy(local_value),
                 unpacked=copy.deepcopy(unpacked_value),
-                merged=copy.deepcopy(merged),
             )
         )
     return dates
 
 
-def discover_merge_people(local_dir: Path, unpacked_dir: Path) -> list[MergePerson]:
+def discover_merge_people(local_dir: Path, unpacked_dir: Path) -> list[MergeRecord[dict[str, Any]]]:
     local = _person_records(_load_config(local_dir), MergeSource.LOCAL)
     unpacked = _person_records(_load_config(unpacked_dir), MergeSource.UNPACKED)
-    people: list[MergePerson] = []
+    people: list[MergeRecord[dict[str, Any]]] = []
     for key in sorted(local.keys() | unpacked.keys()):
         local_value = local.get(key)
         unpacked_value = unpacked.get(key)
-        merged = None
-        if local_value is not None and unpacked_value is not None:
-            value = _merge_values(local_value, unpacked_value)
-            merged = None if value is _CONFLICT else cast(dict[str, Any], value)
         people.append(
-            MergePerson(
+            MergeRecord(
                 key=key,
                 local=copy.deepcopy(local_value),
                 unpacked=copy.deepcopy(unpacked_value),
-                merged=copy.deepcopy(merged),
             )
         )
     return people
@@ -401,53 +383,41 @@ def discover_merge_people(local_dir: Path, unpacked_dir: Path) -> list[MergePers
 def discover_merge_findings(
     local_dir: Path,
     unpacked_dir: Path,
-    targets: list[MergeTarget],
-    selected_targets: set[TargetKey],
-) -> list[MergeFinding]:
-    findings: list[MergeFinding] = []
+    targets: Sequence[MergeRecord[dict[str, Any]]],
+    selected_targets: set[MergeKey],
+) -> list[MergeRecord[bytes]]:
+    findings: list[MergeRecord[bytes]] = []
     for target in targets:
+        if not isinstance(target.key, TargetKey):
+            raise ValueError(f"Expected target record, got {target.key!r}")
         if target.key not in selected_targets:
             continue
         local_names: set[str] = (
-            set(_finding_names(_load_findings(local_dir / target.path))) if target.in_local else set()
+            set(_finding_names(_load_findings(local_dir / target.target_dir))) if target.in_local else set()
         )
         unpacked_names: set[str] = (
-            set(_finding_names(_load_findings(unpacked_dir / target.path))) if target.in_unpacked else set()
+            set(_finding_names(_load_findings(unpacked_dir / target.target_dir))) if target.in_unpacked else set()
         )
         for name in sorted(local_names | unpacked_names):
-            local_path = local_dir / target.path / "findings" / f"{name}.md.j2"
-            unpacked_path = unpacked_dir / target.path / "findings" / f"{name}.md.j2"
+            local_path = local_dir / target.target_dir / "findings" / f"{name}.md.j2"
+            unpacked_path = unpacked_dir / target.target_dir / "findings" / f"{name}.md.j2"
             local_value = local_path.read_bytes() if local_path.is_file() else b"" if name in local_names else None
             unpacked_value = (
                 unpacked_path.read_bytes() if unpacked_path.is_file() else b"" if name in unpacked_names else None
             )
-            merged = (
-                _try_merge_text(local_value, unpacked_value)
-                if local_value is not None and unpacked_value is not None
-                else None
-            )
-            findings.append(MergeFinding(FindingKey(target.key, name), local_value, unpacked_value, merged))
+            findings.append(MergeRecord(FindingKey(target.key, name), local_value, unpacked_value))
     return findings
 
 
-def _merge_target_data(local: dict[str, Any], unpacked: dict[str, Any]) -> dict[str, Any]:
-    merged = _merge_values(local, unpacked)
-    return copy.deepcopy(local if merged is _CONFLICT else cast(dict[str, Any], merged))
-
-
-def _selected_config(
+def config_from_selected(
     local_config: dict[str, Any],
     unpacked_config: dict[str, Any],
     local_model: ConfigModel,
     unpacked_model: ConfigModel,
-    dates: list[MergeDate],
-    people: list[MergePerson],
-    targets: list[MergeTarget],
-    statuses: dict[DateKey | PersonKey | TargetKey | FindingKey, MergeStatus],
-    resolved_values: ResolvedMergeValues,
+    record_keys: set[MergeKey],
+    selected: Mapping[MergeKey, MergeValue],
 ) -> dict[str, Any]:
-    merged_value = _merge_values(local_config, unpacked_config)
-    result = copy.deepcopy(local_config if merged_value is _CONFLICT else cast(dict[str, Any], merged_value))
+    result = copy.deepcopy(local_config)
     result_versions = cast(dict[str, Any], result.setdefault("version_configs", {}))
     local_versions = cast(dict[str, Any], local_config.get("version_configs", {}))
     unpacked_versions = cast(dict[str, Any], unpacked_config.get("version_configs", {}))
@@ -462,42 +432,24 @@ def _selected_config(
         if version_key not in result_versions:
             result_versions[version_key] = copy.deepcopy(unpacked_versions[version_key])
         version_data = cast(dict[str, Any], result_versions[version_key])
+        # Clear existing data for this version to prepare for replacing them with the values selected by the user
         version_data["targets"] = []
         version_data["dates"] = []
         version_data["people"] = []
 
-    targets_by_key = {target.key: target for target in targets}
-    target_keys = [*local_targets, *(key for key in unpacked_targets if key not in local_targets)]
-    for target_key in target_keys:
-        target = targets_by_key[target_key]
-        if statuses.get(target.key) is MergeStatus.EXCLUDED:
-            continue
-        value = resolved_values.get(target.key)
-        if value is None:
-            value = target.value_for(statuses.get(target.key, target.default_status))
-        cast(list[Any], cast(dict[str, Any], result_versions[target.key.version])["targets"]).append(value)
-
-    dates_by_key = {date.key: date for date in dates}
-    date_keys = [*local_dates, *(key for key in unpacked_dates if key not in local_dates)]
-    for date_key in date_keys:
-        date = dates_by_key[date_key]
-        if statuses.get(date.key) is MergeStatus.EXCLUDED:
-            continue
-        value = resolved_values.get(date.key)
-        if value is None:
-            value = date.value_for(statuses.get(date.key, date.default_status))
-        cast(list[Any], cast(dict[str, Any], result_versions[date.key.version])["dates"]).append(value)
-
-    people_by_key = {person.key: person for person in people}
-    person_keys = [*local_people, *(key for key in unpacked_people if key not in local_people)]
-    for person_key in person_keys:
-        person = people_by_key[person_key]
-        if statuses.get(person.key) is MergeStatus.EXCLUDED:
-            continue
-        value = resolved_values.get(person.key)
-        if value is None:
-            value = person.value_for(statuses.get(person.key, person.default_status))
-        cast(list[Any], cast(dict[str, Any], result_versions[person.key.version])["people"]).append(value)
+    for field_name, local_keys, unpacked_keys in (
+        ("targets", list(local_targets), list(unpacked_targets)),
+        ("dates", list(local_dates), list(unpacked_dates)),
+        ("people", list(local_people), list(unpacked_people)),
+    ):
+        ordered_keys = [*local_keys, *(key for key in unpacked_keys if key not in local_keys)]
+        # Iterate over all data from unpacked missing in local and apply the selected values
+        for key in ordered_keys:
+            if key not in record_keys:
+                raise ValueError(f"Missing merge record for {key!r}")
+            if key in selected:
+                version_data = cast(dict[str, Any], result_versions[key.version])
+                cast(list[Any], version_data[field_name]).append(selected[key])
 
     return result
 
@@ -512,9 +464,7 @@ def _selected_findings_config(
     for group_name in [*local, *(name for name in unpacked if name not in local)]:
         local_group = local.get(group_name)
         unpacked_group = unpacked.get(group_name)
-        if isinstance(local_group, dict) and isinstance(unpacked_group, dict):
-            group = _merge_target_data(cast(dict[str, Any], local_group), cast(dict[str, Any], unpacked_group))
-        elif isinstance(local_group, dict):
+        if isinstance(local_group, dict):
             group = copy.deepcopy(cast(dict[str, Any], local_group))
         elif isinstance(unpacked_group, dict):
             group = copy.deepcopy(cast(dict[str, Any], unpacked_group))
@@ -539,86 +489,90 @@ def _merge_shared_asset_directories(local_dir: Path, unpacked_dir: Path) -> None
             shutil.copytree(source, local_dir / relative_path, dirs_exist_ok=True)
 
 
-def apply_entity_merge(
+@dataclass(frozen=True)
+class _MergeOutput:
+    config: bytes
+    files: dict[Path, bytes]
+    target_copies: dict[Path, set[str]]
+
+
+def _prepare_merge(
     local_dir: Path,
     unpacked_dir: Path,
-    dates: list[MergeDate],
-    people: list[MergePerson],
-    targets: list[MergeTarget],
-    findings: list[MergeFinding],
-    statuses: dict[DateKey | PersonKey | TargetKey | FindingKey, MergeStatus],
-    resolved_values: ResolvedMergeValues | None = None,
-) -> None:
-    selected_values = resolved_values or {}
-    records: list[MergeDate | MergePerson | MergeTarget | MergeFinding] = [*dates, *people, *targets, *findings]
-    for record in records:
-        status = statuses.get(record.key, record.default_status)
-        if status not in record.available_statuses:
-            raise ValueError(f"status {status.value!r} is unavailable for {record.key!r}")
-        if record.key in selected_values:
-            value = selected_values[record.key]
-            if isinstance(record, MergeFinding) != isinstance(value, bytes):
-                raise TypeError(f"Invalid resolved value for {record.key!r}")
-
+    records: Sequence[MergeRecord[MergeValue]],
+    selected: Mapping[MergeKey, MergeValue],
+) -> _MergeOutput:
     local_model = _load_config(local_dir)
     unpacked_model = _load_config(unpacked_dir)
     local_config = _load_config_data(local_dir)
     unpacked_config = _load_config_data(unpacked_dir)
-    selected_config = _selected_config(
+    selected_config = config_from_selected(
         local_config,
         unpacked_config,
         local_model,
         unpacked_model,
-        dates,
-        people,
-        targets,
-        statuses,
-        selected_values,
+        {record.key for record in records},
+        selected,
     )
     ConfigModel.model_validate_json(json.dumps(selected_config))
 
-    findings_by_target: dict[TargetKey, list[MergeFinding]] = {}
-    for finding in findings:
-        findings_by_target.setdefault(finding.key.target, []).append(finding)
+    findings_by_target: dict[TargetKey, list[FindingKey]] = {}
+    for record in records:
+        if isinstance(record.key, FindingKey):
+            findings_by_target.setdefault(record.key.target, []).append(record.key)
 
-    for target in targets:
-        if statuses.get(target.key) is MergeStatus.EXCLUDED:
+    files: dict[Path, bytes] = {}
+    target_copies: dict[Path, set[str]] = {}
+    for target in records:
+        if not isinstance(target.key, TargetKey) or target.key not in selected:
             continue
-        local_target = local_dir / target.path
-        unpacked_target = unpacked_dir / target.path
+        local_target = local_dir / target.target_dir
+        unpacked_target = unpacked_dir / target.target_dir
         all_target_findings = findings_by_target.get(target.key, [])
-        target_findings = [
-            finding for finding in all_target_findings if statuses.get(finding.key) is not MergeStatus.EXCLUDED
-        ]
+        target_findings = [key for key in all_target_findings if key in selected]
         if not target.in_local and unpacked_target.is_dir():
-            excluded_files = {
-                f"{finding.key.name}.md.j2"
-                for finding in all_target_findings
-                if statuses.get(finding.key) is MergeStatus.EXCLUDED
+            target_copies[target.target_dir] = {
+                f"{key.name}.md.j2" for key in all_target_findings if key not in selected
             }
-            shutil.copytree(
-                unpacked_target,
-                local_target,
-                dirs_exist_ok=True,
-                ignore=lambda directory, names, excluded=excluded_files, finding_dir=unpacked_target / "findings": (
-                    excluded.intersection(names) if Path(directory) == finding_dir else set()
-                ),
-            )
-
         local_findings = _load_findings(local_target) if target.in_local else {}
         unpacked_findings = _load_findings(unpacked_target) if target.in_unpacked else {}
-        finding_names = {finding.key.name for finding in target_findings}
+        finding_names = {key.name for key in target_findings}
         findings_config = _selected_findings_config(local_findings, unpacked_findings, finding_names)
-        local_target.mkdir(parents=True, exist_ok=True)
-        (local_target / "findings.toml").write_text(tomlkit.dumps(findings_config), encoding="utf-8")
-        for finding in target_findings:
-            content = selected_values.get(finding.key)
-            if content is None:
-                content = finding.value_for(statuses.get(finding.key, finding.default_status))
-            assert isinstance(content, bytes)
-            destination = local_target / "findings" / f"{finding.key.name}.md.j2"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_bytes(content)
+        files[target.target_dir / "findings.toml"] = tomlkit.dumps(findings_config).encode("utf-8")
+        for key in target_findings:
+            content = selected[key]
+            if not isinstance(content, bytes):
+                raise TypeError(f"Invalid finding content for {key!r}")
+            files[target.target_dir / "findings" / f"{key.name}.md.j2"] = content
 
-    (local_dir / "config.json").write_text(json.dumps(selected_config, indent=2) + "\n", encoding="utf-8")
+    return _MergeOutput((json.dumps(selected_config, indent=2) + "\n").encode("utf-8"), files, target_copies)
+
+
+def _write_merge(local_dir: Path, unpacked_dir: Path, output: _MergeOutput) -> None:
+    for relative_path, excluded in output.target_copies.items():
+        source = unpacked_dir / relative_path
+        shutil.copytree(
+            source,
+            local_dir / relative_path,
+            dirs_exist_ok=True,
+            ignore=lambda directory, names, excluded=excluded, finding_dir=source / "findings": (
+                excluded.intersection(names) if Path(directory) == finding_dir else set()
+            ),
+        )
+    for relative_path, content in output.files.items():
+        destination = local_dir / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(content)
+    (local_dir / "config.json").write_bytes(output.config)
     _merge_shared_asset_directories(local_dir, unpacked_dir)
+
+
+def apply_entity_merge(
+    local_dir: Path,
+    unpacked_dir: Path,
+    records: Sequence[MergeRecord[MergeValue]],
+    selection: MergeSelection,
+) -> None:
+    selected = selection.resolve_selected_values(records)
+    output = _prepare_merge(local_dir, unpacked_dir, records, selected)
+    _write_merge(local_dir, unpacked_dir, output)

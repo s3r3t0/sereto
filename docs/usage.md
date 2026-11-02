@@ -48,35 +48,6 @@ sereto ls
 ![](assets/gifs/ls-projects.gif)
 
 
-## Unpacking and merging a project
-
-Open the unpack screen with a report containing embedded project sources:
-
-```sh
-sereto unpack --file report.pdf
-```
-
-If the project already exists locally, compatible SeReTo versions open a comparison
-with four columns: **Local Project**, **Unpacked Project**, **Status**, and **Action**.
-Dates, people, targets, and findings shared by both projects appear on the same row.
-People are matched by email; people without an email appear as separate records.
-
-- **Identical** records need no action.
-- **Local only** and **Unpacked only** records are included by default. Use **Exclude**
-  or **Include** to change that selection. Excluding a target also excludes its findings.
-- **Mergeable** records default to an automatic merge. **Change source** cycles between
-  local, unpacked, and automatically merged values.
-- **Conflict** records require **Resolve conflict**. The modal displays local and
-  unpacked values side by side with a merged preview. Click a version in each conflicting
-  field, then choose **Apply selection**. Identical and one-sided fields are preselected.
-  Use **Edit resolution** to revisit a completed choice.
-
-Click a row's **Action** cell, press **Enter** on that cell, or press **Space** on the row.
-Choose **Apply merge** (or press **Ctrl+S**) to save after all conflicts are resolved.
-**Cancel** or **Escape** leaves the local project unchanged. Excluded local records are
-removed from the configuration, but their existing source files are retained.
-
-
 ## Configuring the project's details
 
 SeReTo will need some information from you to generate the project. In our example, please change your working directory to your project's directory (you can discover it by running `sereto ls`). It can look something like this:
