@@ -12,6 +12,7 @@ Screen stack (outermost → innermost):
 
 from __future__ import annotations
 
+import asyncio
 import json
 import shutil
 import traceback
@@ -55,6 +56,7 @@ from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
 from sereto.models.locator import get_locator_types
 from sereto.models.person import Person, PersonType
+from sereto.models.settings import Settings
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
 from sereto.project import Project, is_project_dir, new_project
 from sereto.retest import add_retest
@@ -2524,9 +2526,11 @@ class SeretoUnifiedApp(App[None]):
         entry_point: str | None = None,
         project: Project | None = None,
         plugin_context: object | None = None,
+        *,
+        settings: Settings | None = None,
     ) -> None:
         super().__init__()
-        self.settings = load_settings_function()
+        self.settings = settings if settings is not None else load_settings_function()
         self.entry_point = entry_point
         self.plugin_context = plugin_context
         self.current_project: Project | None = None
@@ -2629,5 +2633,7 @@ async def launch_tui(
             ``app.plugin_context`` inside that plugin's own screen factory.
     """
     _register_builtin_actions()
-    app = SeretoUnifiedApp(entry_point=entry_point, project=project, plugin_context=plugin_context)
+    # First-run prompts run their own event loop, so keep them off the TUI loop.
+    settings = await asyncio.to_thread(load_settings_function)
+    app = SeretoUnifiedApp(entry_point=entry_point, project=project, plugin_context=plugin_context, settings=settings)
     await app.run_async()
