@@ -85,7 +85,7 @@ performance = [
 ]
 dev = [
   "pre-commit~=4.6.0",
-  "ruff~=0.16.0",
+  "ruff>=0.16,<0.18",
   "ty>=0.0.65",
   "textual-dev",
 ]
