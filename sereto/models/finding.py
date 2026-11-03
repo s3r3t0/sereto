@@ -5,6 +5,7 @@ from typing import Any, Literal, Self
 
 import frontmatter
 from pydantic import Field, FilePath, RootModel, ValidationError, field_validator, validate_call
+from toml import TomlDecodeError  # type: ignore[import-untyped]
 from tomlkit import dumps as toml_dumps
 
 from sereto.enums import FileFormat
@@ -105,7 +106,14 @@ class SubFindingFrontmatterModel(SeretoBaseModel):
             metadata, _ = frontmatter.parse(path.read_text(encoding="utf-8"), encoding="utf-8")
             return cls.model_validate(metadata)
         except ValidationError as ex:
-            raise SeretoValueError(f"invalid finding frontmatter in '{path}'") from ex
+            details = []
+            for error in ex.errors(include_url=False, include_input=False):
+                location = " -> ".join(str(part) for part in error["loc"])
+                message = error["msg"]
+                details.append(f"  {location}: {message}")
+            raise SeretoValueError(f"invalid finding frontmatter in '{path}':\n" + "\n".join(details)) from ex
+        except TomlDecodeError as ex:
+            raise SeretoValueError(f"invalid TOML finding frontmatter in '{path}': {ex}") from ex
 
 
 class FindingGroupModel(SeretoBaseModel, extra="allow"):
