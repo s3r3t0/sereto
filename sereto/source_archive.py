@@ -1,4 +1,5 @@
 import tarfile
+from contextlib import suppress
 from os.path import commonpath
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -9,7 +10,7 @@ from pypdf import PdfReader, PdfWriter
 from rich.markup import escape
 
 from sereto.config import Config
-from sereto.crypto import encrypt_file
+from sereto.crypto import decrypt_file, encrypt_file
 from sereto.exceptions import SeretoEncryptionError, SeretoPathError, SeretoValueError
 from sereto.logging import logger
 from sereto.sereto_types import TypeProjectId
@@ -183,7 +184,32 @@ def retrieve_source_archive(pdf: FilePath, name: str) -> Path:
 
 
 @validate_call
-def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> None:
+def extract_source_archive_from_pdf(pdf: FilePath, output_dir: DirectoryPath) -> Path | None:
+    """Extract an embedded project source archive from a PDF.
+
+    Prefers an encrypted ``source.sereto`` attachment and falls back to ``source.tgz``.
+
+    Args:
+        pdf: The PDF containing the source archive attachment.
+        output_dir: The directory where the project sources will be extracted.
+
+    Returns:
+        The extracted project directory, or None if the archive is empty.
+    """
+    attachment: Path | None = None
+    with suppress(SeretoValueError):
+        attachment = retrieve_source_archive(pdf=pdf, name="source.sereto")
+
+    source_archive = (
+        decrypt_file(file=attachment, keep_original=False)
+        if attachment is not None
+        else retrieve_source_archive(pdf=pdf, name="source.tgz")
+    )
+    return extract_source_archive(file=source_archive, output_dir=output_dir, keep_original=False)
+
+
+@validate_call
+def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_original: bool = True) -> Path | None:
     """Extracts the project sources from a given tarball file.
 
     Expects the tarball file to be Gzip-compressed.
@@ -192,6 +218,9 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
         file: The path to the .tgz file.
         output_dir: The directory where the sources will be extracted.
         keep_original: If True, the original tarball file is kept. Defaults to True.
+
+    Returns:
+        The extracted project directory, or None if the archive is empty.
     """
     logger.info("Extracting archive ...")
 
@@ -199,7 +228,7 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
         # Check for empty source archive
         if len(tar.getmembers()) == 0:
             logger.warning("Empty source archive: '{}'", file)
-            return
+            return None
 
         # Get the common directory in the tar archive
         common_dir = Path(commonpath(tar.getnames()))
@@ -241,3 +270,5 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
     if not keep_original:
         file.unlink()
         logger.info("[red]-[/red] Deleted tarball: '{}'", escape(str(file)), markup=True)
+
+    return output_dir / project_id
