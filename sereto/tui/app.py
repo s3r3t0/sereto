@@ -437,7 +437,8 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                         Input(
                             value=target_initial.model.id or "" if target_initial else "",
                             id="modal-target-id",
-                            placeholder="Optional target ID",
+                            placeholder="Auto-generated ID if empty",
+                            disabled=target_initial is not None,  # Immutable if already set
                         ),
                         "ID",
                     )
@@ -456,7 +457,7 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                             id="modal-target-category",
                             prompt="Select category…",
                             value=target_initial.model.category if target_initial else Select.NULL,
-                            disabled=target_initial is not None,
+                            disabled=target_initial is not None,  # Immutable if already set
                         )
                     yield Vertical(id="modal-target-specific-fields")
                     yield self._field_row(
@@ -760,7 +761,7 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
                     raise TypeError(f"JSON field {spec.path!r} has no expected type")
                 return self._read_json(spec.widget_id, spec.label, spec.json_type)
 
-    def _build_target_model(self, category: str, name: str) -> TargetModel:
+    def _build_target_model(self, category: str, id: str | None, name: str) -> TargetModel:
         model_class = self._target_model_class(category)
         extra = self._read_json("modal-target-extra", "Extra fields", dict)
         conflicting = sorted(extra.keys() & set(model_class.model_fields))
@@ -769,13 +770,12 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
 
         payload: dict[str, Any] = {
             **extra,
-            "id": self.query_one("#modal-target-id", Input).value.strip() or None,
+            "id": id,
             "category": category,
             "name": name,
             "locators": self.query_one("#modal-target-locators", _LocatorListWidget).values(),
             "documents": self._read_json("modal-target-documents", "Documents", list),
         }
-
         specs = _TARGET_FIELD_SPECS.get(category, ())
         # Read and collect the values of all fields that other fields depend on
         controller_values = {spec.path: self._read_target_field(spec) for spec in specs if spec.dependent_paths}
@@ -814,18 +814,20 @@ class ConfigRecordFormScreen(ModalScreen[_ConfigFormData | None]):
             target_initial = self._initial if isinstance(self._initial, _TargetFormData) else None
             if target_initial is not None:
                 category = target_initial.model.category
+                id: str | None = target_initial.model.id
             else:
                 selected_category = cast(str | NoSelection, self.query_one("#modal-target-category", Select).value)
                 if isinstance(selected_category, NoSelection):
                     self.notify("Select a category.", severity="warning", timeout=3)
                     return
                 category = selected_category
+                id = self.query_one("#modal-target-id", Input).value.strip() or None
             name = self.query_one("#modal-target-name", Input).value.strip()
             if not name:
                 self.notify("Enter a target name.", severity="warning", timeout=3)
                 return
             try:
-                model = self._build_target_model(category, name)
+                model = self._build_target_model(category, id, name)
             except (ValueError, ValidationError) as exc:
                 self.notify(str(exc), title="Invalid target", severity="error", markup=False)
                 return
@@ -1222,57 +1224,15 @@ class ConfigScreen(_PoppableScreen):
             project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
             vc = self._active_vc
             target = vc.targets[index - 1]
-            old_path = target.path
-            new_path = old_path.parent / (target_model.uname + target.version.path_suffix)
-
-            if new_path != old_path:
-                conflicting_target = any(
-                    existing.data.uname == target_model.uname
-                    for existing_index, existing in enumerate(vc.targets)
-                    if existing_index != index - 1
-                )
-                if conflicting_target:
-                    self.notify(
-                        f"A target named {target_model.name!r} already exists in this category.",
-                        title="Failed to update target",
-                        severity="error",
-                        markup=False,
-                    )
-                    return
-                if new_path.exists():
-                    self.notify(
-                        f"Target directory already exists: {new_path}",
-                        title="Failed to update target",
-                        severity="error",
-                        markup=False,
-                    )
-                    return
-
-            renamed = False
             try:
-                if new_path != old_path:
-                    old_path.rename(new_path)
-                    renamed = True
-
-                vc.targets[index - 1] = Target.load(
-                    data=target_model,
-                    path=new_path,
-                    version=target.version,
-                    templates=project.settings.templates_path,
-                )
-                project.config.save()
+                model = project.config.to_model()
+                version_model = model.version_configs[target.version]
+                version_model.targets = [
+                    target_model if existing_index == index - 1 else existing
+                    for existing_index, existing in enumerate(version_model.targets)
+                ]
+                project.config.update(model, templates=project.settings.templates_path)
             except Exception as exc:
-                vc.targets[index - 1] = target
-                if renamed:
-                    try:
-                        new_path.rename(old_path)
-                    except OSError as rollback_exc:
-                        self.notify(
-                            str(rollback_exc),
-                            title="Failed to restore target directory",
-                            severity="error",
-                            markup=False,
-                        )
                 self.notify(str(exc), title="Failed to update target", severity="error", markup=False)
                 return
 
@@ -1288,6 +1248,8 @@ class ConfigScreen(_PoppableScreen):
         version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
 
         try:
+            # Validate the new target against the active version config
+            self._active_vc.validate_new_target(target_model)
             new_target = Target.new(
                 data=target_model,
                 project_path=project.path,
@@ -1771,7 +1733,7 @@ class RenderScreen(_PoppableScreen):
 
     def _reload_fg_selectors(self) -> None:
         targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        target_options = [(f"{t.data.category.upper()}  {t.data.name}", t.data.uname) for t in targets]
+        target_options = [(f"{t.data.category.upper()}  {t.data.name}", t.data.id) for t in targets]
         target_select = self.query_one("#fg-target-select", Select)
         fg_select = self.query_one("#fg-group-select", Select)
         target_select.set_options(target_options)
@@ -1785,8 +1747,8 @@ class RenderScreen(_PoppableScreen):
             fg_select.set_options([])
             return
         targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        target_uname = str(event.value)
-        target = next((t for t in targets if t.data.uname == target_uname), None)
+        target_id = str(event.value)
+        target = next((t for t in targets if t.data.id == target_id), None)
         if target is None:
             fg_select.set_options([])
             return
@@ -1810,14 +1772,14 @@ class RenderScreen(_PoppableScreen):
             self.notify("Select a render type.", severity="warning", timeout=3)
             return
         render_type = str(render_type_select.value)
-        target_uname: str | None = None
+        target_id: str | None = None
         fg_uname: str | None = None
         if render_type == "fg":
             target_value = self.query_one("#fg-target-select", Select).value
             group_value = self.query_one("#fg-group-select", Select).value
-            target_uname = None if isinstance(target_value, NoSelection) else str(target_value)
+            target_id = None if isinstance(target_value, NoSelection) else str(target_value)
             fg_uname = None if isinstance(group_value, NoSelection) else str(group_value)
-        self._run_render(render_type, target_uname, fg_uname)
+        self._run_render(render_type, target_id, fg_uname)
 
     @on(Button.Pressed, "#open-pdf-btn")
     def handle_open_pdf(self) -> None:
@@ -1830,7 +1792,7 @@ class RenderScreen(_PoppableScreen):
 
     # ── workers ───────────────────────────────────────────────────────────────
     @work(thread=True)
-    def _run_render(self, kind: str, target_uname: str | None = None, fg_uname: str | None = None) -> None:
+    def _run_render(self, kind: str, target_id: str | None = None, fg_uname: str | None = None) -> None:
         from loguru import logger
 
         from sereto.pdf import (
@@ -1904,7 +1866,7 @@ class RenderScreen(_PoppableScreen):
                     pdf_path = find_and_generate_pdf_finding_group(
                         project=project,
                         template="finding_group",
-                        target_selector=target_uname,
+                        target_selector=target_id,
                         finding_group_selector=fg_uname,
                         converter=None,
                         renderer=None,

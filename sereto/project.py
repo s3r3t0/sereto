@@ -201,7 +201,7 @@ def init_build_dir(
         assert version_config is not None  # guaranteed by the check above
         targets = version_config.targets
     for target in targets:
-        project.ensure_dir(f".build/{target.uname}")
+        project.ensure_dir(f".build/{target.directory_name}")
 
 
 @validate_call
@@ -219,7 +219,7 @@ def project_create_missing(project: Project, version_config: VersionConfig) -> N
 
     for target in version_config.targets:
         # Generate risks plot for the target
-        risks_plot(risks=target.findings.risks, path=project.path / ".build" / target.uname / "risks.png")
+        risks_plot(risks=target.findings.risks, path=project.path / ".build" / target.directory_name / "risks.png")
 
 
 @validate_call

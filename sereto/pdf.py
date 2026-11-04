@@ -113,7 +113,7 @@ def generate_pdf_finding_group(
 
     # Move the finding group PDF to the "pdf" directory
     pdf_dir = project.ensure_dir("pdf")
-    return finding_group_pdf.replace(pdf_dir / f"{target.uname}_{finding_group_pdf.name}")
+    return finding_group_pdf.replace(pdf_dir / f"{target.directory_name}_{finding_group_pdf.name}")
 
 
 @validate_call
@@ -335,7 +335,7 @@ def generate_pdf_target(
         categories=project.settings.categories, selector=target_selector
     )
 
-    logger.info("Rendering partial report for target '{}'", target.uname)
+    logger.info("Rendering partial report for target '{}'", target.data.id)
 
     project_create_missing(project=project, version_config=project.config.at_version(version))
     recipe = project.settings.render.get_target_recipe(name=target_recipe)
