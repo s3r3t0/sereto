@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Breaking:** Target IDs can no longer be `None` — if its values is not provided by the user during target's creation, it is generated using eight random hex characters. Target IDs are immutable after creation or legacy migration and must be unique within each configuration version. `Target.uname` is replaced with `Target.directory_name` for filesystem paths and generated layouts. Use `TargetModel.id` for target selection and `TargetModel.name` for display labels. Update custom templates to use `target.directory_name` instead of `target.uname`.
+
 ### Fixed
 
 - Fix first-run TUI startup failing with a nested asyncio event-loop error during settings setup.
+- Use stable target IDs so renaming targets preserves finding paths, customized layouts, and existing filesystem links. Retests preserve IDs while using separate version-suffixed directories (just like before). Directory naming retains the target_ prefix and existing version suffix convention (no suffix for v1.0). Legacy directories remain unchanged; their name-derived component becomes the target ID.
 
 ## [0.9.0] - 2026-10-13
 

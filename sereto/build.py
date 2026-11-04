@@ -71,7 +71,7 @@ def build_subfinding(
     write_if_different(
         file=project.path
         / ".build"
-        / target.uname
+        / target.directory_name
         / f"{sub_finding.path.name.removesuffix(f'.{sub_finding.format.value}.j2')}.{intermediate_format.value}",
         content=content,
     )
@@ -100,7 +100,7 @@ def build_finding_group_dependencies(
     layouts_generated = project.ensure_dir("layouts/generated")
 
     # Create template in "layouts/generated" directory
-    template_dst = layouts_generated / f"{target.uname}_{finding_group.uname}.{intermediate_format.value}.j2"
+    template_dst = layouts_generated / f"{target.directory_name}_{finding_group.uname}.{intermediate_format.value}.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = (
             project.settings.templates_path
@@ -152,7 +152,7 @@ def build_finding_group_to_format(
     )
 
     # Write the finding group to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{finding_group.uname}.{format.value}"
+    destination = project.path / ".build" / target.directory_name / f"{finding_group.uname}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered finding group
@@ -200,7 +200,7 @@ def build_target_dependencies(
                     raise type(e)(f"Failed to build finding group '{finding_group.uname}': {e}") from e
 
     # Create template in "layouts/generated" directory
-    template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{intermediate_format.value}.j2"
+    template_dst = project.ensure_dir("layouts/generated") / f"{target.directory_name}.{intermediate_format.value}.j2"
     if not template_dst.is_file():  # do not overwrite existing templates
         template_src = (
             project.settings.templates_path
@@ -245,7 +245,7 @@ def build_target_to_format(
     )
 
     # Write the target to the ".build" directory; do not overwrite the same content (preserve timestamps)
-    destination = project.path / ".build" / target.uname / f"{target.uname}.{format.value}"
+    destination = project.path / ".build" / target.directory_name / f"{target.directory_name}.{format.value}"
     write_if_different(file=destination, content=content)
 
     # Return the path to the rendered target

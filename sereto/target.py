@@ -8,7 +8,7 @@ from sereto.finding import Findings
 from sereto.logging import logger
 from sereto.models.document import DocumentModel
 from sereto.models.locator import LocatorModel
-from sereto.models.target import TargetModel
+from sereto.models.target import TargetModel, target_directory_name
 from sereto.models.version import ProjectVersion
 from sereto.utils import copy_skel
 
@@ -35,7 +35,7 @@ class Target:
     def new(
         cls, data: TargetModel, project_path: DirectoryPath, templates: DirectoryPath, version: ProjectVersion
     ) -> Self:
-        target_path = project_path / (data.uname + version.path_suffix)
+        target_path = project_path / target_directory_name(data.id, version)
 
         logger.info("Creating target directory: '{}'", target_path)
         target_path.mkdir()
@@ -55,13 +55,13 @@ class Target:
         return self.data
 
     @property
-    def uname(self) -> str:
-        """Unique name for the target instance.
+    def directory_name(self) -> str:
+        """Filesystem basename for this version's target instance.
 
         Returns:
-            The unique name of the target.
+            The target ID with the target prefix and version suffix.
         """
-        return self.data.uname + self.version.path_suffix
+        return target_directory_name(self.data.id, self.version)
 
     @validate_call
     def filter_locators(self, type: str | Iterable[str]) -> list[LocatorModel]:

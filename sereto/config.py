@@ -4,15 +4,18 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import timedelta
 from functools import reduce
+from pathlib import Path
 from typing import Literal, Self, overload
 
-from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
+from pydantic import DirectoryPath, FilePath, NonNegativeInt, ValidationError, validate_call
 
 from sereto.enums import Risk, TargetExposure
-from sereto.exceptions import SeretoValueError
+from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.logging import logger
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
+from sereto.models.target import TargetModel, parse_target_model, target_directory_name
 from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.risk import Risks
 from sereto.target import Target
@@ -50,20 +53,23 @@ class VersionConfig:
         templates: DirectoryPath,
         risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]],
     ) -> Self:
+        targets: list[Target] = []
+        for target in model.targets:
+            directory_name = target_directory_name(target.id, version)
+            target_path = project_path / directory_name
+            if not target_path.is_dir():
+                raise SeretoPathError(
+                    f"Target directory not found: '{target_path}'. "
+                    f"Check id for target {target.name!r} in {version}; "
+                    f"the expected directory name is '{directory_name}'."
+                )
+            targets.append(Target.load(data=target, path=target_path, version=version, templates=templates))
         return cls(
             version=version,
             id=model.id,
             name=model.name,
             version_description=model.version_description,
-            targets=[
-                Target.load(
-                    data=target,
-                    path=project_path / (target.uname + version.path_suffix),
-                    version=version,
-                    templates=templates,
-                )
-                for target in model.targets
-            ],
+            targets=targets,
             dates=model.dates,
             people=model.people,
             risk_due_dates=risk_due_dates,
@@ -141,6 +147,17 @@ class VersionConfig:
                 )
             return self.targets[0]
 
+        # by id
+        if isinstance(selector, str):
+            matching = [t for t in self.targets if t.data.id == selector]
+            match len(matching):
+                case 0:
+                    pass
+                case 1:
+                    return matching[0]
+                case _:
+                    raise SeretoValueError(f"multiple targets with id {selector!r} found")
+
         # by index
         if isinstance(selector, int) or selector.isnumeric():
             ix = selector - 1 if isinstance(selector, int) else int(selector) - 1
@@ -162,11 +179,7 @@ class VersionConfig:
                         f"category {selector!r} contains multiple targets, use unique name when querying"
                     )
 
-        # by uname
-        filtered_targets = [t for t in self.targets if t.uname == selector]
-        if len(filtered_targets) != 1:
-            raise SeretoValueError(f"target with uname {selector!r} not found")
-        return filtered_targets[0]
+        raise SeretoValueError(f"no target matching selector {selector!r} found")
 
     @validate_call
     @overload
@@ -327,6 +340,11 @@ class VersionConfig:
             return [p for p in self.people if p not in filtered_people]
         return filtered_people
 
+    def validate_new_target(self, data: TargetModel) -> None:
+        """Validate a proposed target without changing the configuration."""
+        model = self.to_model()
+        model.targets = [*model.targets, parse_target_model(data)]
+
     @validate_call
     def add_target(self, target: Target) -> Self:
         """Add a target to the configuration.
@@ -337,6 +355,7 @@ class VersionConfig:
         Returns:
             The configuration with the added target.
         """
+        self.validate_new_target(target.data)
         self.targets.append(target)
         return self
 
@@ -468,12 +487,28 @@ class VersionConfig:
         return f"{self.id} - Statement of Work{version}.pdf"
 
 
+def _validate_target_directories(configs: Iterable[VersionConfig]) -> None:
+    seen: dict[Path, ProjectVersion] = {}
+    for config in configs:
+        for target in config.targets:
+            path = target.path.resolve()
+            if path in seen:
+                raise SeretoPathError(
+                    f"Target directory '{path}' is shared by {seen[path]} and {config.version}. "
+                    "Each target needs a separate directory; use 'target_<id>_<version>'."
+                )
+            seen[path] = config.version
+
+
 @dataclass
 class Config:
     sereto_version: SeretoVersion
     version_configs: dict[ProjectVersion, VersionConfig]
     path: FilePath
     risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
+
+    def __post_init__(self) -> None:
+        _validate_target_directories(self.version_configs.values())
 
     @classmethod
     @validate_call
@@ -505,7 +540,52 @@ class Config:
         )
 
     def save(self) -> None:
+        _validate_target_directories(self.version_configs.values())
         self.path.write_text(self.to_model().model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+    def update(self, data: str | ConfigModel, templates: DirectoryPath) -> None:
+        """Validate JSON or model data, then save and apply configuration changes."""
+        try:
+            model = ConfigModel.model_validate_json(data.model_dump_json() if isinstance(data, ConfigModel) else data)
+        except ValidationError as exc:
+            raise SeretoValueError(f"invalid config\n\n{exc}") from exc
+
+        for new_version, new_version_config in model.version_configs.items():
+            if new_version not in self.version_configs:
+                continue
+            # Same version in both - check that target IDs are not changed since they are considered immutable
+            existing_ids = {target.data.id for target in self.version_configs[new_version].targets}
+            if any(target.id not in existing_ids for target in new_version_config.targets):
+                raise SeretoValueError("Target IDs cannot be changed.")
+
+        updated = Config(
+            sereto_version=model.sereto_version,
+            version_configs={
+                version: VersionConfig.from_model(
+                    model=version_config,
+                    version=version,
+                    project_path=self.path.parent,
+                    templates=templates,
+                    risk_due_dates=self.risk_due_dates,
+                )
+                for version, version_config in model.version_configs.items()
+            },
+            path=self.path,
+            risk_due_dates=self.risk_due_dates,
+        )
+        original_content = self.path.read_bytes()
+        try:
+            updated.save()
+        except OSError as exc:
+            try:
+                # Attempt to restore the original configuration content in case of failure
+                self.path.write_bytes(original_content)
+            except OSError as rollback_exc:
+                logger.error("Failed to restore configuration '{}': {}", self.path, rollback_exc)
+            raise SeretoPathError(f"Failed to apply configuration edit: {exc}") from exc
+
+        self.sereto_version = updated.sereto_version
+        self.version_configs = updated.version_configs
 
     @property
     def versions(self) -> list[ProjectVersion]:
@@ -602,13 +682,15 @@ class Config:
         if version in self.versions:
             raise SeretoValueError(f"version '{version}' already exists")
 
-        self.version_configs[version] = VersionConfig.from_model(
+        new_version_config = VersionConfig.from_model(
             model=config,
             version=version,
             project_path=self.path.parent,
             templates=templates,
             risk_due_dates=self.risk_due_dates,
         )
+        _validate_target_directories([*self.version_configs.values(), new_version_config])
+        self.version_configs[version] = new_version_config
 
         return self
 
@@ -632,12 +714,17 @@ class Config:
         if version not in self.versions:
             raise SeretoValueError(f"version '{version}' does not exist")
 
-        self.version_configs[version] = VersionConfig.from_model(
+        new_version_config = VersionConfig.from_model(
             model=config,
             version=version,
             project_path=self.path.parent,
             templates=templates,
             risk_due_dates=self.risk_due_dates,
         )
+        _validate_target_directories(
+            [vc for existing_version, vc in self.version_configs.items() if existing_version != version]
+            + [new_version_config]
+        )
+        self.version_configs[version] = new_version_config
 
         return self
