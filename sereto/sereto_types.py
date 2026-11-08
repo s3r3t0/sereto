@@ -107,24 +107,13 @@ def _coerce_risk(value: Any) -> Risk:
             raise ValueError("unsupported type for Risk")
 
 
-def _coerce_risk_optional(value: Any) -> Risk | None:
-    """Convert string to Risk enum, allowing None."""
-    match value:
-        case Risk() | None:
-            return value
-        case str():
-            return Risk(value)
-        case _:
-            raise ValueError("unsupported type for Risk")
-
-
 TypeRisk = Annotated[Risk, BeforeValidator(_coerce_risk)]
 """Type for Risk enum with automatic coercion from string.
 
 Accepts either a Risk enum value or a string that can be converted to Risk.
 """
 
-TypeRiskOptional = Annotated[Risk | None, BeforeValidator(_coerce_risk_optional)]
+TypeRiskOptional = TypeRisk | None
 """Type for optional Risk enum with automatic coercion from string.
 
 Accepts either a Risk enum value, a string that can be converted to Risk, or None.

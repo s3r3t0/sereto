@@ -171,6 +171,7 @@ class Date(SeretoBaseModel):
     def __hash__(self) -> int:
         return hash((self.type, self.date))
 
+    # Type-level serialization is bypassed when serialize_as_any=True.
     @field_serializer("date")
     def _serialize_date(self, value: SeretoDate | DateRange) -> str | dict[str, str]:
         if isinstance(value, DateRange):
