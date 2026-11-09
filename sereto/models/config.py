@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Any, Self, cast
 
-from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
+from pydantic import Field, FilePath, ValidationError, ValidationInfo, field_validator, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.logging import logger
@@ -12,8 +12,6 @@ from sereto.models.person import Person
 from sereto.models.target import (
     TARGET_ID_PATTERN,
     AnyTargetModel,
-    TargetModel,
-    parse_target_model,
     target_directory_name,
 )
 from sereto.models.version import ProjectVersion, SeretoVersion
