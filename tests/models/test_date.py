@@ -1,8 +1,10 @@
 import copy
+import json
 import pickle
 
 import pytest
 
+from sereto.models.config import VersionConfigModel
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
 
 
@@ -86,3 +88,12 @@ class TestDate:
             if type not in TYPES_WITH_ALLOWED_RANGE:
                 with pytest.raises(ValueError):
                     Date(type=type, date=DateRange(start=SeretoDate(a), end=SeretoDate(b)))
+
+
+@pytest.mark.parametrize("value", ["01-Jan-2024", {"start": "01-Jan-2024", "end": "02-Jan-2024"}])
+def test_config_dates_preserve_sereto_format(value):
+    event = Date.model_validate({"type": DateType.pentest_ongoing, "date": value})
+    config = VersionConfigModel(id="PRJ", name="Project", version_description="Initial", dates=[event])
+    assert config.model_dump(serialize_as_any=True)["dates"][0]["date"] == value
+    assert json.loads(config.model_dump_json(serialize_as_any=True))["dates"][0]["date"] == value
+    assert VersionConfigModel.model_validate_json(config.model_dump_json()) == config

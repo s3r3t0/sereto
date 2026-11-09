@@ -1,9 +1,18 @@
 from collections.abc import Mapping
 from secrets import token_hex
-from typing import Any, Literal
-
-from pydantic import Field, IPvAnyAddress, IPvAnyNetwork, ValidationInfo, field_validator, model_validator
-
+from typing import Annotated, Any, Literal
+from pydantic import (
+    BeforeValidator,
+    Discriminator,
+    Field,
+    IPvAnyAddress,
+    IPvAnyNetwork,
+    Tag,
+    TypeAdapter,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
 from sereto.models.document import DocumentModel
@@ -69,6 +78,7 @@ class TargetDastModel(TargetModel):
     def migrate_internal_to_exposure(cls, data: Any) -> Any:
         """Migrate deprecated 'internal' field to 'exposure'."""
         if isinstance(data, dict):
+            data = data.copy()
             internal = data.get("internal")
             exposure = data.get("exposure")
 
@@ -80,7 +90,7 @@ class TargetDastModel(TargetModel):
                 if exposure is not None:
                     # Both are present - check for conflicts
                     # Normalize exposure to string for comparison
-                    exposure_str = exposure if isinstance(exposure, str) else exposure.value
+                    exposure_str = exposure.value if isinstance(exposure, TargetExposure) else exposure
                     if exposure_str != expected_exposure_str:
                         raise ValueError(f"Conflicting values: internal={internal} and exposure={exposure}.")
                 else:
@@ -141,13 +151,37 @@ class TargetMobileModel(TargetModel):
     ios: iOSMobilePlatform | None = iOSMobilePlatform()
 
 
-type AnyTargetModel = TargetDastModel | TargetSastModel | TargetMobileModel | TargetModel
+def _target_payload(data: object) -> object:
+    if isinstance(data, TargetModel):
+        return data.model_dump()
+    if isinstance(data, Mapping):
+        return dict(data)
+    return data
 
-_TARGET_MODEL_BY_CATEGORY: dict[str, type[TargetModel]] = {
-    "dast": TargetDastModel,
-    "sast": TargetSastModel,
-    "mobile": TargetMobileModel,
-}
+
+def _target_discriminator(data: object) -> str | None:
+    category: object
+    if isinstance(data, TargetModel):
+        category = data.category
+    elif isinstance(data, Mapping):
+        category = data.get("category")
+    else:
+        return None
+    if not isinstance(category, str):
+        return None
+    return category if category in {"dast", "sast", "mobile"} else "generic"
+
+
+type AnyTargetModel = Annotated[
+    Annotated[TargetDastModel, Tag("dast")]
+    | Annotated[TargetSastModel, Tag("sast")]
+    | Annotated[TargetMobileModel, Tag("mobile")]
+    | Annotated[TargetModel, Tag("generic")],
+    Discriminator(_target_discriminator),
+    BeforeValidator(_target_payload),
+]
+
+_TARGET_ADAPTER = TypeAdapter(AnyTargetModel)
 
 
 def parse_target_model(
@@ -156,13 +190,6 @@ def parse_target_model(
     context: dict[str, Any] | None = None,
 ) -> AnyTargetModel:
     """Parse raw target data into the correct target model subtype."""
-    if isinstance(data, TargetModel):
-        payload: dict[str, Any] = data.model_dump()
-    elif isinstance(data, Mapping):
-        payload = dict(data)
-    else:
+    if not isinstance(data, TargetModel | Mapping):
         raise TypeError("target data must be a mapping or TargetModel instance")
-
-    category = payload.get("category")
-    model_cls = _TARGET_MODEL_BY_CATEGORY.get(category, TargetModel) if isinstance(category, str) else TargetModel
-    return model_cls.model_validate(payload, context=context)
+    return _TARGET_ADAPTER.validate_python(data, context=context)

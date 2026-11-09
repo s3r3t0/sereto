@@ -19,6 +19,10 @@ __all__ = [
     "decrypt_file",
 ]
 
+_PASSWORD_ADAPTER = TypeAdapter(TypePassword)
+_NONCE_ADAPTER = TypeAdapter(TypeNonce12B)
+_SALT_ADAPTER = TypeAdapter(TypeSalt16B)
+
 
 class DerivedKeyResult(NamedTuple):
     """Result of the Argon2 key derivation function."""
@@ -49,8 +53,7 @@ def derive_key_argon2(
     """
     # Generate a salt if not provided (16 bytes)
     if salt is None:
-        ta_salt: TypeAdapter[TypeSalt16B] = TypeAdapter(TypeSalt16B)  # hack for mypy
-        salt = ta_salt.validate_python(os.urandom(16))
+        salt = _SALT_ADAPTER.validate_python(os.urandom(16))
 
     # Prepare the Argon2id key derivation function
     kdf = Argon2id(
@@ -62,8 +65,7 @@ def derive_key_argon2(
     )
 
     # Derive a key using Argon2id
-    ta_key: TypeAdapter[SecretBytes] = TypeAdapter(SecretBytes)  # hack for mypy
-    key = ta_key.validate_python(kdf.derive(password.get_secret_value().encode(encoding="utf-8")))
+    key = SecretBytes(kdf.derive(password.get_secret_value().encode(encoding="utf-8")))
 
     return DerivedKeyResult(key=key, salt=salt)
 
@@ -94,8 +96,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
 
     # Retrieve the password from the system keyring
     try:
-        ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
-        password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
+        password = _PASSWORD_ADAPTER.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
         logger.warning("Invalid password for archive encryption: {}", e.errors()[0]["msg"])
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
@@ -112,8 +113,7 @@ def encrypt_file(file: FilePath, keep_original: bool = False) -> Path:
 
     # Generate a 12-byte random nonce - IV for AES
     # - NIST recommends a 96-bit IV length for best performance - https://csrc.nist.gov/pubs/sp/800/38/d/final
-    ta_nonce: TypeAdapter[TypeNonce12B] = TypeAdapter(TypeNonce12B)  # hack for mypy
-    nonce = ta_nonce.validate_python(os.urandom(12))
+    nonce = _NONCE_ADAPTER.validate_python(os.urandom(12))
 
     # Encrypt the data
     encrypted_data = AESGCM(derived.key.get_secret_value()).encrypt(
@@ -165,8 +165,7 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
 
     # Retrieve the password from the system keyring
     try:
-        ta_password: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)  # hack for mypy
-        password = ta_password.validate_python(get_password("sereto", "encrypt_attached_archive"))
+        password = _PASSWORD_ADAPTER.validate_python(get_password("sereto", "encrypt_attached_archive"))
     except ValidationError as e:
         logger.warning("Invalid password for archive encryption: {}", e.errors()[0]["msg"])
         raise SeretoEncryptionError(f"encryption password is invalid: {e.errors()[0]['msg']}") from e
@@ -183,12 +182,10 @@ def decrypt_file(file: FilePath, keep_original: bool = True) -> Path:
         raise SeretoValueError("Encrypted file is corrupted or not encrypted with SeReTo")
 
     # - nonce
-    ta_nonce: TypeAdapter[TypeNonce12B] = TypeAdapter(TypeNonce12B)  # hack for mypy
-    nonce = ta_nonce.validate_python(data[6:18])
+    nonce = _NONCE_ADAPTER.validate_python(data[6:18])
 
     # - salt
-    ta_salt: TypeAdapter[TypeSalt16B] = TypeAdapter(TypeSalt16B)  # hack for mypy
-    salt = ta_salt.validate_python(data[18:34])
+    salt = _SALT_ADAPTER.validate_python(data[18:34])
 
     # - encrypted data
     encrypted_data = data[64:]

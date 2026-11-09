@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import total_ordering
-from typing import Annotated, Any
+from typing import Annotated, Any, Self
 
 from pydantic import (
     GetJsonSchemaHandler,
@@ -87,18 +87,16 @@ class SeretoVersion(RootModel[VersionPydanticAnnotation]):
         return self.root.__hash__()
 
     @classmethod
-    def from_str(cls, v: str) -> "SeretoVersion":
+    def from_str(cls, v: str) -> Self:
         """Create a SeretoVersion instance from a string.
-
-        This method primarily exists to satisfy type checker.
 
         Args:
             v: The string representation of the version, e.g. "1.2.3".
 
         Returns:
-            A SeretoVersion instance constructed from the string representation.
+            A validated SeretoVersion instance.
         """
-        return SeretoVersion.model_construct(root=Version.parse(v))
+        return cls.model_validate(Version.parse(v))
 
 
 class VersionVPrefix(Version):
@@ -195,20 +193,16 @@ class ProjectVersion(RootModel[VersionVPrefixPydanticAnnotation]):
         return f"v{self.root.major}.{self.root.minor}"
 
     @classmethod
-    def from_str(cls, v: str) -> "ProjectVersion":
+    def from_str(cls, v: str) -> Self:
         """Create a ProjectVersion instance from a string.
-
-        This method primarily exists to satisfy type checker.
 
         Args:
             v: The string representation of the version, e.g. "v2.0".
 
         Returns:
-            A ProjectVersion instance constructed from the string representation.
+            A validated ProjectVersion instance.
         """
-        if len(v) == 0 or v[0] != "v" or len(v.split(".")) != 2:
-            raise ValueError("invalid format: use vMAJOR.MINOR")
-        return ProjectVersion.model_construct(root=Version.parse(v[1:], optional_minor_and_patch=True))
+        return cls.model_validate(VersionVPrefix.parse(v))
 
     def next_major_version(self) -> "ProjectVersion":
         return ProjectVersion.from_str(f"v{self.root.major + 1}.{self.root.minor}")

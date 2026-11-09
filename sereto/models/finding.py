@@ -16,7 +16,7 @@ from sereto.models.locator import LocatorModel, get_locator_types
 from sereto.sereto_types import TypeCategoryName, TypeRisk, TypeRiskOptional
 
 
-class VarsMetadataModel(SeretoBaseModel):
+class VarsMetadataModel(SeretoBaseModel, serialize_by_alias=True):
     name: str
     description: str
     required: bool = False

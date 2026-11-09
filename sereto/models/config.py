@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Any, Self, cast
 
-from pydantic import Field, FilePath, ValidationError, ValidationInfo, field_validator, model_validator, validate_call
+from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.logging import logger
@@ -38,16 +38,6 @@ class VersionConfigModel(SeretoBaseModel):
     targets: list[AnyTargetModel] = Field(default_factory=list)
     dates: list[Date] = Field(default_factory=list)
     people: list[Person] = Field(default_factory=list)
-
-    @field_validator("targets", mode="before")
-    @classmethod
-    def parse_targets(cls, targets: object, info: ValidationInfo) -> object:
-        if not isinstance(targets, list):
-            return targets
-
-        target_list = cast(list[TargetModel | dict[str, Any]], targets)
-        context = cast(dict[str, Any] | None, info.context)
-        return [parse_target_model(target, context=context) for target in target_list]
 
     @model_validator(mode="after")
     def unique_target_names(self) -> Self:

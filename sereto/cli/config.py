@@ -22,6 +22,13 @@ from sereto.models.version import ProjectVersion, SeretoVersion
 from sereto.project import Project
 from sereto.target import Target
 
+_DATES_ADAPTER = TypeAdapter(list[Date])
+_ALL_DATES_ADAPTER = TypeAdapter(dict[str, list[Date]])
+_PEOPLE_ADAPTER = TypeAdapter(list[Person])
+_ALL_PEOPLE_ADAPTER = TypeAdapter(dict[str, list[Person]])
+_TARGETS_ADAPTER = TypeAdapter(list[AnyTargetModel])
+_ALL_TARGETS_ADAPTER = TypeAdapter(dict[str, list[AnyTargetModel]])
+
 # -------------
 # sereto config
 # -------------
@@ -244,17 +251,14 @@ def show_dates_config(
                 table = _get_dates_table(version_config=config.at_version(version=ver).to_model(), version=ver)
                 Console().print(table, justify="center")
         case OutputFormat.json:
-            DateList: TypeAdapter[list[Date]] = TypeAdapter(list[Date])
-            DateAll: TypeAdapter[dict[str, list[Date]]] = TypeAdapter(dict[str, list[Date]])
-
             if all:
-                all_dates = DateAll.validate_python(
+                all_dates = _ALL_DATES_ADAPTER.validate_python(
                     {str(ver): config.at_version(version=ver).dates for ver in config.versions}
                 )
-                Console().print_json(DateAll.dump_json(all_dates).decode("utf-8"))
+                Console().print_json(_ALL_DATES_ADAPTER.dump_json(all_dates).decode("utf-8"))
             else:
-                dates = DateList.validate_python(config.at_version(version).dates)
-                Console().print_json(DateList.dump_json(dates).decode("utf-8"))
+                dates = _DATES_ADAPTER.validate_python(config.at_version(version).dates)
+                Console().print_json(_DATES_ADAPTER.dump_json(dates).decode("utf-8"))
 
 
 # --------------------
@@ -369,17 +373,14 @@ def show_people_config(config: Config, output_format: OutputFormat, all: bool, v
                 table = _get_person_table(version_config=config.at_version(version=ver).to_model(), version=ver)
                 Console().print(table, justify="center")
         case OutputFormat.json:
-            PersonList: TypeAdapter[list[Person]] = TypeAdapter(list[Person])
-            PersonAll: TypeAdapter[dict[str, list[Person]]] = TypeAdapter(dict[str, list[Person]])
-
             if all:
-                all_people = PersonAll.validate_python(
+                all_people = _ALL_PEOPLE_ADAPTER.validate_python(
                     {str(ver): config.at_version(version=ver).people for ver in config.versions}
                 )
-                Console().print_json(PersonAll.dump_json(all_people).decode("utf-8"))
+                Console().print_json(_ALL_PEOPLE_ADAPTER.dump_json(all_people).decode("utf-8"))
             else:
-                people = PersonList.validate_python(config.at_version(version).people)
-                Console().print_json(PersonList.dump_json(people).decode("utf-8"))
+                people = _PEOPLE_ADAPTER.validate_python(config.at_version(version).people)
+                Console().print_json(_PEOPLE_ADAPTER.dump_json(people).decode("utf-8"))
 
 
 # ---------------------
@@ -558,18 +559,15 @@ def show_targets_config(
                 table = _get_target_table(version_config=config.at_version(version=ver).to_model(), version=ver)
                 Console().print(table, justify="center")
         case OutputFormat.json:
-            TargetList: TypeAdapter[list[AnyTargetModel]] = TypeAdapter(list[AnyTargetModel])
-            TargetAll: TypeAdapter[dict[str, list[AnyTargetModel]]] = TypeAdapter(dict[str, list[AnyTargetModel]])
-
             if all:
-                all_targets = TargetAll.validate_python(
+                all_targets = _ALL_TARGETS_ADAPTER.validate_python(
                     {
                         str(ver): [t.to_model() for t in config.at_version(version=ver).targets]
                         for ver in config.versions
                     }
                 )
-                Console().print_json(TargetAll.dump_json(all_targets).decode("utf-8"))
+                Console().print_json(_ALL_TARGETS_ADAPTER.dump_json(all_targets).decode("utf-8"))
             else:
                 target_models = [t.to_model() for t in config.at_version(version).targets]
-                targets = TargetList.validate_python(target_models)
-                Console().print_json(TargetList.dump_json(targets).decode("utf-8"))
+                targets = _TARGETS_ADAPTER.validate_python(target_models)
+                Console().print_json(_TARGETS_ADAPTER.dump_json(targets).decode("utf-8"))

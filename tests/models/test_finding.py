@@ -4,8 +4,27 @@ import tomllib
 import pytest
 
 from sereto.enums import Risk
-from sereto.models.finding import SubFindingFrontmatterModel
+from sereto.models.finding import FindingGroupModel, FindingTemplateFrontmatterModel, SubFindingFrontmatterModel
 from sereto.models.locator import IpLocatorModel, UrlLocatorModel
+
+
+def test_template_variables_round_trip_with_list_alias():
+    model = FindingTemplateFrontmatterModel.model_validate(
+        {
+            "name": "Finding",
+            "risk": "high",
+            "variables": [{"name": "items", "description": "Items", "list": True}],
+        }
+    )
+    assert model.model_dump()["variables"][0]["list"] is True
+    assert FindingTemplateFrontmatterModel.model_validate_json(model.model_dump_json()) == model
+
+
+@pytest.mark.parametrize("risk,expected", [(None, None), ("high", Risk.high)])
+def test_finding_group_accepts_optional_risk(risk, expected):
+    model = FindingGroupModel(findings=["finding"], risk=risk)
+    assert model.risk is expected
+
 
 # ------ SubFindingFrontmatterModel.dumps_toml() tests ------
 
