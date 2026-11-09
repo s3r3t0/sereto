@@ -2894,7 +2894,8 @@
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Date</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Date</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Model representing a date with its associated event.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2921,6 +2922,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">))</span>
 
+    <span class="c1"># Type-level serialization is bypassed when serialize_as_any=True.</span>
     <span class="nd">@field_serializer</span><span class="p">(</span><span class="s2">"date"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_serialize_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SeretoDate</span> <span class="o">|</span> <span class="n">DateRange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">DateRange</span><span class="p">):</span>

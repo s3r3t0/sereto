@@ -3329,7 +3329,7 @@ keyring.</p>
 
         <span class="c1"># Validate project ID</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">ta_id</span><span class="p">:</span> <span class="n">TypeAdapter</span><span class="p">[</span><span class="n">TypeProjectId</span><span class="p">]</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypeProjectId</span><span class="p">)</span>  <span class="c1"># hack for mypy</span>
+            <span class="n">ta_id</span> <span class="o">=</span> <span class="n">TypeAdapter</span><span class="p">(</span><span class="n">TypeProjectId</span><span class="p">)</span>
             <span class="n">project_id</span> <span class="o">=</span> <span class="n">ta_id</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">common_dir</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SeretoValueError</span><span class="p">(</span><span class="s2">"corrupted source archive (invalid project ID)"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>

@@ -3876,7 +3876,7 @@ the name of a finding group and the value is a FindingGroupModel.</p>
 <span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
-<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">VarsMetadataModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">VarsMetadataModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">,</span> <span class="n">serialize_by_alias</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
