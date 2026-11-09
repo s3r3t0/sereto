@@ -66,6 +66,8 @@ from sereto.target import Target
 from sereto.tui.finding import SearchWidget
 from sereto.tui.widgets.input import InputWithLabel
 
+_PROJECT_ID_ADAPTER = TypeAdapter(TypeProjectId)
+
 
 # ── Parent screen for poppable screens ─────────────────────────────────────────
 class _PoppableScreen(Screen[None]):
@@ -1055,7 +1057,7 @@ class ConfigScreen(_PoppableScreen):
 
         _tabs = self.query_one("#config-tabs").query_one(Tabs)
         _orig_highlight = _tabs.__class__._highlight_active
-        _tabs._highlight_active = lambda animate=True: _orig_highlight(_tabs, animate=False)  # type: ignore[method-assign]  # ty: ignore[invalid-assignment]
+        _tabs._highlight_active = lambda animate=True: _orig_highlight(_tabs, animate=False)  # type: ignore[method-assign]
         tab = self._initial_tab
         if tab is None and app.entry_point in self.TABS:
             tab = f"tab-{app.entry_point}"
@@ -1336,9 +1338,8 @@ class ConfigScreen(_PoppableScreen):
         desc_val = self.query_one("#cfg-version-desc", Input).value.strip()
 
         if id_val:
-            ta: TypeAdapter[TypeProjectId] = TypeAdapter(TypeProjectId)
             try:
-                ta.validate_python(id_val)
+                _PROJECT_ID_ADAPTER.validate_python(id_val)
             except ValidationError:
                 self.notify(
                     "Project ID must be 1–20 characters: letters, digits, '.', '_', '-'.",
@@ -2017,9 +2018,8 @@ class NewProjectScreen(Screen[bool]):
             name_input.focus()
             return
 
-        ta: TypeAdapter[TypeProjectId] = TypeAdapter(TypeProjectId)
         try:
-            ta.validate_python(project_id)
+            _PROJECT_ID_ADAPTER.validate_python(project_id)
         except ValidationError:
             self.notify(
                 "Project ID must be 1–20 characters: letters, digits, '.', '_', '-'.",

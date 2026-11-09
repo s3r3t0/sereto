@@ -1,12 +1,12 @@
-from typing import Any, Self, cast
+from typing import Self
 
-from pydantic import Field, FilePath, ValidationError, ValidationInfo, field_validator, model_validator, validate_call
+from pydantic import Field, FilePath, ValidationError, model_validator, validate_call
 
 from sereto.exceptions import SeretoPathError, SeretoValueError
 from sereto.models.base import SeretoBaseModel
 from sereto.models.date import Date
 from sereto.models.person import Person
-from sereto.models.target import AnyTargetModel, TargetModel, parse_target_model
+from sereto.models.target import AnyTargetModel
 from sereto.models.version import ProjectVersion, SeretoVersion
 
 
@@ -28,16 +28,6 @@ class VersionConfigModel(SeretoBaseModel):
     targets: list[AnyTargetModel] = Field(default_factory=list)
     dates: list[Date] = Field(default_factory=list)
     people: list[Person] = Field(default_factory=list)
-
-    @field_validator("targets", mode="before")
-    @classmethod
-    def parse_targets(cls, targets: object, info: ValidationInfo) -> object:
-        if not isinstance(targets, list):
-            return targets
-
-        target_list = cast(list[TargetModel | dict[str, Any]], targets)
-        context = cast(dict[str, Any] | None, info.context)
-        return [parse_target_model(target, context=context) for target in target_list]
 
     @model_validator(mode="after")
     def unique_target_names(self) -> Self:
