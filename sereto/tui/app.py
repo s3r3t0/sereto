@@ -2297,11 +2297,6 @@ class ProjectBrowserScreen(Screen[None]):
         self._version_options: list[tuple[str, str]] = []
         self._project_options: list[tuple[str, Path]] | None = None
 
-    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None) -> None:
-        super().__init__(name, id, classes)
-        self._version_options: list[tuple[str, str]] = []
-        self._project_options: list[tuple[str, Path]] | None = None
-
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="browser-layout"):
