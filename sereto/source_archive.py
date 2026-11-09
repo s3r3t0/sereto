@@ -210,7 +210,7 @@ def extract_source_archive(file: FilePath, output_dir: DirectoryPath, keep_origi
 
         # Validate project ID
         try:
-            ta_id: TypeAdapter[TypeProjectId] = TypeAdapter(TypeProjectId)  # hack for mypy
+            ta_id = TypeAdapter(TypeProjectId)
             project_id = ta_id.validate_python(common_dir.parts[0])
         except ValidationError as e:
             raise SeretoValueError("corrupted source archive (invalid project ID)") from e
