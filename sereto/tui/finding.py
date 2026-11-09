@@ -34,6 +34,7 @@ from sereto.enums import Risk
 from sereto.exceptions import SeretoValueError
 from sereto.extract import extract_text_from_jinja
 from sereto.models.finding import FindingTemplateFrontmatterModel, VarsMetadataModel
+from sereto.models.version import ProjectVersion
 from sereto.project import Project
 from sereto.target import Target
 from sereto.tui.search import (
@@ -147,8 +148,11 @@ class AddSubFindingScreen(ModalScreen[None]):
             )
             yield self.select_risk
             # Target
-            self.select_target = SelectWithLabel[str](
-                options=[(t.uname, t.uname) for t in all_targets],
+            self.select_target = SelectWithLabel[tuple[ProjectVersion, str]](
+                options=[
+                    (f"{t.version}  {t.data.category.upper()}  {t.data.name}", (t.version, t.data.id))
+                    for t in all_targets
+                ],
                 label="Target",
                 allow_blank=False,
             )
@@ -420,12 +424,12 @@ class AddSubFindingScreen(ModalScreen[None]):
         """
         app: SeretoApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
-        target_select = cast(Select[str], self.select_target.query_one(Select))
+        target_select = cast(Select[tuple[ProjectVersion, str]], self.select_target.query_one(Select))
         all_targets = [t for v in app.project.config.versions for t in app.project.config.at_version(v).targets]
 
-        matching_target = [t for t in all_targets if t.uname == target_select.value]
+        matching_target = [t for t in all_targets if (t.version, t.data.id) == target_select.value]
         if len(matching_target) != 1:
-            raise SeretoValueError(f"target with uname {target_select.value!r} not found")
+            raise SeretoValueError(f"target with version and ID {target_select.value!r} not found")
 
         return matching_target[0]
 

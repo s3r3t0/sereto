@@ -6,6 +6,9 @@ The *Statement of Work (SoW)* is a document that outlines the scope of work, del
 
 The **high-level overview** of the SoW document in SeReTo is defined as follows:
 
+`target_dir` below means `target.directory_name`, the version-specific filesystem basename described in the
+[project structure](project_files.md).
+
 ```text
 ┌───layouts/_base.tex.j2──────────────────────────────┐
 │                                                     │
@@ -26,10 +29,10 @@ The **high-level overview** of the SoW document in SeReTo is defined as follows:
 │  │                                               │  │
 │  │   Target 1                                    │  │
 │  │                                               │  │
-│  │  ┌───target_<name>/scope.tex.j2───┐           │  │
+│  │  ┌───<target_dir>/scope.tex.j2────┐           │  │
 │  │  └────────────────────────────────┘           │  │
 │  │                                               │  │
-│  │  ┌───target_<name>/approach.tex.j2───┐        │  │
+│  │  ┌───<target_dir>/approach.tex.j2────┐        │  │
 │  │  └───────────────────────────────────┘        │  │
 │  │                                               │  │
 |  ├───────────────────────────────────────────────┤  │

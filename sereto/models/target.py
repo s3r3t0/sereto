@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from secrets import token_hex
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -18,25 +19,40 @@ from sereto.enums import Environment, TargetExposure
 from sereto.models.base import SeretoBaseModel
 from sereto.models.document import DocumentModel
 from sereto.models.locator import LocatorModel
+from sereto.models.version import ProjectVersion
 from sereto.settings import load_settings_function
-from sereto.utils import lower_alphanum
+
+TARGET_ID_PATTERN = r"[A-Za-z0-9_][A-Za-z0-9_.-]*"
+
+
+def target_directory_name(target_id: str, version: ProjectVersion) -> str:
+    return f"target_{target_id}{version.path_suffix}"
 
 
 class TargetModel(SeretoBaseModel, extra="allow"):
     """Base class for model representing the details of a target.
 
     Attributes:
-        id: Unique identifier for the target, optional.
+        id: Stable filesystem identifier, generated as eight random hex characters when not provided.
         category: The category of the target.
         name: The name of the target (e.g. DAST, SAST).
         locators: List of locators for the target, such as URLs or IP addresses, source code files, etc.
     """
 
-    id: str | None = None
+    id: str = Field(
+        default_factory=lambda: token_hex(4), pattern=f"^{TARGET_ID_PATTERN}$", frozen=True, validate_default=True
+    )
     category: str
     name: str
     locators: list[LocatorModel] = Field(default_factory=list)
     documents: list[DocumentModel] = Field(default_factory=list)
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def generate_missing_id(cls, value: object) -> object:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return token_hex(4)
+        return value
 
     @field_validator("category")
     @classmethod
@@ -54,11 +70,6 @@ class TargetModel(SeretoBaseModel, extra="allow"):
             return v
         else:
             raise ValueError(f'category "{v}" is unknown')
-
-    @property
-    def uname(self) -> str:
-        """Unique name for the target instance (version is not included)."""
-        return lower_alphanum(f"target_{self.category}_{self.name}")
 
 
 class TargetDastModel(TargetModel):

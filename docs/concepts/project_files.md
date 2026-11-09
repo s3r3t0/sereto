@@ -11,7 +11,7 @@
 ├── outputs/
 ├── pdf/
 ├── pictures/
-├── target_<category>_<name>/
+├── target_<target_id>[_<version>]/
 │   ├── findings/
 │   │   └── <finding_name>.md.j2
 │   └── findings.toml
@@ -48,9 +48,23 @@ Directory for the final PDF reports.
 
 Directory for images and screenshots used in the report.
 
-## `target_<category>_<name>`
+## `target_<target_id>[_<version>]`
 
-Directories for a individual targets.
+Directories for individual targets. The directory name combines the `target_`
+prefix, the target's `id`, and the project version. IDs can be supplied by the user or generated automatically. IDs are unique within each configuration version. Renaming a
+target does not change its ID or rename its directory. Retests preserve IDs
+and copy files into separate version-suffixed directories.
+
+The directory name is exposed as `target.directory_name` and is also used for
+target-specific build paths and generated layout filenames, so customized
+layouts remain in use after a display-name change.
+Use `target.data.id` for selection within a version and `target.data.name` for
+display labels.
+
+Templates that previously used `target.uname` for paths must
+use `target.directory_name` instead; the redundant `target.data.uname` alias
+is removed in favor of `target.data.id`.
+Legacy directories keep their existing names. The portion between the target_ prefix and any version suffix becomes the target’s ID — for example, target_dast_portal_v2.0 yields ID dast_portal.
 
 ### `findings`
 

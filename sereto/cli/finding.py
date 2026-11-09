@@ -31,7 +31,7 @@ def add_finding(
         template_path: Path to the finding template file.
         finding_name: Name for the sub-finding.
         risk: Risk level override.
-        target_selector: Target selector (index or uname).
+        target_selector: Target selector (index or ID).
         group_uname: Uname of existing finding group to append to.
         group_name: Name for the new finding group.
         variables: Template variables as KEY=VALUE strings.
@@ -50,7 +50,7 @@ def add_finding(
     target = project.config.last_config.select_target(categories=project.settings.categories, selector=target_selector)
 
     if group_uname is not None and not any(g.uname == group_uname for g in target.findings.groups):
-        raise SeretoValueError(f"finding group with uname {group_uname!r} not found in target {target.uname!r}")
+        raise SeretoValueError(f"finding group with uname {group_uname!r} not found in target {target.data.id!r}")
 
     target.findings.add_from_template(
         templates=project.settings.templates_path,

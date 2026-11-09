@@ -43,7 +43,7 @@ def edit_config(
     """Edit the configuration file in default CLI editor.
 
     When `non_interactive` is True, the config is updated from `extra_json` without opening an editor.
-    Otherwise, the config file is opened in the default editor.
+    Otherwise, a copy is opened in the default editor.
 
     Args:
         project: Project's representation.
@@ -55,7 +55,7 @@ def edit_config(
     config = project.config_path
 
     # If the config file does not exist, create it with default values
-    if not project.config_path.is_file():
+    if not config.is_file():
         Config(
             sereto_version=SeretoVersion.from_str(sereto_ver),
             version_configs={
@@ -67,10 +67,11 @@ def edit_config(
                     risk_due_dates=project.settings.risk_due_dates,
                 ),
             },
-            path=project.config_path,
+            path=config,
             risk_due_dates=project.settings.risk_due_dates,
         ).save()
 
+    current = project.config
     if non_interactive:
         if extra_json is None:
             raise SeretoValueError("'--extra' is required in non-interactive mode.")
@@ -82,23 +83,31 @@ def edit_config(
         if not isinstance(extra, dict):
             raise SeretoValueError("Value of '--extra' must be a JSON object")
 
-        version_config = project.config.last_config
+        # Apply changes from extra JSON to the candidate configuration for validation before actual editing
+        candidate = current.to_model().model_dump(mode="json")
+        version_config = candidate["version_configs"][str(current.last_version)]
         skip_fields = {"version_configs", "targets", "dates", "people"}
 
         for key, value in extra.items():
             if key in skip_fields:
                 continue
             elif key in VersionConfigModel.model_fields:
-                setattr(version_config, key, value)
+                version_config[key] = value
             elif key in ConfigModel.model_fields:
-                setattr(project.config, key, value)
+                candidate[key] = value
             else:
                 raise SeretoValueError(f"Unknown config field: '{key}'")
 
-        project.config.save()
+        edited = json.dumps(candidate)
     else:
-        # Interactive: open the config file in the default editor
-        click.edit(filename=str(config))
+        editor_result = click.edit(text=current.to_model().model_dump_json(indent=2) + "\n", extension=".json")
+        if editor_result is None:
+            # No changes made
+            return
+        edited = editor_result
+
+    # Validate and apply the edited configuration
+    current.update(edited, templates=project.settings.templates_path)
 
 
 @validate_call
@@ -408,12 +417,14 @@ def add_target(
     new_target_model = _build_target_from_options(
         category=category, target_name=target_name, categories=categories, extra_json=extra_json
     )
+    version_config = config.at_version(version)
+    version_config.validate_new_target(new_target_model)
 
     # Create the target instance, including on the filesystem
     new_target = Target.new(data=new_target_model, project_path=project_path, templates=templates, version=version)
 
     # Add the target to the configuration
-    config.at_version(version).add_target(new_target)
+    version_config.add_target(new_target)
 
     # Write the configuration
     config.save()

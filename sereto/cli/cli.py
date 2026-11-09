@@ -712,7 +712,7 @@ def findings() -> None:
     default=None,
     help="Risk level of the finding.",
 )
-@click.option("-t", "--target", "target_selector", default=None, help="Target selector (index or uname).")
+@click.option("-t", "--target", "target_selector", default=None, help="Target selector (index or ID).")
 @click.option("-g", "--group", "group_uname", default=None, help="Uname of an existing finding group to append to.")
 @click.option("--group-name", default=None, help="Name for the new finding group (defaults to template name).")
 @click.option(
@@ -748,7 +748,7 @@ def finding_add(
         template_path: Path to the finding template file.
         finding_name: Name for the sub-finding.
         risk: Risk level override.
-        target_selector: Target selector (index or uname).
+        target_selector: Target selector (index or ID).
         group_uname: Uname of existing finding group to append to.
         group_name: Name for the new finding group.
         variables: Template variables as KEY=VALUE strings.
