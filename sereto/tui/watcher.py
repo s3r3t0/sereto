@@ -1,14 +1,13 @@
 """File-system watchers used by the TUI to detect changes to the active project and to the projects_path directory.
 
-A [watchdog](https://github.com/gorakhargosh/watchdog) observers runs in a background thread and record changes in
-files and directories. The TUI polls [`ProjectWatcher.consume`][sereto.tui.watcher.ProjectWatcher.consume] from its
-main loop (every frame).
+A [watchdog](https://github.com/gorakhargosh/watchdog) observer runs in a background thread and calls the watcher's
+`on_change` callback (from that thread) whenever a relevant change happens. The TUI is responsible for debouncing
+these notifications and reloading the data, see `SeretoUnifiedApp` in `sereto.tui.app`.
 """
 
 import contextlib
 import os
-import threading
-import time
+from collections.abc import Callable
 from pathlib import Path
 
 from watchdog.events import (
@@ -46,7 +45,7 @@ _CHANGE_EVENTS = frozenset(
 
 
 class _ChangeEventHandler(FileSystemEventHandler):
-    def __init__(self, watcher: "_DebouncedWatcher") -> None:
+    def __init__(self, watcher: "_Watcher") -> None:
         super().__init__()
         self._watcher = watcher
 
@@ -62,27 +61,22 @@ class _ChangeEventHandler(FileSystemEventHandler):
 
         paths = [event.src_path, event.dest_path] if event.dest_path else [event.src_path]
         if any(self._watcher.is_relevant(Path(os.fsdecode(p))) for p in paths):
-            self._watcher.mark_dirty()
+            self._watcher.on_change()
 
 
-class _DebouncedWatcher:
-    """Base for watchers recording changes from the observer thread and reporting them (debounced) to the TUI.
+class _Watcher:
+    """Base for watchers reporting relevant changes of a directory.
 
     Args:
         path: Directory to watch.
-        debounce: Seconds without further events before the changes are reported. Editors and SeReTo itself often
-            write a file in several steps, so this coalesces a burst of events into a single reload.
+        on_change: Called from the observer thread on every relevant change, so it must be thread-safe (e.g. posting
+            a Textual message). Editors and SeReTo itself often write a file in several steps, so one logical change
+            typically results in several calls; debouncing is up to the caller.
     """
 
-    def __init__(self, path: Path, debounce: float = 0.2) -> None:
+    def __init__(self, path: Path, on_change: Callable[[], object]) -> None:
         self.path = path
-        self.debounce = debounce
-        # Lock protecting the dirty flag and last event timestamp.
-        # Needed since the observer thread (calling `mark_dirty`) and the TUI main thread (calling `pending` and
-        # `consume`) may access these attributes concurrently.
-        self._lock = threading.Lock()
-        self._dirty = False
-        self._last_event = 0.0
+        self.on_change = on_change
         self._observer: BaseObserver | None = None
 
     def start(self) -> None:
@@ -109,32 +103,35 @@ class _DebouncedWatcher:
     def is_relevant(self, path: Path) -> bool:
         raise NotImplementedError
 
-    def mark_dirty(self) -> None:
-        """Record that a change happened (called from the watchdog's observer thread)."""
-        with self._lock:
-            self._dirty = True
-            self._last_event = time.monotonic()
 
-    @property
-    def pending(self) -> bool:
-        """Whether there are changes that have not been consumed yet (regardless of the debounce period)."""
-        with self._lock:
-            return self._dirty
-
-    def consume(self) -> bool:
-        """Return `True` (once) if changes happened and have settled for at least `debounce` seconds.
-        (called from the TUI main thread)."""
-        with self._lock:
-            if not self._dirty:
-                return False
-            if time.monotonic() - self._last_event < self.debounce:
-                return False
-            self._dirty = False
-            return True
+def directory_identity(path: Path) -> tuple[int, int] | None:
+    """Identify the directory itself rather than its path (device and inode), `None` if it cannot be accessed."""
+    try:
+        info = path.stat()
+    except OSError:
+        return None
+    return info.st_dev, info.st_ino
 
 
-class ProjectWatcher(_DebouncedWatcher):
-    """Watch a project directory recursively and report (debounced) changes."""
+class ProjectWatcher(_Watcher):
+    """Watch a project directory recursively and report changes."""
+
+    def __init__(self, path: Path, on_change: Callable[[], object]) -> None:
+        super().__init__(path, on_change)
+        self.directory_identity: tuple[int, int] | None = None
+
+    def start(self) -> None:
+        # Captured before watching starts, so a directory replaced in between is still detected later
+        self.directory_identity = directory_identity(self.path)
+        super().start()
+
+    def watches_current_directory(self) -> bool:
+        """Whether the directory at `path` is still the one being watched.
+
+        The watch follows the directory, not its path. If the directory is replaced (e.g. moved away and another one
+        moved to its path), changes made to the new directory would not be reported.
+        """
+        return self.directory_identity is not None and self.directory_identity == directory_identity(self.path)
 
     def _schedule(self, observer: BaseObserver) -> None:
         observer.schedule(_ChangeEventHandler(self), str(self.path), recursive=True)
@@ -152,8 +149,8 @@ class ProjectWatcher(_DebouncedWatcher):
 PROJECT_IDENTITY_FILES: frozenset[str] = frozenset({"config.json", ".sereto"})
 
 
-class ProjectsDirWatcher(_DebouncedWatcher):
-    """Watch the projects directory and report (debounced) changes affecting the list of projects.
+class ProjectsDirWatcher(_Watcher):
+    """Watch the projects directory and report changes affecting the list of projects.
 
     Reported are project directories being added, removed or renamed, and changes to the identity files
     (`PROJECT_IDENTITY_FILES`) of any project, e.g. a project's ID or name being edited. Other changes inside the
@@ -163,8 +160,8 @@ class ProjectsDirWatcher(_DebouncedWatcher):
     non-recursively. Call `sync_project_dirs` after directories were added or removed to update the watched set.
     """
 
-    def __init__(self, path: Path, debounce: float = 0.2) -> None:
-        super().__init__(path, debounce)
+    def __init__(self, path: Path, on_change: Callable[[], object]) -> None:
+        super().__init__(path, on_change)
         self._project_watches: dict[Path, ObservedWatch] = {}
 
     def _schedule(self, observer: BaseObserver) -> None:

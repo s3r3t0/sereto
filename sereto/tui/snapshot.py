@@ -1,4 +1,4 @@
-"""Frozen copies of a project, so that long-running operations (rendering) are not affected by concurrent changes."""
+"""Temporary project copies providing best-effort isolation for rendering, not atomic filesystem snapshots."""
 
 import os
 import shutil
@@ -21,14 +21,20 @@ _PDF_DIR = Path("pdf")
 class ProjectSnapshot:
     """Context manager rendering from a temporary copy of a project.
 
-    On enter, the project directory is copied into a temporary directory (excluding `.git` and `pdf`), so any change
-    made to the original project while the snapshot is in use does not affect it. On exit, the render outputs are
-    propagated back into the original project and the copy is removed:
+    On enter, the project directory is copied into a temporary directory (excluding `.git` and `pdf`). This provides
+    best-effort isolation, not an atomic point-in-time snapshot: concurrent edits during copying can produce an
+    inconsistent copy or cause copying to fail. Once copying completes, later edits to the original files do not
+    affect their copies, but symlinks to external targets remain live and are not isolated.
 
-    - generated PDFs (`pdf/`) are copied, overwriting existing files,
-    - the build directory (`.build/`) is merged, so build tools can reuse their auxiliary files next time,
-    - newly generated layouts (`layouts/generated/`) are copied, without overwriting existing ones (matching the
-      behaviour of a regular render, which never overwrites generated layouts).
+    On exit, the render outputs are propagated back into the original project and the copy is removed:
+
+    - generated PDFs (`pdf/`) are copied, overwriting conflicts (the last publication wins),
+    - the build directory (`.build/`) is merged, keeping unrelated live cache files; snapshot entries win conflicts,
+    - only layout paths added in the snapshot (`layouts/generated/`) are copied, without overwriting existing ones
+      or restoring layouts deleted from the live project during rendering.
+
+    Copy-back runs even if rendering fails. These policies are not general bidirectional synchronization: project
+    inputs are never copied back.
     """
 
     def __init__(self, project: Project) -> None:
@@ -36,6 +42,7 @@ class ProjectSnapshot:
         self._tmp: TemporaryDirectory[str] | None = None  # Temporary directory holding the project copy
         self._project: Project | None = None  # Project's copy
         self._path: Path | None = None  # Path to the temporary copy of the project
+        self._initial_layouts: set[Path] = set()
 
     @property
     def project(self) -> Project:
@@ -57,6 +64,9 @@ class ProjectSnapshot:
             # keep the directory name, in case anything derives information from it
             dst = Path(self._tmp.name) / self.original.path.name
             _copy_project(self.original.path, dst)
+            self._initial_layouts = {
+                file.relative_to(dst) for file in (dst / _GENERATED_LAYOUTS_DIR).rglob("*") if file.is_file()
+            }
             self._path = dst
             self._project = Project(_settings=self.original.settings, _project_path=dst)
         except BaseException:
@@ -99,10 +109,19 @@ class ProjectSnapshot:
 
         if (generated_src := src / _GENERATED_LAYOUTS_DIR).is_dir():
             for file in (f for f in generated_src.rglob("*") if f.is_file()):
-                target = dst / file.relative_to(src)
-                if not target.exists():
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(file, target)
+                relative = file.relative_to(src)
+                if relative in self._initial_layouts:
+                    continue
+                target = dst / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    output = target.open("xb")
+                except FileExistsError:
+                    # A live edit or another render already created this layout.
+                    continue
+                with output, file.open("rb") as source:
+                    shutil.copyfileobj(source, output)
+                shutil.copystat(file, target)
 
 
 def _copy_project(src: Path, dst: Path) -> None:
