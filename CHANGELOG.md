@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Python 3.15 support, including local Tox and CI test coverage
+
 ### Fixed
 
 - Fix first-run TUI startup failing with a nested asyncio event-loop error during settings setup.

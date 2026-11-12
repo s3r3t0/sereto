@@ -985,7 +985,7 @@ class ConfigScreen(_PoppableScreen):
 
     @property
     def _active_vc(self) -> VersionConfig:
-        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
     @property
     def _active_tab(self) -> str:
@@ -1221,7 +1221,7 @@ class ConfigScreen(_PoppableScreen):
         target_model = result.model
 
         if index is not None:
-            project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             vc = self._active_vc
             target = vc.targets[index - 1]
             old_path = target.path
@@ -1286,8 +1286,8 @@ class ConfigScreen(_PoppableScreen):
                     break
             return
 
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
+        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
         try:
             new_target = Target.new(
@@ -1316,7 +1316,7 @@ class ConfigScreen(_PoppableScreen):
             vc = self._active_vc
             target_path = vc.targets[index - 1].path
             vc.delete_target(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             if target_path.is_dir():
                 shutil.rmtree(target_path)
             self._selected_record_row = None
@@ -1357,7 +1357,7 @@ class ConfigScreen(_PoppableScreen):
         vc.version_description = desc_val
 
         try:
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             self.notify("General settings saved.", timeout=3)
             # Update the project select options to reflect the new name/ID
             for screen in self.app.screen_stack:
@@ -1419,7 +1419,7 @@ class ConfigScreen(_PoppableScreen):
                 self._active_vc.dates[index - 1] = new_date
             else:
                 self._active_vc.add_date(new_date)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         except Exception as exc:
             self.notify(str(exc), title="Failed to save date", severity="error", markup=False)
             return
@@ -1430,7 +1430,7 @@ class ConfigScreen(_PoppableScreen):
     def _do_remove_date(self, index: int) -> None:
         try:
             self._active_vc.delete_date(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             self._refresh_dates()
             self.notify("Date removed.", timeout=3)
         except Exception as exc:
@@ -1471,7 +1471,7 @@ class ConfigScreen(_PoppableScreen):
                 self._active_vc.people[index - 1] = new_person
             else:
                 self._active_vc.add_person(new_person)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         except Exception as exc:
             self.notify(str(exc), title="Failed to save person", severity="error", markup=False)
             return
@@ -1482,7 +1482,7 @@ class ConfigScreen(_PoppableScreen):
     def _do_remove_person(self, index: int) -> None:
         try:
             self._active_vc.delete_person(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             self._refresh_people()
             self.notify("Person removed.", timeout=3)
         except Exception as exc:
@@ -1771,7 +1771,7 @@ class RenderScreen(_PoppableScreen):
             self.query_one(btn_id, Button).disabled = disabled
 
     def _reload_fg_selectors(self) -> None:
-        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         target_options = [(f"{t.data.category.upper()}  {t.data.name}", t.data.uname) for t in targets]
         target_select = self.query_one("#fg-target-select", Select)
         fg_select = self.query_one("#fg-group-select", Select)
@@ -1785,7 +1785,7 @@ class RenderScreen(_PoppableScreen):
         if isinstance(event.value, NoSelection):
             fg_select.set_options([])
             return
-        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         target_uname = str(event.value)
         target = next((t for t in targets if t.data.uname == target_uname), None)
         if target is None:
@@ -1845,7 +1845,7 @@ class RenderScreen(_PoppableScreen):
         self.app.call_from_thread(self._log, f"[bold cyan]▶ Starting {kind} render…[/bold cyan]")
 
         # Forward Loguru records to the RichLog for the duration of this render
-        def _tui_sink(message: logger.Record) -> None:  # type: ignore[name-defined]  # ty: ignore[unresolved-attribute]
+        def _tui_sink(message: logger.Record) -> None:  # type: ignore[name-defined]  # ty: ignore[missing-attribute]
             record = message.record
             level = record["level"].name.lower()
             text = record["message"].rstrip()
@@ -1865,8 +1865,8 @@ class RenderScreen(_PoppableScreen):
 
         sink_id = logger.add(_tui_sink, format="{message}", colorize=False)
 
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
+        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
         try:
             match kind:
@@ -1943,7 +1943,7 @@ class RenderScreen(_PoppableScreen):
             self.app.call_from_thread(self._set_buttons_disabled, False)
 
     def _do_clean(self) -> None:
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         removed: list[str] = []
         if (build_dir := project.path / ".build").is_dir():
             shutil.rmtree(build_dir)
@@ -2276,7 +2276,7 @@ class ProjectBrowserScreen(Screen[None]):
             if created:
                 self._load_projects()
                 project_select = self.query_one("#project-select", Select)
-                project_select.value = self.app.project.path  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+                project_select.value = self.app.project.path  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
         self.app.push_screen(NewProjectScreen(), _on_created)
 
