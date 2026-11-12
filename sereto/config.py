@@ -9,7 +9,7 @@ from typing import Literal, Self, overload
 from pydantic import DirectoryPath, FilePath, NonNegativeInt, validate_call
 
 from sereto.enums import Risk, TargetExposure
-from sereto.exceptions import SeretoValueError
+from sereto.exceptions import SeretoConflictError, SeretoValueError
 from sereto.models.config import ConfigModel, VersionConfigModel
 from sereto.models.date import Date, DateRange, DateType, SeretoDate
 from sereto.models.person import Person, PersonType
@@ -474,13 +474,19 @@ class Config:
     version_configs: dict[ProjectVersion, VersionConfig]
     path: FilePath
     risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
+    # Content of the file when this configuration was loaded or last saved, `None` if the file did not exist
+    _disk_content: bytes | None = field(default=None, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        if self._disk_content is None:
+            self._disk_content = self._read_disk_content()
 
     @classmethod
     @validate_call
     def load_from(
         cls, path: FilePath, templates: DirectoryPath, risk_due_dates: dict[TargetExposure, dict[Risk, timedelta]]
     ) -> Self:
-        config = ConfigModel.load_from(path)
+        config, content = ConfigModel.load_with_content(path)
 
         return cls(
             sereto_version=config.sereto_version,
@@ -496,6 +502,7 @@ class Config:
             },
             path=path,
             risk_due_dates=risk_due_dates,
+            _disk_content=content,
         )
 
     def to_model(self) -> ConfigModel:
@@ -504,8 +511,26 @@ class Config:
             version_configs={version: config.to_model() for version, config in self.version_configs.items()},
         )
 
+    def _read_disk_content(self) -> bytes | None:
+        try:
+            return self.path.read_bytes()
+        except FileNotFoundError:
+            return None
+
     def save(self) -> None:
-        self.path.write_text(self.to_model().model_dump_json(indent=2) + "\n", encoding="utf-8")
+        """Write the configuration to its file.
+
+        Raises:
+            SeretoConflictError: If the file changed on disk since this configuration was loaded (or last saved), so
+                saving would silently overwrite those changes. Reload the configuration and apply the change again.
+        """
+        if self._read_disk_content() != self._disk_content:
+            raise SeretoConflictError(
+                f"'{self.path}' was changed outside of this session since it was loaded; reload it and try again"
+            )
+        content = (self.to_model().model_dump_json(indent=2) + "\n").encode("utf-8")
+        self.path.write_bytes(content)
+        self._disk_content = content
 
     @property
     def versions(self) -> list[ProjectVersion]:
