@@ -50,9 +50,10 @@ from sereto.source_archive import (
     create_source_archive,
     embed_attachment_to_pdf,
     extract_source_archive,
-    retrieve_source_archive,
+    extract_source_archive_from_pdf,
 )
 from sereto.tui.app import launch_tui, register_tui_plugin
+from sereto.tui.merge import UnpackContext
 from sereto.utils import copy_skel, replace_strings
 
 
@@ -169,21 +170,16 @@ def decrypt(ctx: Project, file: FilePath) -> None:
 @cli.command()
 @handle_exceptions
 @click.option("-f", "--file", required=True, help="Path to the PDF file.", type=Path)
+@click.option("-N", "--non-interactive", "non_interactive", is_flag=True, default=False, help="Run non-interactively.")
 @click.pass_obj
 @validate_call
-def unpack(ctx: Project, file: FilePath) -> None:
+def unpack(ctx: Project, file: FilePath, non_interactive: bool) -> None:
     """Unpack the SeReTo project from the report's PDF."""
-    attachment: Path | None = None
+    if not non_interactive:
+        asyncio.run(launch_tui(entry_point="unpack", plugin_context=UnpackContext(pdf_path=file)))
+        return
 
-    with suppress(SeretoValueError):
-        attachment = retrieve_source_archive(pdf=file, name="source.sereto")
-
-    if attachment is not None:
-        source_tgz = decrypt_file(file=attachment, keep_original=False)
-    else:
-        source_tgz = retrieve_source_archive(pdf=file, name="source.tgz")
-
-    extract_source_archive(file=source_tgz, output_dir=ctx.settings.projects_path, keep_original=False)
+    extract_source_archive_from_pdf(pdf=file, output_dir=ctx.settings.projects_path)
 
 
 @cli.command()

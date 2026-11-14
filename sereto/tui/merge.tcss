@@ -1,0 +1,338 @@
+ConflictResolutionScreen {
+    align: center middle;
+
+    #conflict-dialog {
+        width: 90%;
+        height: auto;
+        max-height: 90%;
+        border: heavy $primary;
+        padding: 0 1;
+        background: $surface;
+        border-title-color: $primary;
+        border-title-background: transparent;
+        border-title-style: bold;
+    }
+
+    #conflict-hint {
+        color: $text-muted;
+        margin-bottom: 1;
+    }
+
+    #conflict-headings,
+    .conflict-row {
+        height: auto;
+        width: 100%;
+    }
+
+    #conflict-headings {
+        color: $text-muted;
+        text-style: bold;
+        border-bottom: solid $primary-darken-2;
+        padding-right: 2;
+    }
+
+    #conflict-fields {
+        height: 1fr;
+        max-height: 60vh;
+        scrollbar-gutter: stable;
+    }
+
+    .conflict-field-name {
+        width: 18;
+        padding: 0 1;
+        text-style: bold;
+    }
+
+    .conflict-value {
+        width: 1fr;
+        min-width: 0;
+        height: auto;
+        margin: 0 1 0 0;
+        padding: 0 1;
+        content-align: left middle;
+        text-align: left;
+    }
+
+    .conflict-result {
+        width: 1fr;
+        height: auto;
+        padding: 0 1;
+    }
+
+    #conflict-buttons {
+        height: auto;
+        margin-top: 1;
+        align-horizontal: right;
+    }
+
+    #conflict-buttons Button {
+        margin-left: 1;
+    }
+
+    #conflict-warning {
+        width: 100%;
+        height: auto;
+        content-align: right middle;
+        padding: 1 1 0 0;
+    }
+
+    #conflict-warning.hidden {
+        display: none;
+    }
+}
+
+FileConflictScreen {
+    align: center middle;
+
+    .hidden {
+        display: none;
+    }
+
+    #finding-dialog {
+        width: 95%;
+        height: auto;
+        max-height: 90%;
+        border: heavy $primary;
+        padding: 0 1;
+        background: $surface;
+        border-title-color: $primary;
+        border-title-background: transparent;
+        border-title-style: bold;
+    }
+
+    .finding-help {
+        color: $text-muted;
+        height: auto;
+        margin: 1 0;
+    }
+
+    #finding-modes {
+        height: auto;
+    }
+
+    #finding-pick,
+    #finding-manual {
+        height: auto;
+    }
+
+    #finding-modes Button {
+        margin-right: 1;
+    }
+
+    #finding-columns {
+        height: auto;
+    }
+
+    .finding-column {
+        width: 1fr;
+        height: auto;
+        margin-right: 1;
+    }
+
+    .finding-column-title {
+        text-style: bold;
+        color: dodgerblue;
+    }
+
+    .finding-version {
+        height: auto;
+        max-height: 50vh;
+        scrollbar-gutter: stable;
+    }
+
+    .finding-choice {
+        width: 100%;
+        height: auto;
+        padding: 0 1;
+        content-align: left top;
+        text-align: left;
+    }
+
+    #finding-edit {
+        height: auto;
+    }
+
+    #finding-edit Button {
+        margin-right: 1;
+    }
+
+    #finding-status {
+        height: auto;
+        margin-top: 1;
+    }
+
+    #finding-body {
+        height: auto;
+        max-height: 60vh;
+    }
+
+    #finding-buttons {
+        height: auto;
+        margin-top: 1;
+        align-horizontal: right;
+    }
+}
+
+RecordDetailScreen {
+    align: center middle;
+
+    #detail-dialog {
+        width: 95%;
+        height: 90%;
+        border: heavy $primary;
+        padding: 1 2;
+        background: $surface;
+        border-title-color: $primary;
+        border-title-background: transparent;
+        border-title-style: bold;
+    }
+
+    #detail-panes {
+        height: 1fr;
+    }
+
+    .detail-pane {
+        width: 1fr;
+        height: 100%;
+        margin: 0 1;
+    }
+
+    .detail-heading {
+        height: auto;
+        text-style: bold;
+    }
+
+    .detail-body {
+        height: 1fr;
+        border: round $primary;
+        padding: 0 1;
+        scrollbar-gutter: stable;
+    }
+
+    #detail-buttons {
+        height: auto;
+        margin-top: 1;
+        align-horizontal: right;
+    }
+}
+
+ExistingProjectScreen {
+    align: center middle;
+
+    #existing-project-dialog {
+        width: 70;
+        max-width: 95%;
+        height: auto;
+        max-height: 95%;
+        padding: 1 2;
+        border: heavy red;
+        background: $surface;
+    }
+
+    #existing-project-title {
+        height: auto;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+
+    #existing-project-message {
+        height: auto;
+    }
+
+    #existing-project-buttons {
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+    }
+
+    #existing-project-buttons Button {
+        margin-left: 1;
+    }
+}
+
+UnpackProjectScreen {
+    align-horizontal: center;
+
+    #unpack-layout {
+        width: 80;
+        max-width: 95%;
+        height: auto;
+        padding: 2;
+        margin: 2 0;
+        border: heavy $accent;
+    }
+
+    #unpack-title {
+        height: auto;
+        color: $accent;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+
+    #unpack-help,
+    #unpack-status {
+        height: auto;
+        margin: 1 1;
+    }
+
+    #unpack-buttons {
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+    }
+
+    #unpack-buttons Button {
+        margin-left: 1;
+    }
+}
+
+MergeUnpackedScreen {
+    #merge-layout {
+        padding: 1 2;
+        height: 1fr;
+    }
+
+    #merge-help {
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    #merge-table {
+        height: 1fr;
+        border: none;
+        background: transparent;
+        scrollbar-gutter: stable;
+
+        & > .datatable--hover {
+            background: $boost;
+        }
+
+        & > .datatable--cursor,
+        &:focus > .datatable--cursor {
+            background: $foreground 20%;
+            color: $foreground;
+            text-style: none;
+        }
+
+        & > .datatable--header {
+            background: transparent;
+            color: $accent;
+            text-style: bold;
+        }
+
+        & > .datatable--header-hover {
+            background: transparent;
+            color: $accent-lighten-2;
+        }
+    }
+
+    #merge-buttons {
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+    }
+
+    #merge-buttons Button {
+        margin-left: 1;
+    }
+}
