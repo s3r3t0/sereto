@@ -9,11 +9,14 @@ from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal, TypeGuard, cast
+from tempfile import mkdtemp
+from typing import Any, Literal, cast
 
 import tomlkit
+from loguru import logger
 
 from sereto.models.config import ConfigModel
+from sereto.models.finding import FindingsConfigModel
 
 
 # Unique identity keys
@@ -21,6 +24,12 @@ from sereto.models.config import ConfigModel
 class TargetKey:
     version: str
     category: str
+    name: str
+
+
+@dataclass(frozen=True, order=True)
+class GroupKey:
+    target: TargetKey
     name: str
 
 
@@ -39,10 +48,21 @@ class DateKey:
 @dataclass(frozen=True, order=True)
 class PersonKey:
     version: str
+    type: str
     email: str
 
 
-type MergeKey = DateKey | PersonKey | TargetKey | FindingKey
+@dataclass(frozen=True)
+class FileKey:
+    path: Path
+    target: TargetKey | None = None
+
+    def __post_init__(self) -> None:
+        if self.path.is_absolute() or ".." in self.path.parts or not self.path.parts:
+            raise ValueError(f"Invalid project file path: {self.path}")
+
+
+type MergeKey = DateKey | PersonKey | TargetKey | GroupKey | FindingKey | FileKey
 type MergeValue = dict[str, Any] | bytes
 
 
@@ -69,8 +89,11 @@ class MergeRecord[Value: MergeValue]:
     key: MergeKey
     local: Value | None
     unpacked: Value | None
-    # Directory of the target relative to the project root (only for targets)
+    # Directory of the target relative to the project root (only relevant for targets)
     path: Path | None = None
+    # Group membership (only relevant for findings)
+    local_group: GroupKey | None = None
+    unpacked_group: GroupKey | None = None
 
     def __post_init__(self) -> None:
         if self.local is None and self.unpacked is None:
@@ -80,17 +103,27 @@ class MergeRecord[Value: MergeValue]:
         for value in (self.local, self.unpacked):
             if value is not None:
                 self.validate_value(value)
+        for value, group in ((self.local, self.local_group), (self.unpacked, self.unpacked_group)):
+            if isinstance(self.key, FindingKey):
+                if (value is not None) != (group is not None):
+                    raise ValueError(f"Every finding must have a group: {self.key!r}")
+                if group is not None and group.target != self.key.target:
+                    raise ValueError(f"Finding group belongs to another target: {self.key!r}")
+            elif group is not None:
+                raise ValueError(f"Only findings can have a group: {self.key!r}")
 
     def validate_value(self, value: MergeValue) -> Value:
         """Check the payload against the entity identity before accepting it."""
-        if not isinstance(value, bytes if isinstance(self.key, FindingKey) else dict):
+        if not isinstance(value, bytes if isinstance(self.key, (FindingKey, FileKey)) else dict):
             raise TypeError(f"Invalid value for {self.key!r}")
+        if isinstance(self.key, GroupKey) and isinstance(value, dict) and "findings" in value:
+            raise ValueError("Group membership must be resolved on each finding, not in group metadata")
         return cast(Value, value)
 
     @property
     def parent_key(self) -> TargetKey | None:
         """Key of the record this record depends on, if any (excluding the parent excludes this record too)."""
-        return self.key.target if isinstance(self.key, FindingKey) else None
+        return self.key.target if isinstance(self.key, (GroupKey, FindingKey, FileKey)) else None
 
     @property
     def target_dir(self) -> Path:
@@ -121,7 +154,12 @@ class MergeRecord[Value: MergeValue]:
 
     @property
     def is_identical(self) -> bool:
-        return self.in_local and self.in_unpacked and self.local == self.unpacked
+        return (
+            self.in_local
+            and self.in_unpacked
+            and self.local == self.unpacked
+            and self.local_group == self.unpacked_group
+        )
 
     @property
     def available_statuses(self) -> tuple[MergeStatus, ...]:
@@ -169,6 +207,16 @@ class MergeSelection:
 
     statuses: dict[MergeKey, MergeStatus] = field(default_factory=dict)
     resolved_values: dict[MergeKey, MergeValue] = field(default_factory=dict)
+    finding_groups: dict[FindingKey, GroupKey] = field(default_factory=dict)
+
+    def finding_group(self, record: MergeRecord[MergeValue]) -> GroupKey | None:
+        if not isinstance(record.key, FindingKey):
+            return None
+        if self.status(record) is MergeStatus.RESOLVED:
+            return self.finding_groups.get(record.key)
+        if record.local_group is None or record.unpacked_group is None or record.local_group == record.unpacked_group:
+            return record.local_group or record.unpacked_group
+        return None
 
     def status(self, record: MergeRecord[MergeValue]) -> MergeStatus:
         if record.key in self.statuses:
@@ -179,7 +227,10 @@ class MergeSelection:
 
     def parent_excluded(self, record: MergeRecord[MergeValue]) -> bool:
         parent = record.parent_key
-        return parent is not None and self.statuses.get(parent) is MergeStatus.EXCLUDED
+        group = self.finding_group(record)
+        return (parent is not None and self.statuses.get(parent) is MergeStatus.EXCLUDED) or (
+            group is not None and self.statuses.get(group) is MergeStatus.EXCLUDED
+        )
 
     def effective_status(self, record: MergeRecord[MergeValue]) -> MergeStatus:
         return MergeStatus.EXCLUDED if self.parent_excluded(record) else self.status(record)
@@ -192,8 +243,16 @@ class MergeSelection:
             record.value_for_status(status, self.resolved_values.get(record.key))
         self.statuses[record.key] = status
 
-    def resolve(self, record: MergeRecord[MergeValue], value: MergeValue) -> None:
+    def resolve(self, record: MergeRecord[MergeValue], value: MergeValue, *, group: GroupKey | None = None) -> None:
         resolved = record.value_for_status(MergeStatus.RESOLVED, value)
+        if isinstance(record.key, FindingKey):
+            if group is None and record.local_group == record.unpacked_group:
+                group = record.local_group
+            if group is None or group not in (record.local_group, record.unpacked_group):
+                raise ValueError(f"Choose a local or unpacked group for {record.key!r}")
+            self.finding_groups[record.key] = group
+        elif group is not None:
+            raise ValueError("Only findings can be assigned to groups")
         self.resolved_values[record.key] = resolved
         self.statuses[record.key] = MergeStatus.RESOLVED
 
@@ -203,7 +262,8 @@ class MergeSelection:
             if record.source is MergeSource.BOTH:
                 if value is not None and not record.is_identical:
                     # Settle the conflict in favour of the chosen source
-                    self.resolve(record, value)
+                    group = record.local_group if source == "local" else record.unpacked_group
+                    self.resolve(record, value, group=group)
             else:
                 self.set_status(record, MergeStatus.INCLUDED if value is not None else MergeStatus.EXCLUDED)
 
@@ -224,13 +284,17 @@ class MergeSelection:
                 raise ValueError(f"status {status.value!r} is unavailable for {record.key!r}")
             if record.key in self.resolved_values:
                 record.validate_value(self.resolved_values[record.key])
+            if isinstance(record.key, FindingKey):
+                possible_groups = {record.local_group, record.unpacked_group} - {None}
+                if not possible_groups <= keys:
+                    raise ValueError(f"Missing group record for {record.key!r}")
             if self.effective_status(record) is not MergeStatus.EXCLUDED:
                 selected[record.key] = record.value_for_status(status, self.resolved_values.get(record.key))
+                if isinstance(record.key, FindingKey):
+                    group = self.finding_group(record)
+                    if group is None or group not in (record.local_group, record.unpacked_group):
+                        raise ValueError(f"Choose a local or unpacked group for {record.key!r}")
         return selected
-
-
-def _is_list(value: Any) -> TypeGuard[list[Any]]:
-    return isinstance(value, list)
 
 
 LOCAL_MARKER = "<<<<<<< local"
@@ -305,7 +369,15 @@ def _person_records(config: ConfigModel, source: MergeSource) -> dict[PersonKey,
         for index, person in enumerate(version_config.people):
             # Without an email identity, keep each side's person as a separate record.
             identity = str(person.email).casefold() if person.email is not None else f"{source.value}:{index}"
-            records[PersonKey(str(version), identity)] = person.model_dump(mode="json", exclude_unset=True)
+            key = PersonKey(version=str(version), type=person.type.value, email=identity)
+            if key in records:
+                raise ValueError(
+                    f"Duplicate person key in {source.value} project: "
+                    f"version={key.version!r}, type={key.type!r}, email={key.email!r}. "
+                    "Each person type and email must be unique within a project version; "
+                    "resolve the duplicate entries before merging."
+                )
+            records[key] = person.model_dump(mode="json", exclude_unset=True)
     return records
 
 
@@ -313,18 +385,12 @@ def _load_findings(target_dir: Path) -> dict[str, Any]:
     path = target_dir / "findings.toml"
     if not path.is_file():
         return {}
-    return tomllib.loads(path.read_text(encoding="utf-8"))
-
-
-def _finding_names(config: dict[str, Any]) -> list[str]:
-    names: list[str] = []
-    for group in config.values():
-        if not isinstance(group, dict):
-            continue
-        findings = cast(dict[str, Any], group).get("findings")
-        if _is_list(findings):
-            names.extend(finding for finding in findings if isinstance(finding, str))
-    return names
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    try:
+        FindingsConfigModel.model_validate(data)
+    except ValueError as exc:
+        raise ValueError(f"Invalid findings configuration in {path}: {exc}") from exc
+    return data
 
 
 def discover_merge_targets(local_dir: Path, unpacked_dir: Path) -> list[MergeRecord[dict[str, Any]]]:
@@ -383,7 +449,7 @@ def discover_merge_people(local_dir: Path, unpacked_dir: Path) -> list[MergeReco
 def discover_merge_findings(
     local_dir: Path,
     unpacked_dir: Path,
-    targets: Sequence[MergeRecord[dict[str, Any]]],
+    targets: Sequence[MergeRecord[MergeValue]],
     selected_targets: set[MergeKey],
 ) -> list[MergeRecord[bytes]]:
     findings: list[MergeRecord[bytes]] = []
@@ -392,21 +458,110 @@ def discover_merge_findings(
             raise ValueError(f"Expected target record, got {target.key!r}")
         if target.key not in selected_targets:
             continue
-        local_names: set[str] = (
-            set(_finding_names(_load_findings(local_dir / target.target_dir))) if target.in_local else set()
+        local_groups = _finding_memberships(_load_findings(local_dir / target.target_dir)) if target.in_local else {}
+        unpacked_groups = (
+            _finding_memberships(_load_findings(unpacked_dir / target.target_dir)) if target.in_unpacked else {}
         )
-        unpacked_names: set[str] = (
-            set(_finding_names(_load_findings(unpacked_dir / target.target_dir))) if target.in_unpacked else set()
-        )
+        local_names = set(local_groups)
+        unpacked_names = set(unpacked_groups)
         for name in sorted(local_names | unpacked_names):
             local_path = local_dir / target.target_dir / "findings" / f"{name}.md.j2"
             unpacked_path = unpacked_dir / target.target_dir / "findings" / f"{name}.md.j2"
-            local_value = local_path.read_bytes() if local_path.is_file() else b"" if name in local_names else None
+            local_value = (local_path.read_bytes() if local_path.is_file() else b"") if name in local_names else None
             unpacked_value = (
-                unpacked_path.read_bytes() if unpacked_path.is_file() else b"" if name in unpacked_names else None
+                (unpacked_path.read_bytes() if unpacked_path.is_file() else b"") if name in unpacked_names else None
             )
-            findings.append(MergeRecord(FindingKey(target.key, name), local_value, unpacked_value))
+            for path, value in ((local_path, local_value), (unpacked_path, unpacked_value)):
+                if value is not None:
+                    try:
+                        value.decode("utf-8")
+                    except UnicodeDecodeError as exc:
+                        raise ValueError(
+                            f"Finding file is not valid UTF-8: {path}. Save it as UTF-8 before merging."
+                        ) from exc
+            for path, names, other_value in (
+                (local_path, local_names, unpacked_value),
+                (unpacked_path, unpacked_names, local_value),
+            ):
+                if name not in names and path.is_file() and path.read_bytes() != other_value:
+                    raise ValueError(
+                        f"Unreferenced finding file conflicts with the other project: {path}. "
+                        "Assign it to a group or rename it before merging."
+                    )
+            findings.append(
+                MergeRecord(
+                    FindingKey(target.key, name),
+                    local_value,
+                    unpacked_value,
+                    local_group=GroupKey(target.key, local_groups[name]) if name in local_groups else None,
+                    unpacked_group=GroupKey(target.key, unpacked_groups[name]) if name in unpacked_groups else None,
+                )
+            )
     return findings
+
+
+def _finding_memberships(config: dict[str, Any]) -> dict[str, str]:
+    return {name: group_name for group_name, group in config.items() for name in group["findings"]}
+
+
+def discover_merge_groups(
+    local_dir: Path, unpacked_dir: Path, targets: Sequence[MergeRecord[MergeValue]]
+) -> list[MergeRecord[dict[str, Any]]]:
+    records: list[MergeRecord[dict[str, Any]]] = []
+    for target in targets:
+        if not isinstance(target.key, TargetKey):
+            raise ValueError(f"Expected target record, got {target.key!r}")
+        local = _load_findings(local_dir / target.target_dir) if target.in_local else {}
+        unpacked = _load_findings(unpacked_dir / target.target_dir) if target.in_unpacked else {}
+        for name in sorted(local.keys() | unpacked.keys()):
+            # Gather group's metadata, excluding the "findings" key (memberships are handled separately)
+            records.append(
+                MergeRecord(
+                    GroupKey(target.key, name),
+                    {key: value for key, value in local[name].items() if key != "findings"} if name in local else None,
+                    {key: value for key, value in unpacked[name].items() if key != "findings"}
+                    if name in unpacked
+                    else None,
+                )
+            )
+    return records
+
+
+def discover_merge_files(
+    local_dir: Path,
+    unpacked_dir: Path,
+    targets: Sequence[MergeRecord[MergeValue]],
+    findings: Sequence[MergeRecord[MergeValue]],
+) -> list[MergeRecord[bytes]]:
+    files: dict[FileKey, list[bytes | None]] = {}
+    scopes: list[tuple[Path, TargetKey | None]] = [(Path(name), None) for name in ("pictures", "layouts", "includes")]
+    scopes.extend((target.target_dir, target.key) for target in targets if isinstance(target.key, TargetKey))
+    # Skip finding Markdown files and target configuration files; they are handled separately
+    managed = {
+        target.target_dir / "findings" / f"{finding.key.name}.md.j2"
+        for target in targets
+        for finding in findings
+        if isinstance(finding.key, FindingKey) and finding.parent_key == target.key
+    }
+    managed.update(target.target_dir / "findings.toml" for target in targets)
+
+    for index, project_dir in enumerate((local_dir, unpacked_dir)):
+        for relative_dir, parent in scopes:
+            directory = project_dir / relative_dir
+            if not directory.exists():
+                continue
+            if not directory.is_dir() or directory.is_symlink():
+                raise ValueError(f"Expected a project directory: {directory}")
+            for path in sorted(directory.rglob("*")):
+                if path.is_symlink():
+                    raise ValueError(f"Cannot merge symbolic link: {path}")
+                relative_path = path.relative_to(project_dir)
+                if path.is_file() and relative_path not in managed:
+                    files.setdefault(FileKey(relative_path, parent), [None, None])[index] = path.read_bytes()
+    return [
+        MergeRecord(key, values[0], values[1])
+        for key, values in sorted(files.items(), key=lambda item: item[0].path.as_posix())
+    ]
 
 
 def config_from_selected(
@@ -454,46 +609,10 @@ def config_from_selected(
     return result
 
 
-def _selected_findings_config(
-    local: dict[str, Any],
-    unpacked: dict[str, Any],
-    selected_names: set[str],
-) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    assigned: set[str] = set()
-    for group_name in [*local, *(name for name in unpacked if name not in local)]:
-        local_group = local.get(group_name)
-        unpacked_group = unpacked.get(group_name)
-        if isinstance(local_group, dict):
-            group = copy.deepcopy(cast(dict[str, Any], local_group))
-        elif isinstance(unpacked_group, dict):
-            group = copy.deepcopy(cast(dict[str, Any], unpacked_group))
-        else:
-            continue
-        available = [
-            *(_finding_names({group_name: local_group}) if isinstance(local_group, dict) else []),
-            *(name for name in _finding_names({group_name: unpacked_group}) if isinstance(unpacked_group, dict)),
-        ]
-        chosen = [name for name in dict.fromkeys(available) if name in selected_names and name not in assigned]
-        if chosen:
-            group["findings"] = chosen
-            result[group_name] = group
-            assigned.update(chosen)
-    return result
-
-
-def _merge_shared_asset_directories(local_dir: Path, unpacked_dir: Path) -> None:
-    for relative_path in (Path("pictures"), Path("layouts/generated")):
-        source = unpacked_dir / relative_path
-        if source.is_dir():
-            shutil.copytree(source, local_dir / relative_path, dirs_exist_ok=True)
-
-
 @dataclass(frozen=True)
 class _MergeOutput:
     config: bytes
     files: dict[Path, bytes]
-    target_copies: dict[Path, set[str]]
 
 
 def _prepare_merge(
@@ -501,6 +620,7 @@ def _prepare_merge(
     unpacked_dir: Path,
     records: Sequence[MergeRecord[MergeValue]],
     selected: Mapping[MergeKey, MergeValue],
+    selection: MergeSelection,
 ) -> _MergeOutput:
     local_model = _load_config(local_dir)
     unpacked_model = _load_config(unpacked_dir)
@@ -522,22 +642,41 @@ def _prepare_merge(
             findings_by_target.setdefault(record.key.target, []).append(record.key)
 
     files: dict[Path, bytes] = {}
-    target_copies: dict[Path, set[str]] = {}
+    for key, content in selected.items():
+        if isinstance(key, FileKey):
+            if not isinstance(content, bytes):
+                raise TypeError(f"Invalid project file content for {key!r}")
+            files[key.path] = content
     for target in records:
         if not isinstance(target.key, TargetKey) or target.key not in selected:
             continue
-        local_target = local_dir / target.target_dir
-        unpacked_target = unpacked_dir / target.target_dir
         all_target_findings = findings_by_target.get(target.key, [])
         target_findings = [key for key in all_target_findings if key in selected]
-        if not target.in_local and unpacked_target.is_dir():
-            target_copies[target.target_dir] = {
-                f"{key.name}.md.j2" for key in all_target_findings if key not in selected
-            }
-        local_findings = _load_findings(local_target) if target.in_local else {}
-        unpacked_findings = _load_findings(unpacked_target) if target.in_unpacked else {}
-        finding_names = {key.name for key in target_findings}
-        findings_config = _selected_findings_config(local_findings, unpacked_findings, finding_names)
+        memberships: dict[str, GroupKey] = {}
+        for record in records:
+            if not isinstance(record.key, FindingKey) or record.key not in target_findings:
+                continue
+            group_key = selection.finding_group(record)
+            metadata = selected.get(group_key) if group_key is not None else None
+            if group_key is None or not isinstance(metadata, dict):
+                raise ValueError(f"Missing selected group for {record.key!r}")
+            memberships[record.key.name] = group_key
+        local_groups = _load_findings(local_dir / target.target_dir) if target.in_local else {}
+        unpacked_groups = _load_findings(unpacked_dir / target.target_dir) if target.in_unpacked else {}
+        findings_config: dict[str, Any] = {}
+        for name in [*local_groups, *(name for name in unpacked_groups if name not in local_groups)]:
+            group_key = GroupKey(target.key, name)
+            metadata = selected.get(group_key)
+            if not isinstance(metadata, dict):
+                continue
+            names = [
+                *local_groups.get(name, {}).get("findings", []),
+                *unpacked_groups.get(name, {}).get("findings", []),
+            ]
+            chosen = [name for name in dict.fromkeys(names) if memberships.get(name) == group_key]
+            if chosen:
+                findings_config[name] = {**copy.deepcopy(metadata), "findings": chosen}
+        FindingsConfigModel.model_validate(findings_config)
         files[target.target_dir / "findings.toml"] = tomlkit.dumps(findings_config).encode("utf-8")
         for key in target_findings:
             content = selected[key]
@@ -545,26 +684,54 @@ def _prepare_merge(
                 raise TypeError(f"Invalid finding content for {key!r}")
             files[target.target_dir / "findings" / f"{key.name}.md.j2"] = content
 
-    return _MergeOutput((json.dumps(selected_config, indent=2) + "\n").encode("utf-8"), files, target_copies)
+    return _MergeOutput((json.dumps(selected_config, indent=2) + "\n").encode("utf-8"), files)
 
 
-def _write_merge(local_dir: Path, unpacked_dir: Path, output: _MergeOutput) -> None:
-    for relative_path, excluded in output.target_copies.items():
-        source = unpacked_dir / relative_path
-        shutil.copytree(
-            source,
-            local_dir / relative_path,
-            dirs_exist_ok=True,
-            ignore=lambda directory, names, excluded=excluded, finding_dir=source / "findings": (
-                excluded.intersection(names) if Path(directory) == finding_dir else set()
-            ),
-        )
+def _write_merge(local_dir: Path, output: _MergeOutput) -> None:
     for relative_path, content in output.files.items():
         destination = local_dir / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(content)
     (local_dir / "config.json").write_bytes(output.config)
-    _merge_shared_asset_directories(local_dir, unpacked_dir)
+
+
+def _backup_merge(local_dir: Path, output: _MergeOutput) -> Path:
+    """Preserve overwritten files and recovery instructions before any project writes."""
+    local_dir = local_dir.resolve()
+    try:
+        backup_dir = Path(mkdtemp(prefix=f".{local_dir.name}-merge-backup-", dir=local_dir.parent))
+        files_dir = backup_dir / "files"
+        files_dir.mkdir()
+        new_files: list[str] = []
+        # Iterate over and copy all files that will be written by the merge
+        for relative_path in dict.fromkeys([*output.files, Path("config.json")]):
+            source = local_dir / relative_path
+            if source.exists():
+                destination = files_dir / relative_path
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, destination)
+            else:
+                new_files.append(relative_path.as_posix())
+        (backup_dir / "RESTORE.txt").write_text(
+            f"Restore the project at {local_dir}\n\n"
+            "The merge is not transactional. To return to the state before this merge:\n"
+            "1. Stop editing the project and cancel the merge UI.\n"
+            "2. Remove the following files from the project if they exist "
+            "(paths relative to the project root, quoted as JSON):\n"
+            + "".join(f"   {json.dumps(path)}\n" for path in new_files)
+            + ("   (none)\n" if not new_files else "")
+            + "3. Copy the contents of this backup's files directory into the project root, "
+            "preserving relative paths and overwriting existing files. Do not replace entire directories, "
+            "as the backup only contains files that the merge could overwrite.\n"
+            "4. Empty directories created by the merge can optionally be removed.\n\n"
+            "This backup is retained even after a successful merge. Restoring it discards later edits "
+            "to the affected files, so preserve any edits you want to keep first.\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        raise OSError(f"Could not back up merge files; the project has not been modified: {exc}") from exc
+    logger.info("Merge backup saved to {}", backup_dir)
+    return backup_dir
 
 
 def apply_entity_merge(
@@ -573,6 +740,45 @@ def apply_entity_merge(
     records: Sequence[MergeRecord[MergeValue]],
     selection: MergeSelection,
 ) -> None:
+    targets = [record for record in records if isinstance(record.key, TargetKey)]
+    findings = [record for record in records if isinstance(record.key, FindingKey)]
+    expected_groups = discover_merge_groups(local_dir, unpacked_dir, targets)
+    compared_groups = [record for record in records if isinstance(record.key, GroupKey)]
+    expected_findings = discover_merge_findings(local_dir, unpacked_dir, targets, {target.key for target in targets})
+
+    if {record.key: record for record in expected_groups} != {record.key: record for record in compared_groups} or {
+        record.key: record for record in expected_findings
+    } != {record.key: record for record in findings}:
+        raise ValueError("Finding groups or findings changed or were not compared. Reopen the merge before applying.")
+
+    expected_files = discover_merge_files(local_dir, unpacked_dir, targets, findings)
+    compared_files = [record for record in records if isinstance(record.key, FileKey)]
+    if {record.key: record for record in expected_files} != {record.key: record for record in compared_files}:
+        raise ValueError("Project files changed or were not compared. Reopen the merge before applying.")
+
     selected = selection.resolve_selected_values(records)
-    output = _prepare_merge(local_dir, unpacked_dir, records, selected)
-    _write_merge(local_dir, unpacked_dir, output)
+    output = _prepare_merge(local_dir, unpacked_dir, records, selected, selection)
+    # Validate that all files to be written are within the project and have valid destinations before proceeding
+    for relative_path in output.files:
+        destination = local_dir / relative_path
+        if not destination.resolve().is_relative_to(local_dir.resolve()):
+            raise ValueError(f"File points outside the project: {relative_path}")
+        if destination.exists() and not destination.is_file():
+            raise ValueError(f"File destination is not a regular file: {relative_path}")
+        for parent in destination.parents:
+            if parent == local_dir:
+                break
+            if parent.exists() and not parent.is_dir():
+                raise ValueError(f"File parent is not a directory: {parent}")
+    # Create a backup of the current project state before writing the merge output
+    backup_dir = _backup_merge(local_dir, output)
+    # Attempt to write the merge output to the project directory
+    try:
+        _write_merge(local_dir, output)
+    except OSError as exc:
+        raise OSError(
+            f"Merge failed; the project may already be partially modified. Backup: {backup_dir}. "
+            "To restore, cancel the merge and follow RESTORE.txt in the backup: remove the newly created "
+            "files listed there, then copy the contents of its 'files' directory into the project root, "
+            f"preserving relative paths and overwriting existing files. Original error: {exc}"
+        ) from exc

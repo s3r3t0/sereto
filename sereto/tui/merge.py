@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import shutil
 import subprocess
 from dataclasses import dataclass
+from datetime import date, time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any, Literal, assert_never, cast
@@ -31,7 +33,9 @@ from sereto.project_merge import (
     LOCAL_MARKER,
     UNPACKED_MARKER,
     DateKey,
+    FileKey,
     FindingKey,
+    GroupKey,
     MergeKey,
     MergeRecord,
     MergeSelection,
@@ -41,7 +45,9 @@ from sereto.project_merge import (
     TargetKey,
     apply_entity_merge,
     discover_merge_dates,
+    discover_merge_files,
     discover_merge_findings,
+    discover_merge_groups,
     discover_merge_people,
     discover_merge_targets,
     has_conflict_markers,
@@ -176,9 +182,16 @@ class UnpackProjectScreen(Screen[None]):
             self._temporary_dir = None
 
     def _open_merge(self, local_dir: Path, unpacked_dir: Path) -> None:
+        try:
+            screen = MergeUnpackedScreen(local_dir, unpacked_dir)
+        except (OSError, ValueError) as exc:
+            self._merge_project_name = None
+            self._cleanup_temporary_dir()
+            self._show_error(f"Could not compare projects: {exc}")
+            return
         self._set_busy(False)
         self._merge_project_name = unpacked_dir.name
-        self.sereto_app.push_screen(MergeUnpackedScreen(local_dir, unpacked_dir), self._merge_finished)
+        self.sereto_app.push_screen(screen, self._merge_finished)
 
     def _confirm_merge(self, local_dir: Path, unpacked_dir: Path, compatible: bool) -> None:
         self.query_one("#unpack-status", Static).update("Project already exists locally.")
@@ -322,12 +335,18 @@ def _resolution_fields(local: dict[str, Any], unpacked: dict[str, Any]) -> list[
     return fields
 
 
+def _json_default(value: object) -> str:
+    if isinstance(value, (date, time)):
+        return value.isoformat()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def _display_value(value: object, present: bool) -> str:
     if not present:
         return "—"
     if isinstance(value, bytes):
         return value.decode("utf-8", errors="replace") or "(empty)"
-    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"), default=_json_default)
 
 
 def _path_value(value: dict[str, object], path: tuple[str, ...]) -> tuple[object, bool]:
@@ -538,17 +557,32 @@ def _decode_strict(content: bytes) -> str | None:
         return None
 
 
-class FindingConflictScreen(ModalScreen[bytes | None]):
-    """Resolve differing finding content: take either whole version or edit a file with git-style conflict markers."""
+def _file_content(content: bytes) -> str:
+    text = _decode_strict(content)
+    if text is None or "\x00" in text:
+        return f"Binary file: {len(content)} bytes\nSHA-256: {hashlib.sha256(content).hexdigest()}"
+    return text or "(empty)"
+
+
+class FileConflictScreen(ModalScreen[bytes | None]):
+    """Resolve differing file content: take either whole version or edit a file with git-style conflict markers."""
 
     BINDINGS = [Binding("escape", "cancel", "Cancel")]
 
-    def __init__(self, title: str, local: bytes, unpacked: bytes, selected: bytes | None) -> None:
+    def __init__(
+        self,
+        title: str,
+        local: bytes,
+        unpacked: bytes,
+        selected: bytes | None,
+        file_path: Path | None = None,
+    ) -> None:
         super().__init__()
         self.title = title
         self.local = local
         self.unpacked = unpacked
         self.selected = selected
+        self.file_path = file_path
         self._local_text = _decode_strict(local)
         self._unpacked_text = _decode_strict(unpacked)
         self._temporary_dir: TemporaryDirectory[str] | None = None
@@ -557,7 +591,12 @@ class FindingConflictScreen(ModalScreen[bytes | None]):
 
     @property
     def editable(self) -> bool:
-        return self._local_text is not None and self._unpacked_text is not None
+        return (
+            self._local_text is not None
+            and self._unpacked_text is not None
+            and "\x00" not in self._local_text
+            and "\x00" not in self._unpacked_text
+        )
 
     def compose(self) -> ComposeResult:
         dialog = Vertical(id="finding-dialog")
@@ -565,7 +604,7 @@ class FindingConflictScreen(ModalScreen[bytes | None]):
         with dialog:
             with VerticalScroll(id="finding-body"):
                 yield Static(
-                    "[italic]The content of this finding differs between the local and the unpacked project. "
+                    "[italic]The content differs between the local and the unpacked project. "
                     "Either keep one of the versions as a whole, or resolve the differences manually.[/italic]",
                     classes="finding-help",
                 )
@@ -593,7 +632,7 @@ class FindingConflictScreen(ModalScreen[bytes | None]):
                                 yield Static(title, classes="finding-column-title")
                                 with ScrollableContainer(classes="finding-version"):
                                     yield Button(
-                                        Text(content.decode("utf-8", errors="replace") or "(empty)", overflow="fold"),
+                                        Text(_file_content(content), overflow="fold"),
                                         id=f"finding-choice-{source}",
                                         classes="finding-choice",
                                         variant="primary" if self.selected == content else "default",
@@ -620,7 +659,7 @@ class FindingConflictScreen(ModalScreen[bytes | None]):
                         yield Button(
                             "Use edited content", id="finding-use-edited", variant="success", classes="hidden"
                         )
-                    yield Static("", id="finding-status")
+                yield Static("", id="finding-status")
             with Horizontal(id="finding-buttons"):
                 yield Button("Cancel", id="finding-cancel")
 
@@ -647,7 +686,9 @@ class FindingConflictScreen(ModalScreen[bytes | None]):
             if self._local_text is None or self._unpacked_text is None:
                 raise ValueError("Finding content is not valid UTF-8 text.")
             self._temporary_dir = TemporaryDirectory(prefix="sereto-finding-")
-            self.edit_path = Path(self._temporary_dir.name) / "finding.md"
+            self.edit_path = Path(self._temporary_dir.name) / (
+                self.file_path.name if self.file_path is not None else "finding.md"
+            )
             if self.selected is not None and self.selected not in (self.local, self.unpacked):
                 # Continue with the previously resolved content
                 self.edit_path.write_bytes(self.selected)
@@ -737,9 +778,9 @@ def _record_content(value: MergeValue | None) -> Text | Syntax:
     if value is None:
         return Text("(not present)")
     if isinstance(value, bytes):
-        return Text(value.decode("utf-8", errors="replace") or "(empty)")
+        return Text(_file_content(value))
     return Syntax(
-        json.dumps(value, ensure_ascii=False, indent=2),
+        json.dumps(value, ensure_ascii=False, indent=2, default=_json_default),
         "json",
         line_numbers=False,
         word_wrap=True,
@@ -751,23 +792,35 @@ class RecordDetailScreen(ModalScreen[None]):
 
     BINDINGS = [Binding("escape", "close", "Close")]
 
-    def __init__(self, title: str, local: MergeValue | None, unpacked: MergeValue | None) -> None:
+    def __init__(
+        self,
+        title: str,
+        local: MergeValue | None,
+        unpacked: MergeValue | None,
+        *,
+        local_group: str | None = None,
+        unpacked_group: str | None = None,
+    ) -> None:
         super().__init__()
         self.record_title = title
         self.local = local
         self.unpacked = unpacked
+        self.local_group = local_group
+        self.unpacked_group = unpacked_group
 
     def compose(self) -> ComposeResult:
         dialog = Vertical(id="detail-dialog")
         dialog.border_title = escape(self.record_title)
         with dialog:
             with Horizontal(id="detail-panes"):
-                for source, heading, value in (
-                    ("local", "Local project", self.local),
-                    ("unpacked", "Unpacked project", self.unpacked),
+                for source, heading, value, group in (
+                    ("local", "Local project", self.local, self.local_group),
+                    ("unpacked", "Unpacked project", self.unpacked, self.unpacked_group),
                 ):
                     with Vertical(classes="detail-pane"):
                         yield Static(heading, classes="detail-heading")
+                        if group is not None:
+                            yield Static(Text(f"Group: {group}"), classes="detail-heading")
                         with ScrollableContainer(id=f"detail-{source}-scroll", classes="detail-body"):
                             yield Static(_record_content(value), id=f"detail-{source}")
             with Horizontal(id="detail-buttons"):
@@ -835,17 +888,38 @@ class MergeUnpackedScreen(Screen[bool]):
         self.dates = discover_merge_dates(local_dir, unpacked_dir)
         self.people = discover_merge_people(local_dir, unpacked_dir)
         self.targets = discover_merge_targets(local_dir, unpacked_dir)
-        self._targets_by_key = {target.key: target for target in self.targets}
+        self.groups = discover_merge_groups(local_dir, unpacked_dir, self.targets)
         self.findings = discover_merge_findings(
             local_dir,
             unpacked_dir,
             self.targets,
             {target.key for target in self.targets},
         )
+        self.files = discover_merge_files(local_dir, unpacked_dir, self.targets, self.findings)
+        self.records: list[MergeRecord[MergeValue]] = [
+            *self.dates,
+            *self.people,
+            *self.targets,
+            *self.groups,
+            *self.findings,
+            *self.files,
+        ]
         self.rows: list[MergeRecord[MergeValue]] = [*self.dates, *self.people]
+        self._row_groups: dict[int, GroupKey] = {}
         for target in self.targets:
             self.rows.append(target)
-            self.rows.extend(finding for finding in self.findings if finding.parent_key == target.key)
+            for group in self.groups:
+                if group.parent_key != target.key:
+                    continue
+                self.rows.append(group)
+                for finding in self.findings:
+                    if group.key in (finding.local_group, finding.unpacked_group):
+                        if not isinstance(group.key, GroupKey):
+                            raise TypeError(f"Expected group key, got {group.key!r}")
+                        self._row_groups[len(self.rows)] = group.key
+                        self.rows.append(finding)
+            self.rows.extend(file for file in self.files if file.parent_key == target.key)
+        self.rows.extend(file for file in self.files if file.parent_key is None)
         self._tree_prefixes = self._build_tree_prefixes()
         self.selection = MergeSelection()
         self._highlighted_row = 0
@@ -857,7 +931,9 @@ class MergeUnpackedScreen(Screen[bool]):
                 "[italic]Compare local and unpacked records. Press Enter or double-click a row to view "
                 "the whole record side by side. Click Action (or press Space) to change a selection "
                 "or resolve a conflict. "
-                "Excluding a target also excludes its findings.[/italic]",
+                "Swap src switches one-sided records between Local and Unpacked; omitted rows are dimmed. "
+                "Omitting a target also omits its groups, findings and target files; "
+                "omitting a group omits findings assigned to it.",
                 id="merge-help",
             )
             yield MergeComparisonTable(
@@ -867,6 +943,7 @@ class MergeUnpackedScreen(Screen[bool]):
                 cell_padding=0,
                 cursor_foreground_priority="renderable",
             )
+            yield Static("", id="merge-status")
             with Horizontal(id="merge-buttons"):
                 yield Button("All local", id="merge-all-local")
                 yield Button("All unpacked", id="merge-all-unpacked")
@@ -915,8 +992,8 @@ class MergeUnpackedScreen(Screen[bool]):
             table.add_row(
                 self._version_cell(record),
                 self._type_cell(record),
-                self._record_cell(record, "local"),
-                self._record_cell(record, "unpacked"),
+                self._record_cell(record, "local", self._row_groups.get(index)),
+                self._record_cell(record, "unpacked", self._row_groups.get(index)),
                 self._status_cell(record),
                 self._action_cell(record, index == cursor.row),
                 key=str(index),
@@ -933,8 +1010,12 @@ class MergeUnpackedScreen(Screen[bool]):
                 return "Person", record.key.version
             case TargetKey():
                 return "Target", record.key.version
+            case GroupKey():
+                return "Group", record.key.target.version
             case FindingKey():
                 return "Finding", record.key.target.version
+            case FileKey():
+                return "File", record.key.target.version if record.key.target is not None else ""
             case _:
                 assert_never(record.key)
 
@@ -949,9 +1030,12 @@ class MergeUnpackedScreen(Screen[bool]):
                 if not isinstance(value, dict):
                     raise TypeError(f"Invalid person value for {record.key!r}")
                 identity = value.get("email") or value.get("name") or record.key.email
-                return str(identity)
+                person_type = record.key.type.replace("_", " ").title()
+                return f"{person_type}: {identity}"
             case TargetKey():
                 return f"{record.key.category.upper()} {record.key.name}"
+            case GroupKey():
+                return record.key.name
             case FindingKey():
                 if value is None:
                     value = record.local if record.local is not None else record.unpacked
@@ -960,6 +1044,8 @@ class MergeUnpackedScreen(Screen[bool]):
                 metadata, _ = frontmatter.parse(value.decode("utf-8"))
                 name = metadata.get("name") or record.key.name
                 return str(name)
+            case FileKey():
+                return record.key.path.as_posix()
             case _:
                 assert_never(record.key)
 
@@ -967,20 +1053,31 @@ class MergeUnpackedScreen(Screen[bool]):
     def _record_label(cls, record: MergeRecord[MergeValue], value: MergeValue | None = None) -> str:
         kind, version = cls._record_type_version(record)
         summary = cls._record_summary(record, value)
-        if isinstance(record.key, FindingKey):
+        if isinstance(record.key, (GroupKey, FindingKey)):
             summary = f"{record.key.target.name} / {summary}"
         return f"{kind}: {version} / {summary}"
 
     def _status(self, record: MergeRecord[MergeValue]) -> MergeStatus:
-        """Effective status of a record: findings of an excluded target are excluded as well."""
+        """Effective status, including target and selected group exclusions."""
         return self.selection.effective_status(record)
 
     def _target_excluded(self, record: MergeRecord[MergeValue]) -> bool:
-        """Whether the record is a finding whose target is excluded, so its own selection can't be changed."""
+        """Whether the record is omitted by its target or selected group."""
         return self.selection.parent_excluded(record)
 
     def _status_label(self, record: MergeRecord[MergeValue]) -> str:
-        return self._status(record).value.capitalize()
+        """Show the selected project source or merge progress."""
+        match self._status(record):
+            case MergeStatus.INCLUDED:
+                return "Local" if record.in_local else "Unpacked"
+            case MergeStatus.EXCLUDED:
+                return "Unpacked" if record.in_local else "Local"
+            case MergeStatus.RESOLVED:
+                return "Merged"
+            case MergeStatus.IDENTICAL:
+                return "Identical"
+            case MergeStatus.CONFLICT:
+                return "Conflict"
 
     def _row_style(self, record: MergeRecord[MergeValue]) -> str:
         """Text style of a row, reflecting its effective status."""
@@ -993,36 +1090,45 @@ class MergeUnpackedScreen(Screen[bool]):
                 return ""
 
     def _build_tree_prefixes(self) -> dict[tuple[str, MergeKey], str]:
-        """Tree branch of each finding in each project."""
+        """Tree branches for each source's actual group membership."""
         prefixes: dict[tuple[str, MergeKey], str] = {}
         for source in ("local", "unpacked"):
-            present = [
-                record
-                for record in self.rows
-                if isinstance(record.key, FindingKey)
-                and (record.local if source == "local" else record.unpacked) is not None
-            ]
-            for index, record in enumerate(present):
-                is_last = index + 1 == len(present) or present[index + 1].parent_key != record.parent_key
-                prefixes[source, record.key] = "└─ " if is_last else "├─ "
+            for target in self.targets:
+                groups = [
+                    group
+                    for group in self.groups
+                    if group.parent_key == target.key
+                    and (group.local if source == "local" else group.unpacked) is not None
+                ]
+                for group_index, group in enumerate(groups):
+                    last_group = group_index == len(groups) - 1
+                    prefixes[source, group.key] = "└─ " if last_group else "├─ "
+                    findings = [
+                        finding
+                        for finding in self.findings
+                        if (finding.local_group if source == "local" else finding.unpacked_group) == group.key
+                    ]
+                    for index, finding in enumerate(findings):
+                        prefixes[source, finding.key] = ("   " if last_group else "│  ") + (
+                            "└─ " if index == len(findings) - 1 else "├─ "
+                        )
         return prefixes
 
-    def _record_cell(self, record: MergeRecord[MergeValue], source: Literal["local", "unpacked"]) -> Text:
+    def _record_cell(
+        self, record: MergeRecord[MergeValue], source: Literal["local", "unpacked"], group: GroupKey | None = None
+    ) -> Text:
         value = record.local if source == "local" else record.unpacked
-        if value is None:
+        source_group = record.local_group if source == "local" else record.unpacked_group
+        if value is None or (isinstance(record.key, FindingKey) and source_group != group):
             return _padded(Text("—", style="dim"))
         summary = self._record_summary(record, value)
-        if isinstance(record.key, FindingKey):
-            # Only indent the finding under a target which is present in the same project
-            target = self._targets_by_key.get(record.key.target)
-            if target is not None and (target.in_local if source == "local" else target.in_unpacked):
-                # Keep box-drawing glyphs out of the label's terminal text run.
-                return _padded(
-                    Text.assemble(
-                        Text(self._tree_prefixes[source, record.key], style="dim"),
-                        Text(summary, style=self._row_style(record)),
-                    )
+        if isinstance(record.key, (GroupKey, FindingKey)):
+            return _padded(
+                Text.assemble(
+                    Text(self._tree_prefixes[source, record.key], style="dim"),
+                    Text(summary, style=self._row_style(record)),
                 )
+            )
         return _padded(Text(summary, style=self._row_style(record)))
 
     def _version_cell(self, record: MergeRecord[MergeValue]) -> Text:
@@ -1038,12 +1144,10 @@ class MergeUnpackedScreen(Screen[bool]):
 
     def _action_label(self, record: MergeRecord[MergeValue]) -> str:
         if self._target_excluded(record):
-            return "Target excluded"
+            return "Parent omitted"
         match self.selection.status(record):
-            case MergeStatus.INCLUDED:
-                return "Exclude"
-            case MergeStatus.EXCLUDED:
-                return "Include"
+            case MergeStatus.INCLUDED | MergeStatus.EXCLUDED:
+                return "Swap src"
             case MergeStatus.CONFLICT:
                 return "Resolve"
             case MergeStatus.RESOLVED:
@@ -1057,10 +1161,10 @@ class MergeUnpackedScreen(Screen[bool]):
         The background is darkened when the row is highlighted.
         """
         label = self._action_label(record)
-        if label in ("", "Target excluded"):
+        if label in ("", "Parent omitted"):
             return Text(label.rjust(ACTION_COLUMN_WIDTH), style="dim italic")
         if label == "Resolve":
-            style = f"bold white on {'#5f0000' if highlighted else 'dark_red'}"
+            style = f"bold white on {'#420000' if highlighted else 'dark_red'}"
         else:
             style = f"bold white on {'#1d4766' if highlighted else '#1c74b2'}"
         return Text.assemble(
@@ -1069,7 +1173,7 @@ class MergeUnpackedScreen(Screen[bool]):
         )
 
     def _has_unresolved_conflicts(self) -> bool:
-        return self.selection.has_conflicts(self.rows)
+        return self.selection.has_conflicts(self.records)
 
     def _current_record(self) -> MergeRecord[MergeValue] | None:
         table = cast(DataTable[str | Text], self.query_one("#merge-table", DataTable))
@@ -1080,18 +1184,16 @@ class MergeUnpackedScreen(Screen[bool]):
     def _refresh_row(self, table: DataTable[str | Text], row_key: str, record: MergeRecord[MergeValue]) -> None:
         table.update_cell(row_key, "version", self._version_cell(record))
         table.update_cell(row_key, "type", self._type_cell(record))
-        table.update_cell(row_key, "local", self._record_cell(record, "local"))
-        table.update_cell(row_key, "unpacked", self._record_cell(record, "unpacked"))
+        group = self._row_groups.get(int(row_key))
+        table.update_cell(row_key, "local", self._record_cell(record, "local", group))
+        table.update_cell(row_key, "unpacked", self._record_cell(record, "unpacked", group))
         table.update_cell(row_key, "status", self._status_cell(record))
         table.update_cell(row_key, "action", self._action_cell(record, int(row_key) == table.cursor_row))
 
-    def _update_row(self, index: int, record: MergeRecord[MergeValue]) -> None:
+    def _update_rows(self) -> None:
         table = cast(DataTable[str | Text], self.query_one("#merge-table", DataTable))
-        row_key = str(index)
-        self._refresh_row(table, row_key, record)
-        for dependent_index, dependent in enumerate(self.rows):
-            if dependent.parent_key == record.key:
-                self._refresh_row(table, str(dependent_index), dependent)
+        for index, record in enumerate(self.rows):
+            self._refresh_row(table, str(index), record)
         self._update_apply_button()
 
     def _update_apply_button(self) -> None:
@@ -1107,25 +1209,36 @@ class MergeUnpackedScreen(Screen[bool]):
         if status is MergeStatus.IDENTICAL:
             return
         if self._target_excluded(record):
-            self.notify("Include the target before changing its findings.", severity="warning")
+            self.notify("Include the target or assigned group before changing this record.", severity="warning")
             return
         if status in (MergeStatus.INCLUDED, MergeStatus.EXCLUDED):
             # Toggle the status between INCLUDED and EXCLUDED
             self.selection.set_status(
                 record, MergeStatus.EXCLUDED if status is MergeStatus.INCLUDED else MergeStatus.INCLUDED
             )
-            self._update_row(self.rows.index(record), record)
+            self._update_rows()
             return
         if record.local is None or record.unpacked is None:
             return
         selected = self.selection.resolved_values.get(record.key)
         screen: ModalScreen[Any]
+        if isinstance(record.key, FindingKey) and record.local_group != record.unpacked_group:
+            chosen_group = self.selection.finding_group(record)
+            screen = ConflictResolutionScreen(
+                f"{self._record_label(record)} / Group Membership",
+                {"group": record.local_group.name} if record.local_group is not None else {},
+                {"group": record.unpacked_group.name} if record.unpacked_group is not None else {},
+                {"group": chosen_group.name} if chosen_group is not None else None,
+            )
+            self.app.push_screen(screen, lambda result: self._membership_finished(record, result))
+            return
         if isinstance(record.local, bytes) and isinstance(record.unpacked, bytes):
-            screen = FindingConflictScreen(
+            screen = FileConflictScreen(
                 self._record_label(record),
                 record.local,
                 record.unpacked,
                 selected if isinstance(selected, bytes) else None,
+                file_path=record.key.path if isinstance(record.key, FileKey) else None,
             )
         elif isinstance(record.local, dict) and isinstance(record.unpacked, dict):
             screen = ConflictResolutionScreen(
@@ -1138,14 +1251,50 @@ class MergeUnpackedScreen(Screen[bool]):
             return
         self.app.push_screen(screen, lambda result: self._resolution_finished(record, result))
 
-    def _resolution_finished(self, record: MergeRecord[MergeValue], selected: MergeValue | None) -> None:
+    def _membership_finished(self, record: MergeRecord[MergeValue], selected: dict[str, Any] | None) -> None:
+        if selected is None:
+            return
+        group = next(
+            (
+                group
+                for group in (record.local_group, record.unpacked_group)
+                if group is not None and group.name == selected.get("group")
+            ),
+            None,
+        )
+        if group is None:
+            self.notify("Choose a local or unpacked group for the finding.", severity="error")
+            return
+        if not isinstance(record.local, bytes) or not isinstance(record.unpacked, bytes):
+            raise TypeError(f"Expected finding content for {record.key!r}")
+        if record.local == record.unpacked:
+            self._resolution_finished(record, record.local, group=group)
+            return
+        value = self.selection.resolved_values.get(record.key)
+        self.app.push_screen(
+            FileConflictScreen(
+                self._record_label(record),
+                record.local,
+                record.unpacked,
+                value if isinstance(value, bytes) else None,
+            ),
+            lambda result: self._resolution_finished(record, result, group=group),
+        )
+
+    def _resolution_finished(
+        self,
+        record: MergeRecord[MergeValue],
+        selected: MergeValue | None,
+        *,
+        group: GroupKey | None = None,
+    ) -> None:
         if selected is not None:
             try:
-                self.selection.resolve(record, selected)
+                self.selection.resolve(record, selected, group=group)
             except (ValueError, TypeError) as exc:
-                self.notify(f"Could not resolve record: {exc}", severity="error", timeout=10)
+                self.notify(f"Could not resolve record: {exc}", severity="error", timeout=10, markup=False)
                 return
-            self._update_row(self.rows.index(record), record)
+            self._update_rows()
 
     @on(MergeComparisonTable.ActionClicked)
     def action_clicked(self) -> None:
@@ -1167,7 +1316,15 @@ class MergeUnpackedScreen(Screen[bool]):
         record = self._current_record()
         if record is None:
             return
-        self.app.push_screen(RecordDetailScreen(self._record_label(record), record.local, record.unpacked))
+        self.app.push_screen(
+            RecordDetailScreen(
+                self._record_label(record),
+                record.local,
+                record.unpacked,
+                local_group=record.local_group.name if record.local_group is not None else None,
+                unpacked_group=record.unpacked_group.name if record.unpacked_group is not None else None,
+            )
+        )
 
     def action_submit(self) -> None:
         if self._has_unresolved_conflicts():
@@ -1177,11 +1334,13 @@ class MergeUnpackedScreen(Screen[bool]):
             apply_entity_merge(
                 self.local_dir,
                 self.unpacked_dir,
-                self.rows,
+                self.records,
                 self.selection,
             )
         except (OSError, ValueError, TypeError) as exc:
-            self.notify(f"Could not apply merge: {exc}", severity="error", timeout=10)
+            message = f"Could not apply merge: {exc}"
+            self.query_one("#merge-status", Static).update(Text(message, style="bold red"))
+            self.notify(message, severity="error", timeout=10, markup=False)
             return
         self.dismiss(True)
 
@@ -1189,7 +1348,7 @@ class MergeUnpackedScreen(Screen[bool]):
         self.dismiss(False)
 
     def action_all(self, source: Literal["local", "unpacked"]) -> None:
-        self.selection.resolve_all_as(self.rows, source)
+        self.selection.resolve_all_as(self.records, source)
         self._populate_table()
         self._update_apply_button()
 
