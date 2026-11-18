@@ -1933,6 +1933,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.exceptions.SeretoConflictError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SeretoConflictError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.exceptions.SeretoDecryptionError" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2706,6 +2717,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sereto.exceptions.SeretoConflictError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SeretoConflictError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sereto.exceptions.SeretoDecryptionError" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2879,9 +2901,47 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>sereto/exceptions.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoCalledProcessError</span><span class="p">(</span><span class="n">SeretoException</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
+<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoCalledProcessError</span><span class="p">(</span><span class="n">SeretoException</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Called process error."""</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="sereto.exceptions.SeretoConflictError" class="doc doc-heading">
+            <code>SeretoConflictError</code>
+
+
+<a href="#sereto.exceptions.SeretoConflictError" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="SeretoException (sereto.exceptions.SeretoException)" href="#sereto.exceptions.SeretoException">SeretoException</a></code></p>
+
+
+
+        <p>A file changed on disk since it was loaded, so saving it would overwrite those changes.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>sereto/exceptions.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SeretoConflictError</span><span class="p">(</span><span class="n">SeretoException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A file changed on disk since it was loaded, so saving it would overwrite those changes."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3172,11 +3232,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/exceptions.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
@@ -3193,7 +3249,11 @@
 <span class="normal">59</span>
 <span class="normal">60</span>
 <span class="normal">61</span>
-<span class="normal">62</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_exceptions</span><span class="p">[</span><span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">](</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]:</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_exceptions</span><span class="p">[</span><span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">](</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Decorator for pretty printing SeReTo exceptions."""</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>

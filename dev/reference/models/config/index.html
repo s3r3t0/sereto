@@ -1460,6 +1460,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#sereto.models.config.ConfigModel.load_with_content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_with_content
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2659,6 +2670,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#sereto.models.config.ConfigModel.load_with_content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_with_content
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2830,7 +2852,25 @@
 <span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
-<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConfigModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ConfigModel</span><span class="p">(</span><span class="n">SeretoBaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Model representing the full project configuration in config.json file.</span>
 
 <span class="sd">    Attributes:</span>
@@ -2856,8 +2896,26 @@
 <span class="sd">            SeretoPathError: If the file is not found or permission is denied.</span>
 <span class="sd">            SeretoValueError: If the configuration is invalid.</span>
 <span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_with_content</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@validate_call</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_with_content</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Load the configuration from a JSON file, together with the exact file content it was parsed from.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file: The path to the configuration file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The configuration object and the file content.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SeretoPathError: If the file is not found or permission is denied.</span>
+<span class="sd">            SeretoValueError: If the configuration is invalid.</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">content</span><span class="p">),</span> <span class="n">content</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file not found at '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="k">except</span> <span class="ne">PermissionError</span><span class="p">:</span>
@@ -3002,14 +3060,7 @@
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="nd">@validate_call</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Load the configuration from a JSON file.</span>
@@ -3024,8 +3075,161 @@
 <span class="sd">        SeretoPathError: If the file is not found or permission is denied.</span>
 <span class="sd">        SeretoValueError: If the configuration is invalid.</span>
 <span class="sd">    """</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">load_with_content</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="sereto.models.config.ConfigModel.load_with_content" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">load_with_content</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#sereto.models.config.ConfigModel.load_with_content" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load the configuration from a JSON file, together with the exact file content it was parsed from.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="pydantic.FilePath" href="https://docs.pydantic.dev/latest/api/pydantic/types/#pydantic.types.FilePath">FilePath</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the configuration file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes">bytes</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The configuration object and the file content.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="SeretoPathError (sereto.exceptions.SeretoPathError)" href="../../exceptions/#sereto.exceptions.SeretoPathError">SeretoPathError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the file is not found or permission is denied.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="SeretoValueError (sereto.exceptions.SeretoValueError)" href="../../exceptions/#sereto.exceptions.SeretoValueError">SeretoValueError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the configuration is invalid.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>sereto/models/config.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="nd">@validate_call</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_with_content</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Load the configuration from a JSON file, together with the exact file content it was parsed from.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file: The path to the configuration file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The configuration object and the file content.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        SeretoPathError: If the file is not found or permission is denied.</span>
+<span class="sd">        SeretoValueError: If the configuration is invalid.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">content</span><span class="p">),</span> <span class="n">content</span>
     <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">SeretoPathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file not found at '</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
     <span class="k">except</span> <span class="ne">PermissionError</span><span class="p">:</span>
