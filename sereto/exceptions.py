@@ -34,6 +34,10 @@ class SeretoValueError(SeretoException, ValueError):
     """Value error."""
 
 
+class SeretoConflictError(SeretoException):
+    """A file changed on disk since it was loaded, so saving it would overwrite those changes."""
+
+
 class SeretoCalledProcessError(SeretoException):
     """Called process error."""
 

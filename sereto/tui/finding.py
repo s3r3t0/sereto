@@ -448,8 +448,18 @@ class AddSubFindingScreen(ModalScreen[None]):
         # - risk
         risk_select = cast(Select[str], self.select_risk.query_one(Select))
         risk = Risk(risk_select.value.lower()) if not isinstance(risk_select.value, NoSelection) else None
-        # - target
-        target = self._retrieve_target()
+        # - target (looked up again, as the project may have been reloaded since the dialog was opened)
+        try:
+            target = self._retrieve_target()
+        except SeretoValueError:
+            self.notify(
+                "The selected target no longer exists, it was probably changed outside of the TUI. "
+                "Select another target.",
+                title="Target not found",
+                severity="error",
+                markup=False,
+            )
+            return
         # - Finding Group
         selected_group: str | None = None
         group_name: str | None = None
@@ -476,17 +486,21 @@ class AddSubFindingScreen(ModalScreen[None]):
             return
 
         # Create the sub-finding
-        target.findings.add_from_template(
-            templates=self.templates,
-            template_path=self.finding.path,
-            category=self.finding.category.lower(),
-            sub_finding_name=sub_finding_name,
-            risk=risk,
-            variables=variables,
-            overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
-            group_uname=selected_group,
-            group_name=group_name,
-        )
+        try:
+            target.findings.add_from_template(
+                templates=self.templates,
+                template_path=self.finding.path,
+                category=self.finding.category.lower(),
+                sub_finding_name=sub_finding_name,
+                risk=risk,
+                variables=variables,
+                overwrite=self.overwrite_switch.display and self.overwrite_switch.value,
+                group_uname=selected_group,
+                group_name=group_name,
+            )
+        except Exception as ex:
+            self.notify(title="Failed to add sub-finding", message=str(ex), severity="error", markup=False)
+            return
 
         # Navigate back, focus on the search input field
         self.dismiss()

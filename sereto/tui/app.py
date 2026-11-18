@@ -16,7 +16,7 @@ import asyncio
 import json
 import shutil
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar, Literal, cast
@@ -31,7 +31,10 @@ from textual import events, on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.message import Message
+from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
+from textual.timer import Timer
 from textual.types import NoSelection
 from textual.widget import Widget
 from textual.widgets import (
@@ -53,20 +56,41 @@ from textual.widgets import (
 from sereto.config import VersionConfig
 from sereto.enums import Environment, Risk, TargetExposure
 from sereto.exceptions import SeretoPathError, SeretoValueError
+from sereto.models.config import ConfigModel
 from sereto.models.date import TYPES_WITH_ALLOWED_RANGE, Date, DateRange, DateType, SeretoDate
 from sereto.models.locator import get_locator_types
 from sereto.models.person import Person, PersonType
 from sereto.models.settings import Settings
 from sereto.models.target import TargetDastModel, TargetMobileModel, TargetModel, TargetSastModel
+from sereto.models.version import ProjectVersion
 from sereto.project import Project, is_project_dir, new_project
 from sereto.retest import add_retest
 from sereto.sereto_types import TypeProjectId
 from sereto.settings import load_settings_function
 from sereto.target import Target
 from sereto.tui.finding import SearchWidget
+from sereto.tui.snapshot import ProjectSnapshot
+from sereto.tui.watcher import ProjectsDirWatcher, ProjectWatcher
 from sereto.tui.widgets.input import InputWithLabel
 
 _PROJECT_ID_ADAPTER = TypeAdapter(TypeProjectId)
+
+
+RELOAD_DEBOUNCE = 0.2
+"""Seconds without further file-system changes before the TUI reloads (coalesces bursts of events into one reload)."""
+
+
+class ProjectFilesChanged(Message, bubble=False):
+    """Posted to the app (from the watcher thread) when files of the watched project changed."""
+
+    def __init__(self, path: Path) -> None:
+        super().__init__()
+        self.path = path
+
+
+class ProjectsDirChanged(Message, bubble=False):
+    """Posted to the app (from the watcher thread) when a project was added to, removed from or renamed in the
+    projects directory, or the identity files (e.g. `config.json` with the ID and name) of any project changed."""
 
 
 # ── Parent screen for poppable screens ─────────────────────────────────────────
@@ -977,15 +1001,22 @@ class ConfigScreen(_PoppableScreen):
     # e.g. `sereto config targets add` → launch_tui(entry_point="targets").
     TABS: ClassVar[frozenset[str]] = frozenset({"targets", "dates", "people"})
 
+    _GENERAL_INPUTS: ClassVar[tuple[str, ...]] = ("#cfg-id", "#cfg-name", "#cfg-version-desc")
+
     def __init__(self, initial_tab: str | None = None, selected_record_row: Horizontal | None = None) -> None:
         super().__init__()
         self._initial_tab = initial_tab
         self._selected_record_row = selected_record_row
         self._record_rows: dict[str, list[Horizontal]] = {}
+        # The version whose configuration is displayed (the app's selected version may change on reload)
+        self._shown_version: str | None = None
+        self._record_dialog: (
+            tuple[DeleteConfirmationScreen | ConfigRecordFormScreen, TargetModel | Date | Person, str | None] | None
+        ) = None
 
     @property
     def _active_vc(self) -> VersionConfig:
-        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        return self.app.project.config.at_version(self.app.selected_project_version)  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
     @property
     def _active_tab(self) -> str:
@@ -1064,9 +1095,89 @@ class ConfigScreen(_PoppableScreen):
         if tab is not None:
             self.query_one("#config-tabs", TabbedContent).active = tab
         # Load project's configuration data
+        self._shown_version = app.selected_project_version
+        self._general_values = self._current_general_values()
         self._refresh_targets()
         self._refresh_dates()
         self._refresh_people()
+        self.watch(app, "project_revision", self._on_project_reloaded, init=False)
+
+    def _current_general_values(self) -> dict[str, str]:
+        vc = self._active_vc
+        return dict(zip(self._GENERAL_INPUTS, (vc.id, vc.name, vc.version_description), strict=True))
+
+    def _on_project_reloaded(self) -> None:
+        """Show the re-read configuration, keeping the selected record and unsaved edits in the General tab.
+
+        If the displayed version no longer exists (the app then selects another one), the unsaved edits and the
+        selection belong to the removed version, so they are discarded instead.
+        """
+        version_changed = self.app.selected_project_version != self._shown_version  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
+        self._shown_version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
+        self._close_stale_record_dialog()
+        new_values = self._current_general_values()
+        for selector, new_value in new_values.items():
+            input_widget = self.query_one(selector, Input)
+            # Compare the current input value with its latest snapshot
+            if version_changed or input_widget.value == self._general_values.get(selector):
+                # Only overwrite inputs the user has not edited yet
+                input_widget.value = new_value
+        self._general_values = new_values
+
+        # Re-select the same record by identity, not position: external edits may insert/remove records before it.
+        # If the record was removed (or cannot be identified), nothing is selected.
+        selected = self._selected_record_row
+        selected_key = None
+        if isinstance(selected, (_TargetRow, _DateRow, _PersonRow)) and not version_changed:
+            selected_key = selected.record_key
+        self._selected_record_row = None
+        self._refresh_targets()
+        self._refresh_dates()
+        self._refresh_people()
+        if selected_key is not None:
+            for row in self._record_rows.get(self._active_tab, []):
+                if isinstance(row, (_TargetRow, _DateRow, _PersonRow)) and row.record_key == selected_key:
+                    self.select_record(row)
+                    break
+
+    def _track_record_dialog(
+        self,
+        dialog: DeleteConfirmationScreen | ConfigRecordFormScreen,
+        original: TargetModel | Date | Person | None,
+    ) -> None:
+        self._record_dialog = (dialog, original, self._shown_version) if original is not None else None
+
+    def _close_stale_record_dialog(self) -> None:
+        if self._record_dialog is None:
+            return
+        dialog, original, version = self._record_dialog
+        if dialog not in self.app.screen_stack:
+            self._record_dialog = None
+            return
+        version_changed = version != self._shown_version
+        if not version_changed:
+            records: Iterable[TargetModel | Date | Person]
+            if isinstance(original, TargetModel):
+                records = (target.data for target in self._active_vc.targets)
+            elif isinstance(original, Date):
+                records = self._active_vc.dates
+            else:
+                records = self._active_vc.people
+            if any(record == original for record in records):
+                # The record still exists unchanged – no need to close the dialog
+                return
+
+        self._record_dialog = None
+        dialog.dismiss(None)
+        self.notify(
+            "The dialog was closed because its version is no longer displayed. Nothing was changed."
+            if version_changed
+            else "The dialog was closed because the record was changed or removed outside of the TUI. "
+            "Nothing was changed.",
+            title="Version changed" if version_changed else "Record changed",
+            severity="warning",
+            timeout=5,
+        )
 
     # ── Button handlers ────────────────────────────────────────────────────────
     @on(Button.Pressed, "#save-general")
@@ -1085,49 +1196,97 @@ class ConfigScreen(_PoppableScreen):
         elif tab_name == "people":
             self._open_person_form()
 
+    @staticmethod
+    def _row_of(widget: Widget) -> _TargetRow | _DateRow | _PersonRow | None:
+        """Return the record row containing *widget* (e.g. its Edit/Remove button)."""
+        for node in widget.ancestors:
+            if isinstance(node, (_TargetRow, _DateRow, _PersonRow)):
+                return node
+        return None
+
+    # Rows and dialogs refer to a record by its value, not its position: the project may be reloaded (e.g. after an
+    # external change) while a dialog is open, shifting positions. The record is looked up again before changing it.
+    def _is_version_shown(self, version: str | None) -> bool:
+        """Check that a dialog opened for *version* still applies to the displayed version (notify if not)."""
+        if version == self._shown_version:
+            return True
+        self.notify(
+            f"Version {version} is no longer displayed. Nothing was changed.",
+            title="Version changed",
+            severity="warning",
+            timeout=5,
+        )
+        return False
+
+    def _locate[T](self, records: Iterable[T], original: T, kind: str) -> int | None:
+        """Return the current (1-based) position of the record equal to *original*.
+
+        Returns `None` (and notifies) if the record was changed or removed in the meantime, so nothing is modified.
+        """
+        for index, record in enumerate(records, start=1):
+            if record == original:
+                return index
+        self.notify(
+            f"The {kind} was changed or removed outside of the TUI in the meantime. Nothing was changed.",
+            title="Record changed",
+            severity="warning",
+            timeout=5,
+        )
+        return None
+
+    def _save_failed(self, exc: Exception, title: str) -> None:
+        """Report a failed save and re-read the project, discarding the unsaved in-memory changes.
+
+        This also picks up external changes if the save was rejected because the file changed on disk.
+        """
+        self.notify(str(exc), title=title, severity="error", markup=False)
+        cast(SeretoUnifiedApp, self.app).reload_project()
+
     @on(Button.Pressed, ".config-ppl-remove-btn, .config-targets-remove-btn, .config-date-remove-btn")
     def handle_remove(self, event: Button.Pressed) -> None:
         event.button.focus()
-        kind, index = (event.button.id or "").removeprefix("remove-").split("-", maxsplit=1)
-        self._remove_record(kind, int(index))
+        row = self._row_of(event.button)
+        if row is not None:
+            self._confirm_remove(row)
 
-    def _remove_record(self, kind: str, index: int) -> None:
-        self._confirm_remove(kind, index)
+    def _confirm_remove(self, row: _TargetRow | _DateRow | _PersonRow) -> None:
+        """Push a Yes/No confirmation, then delete the row's record on confirm."""
+        version = self._shown_version
 
-    def _confirm_remove(self, kind: str, index: int) -> None:
-        """Push a Yes/No confirmation, then delete the record of *kind* at *index* on confirm."""
-        handler_map = {
-            "target": self._do_remove_target,
-            "date": self._do_remove_date,
-            "person": self._do_remove_person,
-        }
-        handler = handler_map[kind]
-        self.app.push_screen(
-            DeleteConfirmationScreen(f"Remove this {kind}?"),
-            callback=lambda confirmed, i=index, h=handler: h(i) if confirmed else None,
-        )
+        def on_confirm(confirmed: bool | None) -> None:
+            if not confirmed:
+                return
+            if isinstance(row, _TargetRow):
+                self._do_remove_target(row.record.data, version)
+            elif isinstance(row, _DateRow):
+                self._do_remove_date(row.record, version)
+            else:
+                self._do_remove_person(row.record, version)
+
+        dialog = DeleteConfirmationScreen(f"Remove this {row.kind}?")
+        self._track_record_dialog(dialog, row.record.data if isinstance(row, _TargetRow) else row.record)
+        self.app.push_screen(dialog, callback=on_confirm)
 
     @on(Button.Pressed, ".config-ppl-edit-btn, .config-targets-edit-btn, .config-date-edit-btn")
     def handle_edit(self, event: Button.Pressed) -> None:
         event.button.focus()
-        kind, index = (event.button.id or "").removeprefix("edit-").split("-", maxsplit=1)
-        self._edit_record(kind, int(index))
+        row = self._row_of(event.button)
+        if row is not None:
+            self._edit_row(row)
 
-    def _edit_record(self, kind: str, index: int) -> None:
-        handler_map = {
-            "target": self._open_target_form,
-            "date": self._open_date_form,
-            "person": self._open_person_form,
-        }
-        handler_map[kind](index)
+    def _edit_row(self, row: _TargetRow | _DateRow | _PersonRow) -> None:
+        if isinstance(row, _TargetRow):
+            self._open_target_form(row.record)
+        elif isinstance(row, _DateRow):
+            self._open_date_form(row.record)
+        else:
+            self._open_person_form(row.record)
 
     def view_record(self, row: _TargetRow | _DateRow | _PersonRow) -> None:
         if isinstance(row, _TargetRow):
-            self.show_target_detail(self._active_vc.targets[row.index - 1])
+            self.show_target_detail(row.record)
         elif isinstance(row, _PersonRow):
-            self.show_person_detail(self._active_vc.people[row.index - 1])
-        else:
-            return
+            self.show_person_detail(row.record)
 
     def select_record(self, row: Horizontal) -> None:
         self.query(".target-row.selected, .date-row.selected, .person-row.selected").remove_class("selected")
@@ -1206,23 +1365,29 @@ class ConfigScreen(_PoppableScreen):
         self._record_rows["tab-people"] = rows
 
     # ── Targets tab actions ────────────────────────────────────────────────────
-    def _open_target_form(self, index: int | None = None) -> None:
-        target = self._active_vc.targets[index - 1] if index is not None else None
-        initial = _TargetFormData(target.data) if target is not None else None
+    def _open_target_form(self, target: Target | None = None) -> None:
+        original = target.data if target is not None else None
+        initial = _TargetFormData(original) if original is not None else None
+        version = self._shown_version
         app: SeretoUnifiedApp = self.app  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+        dialog = ConfigRecordFormScreen("target", categories=app.categories, initial=initial)
+        self._track_record_dialog(dialog, original)
         self.app.push_screen(
-            ConfigRecordFormScreen("target", categories=app.categories, initial=initial),
-            callback=lambda result: self._save_target(result, index),
+            dialog,
+            callback=lambda result: self._save_target(result, original, version),
         )
 
-    def _save_target(self, result: _ConfigFormData | None, index: int | None) -> None:
-        if not isinstance(result, _TargetFormData):
+    def _save_target(self, result: _ConfigFormData | None, original: TargetModel | None, version: str | None) -> None:
+        if not isinstance(result, _TargetFormData) or not self._is_version_shown(version):
             return
         target_model = result.model
 
-        if index is not None:
-            project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        if original is not None:
+            project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             vc = self._active_vc
+            index = self._locate((t.data for t in vc.targets), original, "target")
+            if index is None:
+                return
             target = vc.targets[index - 1]
             old_path = target.path
             new_path = old_path.parent / (target_model.uname + target.version.path_suffix)
@@ -1275,7 +1440,7 @@ class ConfigScreen(_PoppableScreen):
                             severity="error",
                             markup=False,
                         )
-                self.notify(str(exc), title="Failed to update target", severity="error", markup=False)
+                self._save_failed(exc, "Failed to update target")
                 return
 
             self._refresh_targets()
@@ -1286,20 +1451,19 @@ class ConfigScreen(_PoppableScreen):
                     break
             return
 
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
         try:
             new_target = Target.new(
                 data=target_model,
                 project_path=project.path,
                 templates=project.settings.templates_path,
-                version=version,
+                version=self._active_vc.version,
             )
             self._active_vc.add_target(new_target)
             project.config.save()
         except Exception as exc:
-            self.notify(str(exc), title="Failed to create target", severity="error", markup=False)
+            self._save_failed(exc, "Failed to create target")
             return
 
         self._refresh_targets()
@@ -1311,12 +1475,17 @@ class ConfigScreen(_PoppableScreen):
                 screen.refresh_content()
                 break
 
-    def _do_remove_target(self, index: int) -> None:
+    def _do_remove_target(self, original: TargetModel, version: str | None) -> None:
+        if not self._is_version_shown(version):
+            return
+        vc = self._active_vc
+        index = self._locate((t.data for t in vc.targets), original, "target")
+        if index is None:
+            return
         try:
-            vc = self._active_vc
             target_path = vc.targets[index - 1].path
             vc.delete_target(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             if target_path.is_dir():
                 shutil.rmtree(target_path)
             self._selected_record_row = None
@@ -1328,7 +1497,7 @@ class ConfigScreen(_PoppableScreen):
                     screen.refresh_content()
                     break
         except Exception as exc:
-            self.notify(str(exc), title="Failed to remove target", severity="error", markup=False)
+            self._save_failed(exc, "Failed to remove target")
 
     # ── General tab actions ────────────────────────────────────────────────────
     def _do_save_general(self) -> None:
@@ -1357,7 +1526,10 @@ class ConfigScreen(_PoppableScreen):
         vc.version_description = desc_val
 
         try:
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
+            self._general_values = self._current_general_values()
+            for selector, value in self._general_values.items():
+                self.query_one(selector, Input).value = value
             self.notify("General settings saved.", timeout=3)
             # Update the project select options to reflect the new name/ID
             for screen in self.app.screen_stack:
@@ -1366,26 +1538,28 @@ class ConfigScreen(_PoppableScreen):
                     break
 
         except Exception as exc:
-            self.notify(str(exc), title="Save failed", severity="error", markup=False)
+            self._save_failed(exc, "Save failed")
 
     # ── Dates tab actions ──────────────────────────────────────────────────────
-    def _open_date_form(self, index: int | None = None) -> None:
+    def _open_date_form(self, date: Date | None = None) -> None:
         initial: _DateFormData | None = None
-        if index is not None:
-            date = self._active_vc.dates[index - 1]
+        version = self._shown_version
+        if date is not None:
             match date.date:
                 case DateRange():
                     start, end = str(date.date.start), str(date.date.end)
                 case _:
                     start, end = str(date.date), ""
             initial = _DateFormData(date.type, start, end)
+        dialog = ConfigRecordFormScreen("date", initial=initial)
+        self._track_record_dialog(dialog, date)
         self.app.push_screen(
-            ConfigRecordFormScreen("date", initial=initial),
-            callback=lambda result: self._save_date(result, index),
+            dialog,
+            callback=lambda result: self._save_date(result, date, version),
         )
 
-    def _save_date(self, result: _ConfigFormData | None, index: int | None) -> None:
-        if not isinstance(result, _DateFormData):
+    def _save_date(self, result: _ConfigFormData | None, original: Date | None, version: str | None) -> None:
+        if not isinstance(result, _DateFormData) or not self._is_version_shown(version):
             return
         if not result.start:
             self.notify("Start date is required.", severity="warning", timeout=3)
@@ -1415,30 +1589,45 @@ class ConfigScreen(_PoppableScreen):
 
         try:
             new_date = Date(type=result.type, date=date_value)
+        except Exception as exc:
+            self.notify(str(exc), title="Failed to save date", severity="error", markup=False)
+            return
+
+        index = None
+        if original is not None:
+            index = self._locate(self._active_vc.dates, original, "date")
+            if index is None:
+                return
+        try:
             if index is not None:
                 self._active_vc.dates[index - 1] = new_date
             else:
                 self._active_vc.add_date(new_date)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         except Exception as exc:
-            self.notify(str(exc), title="Failed to save date", severity="error", markup=False)
+            self._save_failed(exc, "Failed to save date")
             return
 
         self._refresh_dates()
         self.notify("Date updated." if index is not None else "Date added.", timeout=3)
 
-    def _do_remove_date(self, index: int) -> None:
+    def _do_remove_date(self, original: Date, version: str | None) -> None:
+        if not self._is_version_shown(version):
+            return
+        index = self._locate(self._active_vc.dates, original, "date")
+        if index is None:
+            return
         try:
             self._active_vc.delete_date(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             self._refresh_dates()
             self.notify("Date removed.", timeout=3)
         except Exception as exc:
-            self.notify(str(exc), title="Failed to remove date", severity="error", markup=False)
+            self._save_failed(exc, "Failed to remove date")
 
     # ── People tab actions ─────────────────────────────────────────────────────
-    def _open_person_form(self, index: int | None = None) -> None:
-        person = self._active_vc.people[index - 1] if index is not None else None
+    def _open_person_form(self, person: Person | None = None) -> None:
+        version = self._shown_version
         initial = (
             _PersonFormData(
                 person.type,
@@ -1450,13 +1639,15 @@ class ConfigScreen(_PoppableScreen):
             if person is not None
             else None
         )
+        dialog = ConfigRecordFormScreen("person", initial=initial)
+        self._track_record_dialog(dialog, person)
         self.app.push_screen(
-            ConfigRecordFormScreen("person", initial=initial),
-            callback=lambda result: self._save_person(result, index),
+            dialog,
+            callback=lambda result: self._save_person(result, person, version),
         )
 
-    def _save_person(self, result: _ConfigFormData | None, index: int | None) -> None:
-        if not isinstance(result, _PersonFormData):
+    def _save_person(self, result: _ConfigFormData | None, original: Person | None, version: str | None) -> None:
+        if not isinstance(result, _PersonFormData) or not self._is_version_shown(version):
             return
 
         try:
@@ -1467,26 +1658,41 @@ class ConfigScreen(_PoppableScreen):
                 email=result.email or None,
                 role=result.role or None,
             )
+        except Exception as exc:
+            self.notify(str(exc), title="Failed to save person", severity="error", markup=False)
+            return
+
+        index = None
+        if original is not None:
+            index = self._locate(self._active_vc.people, original, "person")
+            if index is None:
+                return
+        try:
             if index is not None:
                 self._active_vc.people[index - 1] = new_person
             else:
                 self._active_vc.add_person(new_person)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         except Exception as exc:
-            self.notify(str(exc), title="Failed to save person", severity="error", markup=False)
+            self._save_failed(exc, "Failed to save person")
             return
 
         self._refresh_people()
         self.notify("Person updated." if index is not None else "Person added.", timeout=3)
 
-    def _do_remove_person(self, index: int) -> None:
+    def _do_remove_person(self, original: Person, version: str | None) -> None:
+        if not self._is_version_shown(version):
+            return
+        index = self._locate(self._active_vc.people, original, "person")
+        if index is None:
+            return
         try:
             self._active_vc.delete_person(index)
-            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+            self.app.project.config.save()  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
             self._refresh_people()
             self.notify("Person removed.", timeout=3)
         except Exception as exc:
-            self.notify(str(exc), title="Failed to remove person", severity="error", markup=False)
+            self._save_failed(exc, "Failed to remove person")
 
     # ── Actions ───────────────────────────────────────────────────────────────
     def action_add_new(self) -> None:
@@ -1534,12 +1740,12 @@ class ConfigScreen(_PoppableScreen):
     def action_edit_selected(self) -> None:
         row = self._selected_record_row
         if isinstance(row, (_TargetRow, _DateRow, _PersonRow)):
-            self._edit_record(row.kind, row.index)
+            self._edit_row(row)
 
     def action_remove_selected(self) -> None:
         row = self._selected_record_row
         if isinstance(row, (_TargetRow, _DateRow, _PersonRow)):
-            self._remove_record(row.kind, row.index)
+            self._confirm_remove(row)
 
     def action_view_selected(self) -> None:
         row = self._selected_record_row
@@ -1584,6 +1790,16 @@ class _DateRow(Horizontal):
     @property
     def kind(self) -> str:
         return "date"
+
+    @property
+    def record(self) -> Date:
+        """The record as displayed (it may differ from the current configuration after a reload)."""
+        return self._date
+
+    @property
+    def record_key(self) -> tuple[str, object] | None:
+        """Identifies the record within a version config, independently of its position (dates are unique by type)."""
+        return (self.kind, self._date.type)
 
     def compose(self) -> ComposeResult:
         type_label = self._date.type.value.replace("_", " ").title()
@@ -1638,6 +1854,16 @@ class _TargetRow(Horizontal):
     def kind(self) -> str:
         return "target"
 
+    @property
+    def record(self) -> Target:
+        """The record as displayed (it may differ from the current configuration after a reload)."""
+        return self._target
+
+    @property
+    def record_key(self) -> tuple[str, object] | None:
+        """Identifies the record within a version config, independently of its position (by category and name)."""
+        return (self.kind, (self._target.data.category, self._target.data.name))
+
     def compose(self) -> ComposeResult:
         yield _NonSelectableStatic(
             f"[cyan]{self._target.data.category.upper()}[/cyan]", classes="target-category", markup=True
@@ -1685,6 +1911,16 @@ class _PersonRow(Horizontal):
     @property
     def kind(self) -> str:
         return "person"
+
+    @property
+    def record(self) -> Person:
+        """The record as displayed (it may differ from the current configuration after a reload)."""
+        return self._person
+
+    @property
+    def record_key(self) -> tuple[str, object] | None:
+        """Identifies the record within a version config by email; `None` if the person has no email."""
+        return (self.kind, self._person.email) if self._person.email else None
 
     def compose(self) -> ComposeResult:
         type_label = self._person.type.value.replace("_", " ").title()
@@ -1748,10 +1984,12 @@ class RenderScreen(_PoppableScreen):
 
     def on_mount(self) -> None:
         self._last_pdf: Path | None = None
+        self._preferred_group: str | None = None
         self.query_one("#render-log", RichLog).write("[dim]Select a render action above.[/dim]")
         self._reload_fg_selectors()
         # Initially hide the finding group filters
         self.query_one("#fg-filters", Vertical).display = False
+        self.watch(self.app, "project_revision", self._on_project_reloaded, init=False)
 
     # ── helpers ───────────────────────────────────────────────────────────────
     def _log(self, text: str) -> None:
@@ -1770,14 +2008,29 @@ class RenderScreen(_PoppableScreen):
         ):
             self.query_one(btn_id, Button).disabled = disabled
 
-    def _reload_fg_selectors(self) -> None:
-        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+    def _reload_fg_selectors(self) -> list[str]:
+        """Repopulate the target filter (clearing the selection) and return the available target unames."""
+        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         target_options = [(f"{t.data.category.upper()}  {t.data.name}", t.data.uname) for t in targets]
         target_select = self.query_one("#fg-target-select", Select)
         fg_select = self.query_one("#fg-group-select", Select)
         target_select.set_options(target_options)
         target_select.clear()
         fg_select.set_options([])
+        return [uname for _, uname in target_options]
+
+    def _on_project_reloaded(self) -> None:
+        """Refresh the finding group filters, keeping the current selection where it still exists."""
+        target_select = self.query_one("#fg-target-select", Select)
+        fg_select = self.query_one("#fg-group-select", Select)
+        prev_target = target_select.value
+        self._preferred_group = None if isinstance(fg_select.value, NoSelection) else str(fg_select.value)
+        target_unames = self._reload_fg_selectors()
+        # If user had previously selected a target and it still exists, re-select it
+        if not isinstance(prev_target, NoSelection) and prev_target in target_unames:
+            target_select.value = prev_target  # on_fg_target_changed then repopulates the groups
+        else:
+            self._preferred_group = None
 
     @on(Select.Changed, "#fg-target-select")
     def on_fg_target_changed(self, event: Select.Changed) -> None:
@@ -1785,7 +2038,8 @@ class RenderScreen(_PoppableScreen):
         if isinstance(event.value, NoSelection):
             fg_select.set_options([])
             return
-        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        preferred_group, self._preferred_group = self._preferred_group, None
+        targets = self.app.project.config.at_version(self.app.selected_project_version).targets  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         target_uname = str(event.value)
         target = next((t for t in targets if t.data.uname == target_uname), None)
         if target is None:
@@ -1793,8 +2047,11 @@ class RenderScreen(_PoppableScreen):
             return
         fg_options = [(g.name, g.uname) for g in target.findings.groups]
         fg_select.set_options(fg_options)
+        # If the previously selected group still exists, select it
+        if preferred_group is not None and any(uname == preferred_group for _, uname in fg_options):
+            fg_select.value = preferred_group
         # Auto-select the first group if available
-        if fg_options:
+        elif fg_options:
             fg_select.value = fg_options[0][1]
 
     # ── button handlers ───────────────────────────────────────────────────────
@@ -1810,15 +2067,16 @@ class RenderScreen(_PoppableScreen):
         if isinstance(render_type_select.value, NoSelection):
             self.notify("Select a render type.", severity="warning", timeout=3)
             return
-        render_type = str(render_type_select.value)
-        target_uname: str | None = None
-        fg_uname: str | None = None
-        if render_type == "fg":
-            target_value = self.query_one("#fg-target-select", Select).value
-            group_value = self.query_one("#fg-group-select", Select).value
-            target_uname = None if isinstance(target_value, NoSelection) else str(target_value)
-            fg_uname = None if isinstance(group_value, NoSelection) else str(group_value)
-        self._run_render(render_type, target_uname, fg_uname)
+        render_type = render_type_select.value
+        target_sel = self.query_one("#fg-target-select", Select)
+        fg_sel = self.query_one("#fg-group-select", Select)
+        target_uname = None if isinstance(target_sel.value, NoSelection) else str(target_sel.value)
+        fg_uname = None if isinstance(fg_sel.value, NoSelection) else str(fg_sel.value)
+        app = cast(SeretoUnifiedApp, self.app)
+        version = (
+            ProjectVersion.from_str(app.selected_project_version) if app.selected_project_version is not None else None
+        )
+        self._run_render(app.project, version, render_type, target_uname, fg_uname)
 
     @on(Button.Pressed, "#open-pdf-btn")
     def handle_open_pdf(self) -> None:
@@ -1831,21 +2089,21 @@ class RenderScreen(_PoppableScreen):
 
     # ── workers ───────────────────────────────────────────────────────────────
     @work(thread=True)
-    def _run_render(self, kind: str, target_uname: str | None = None, fg_uname: str | None = None) -> None:
+    def _run_render(
+        self,
+        project: Project,
+        version: ProjectVersion | None,
+        kind: str,
+        target_uname: str | None = None,
+        fg_uname: str | None = None,
+    ) -> None:
         from loguru import logger
-
-        from sereto.pdf import (
-            find_and_generate_pdf_finding_group,
-            generate_all_pdf_finding_groups,
-            generate_pdf_report,
-            generate_pdf_sow,
-        )
 
         self.app.call_from_thread(self._set_buttons_disabled, True)
         self.app.call_from_thread(self._log, f"[bold cyan]▶ Starting {kind} render…[/bold cyan]")
 
         # Forward Loguru records to the RichLog for the duration of this render
-        def _tui_sink(message: logger.Record) -> None:  # type: ignore[name-defined]  # ty: ignore[unresolved-attribute]
+        def _tui_sink(message: logger.Record) -> None:  # type: ignore[name-defined]  # ty: ignore[missing-attribute]
             record = message.record
             level = record["level"].name.lower()
             text = record["message"].rstrip()
@@ -1865,74 +2123,23 @@ class RenderScreen(_PoppableScreen):
 
         sink_id = logger.add(_tui_sink, format="{message}", colorize=False)
 
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-        version = self.app.selected_project_version  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
-
         try:
-            match kind:
-                case "report":
-                    from sereto.source_archive import create_source_archive, embed_attachment_to_pdf
+            # Render from a frozen copy of the project, so changes made while the render is running do not affect it
+            with ProjectSnapshot(project) as snapshot:
+                logger.info("Rendering from a snapshot of the project at '{}'", snapshot.path)
+                results = self._render_kind(snapshot.project, version, kind, target_uname, fg_uname)
+            # The outputs were copied back into the project when the snapshot was closed
+            results = [(label, snapshot.original_path(path)) for label, path in results]
 
-                    pdf_path = generate_pdf_report(
-                        project=project,
-                        template="report",
-                        version=version,
-                    )
-                    archive = create_source_archive(project_path=project.path, config=project.config)
-                    embed_attachment_to_pdf(
-                        attachment=archive,
-                        pdf=pdf_path,
-                        name=f"source{archive.suffix}",
-                        keep_original=False,
-                    )
-                    self.app.call_from_thread(self._set_last_pdf, pdf_path)
-                    self.app.call_from_thread(
-                        self._log,
-                        f"[bold green]✔ Report saved:[/bold green] {pdf_path}",
-                    )
-                case "sow":
-                    pdf_path = generate_pdf_sow(
-                        project=project,
-                        sow_recipe=None,
-                        version=version,
-                    )
-                    self.app.call_from_thread(self._set_last_pdf, pdf_path)
-                    self.app.call_from_thread(
-                        self._log,
-                        f"[bold green]✔ SoW saved:[/bold green] {pdf_path}",
-                    )
-                case "fg":
-                    pdf_path = find_and_generate_pdf_finding_group(
-                        project=project,
-                        template="finding_group",
-                        target_selector=target_uname,
-                        finding_group_selector=fg_uname,
-                        converter=None,
-                        renderer=None,
-                        version=version,
-                    )
-                    self.app.call_from_thread(self._set_last_pdf, pdf_path)
-                    self.app.call_from_thread(
-                        self._log,
-                        f"[bold green]✔ Finding group saved:[/bold green] {pdf_path}",
-                    )
-                case "all_fg":
-                    paths = generate_all_pdf_finding_groups(
-                        project=project,
-                        template="finding_group",
-                        converter=None,
-                        renderer=None,
-                        version=version,
-                    )
-                    for p in paths:
-                        self.app.call_from_thread(
-                            self._log,
-                            f"[bold green]✔ Finding group:[/bold green] {p}",
-                        )
-                    self.app.call_from_thread(
-                        self._log,
-                        f"[bold green]Done — {len(paths)} finding group PDF(s) generated.[/bold green]",
-                    )
+            for label, path in results:
+                self.app.call_from_thread(self._log, f"[bold green]✔ {label} saved:[/bold green] {path}")
+            if len(results) == 1:
+                self.app.call_from_thread(self._set_last_pdf, results[0][1])
+            if kind == "all_fg":
+                self.app.call_from_thread(
+                    self._log,
+                    f"[bold green]Done — {len(results)} finding group PDF(s) generated.[/bold green]",
+                )
         except Exception as exc:
             self.app.call_from_thread(
                 self._log,
@@ -1942,8 +2149,62 @@ class RenderScreen(_PoppableScreen):
             logger.remove(sink_id)
             self.app.call_from_thread(self._set_buttons_disabled, False)
 
+    @staticmethod
+    def _render_kind(
+        project: Project,
+        version: ProjectVersion | None,
+        kind: str,
+        target_uname: str | None,
+        fg_uname: str | None,
+    ) -> list[tuple[str, Path]]:
+        """Render the requested document(s) and return `(label, pdf_path)` pairs."""
+        from sereto.pdf import (
+            find_and_generate_pdf_finding_group,
+            generate_all_pdf_finding_groups,
+            generate_pdf_report,
+            generate_pdf_sow,
+        )
+
+        match kind:
+            case "report":
+                from sereto.source_archive import create_source_archive, embed_attachment_to_pdf
+
+                pdf_path = generate_pdf_report(project=project, template="report", version=version)
+                archive = create_source_archive(project_path=project.path, config=project.config)
+                embed_attachment_to_pdf(
+                    attachment=archive,
+                    pdf=pdf_path,
+                    name=f"source{archive.suffix}",
+                    keep_original=False,
+                )
+                return [("Report", pdf_path)]
+            case "sow":
+                return [("SoW", generate_pdf_sow(project=project, sow_recipe=None, version=version))]
+            case "fg":
+                pdf_path = find_and_generate_pdf_finding_group(
+                    project=project,
+                    template="finding_group",
+                    target_selector=target_uname,
+                    finding_group_selector=fg_uname,
+                    converter=None,
+                    renderer=None,
+                    version=version,
+                )
+                return [("Finding group", pdf_path)]
+            case "all_fg":
+                paths = generate_all_pdf_finding_groups(
+                    project=project,
+                    template="finding_group",
+                    converter=None,
+                    renderer=None,
+                    version=version,
+                )
+                return [("Finding group", p) for p in paths]
+            case _:
+                raise SeretoValueError(f"unknown render type {kind!r}")
+
     def _do_clean(self) -> None:
-        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+        project = self.app.project  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
         removed: list[str] = []
         if (build_dir := project.path / ".build").is_dir():
             shutil.rmtree(build_dir)
@@ -2234,6 +2495,8 @@ class ProjectBrowserScreen(Screen[None]):
 
         self._populate_action_bar()
         self._load_projects()
+        self.watch(app, "project_revision", self._on_project_reloaded, init=False)
+        self.watch(app, "projects_revision", self._on_projects_changed, init=False)
 
         self.query_one("#content-container", Vertical).mount(Static(self._welcome_text()))
 
@@ -2276,7 +2539,7 @@ class ProjectBrowserScreen(Screen[None]):
             if created:
                 self._load_projects()
                 project_select = self.query_one("#project-select", Select)
-                project_select.value = self.app.project.path  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
+                project_select.value = self.app.project.path  # type: ignore[attr-defined]  # ty: ignore[missing-attribute]
 
         self.app.push_screen(NewProjectScreen(), _on_created)
 
@@ -2286,17 +2549,21 @@ class ProjectBrowserScreen(Screen[None]):
         try:
             add_retest(project=app.project)
             # Reload the project to update version list
-            project = Project.load_from(app.project.path)
-            version_select = self.query_one("#version-select", Select)
-            version_select.set_options([(str(v), str(v)) for v in project.config.versions])
-            version_select.value = str(project.config.last_version)
-            app.selected_project_version = str(project.config.last_version)
+            app.project.reload()
+            app.selected_project_version = str(app.project.config.last_version)
+            self._sync_version_select(app.project)
             self.notify("Retest version added successfully.", severity="information", timeout=3)
         except Exception as e:
             self.notify(f"Failed to add retest: {e}", severity="error", timeout=5)
 
     # ── Project loading ────────────────────────────────────────────────────────
-    def _load_projects(self) -> None:
+    def _load_projects(self, auto_select: bool = True) -> None:
+        """Populate the project select from the projects directory.
+
+        Args:
+            auto_select: Select (and activate) the project in the current working directory. Otherwise, the current
+                selection is kept without re-activating the project, or cleared if the project no longer exists.
+        """
         app: SeretoUnifiedApp = self.app  # type: ignore
         select = self.query_one("#project-select", Select)
         container = self.query_one("#content-container", Vertical)
@@ -2309,6 +2576,7 @@ class ProjectBrowserScreen(Screen[None]):
             return
 
         if not project_dirs:
+            self._set_project_options([])
             container.remove_children()
             container.mount(Static(Text("No projects found.", style="dim")))
             return
@@ -2316,14 +2584,14 @@ class ProjectBrowserScreen(Screen[None]):
         options: list[tuple[Text, Path]] = []
         for project_dir in project_dirs:
             try:
-                project = Project.load_from(project_dir)
-                last_vc = project.config.last_config
-                label = Text.assemble((last_vc.id, "bold cyan"), f"  {last_vc.name}")
+                label = self._project_label(ConfigModel.load_from(project_dir / "config.json"))
             except Exception:
                 label = Text.assemble((project_dir.name, "bold cyan"), "  [unreadable]")
             options.append((label, project_dir))
 
-        select.set_options(options)
+        self._set_project_options(options)
+        if not auto_select:
+            return
 
         # Auto-select if cwd is inside a known project
         cwd = Path.cwd()
@@ -2334,6 +2602,46 @@ class ProjectBrowserScreen(Screen[None]):
                     # Eagerly activate so entry_point logic in on_mount sees the project
                     self._do_activate_project(path)
                     break
+
+    @staticmethod
+    def _project_label(config: ConfigModel) -> Text:
+        """Build the project select's option label from the project's last version config.
+
+        Only the configuration file is parsed (not the targets and findings), as this runs for every project.
+        """
+        last_vc = config.version_configs[max(config.version_configs)]
+        return Text.assemble((last_vc.id, "bold cyan"), f"  {last_vc.name}")
+
+    def _set_project_options(self, options: list[tuple[Text, Path]]) -> None:
+        """Update the project select's options, keeping the selection without re-activating the selected project."""
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        select = self.query_one("#project-select", Select)
+        plain = [(label.plain, path) for label, path in options]
+        if plain != self._project_options:
+            self._project_options = plain
+            selected = select.value
+            # Changing the options resets the value; restoring it must not activate the project again (which would
+            # e.g. reset the selected version)
+            with select.prevent(Select.Changed):
+                select.set_options(options)
+                if any(path == selected for _, path in options):
+                    select.value = selected
+        if app.current_project is not None and not is_project_dir(app.current_project.path):
+            self.notify(f"Project '{app.current_project.path.name}' was removed.", severity="warning", timeout=5)
+            with select.prevent(Select.Changed):
+                select.clear()
+            self._deactivate_project()
+
+    def _deactivate_project(self) -> None:
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        container = self.query_one("#content-container", Vertical)
+        container.remove_children()
+        container.mount(Static(self._welcome_text(), markup=True))
+        app.current_project = None
+        app.categories = []
+        app.selected_project_version = None
+        self.query_one("#version-select", Select).display = False
+        self.query_one("#retest-btn", Button).display = False
 
     # ── Selection handler ──────────────────────────────────────────────────────
     @on(Select.Changed, "#version-select")
@@ -2351,13 +2659,7 @@ class ProjectBrowserScreen(Screen[None]):
         app: SeretoUnifiedApp = self.app  # type: ignore
 
         if isinstance(event.value, NoSelection):
-            container.remove_children()
-            container.mount(Static(self._welcome_text(), markup=True))
-            app.current_project = None
-            app.categories = []
-            app.selected_project_version = None
-            version_select.display = False
-            retest_button.display = False
+            self._deactivate_project()
             return
 
         project_path = Path(str(event.value))  # Guaranteed non-NoSelection after isinstance check above
@@ -2381,22 +2683,40 @@ class ProjectBrowserScreen(Screen[None]):
             app.selected_project_version = None
 
     def _do_activate_project(self, project_path: Path) -> None:
-        """Set the app's current project; skips reload if already active."""
+        """Load the project from disk and make it the app's current project."""
         app: SeretoUnifiedApp = self.app  # type: ignore
-        version_select = self.query_one("#version-select", Select)
         try:
             project = Project.load_from(project_path)
             app.current_project = project
-            app.categories = sorted(c.upper() for c in app.current_project.settings.categories)
+            app.categories = sorted(c.upper() for c in project.settings.categories)
             app.selected_project_version = str(project.config.last_version)
-            version_select.set_options([(str(v), str(v)) for v in project.config.versions])
-            version_select.value = str(project.config.last_version)
+            self._sync_version_select(project)
             self._populate_content_panel(project)
         except Exception:
             app.current_project = None
             app.selected_project_version = None
             app.categories = []
             raise
+
+    def _sync_version_select(self, project: Project) -> None:
+        """Update the version dropdown to match the project's versions and the app's selected version."""
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        selected = app.selected_project_version
+        version_select = self.query_one("#version-select", Select)
+        options = [(str(v), str(v)) for v in project.config.versions]
+        if options != self._version_options:
+            version_select.set_options(options)
+            self._version_options = options
+        if selected is not None and version_select.value != selected:
+            version_select.value = selected
+
+    def _on_project_reloaded(self) -> None:
+        app: SeretoUnifiedApp = self.app  # type: ignore
+        if app.current_project is None:
+            return
+
+        self._sync_version_select(app.current_project)
+        self.refresh_content()
 
     # ── Content builders ───────────────────────────────────────────────────────
     @staticmethod
@@ -2478,14 +2798,14 @@ class ProjectBrowserScreen(Screen[None]):
     def refresh_project_select(self) -> None:
         """Rebuild the project select options, preserving the current selection.
 
-        Called after a project's ID or name has been changed in the ConfigScreen,
-        so the dropdown label reflects the new values.
+        Called after a project's ID or name has been changed in the ConfigScreen or outside the TUI (in any project),
+        and whenever projects are added to, removed from or renamed in the projects directory, so the dropdown reflects
+        the current state.
         """
-        app: SeretoUnifiedApp = self.app  # type: ignore
-        current_path = app.current_project.path if app.current_project is not None else None
-        self._load_projects()
-        if current_path is not None:
-            self.query_one("#project-select", Select).value = current_path
+        self._load_projects(auto_select=False)
+
+    def _on_projects_changed(self) -> None:
+        self.refresh_project_select()
 
 
 # ── Unified app ────────────────────────────────────────────────────────────────
@@ -2494,6 +2814,11 @@ class SeretoUnifiedApp(App[None]):
 
     Screens are pushed on top of each other; the base is always
     :class:`ProjectBrowserScreen`.
+
+    File-system changes made outside the TUI flow through a single pipeline: the watchers' observer threads post
+    `ProjectFilesChanged`/`ProjectsDirChanged` to the app, which debounces them (`RELOAD_DEBOUNCE`), reloads the data
+    and increments `project_revision`/`projects_revision`. Screens displaying project data watch these reactives and
+    rebuild themselves.
     """
 
     CSS_PATH = ["app.tcss", "finding.tcss"]
@@ -2502,6 +2827,11 @@ class SeretoUnifiedApp(App[None]):
 
     # Override the default (hidden) Ctrl+Q binding so it appears in the footer.
     BINDINGS = [Binding("ctrl+q", "quit", "Quit", priority=True)]
+
+    project_revision: reactive[int] = reactive(0, init=False)
+    """Incremented after the current project was re-read from disk."""
+    projects_revision: reactive[int] = reactive(0, init=False)
+    """Incremented after the list of projects (or a project's identity) changed on disk."""
 
     def __init__(
         self,
@@ -2515,7 +2845,13 @@ class SeretoUnifiedApp(App[None]):
         self.settings = settings if settings is not None else load_settings_function()
         self.entry_point = entry_point
         self.plugin_context = plugin_context
-        self.current_project: Project | None = None
+        self._watching = False
+        self._project_watcher: ProjectWatcher | None = None
+        self._projects_watcher: ProjectsDirWatcher | None = None
+        self._project_reload_timer: Timer | None = None
+        self._projects_reload_timer: Timer | None = None
+        self._reload_failed = False
+        self._current_project: Project | None = None
         self.selected_project_version: str | None = None
         self.categories: list[str] = []
         try:
@@ -2536,8 +2872,147 @@ class SeretoUnifiedApp(App[None]):
             raise SeretoValueError("no project selected")
         return self.current_project
 
+    @property
+    def current_project(self) -> Project | None:
+        """The active project, whose directory is watched for changes."""
+        return self._current_project
+
+    @current_project.setter
+    def current_project(self, project: Project | None) -> None:
+        self._current_project = project
+        self._sync_project_watcher()
+
     def on_mount(self) -> None:
+        self._watching = True
         self.push_screen(ProjectBrowserScreen())
+        self._start_projects_watcher()
+        self._sync_project_watcher()
+
+    def on_unmount(self) -> None:
+        self._watching = False
+        for watcher in (self._project_watcher, self._projects_watcher):
+            if watcher is not None:
+                watcher.stop()
+        self._project_watcher = None
+        self._projects_watcher = None
+
+    # ── File-system change propagation ─────────────────────────────────────────
+    # watcher thread → post message → debounce (timer) → reload → increment revision → screens rebuild
+    def _start_projects_watcher(self) -> None:
+        watcher = ProjectsDirWatcher(self.settings.projects_path, lambda: self.post_message(ProjectsDirChanged()))
+        try:
+            watcher.start()
+        except OSError as exc:
+            self.notify(
+                f"Cannot watch projects directory, new and removed projects will not be detected: {exc}",
+                severity="warning",
+                timeout=5,
+            )
+            return
+        self._projects_watcher = watcher
+
+    def _sync_project_watcher(self, restart: bool = False) -> None:
+        """Make sure the watcher observes the directory of the current project (while the app is running).
+
+        Args:
+            restart: Restart the watcher even if it watches the same path (e.g. after the directory was replaced).
+        """
+        path = self._current_project.path if self._watching and self._current_project is not None else None
+        if self._project_watcher is not None:
+            if self._project_watcher.path == path and not restart:
+                return
+            self._project_watcher.stop()
+            self._project_watcher = None
+        # A pending reload and a failed one belong to the previous project
+        if self._project_reload_timer is not None:
+            self._project_reload_timer.stop()
+            self._project_reload_timer = None
+        self._reload_failed = False
+        if path is None:
+            return
+        watcher = ProjectWatcher(path, lambda: self.post_message(ProjectFilesChanged(path)))
+        try:
+            watcher.start()
+        except OSError as exc:
+            self.notify(
+                f"Cannot watch project directory, external changes will not be detected: {exc}",
+                severity="warning",
+                timeout=5,
+            )
+        # Keep the (possibly not started) watcher, so a failure is not retried and reported on each project change
+        self._project_watcher = watcher
+
+    def _restart_timer(self, timer: Timer | None, callback: Callable[[], None]) -> Timer:
+        if timer is not None:
+            timer.stop()
+        return self.set_timer(RELOAD_DEBOUNCE, callback)
+
+    def on_project_files_changed(self, message: ProjectFilesChanged) -> None:
+        # Late messages from the watcher of a previously selected project are dropped
+        if self.current_project is None or message.path != self.current_project.path:
+            return
+        self._project_reload_timer = self._restart_timer(self._project_reload_timer, self.reload_project)
+
+    def on_projects_dir_changed(self, _: ProjectsDirChanged) -> None:
+        self._projects_reload_timer = self._restart_timer(self._projects_reload_timer, self._reload_projects)
+
+    def _reload_projects(self) -> None:
+        """Handle a changed list of projects and notify the screens (via `projects_revision`)."""
+        self._projects_reload_timer = None
+        if self._projects_watcher is not None:
+            # Watch newly added project directories before re-reading them, so no change is missed in between
+            self._projects_watcher.sync_project_dirs()
+        if self.current_project is not None:
+            if not is_project_dir(self.current_project.path):
+                # The active project was removed: return to the project browser, which deactivates it
+                while len(self.screen_stack) > 1 and not isinstance(self.screen, ProjectBrowserScreen):
+                    self.pop_screen()
+            elif self._project_watcher is not None and not self._project_watcher.watches_current_directory():
+                # The project directory was replaced (e.g. moved away and another one moved to its path): the
+                # watcher still observes the old directory, and the displayed data comes from it
+                self._sync_project_watcher(restart=True)
+                self.reload_project()
+        self.projects_revision += 1
+
+    def reload_project(self) -> None:
+        """Re-read the current project from disk and notify the screens (via `project_revision`)."""
+        if self._project_reload_timer is not None:
+            self._project_reload_timer.stop()
+            self._project_reload_timer = None
+        project = self.current_project
+        # A removed project is handled by `_reload_projects`
+        if project is None or not is_project_dir(project.path):
+            return
+        try:
+            project.reload()
+        except Exception as exc:
+            # E.g. a file just being written by an editor; its next change triggers another reload. Until then, the
+            # previously loaded data is shown, and saving the configuration is rejected as it changed on disk.
+            self._reload_failed = True
+            self.notify(
+                f"{exc}\n\nShowing the last successfully loaded data until the project can be read again.",
+                title="Failed to reload project",
+                severity="error",
+                markup=False,
+                timeout=10,
+            )
+            return
+        if self._reload_failed:
+            self._reload_failed = False
+            self.notify("The project was reread successfully.", title="Project reloaded", timeout=3)
+        versions = [str(v) for v in project.config.versions]
+        if self.selected_project_version not in versions:
+            previous = self.selected_project_version
+            self.selected_project_version = str(project.config.last_version)
+            if previous is not None:
+                self.notify(
+                    f"Version {previous} no longer exists, switched to {self.selected_project_version}.",
+                    title="Version removed",
+                    severity="warning",
+                    markup=False,
+                    timeout=8,
+                )
+        self.project_revision += 1
 
     def action_focus_search(self) -> None:
         """Called by :class:`~sereto.tui.finding.AddSubFindingScreen` after saving.

@@ -63,8 +63,26 @@ class ConfigModel(SeretoBaseModel):
             SeretoPathError: If the file is not found or permission is denied.
             SeretoValueError: If the configuration is invalid.
         """
+        return cls.load_with_content(file)[0]
+
+    @classmethod
+    @validate_call
+    def load_with_content(cls, file: FilePath) -> tuple[Self, bytes]:
+        """Load the configuration from a JSON file, together with the exact file content it was parsed from.
+
+        Args:
+            file: The path to the configuration file.
+
+        Returns:
+            The configuration object and the file content.
+
+        Raises:
+            SeretoPathError: If the file is not found or permission is denied.
+            SeretoValueError: If the configuration is invalid.
+        """
         try:
-            return cls.model_validate_json(file.read_bytes())
+            content = file.read_bytes()
+            return cls.model_validate_json(content), content
         except FileNotFoundError:
             raise SeretoPathError(f"file not found at '{file}'") from None
         except PermissionError:

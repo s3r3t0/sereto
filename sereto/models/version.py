@@ -103,7 +103,7 @@ class VersionVPrefix(Version):
     """A subclass of Version which allows a "v" prefix."""
 
     @classmethod
-    def parse(cls, v: str) -> "Version":  # type: ignore[override]  # ty: ignore[invalid-method-override]
+    def parse(cls, v: str) -> "Version":  # type: ignore[override]  # ty: ignore[incompatible-method-override]
         """Parse version string to a Version instance.
 
         Args:

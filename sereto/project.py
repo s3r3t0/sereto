@@ -45,12 +45,27 @@ class Project:
     @property
     def config(self) -> Config:
         if self._config is None:
-            self._config = Config.load_from(
-                self.path / "config.json",
-                templates=self.settings.templates_path,
-                risk_due_dates=self.settings.risk_due_dates,
-            )
+            self._config = self._load_config()
         return self._config
+
+    def _load_config(self) -> Config:
+        return Config.load_from(
+            self.path / "config.json",
+            templates=self.settings.templates_path,
+            risk_due_dates=self.settings.risk_due_dates,
+        )
+
+    def reload(self) -> None:
+        """Re-read the project configuration (incl. targets and findings) from disk.
+
+        The configuration is cached on first access, so long-running consumers (e.g. the TUI) must call this to pick
+        up changes made to the project files in the meantime. The new configuration is loaded completely before it
+        replaces the cached one, so concurrent readers never observe a missing or partially loaded configuration.
+
+        Raises:
+            Any exception raised while loading the configuration. The previously cached configuration is kept intact.
+        """
+        self._config = self._load_config()
 
     @validate_call
     def ensure_dir(self, relative_path: str | Path) -> Path:
