@@ -2323,7 +2323,7 @@ requires-dist = [
     { name = "prompt-toolkit", specifier = "~=3.0.53" },
     { name = "pydantic", extras = ["email"], specifier = "~=2.14.3" },
     { name = "pydantic-settings", specifier = "~=2.15.0" },
-    { name = "pypdf", specifier = ">=6.21.2,<7.2.0" },
+    { name = "pypdf", specifier = "~=7.1.0" },
     { name = "python-frontmatter", specifier = "~=1.3.0" },
     { name = "rapidfuzz", specifier = "~=3.14.5" },
     { name = "rich", specifier = "~=15.0.0" },
