@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Python 3.15 support, including local Tox and CI test coverage
+
 ### Fixed
 - Propagate file-system changes to the TUI: the active project and all projects under projects_path are watched with `watchdog` and reloaded whenever its files change (including edits made outside the TUI), so renders and all screens reflect the current projects' states.
 - Fix first-run TUI startup failing with a nested asyncio event-loop error during settings setup.
