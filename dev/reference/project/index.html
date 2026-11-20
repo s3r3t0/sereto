@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -3039,7 +3039,7 @@
 <span class="sd">        replaces the cached one, so concurrent readers never observe a missing or partially loaded configuration.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            Any exception raised while loading the configuration. The previously cached configuration is kept intact.</span>
+<span class="sd">            Exception: If loading fails. The previously cached configuration is kept intact.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config</span><span class="p">()</span>
 
@@ -3319,6 +3319,29 @@ up changes made to the project files in the meantime. The new configuration is l
 replaces the cached one, so concurrent readers never observe a missing or partially loaded configuration.</p>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#Exception">Exception</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If loading fails. The previously cached configuration is kept intact.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>sereto/project.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
@@ -3339,7 +3362,7 @@ replaces the cached one, so concurrent readers never observe a missing or partia
 <span class="sd">    replaces the cached one, so concurrent readers never observe a missing or partially loaded configuration.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        Any exception raised while loading the configuration. The previously cached configuration is kept intact.</span>
+<span class="sd">        Exception: If loading fails. The previously cached configuration is kept intact.</span>
 <span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
