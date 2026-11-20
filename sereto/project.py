@@ -63,7 +63,7 @@ class Project:
         replaces the cached one, so concurrent readers never observe a missing or partially loaded configuration.
 
         Raises:
-            Any exception raised while loading the configuration. The previously cached configuration is kept intact.
+            Exception: If loading fails. The previously cached configuration is kept intact.
         """
         self._config = self._load_config()
 

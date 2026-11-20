@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reload relevant active-project files and refresh project labels under `projects_path` with `watchdog`, so the project browser, configuration screen, and render selectors reflect edits made outside the TUI. Preserve valid selections and unsaved General-tab edits, and report reload failures while retaining the last successfully loaded data.
-- Detect project additions, removals, renames, and directory replacements in the TUI, and switch to the latest remaining version when the selected version is removed.
+- Detect project additions, removals, renames, and directory replacements in the TUI, reattach watches to replaced directories, and switch to the latest remaining version when the selected version is removed.
 - Reject configuration saves when `config.json` has changed on disk since it was loaded or last saved, rather than silently overwriting external edits.
 - Resolve configuration records by their values rather than row positions when editing or removing them, and close stale dialogs when their record or version changes externally.
 - Keep target directories in sync with target-name changes in the TUI, checking for conflicts and rolling back the rename if saving fails.
@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Select target model subtypes by category consistently in configuration loading and CLI JSON output, and migrate legacy DAST exposure settings without mutating the input data.
 - Preserve the `list` alias when serializing finding-template variable metadata, allowing it to round-trip correctly.
 - Validate `SeretoVersion.from_str()` and `ProjectVersion.from_str()` consistently with their constructors, rejecting unsupported prerelease and build suffixes.
+- Fix documentation generation with PyMdown Extensions 12 by requiring a compatible Mkdocstrings version, and correct the new project-reload exception documentation for strict builds.
 
 ### Dependencies
 
@@ -55,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump kiwisolver from 1.4.9 to 1.5.1
 - Bump markupsafe from 3.0.3 to 3.0.4
 - Bump mkdocs-material from 9.7.7 to 9.8.0
+- Bump mkdocstrings from 0.30.1 to 1.0.8 and require >=1.0.8 in the `docs` extra
 - Bump msgpack from 1.2.1 to 1.2.3
 - Bump numpy from 2.3.3 to 2.5.4
 - Bump packaging from 25.0 to 26.3
