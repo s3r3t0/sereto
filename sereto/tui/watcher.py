@@ -162,7 +162,7 @@ class ProjectsDirWatcher(_Watcher):
 
     def __init__(self, path: Path, on_change: Callable[[], object]) -> None:
         super().__init__(path, on_change)
-        self._project_watches: dict[Path, ObservedWatch] = {}
+        self._project_watches: dict[Path, tuple[ObservedWatch, tuple[int, int] | None]] = {}
 
     def _schedule(self, observer: BaseObserver) -> None:
         observer.schedule(_DirectoryChangeHandler(self), str(self.path), recursive=False)
@@ -173,25 +173,28 @@ class ProjectsDirWatcher(_Watcher):
         self._project_watches.clear()
 
     def sync_project_dirs(self) -> None:
-        """Watch the identity files of every directory currently in the projects directory (and stop watching removed
-        directories)."""
+        """Watch every current directory's identity files, stopping removed or replaced directory watches."""
         if self._observer is not None:
             self._sync_project_dirs(self._observer)
 
     def _sync_project_dirs(self, observer: BaseObserver) -> None:
         try:
-            dirs = {d for d in self.path.iterdir() if d.is_dir()}
+            dirs = {d: directory_identity(d) for d in self.path.iterdir() if d.is_dir()}
         except OSError:
             return
-        for path in self._project_watches.keys() - dirs:
-            watch = self._project_watches.pop(path)
-            # The directory is gone, and possibly its watch as well
+        stale_paths = {
+            path for path, (_, identity) in self._project_watches.items() if path not in dirs or identity != dirs[path]
+        }
+        for path in stale_paths:
+            watch, _ = self._project_watches.pop(path)
+            # The directory is gone or replaced, and possibly its watch as well
             with contextlib.suppress(KeyError, OSError):
                 observer.unschedule(watch)
-        for path in dirs - self._project_watches.keys():
+        for path in dirs.keys() - self._project_watches.keys():
             # E.g. no permission; such a directory cannot be a usable project anyway
             with contextlib.suppress(OSError):
-                self._project_watches[path] = observer.schedule(_ChangeEventHandler(self), str(path), recursive=False)
+                watch = observer.schedule(_ChangeEventHandler(self), str(path), recursive=False)
+                self._project_watches[path] = (watch, dirs[path])
 
     def is_relevant(self, path: Path) -> bool:
         """Return `True` for entries directly in the projects directory and for projects' identity files."""
