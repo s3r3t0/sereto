@@ -9,12 +9,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add Python 3.15 support, including local Tox and CI test coverage
+- Add Python 3.15 support, including local Tox and CI test coverage and a CI check of locked dependencies without C/C++ compilers. The minimum supported version remains Python 3.12.
+- Extend the TUI target form beyond category and name with target IDs, locators, documents, extra fields, DAST network and authentication settings, SAST source-code metadata, and Android/iOS package and integrity metadata.
+- Add an optional `binding` attribute to `TuiPlugin` for opening plugin screens from the project browser with a keyboard shortcut shown in the footer.
+
+### Changed
+
+- Submit TUI target, date, and person forms with `Ctrl+S` instead of `Enter`, allowing normal interaction with form controls and multiline JSON editors.
+- Switch configuration tabs with the left/right arrow keys instead of `Tab`, without overriding cursor movement in focused inputs. Show only the record actions available in the active tab.
+- Update configuration-form layout to accommodate the expanded target fields, and show dependent fields only when their controlling option is enabled.
+- Load project-browser labels from configuration files without loading every project's targets and findings.
 
 ### Fixed
-- Propagate file-system changes to the TUI: the active project and all projects under projects_path are watched with `watchdog` and reloaded whenever its files change (including edits made outside the TUI), so renders and all screens reflect the current projects' states.
+
+- Reload relevant active-project files and refresh project labels under `projects_path` with `watchdog`, so the project browser, configuration screen, and render selectors reflect edits made outside the TUI. Preserve valid selections and unsaved General-tab edits, and report reload failures while retaining the last successfully loaded data.
+- Detect project additions, removals, renames, and directory replacements in the TUI, and switch to the latest remaining version when the selected version is removed.
+- Reject configuration saves when `config.json` has changed on disk since it was loaded or last saved, rather than silently overwriting external edits.
+- Resolve configuration records by their values rather than row positions when editing or removing them, and close stale dialogs when their record or version changes externally.
+- Keep target directories in sync with target-name changes in the TUI, checking for conflicts and rolling back the rename if saving fails.
+- Render TUI documents from a best-effort temporary project snapshot using the project, version, and finding-group selection captured at render start. Copy generated outputs back without overwriting existing or restoring deleted generated layouts.
 - Fix first-run TUI startup failing with a nested asyncio event-loop error during settings setup.
-- Propagate file-system changes to the TUI: the active project and all projects under projects_path are watched with `watchdog` and reloaded whenever its files change (including edits made outside the TUI), so renders and all screens reflect the current projects' states.
+- Report missing targets and sub-finding creation failures in the TUI instead of letting errors escape from the add-sub-finding dialog.
+- Include field-level validation details and TOML parsing errors in invalid finding-frontmatter messages.
+- Select target model subtypes by category consistently in configuration loading and CLI JSON output, and migrate legacy DAST exposure settings without mutating the input data.
+- Preserve the `list` alias when serializing finding-template variable metadata, allowing it to round-trip correctly.
+- Validate `SeretoVersion.from_str()` and `ProjectVersion.from_str()` consistently with their constructors, rejecting unsupported prerelease and build suffixes.
+
+### Dependencies
+
+- Add watchdog requirement ~=6.0.0
+- Bump pydantic from 2.13.5 to 2.14.3, update its requirement from ~=2.13.4 to ~=2.14.3, and combine it with the `email` extra
+- Update pydantic-settings requirement from ~=2.15.0 to ~=2.16.3
+- Update pypdf requirement from ~=6.20.0 to ~=7.1.0
+- Bump ruff in the `dev` extra from 0.16.10 to 0.17.5 and update its requirement from ~=0.16.0 to ~=0.17.5
+- Require mypy >=2.4 in the Tox type-checking environment
+- Bump hatchling from 1.32.4 to 1.33.0
+- Bump aiohttp from 3.14.3 to 3.14.4
+- Bump certifi from 2025.10.5 to 2026.10.18
+- Bump cffi from 2.0.0 to 2.1.1
+- Bump click from 8.5.0 to 8.5.1
+- Bump contourpy from 1.3.3 to 1.4.0
+- Bump cryptography from 50.0.1 to 50.0.2
+- Bump dnspython from 2.8.0 to 2.9.2
+- Bump filelock from 3.32.6 to 4.2.1
+- Bump kiwisolver from 1.4.9 to 1.5.1
+- Bump markupsafe from 3.0.3 to 3.0.4
+- Bump mkdocs-material from 9.7.7 to 9.8.0
+- Bump msgpack from 1.2.1 to 1.2.3
+- Bump numpy from 2.3.3 to 2.5.4
+- Bump packaging from 25.0 to 26.3
+- Bump pillow from 12.3.0 to 13.0.0
+- Bump pydantic-core from 2.46.5 to 2.50.4
+- Bump pymdown-extensions from 11.0 to 12.3
+- Bump python-discovery from 1.6.0 to 1.6.5
+- Bump tomlkit from 0.15.1 to 0.15.2
+- Bump ty from 0.0.85 to 0.0.99
+- Bump typing-extensions from 4.15.0 to 4.16.0
+- Bump typing-inspection from 0.4.2 to 0.4.5
+- Bump virtualenv from 21.7.13 to 21.15.0
+- Bump yarl from 1.22.0 to 1.25.1
+- Update GitHub Actions versions.
 
 ## [0.9.0] - 2026-10-13
 
