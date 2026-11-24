@@ -534,7 +534,8 @@ class SearchWidget(Widget):
                 file_text = finding.read_text(encoding="utf-8")
                 metadata, content = frontmatter.parse(file_text)
                 # Extract clean text from the template file
-                env = Environment()
+                # Only parses the template into an AST; nothing is rendered
+                env = Environment()  # noqa: S701
                 ast = env.parse(content)
                 extracted_text = extract_text_from_jinja(ast)
 

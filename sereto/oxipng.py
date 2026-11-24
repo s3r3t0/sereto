@@ -16,4 +16,5 @@ def run_oxipng(project_path: DirectoryPath) -> None:
 
     # Run oxipng
     pictures_path = project_path / "pictures"
-    subprocess.run(["oxipng", "-o", "4", "-r", "--strip", "safe", pictures_path], check=True)
+    # Fixed argument list (no shell), executable resolved via `shutil.which`
+    subprocess.run([oxipng_path, "-o", "4", "-r", "--strip", "safe", pictures_path], check=True)  # noqa: S603

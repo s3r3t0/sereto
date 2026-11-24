@@ -210,11 +210,13 @@ def init_build_dir(
     project.ensure_dir(".build")
 
     # Create target directories in .build/
+    targets: list[Target]
     if target is not None:
-        targets: list[Target] = [target]
-    else:
-        assert version_config is not None  # guaranteed by the check above
+        targets = [target]
+    elif version_config is not None:
         targets = version_config.targets
+    else:  # pragma: no cover - guaranteed by the check above
+        raise SeretoValueError("either 'version_config' or 'target' must be specified")
     for target in targets:
         project.ensure_dir(f".build/{target.uname}")
 

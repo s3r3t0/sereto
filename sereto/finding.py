@@ -522,7 +522,8 @@ class Findings:
             else:
                 # Try to generate a unique filename with random suffix
                 for _ in range(5):
-                    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+                    # Non-security use: only avoids filename collisions
+                    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))  # noqa: S311
                     sub_finding_path = self.get_path(category=category, name=f"{finding_file_name}_{suffix}")
                     if not sub_finding_path.is_file():
                         break
