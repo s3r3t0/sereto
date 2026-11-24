@@ -59,7 +59,10 @@ def handle_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
             _log_debug_traceback(e)
             raise SystemExit(1) from None
         except Exception as e:
-            logger.error("Unexpected error occurred: {}", type(e).__name__)
+            if message := str(e):
+                logger.error("Unexpected error occurred: {}: {}", type(e).__name__, message)
+            else:
+                logger.error("Unexpected error occurred: {}", type(e).__name__)
             _log_debug_traceback(e)
             raise SystemExit(1) from None
 

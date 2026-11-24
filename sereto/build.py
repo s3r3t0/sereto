@@ -7,7 +7,7 @@ from pydantic import validate_call
 
 from sereto.convert import apply_convertor
 from sereto.enums import FileFormat
-from sereto.exceptions import SeretoPathError
+from sereto.exceptions import SeretoException, SeretoPathError, SeretoRuntimeError
 from sereto.finding import FindingGroup, SubFinding
 from sereto.jinja import render_jinja2
 from sereto.models.version import ProjectVersion
@@ -196,8 +196,13 @@ def build_target_dependencies(
                 try:
                     future.result()
                 except Exception as e:
-                    # Re-raise with context about which finding group failed
-                    raise type(e)(f"Failed to build finding group '{finding_group.uname}': {e}") from e
+                    # Re-raise with context about which finding group failed. Only SeReTo exceptions are guaranteed
+                    # to be constructible from a single message; anything else (e.g. Jinja's TemplateSyntaxError or
+                    # pydantic's ValidationError) would fail with a TypeError and hide the original problem.
+                    prefix = f"Failed to build finding group '{finding_group.uname}'"
+                    if isinstance(e, SeretoException):
+                        raise type(e)(f"{prefix}: {e}") from e
+                    raise SeretoRuntimeError(f"{prefix}: {type(e).__name__}: {e}") from e
 
     # Create template in "layouts/generated" directory
     template_dst = project.ensure_dir("layouts/generated") / f"{target.uname}.{intermediate_format.value}.j2"
