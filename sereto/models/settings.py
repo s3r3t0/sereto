@@ -61,7 +61,8 @@ class RenderTool(SeretoBaseModel):
 
         # Run the command and measure the execution time
         start_time = time.time()
-        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True, env=env)
+        # Commands come from the user's own render recipes; run as an argument list, never through a shell
+        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True, env=env)  # noqa: S603
         end_time = time.time()
 
         # Check if the command failed

@@ -49,7 +49,7 @@ class TestSeretoDate:
     @pytest.mark.parametrize("input", ["01-Jan-2024", "29-Feb-2024", "31-Dec-2024"])
     def test_pickle_roundtrip(self, input):
         d = SeretoDate(input)
-        d_loaded = pickle.loads(pickle.dumps(d))
+        d_loaded = pickle.loads(pickle.dumps(d))  # noqa: S301 - trusted data produced in-test
 
         assert type(d_loaded) is SeretoDate
         assert d == d_loaded

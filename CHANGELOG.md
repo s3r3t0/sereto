@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Enforce Ruff security (flake8-bandit) rules and lint the test suite. Align the Ruff version across Tox, pre-commit, and the `dev` extra.
+- Rewrite `AGENTS.md` into a concise guide for coding agents, with verification commands and security rules.
+
 ## [0.10.0] - 2026-11-20
 
 ### Added

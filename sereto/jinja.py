@@ -101,8 +101,11 @@ def get_generic_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) ->
     Returns:
         A Jinja2 environment object.
     """
+    # Output is Markdown/TeX/Typst, not HTML, so HTML autoescaping does not apply
     env: Environment = Environment(
-        autoescape=False, loader=FrontMatterStrippingLoader(templates), undefined=StrictUndefined
+        autoescape=False,  # noqa: S701
+        loader=FrontMatterStrippingLoader(templates),
+        undefined=StrictUndefined,
     )
     env.globals["MANUAL_EDIT_WARNING"] = MANUAL_EDIT_WARNING  # ty: ignore[invalid-assignment]
     env.add_extension("jinja2.ext.debug")
@@ -119,6 +122,7 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
     Returns:
         A Jinja2 environment object that is configured for rendering TeX templates.
     """
+    # HTML autoescaping does not apply to TeX; escape untrusted values with the `tex` filter instead
     env: Environment = Environment(
         block_start_string="((*",
         block_end_string="*))",
@@ -126,7 +130,7 @@ def get_tex_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> Env
         variable_end_string=")))",
         comment_start_string="((=",
         comment_end_string="=))",
-        autoescape=False,
+        autoescape=False,  # noqa: S701
         loader=FrontMatterStrippingLoader(templates),
         undefined=StrictUndefined,
     )
@@ -150,6 +154,7 @@ def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> E
     Returns:
         A Jinja2 environment object that is configured for rendering Typst templates.
     """
+    # Output is Typst, not HTML, so HTML autoescaping does not apply
     env: Environment = Environment(
         block_start_string="((*",
         block_end_string="*))",
@@ -157,7 +162,7 @@ def get_typst_jinja_env(templates: DirectoryPath | Sequence[DirectoryPath]) -> E
         variable_end_string=")))",
         comment_start_string="((=",
         comment_end_string="=))",
-        autoescape=False,
+        autoescape=False,  # noqa: S701
         loader=FrontMatterStrippingLoader(templates),
         undefined=StrictUndefined,
     )
