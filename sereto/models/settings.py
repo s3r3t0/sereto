@@ -61,7 +61,12 @@ class RenderTool(SeretoBaseModel):
 
         # Run the command and measure the execution time
         start_time = time.time()
-        result = subprocess.run(command, cwd=cwd, input=input, capture_output=True, env=env)
+        try:
+            result = subprocess.run(command, cwd=cwd, input=input, capture_output=True, env=env)
+        except FileNotFoundError:
+            raise SeretoPathError(
+                f"command {command[0]!r} not found; make sure it is installed and available in PATH"
+            ) from None
         end_time = time.time()
 
         # Check if the command failed
