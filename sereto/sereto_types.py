@@ -11,6 +11,8 @@ __all__ = [
     "TypePathName",
     "TypeCategories",
     "TypePassword",
+    "PASSWORD_MIN_LENGTH",
+    "PASSWORD_MAX_LENGTH",
     "TypeNonce12B",
     "TypeSalt16B",
     "TypeRisk",
@@ -61,7 +63,10 @@ Example:
 """
 
 
-TypePassword = Annotated[SecretStr, Strict(), Len(8, 100)]
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_LENGTH = 100
+
+TypePassword = Annotated[SecretStr, Strict(), Len(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH)]
 """Type for password.
 
 Using SecretStr prevents the password from being printed in logs or tracebacks.
