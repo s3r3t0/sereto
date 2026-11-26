@@ -9,7 +9,7 @@ from pathlib import Path
 
 import click
 from prompt_toolkit import prompt
-from pydantic import FilePath, validate_call
+from pydantic import FilePath, TypeAdapter, ValidationError, validate_call
 
 from sereto.cli.commands import repl_cd_impl, sereto_ls, sereto_repl
 from sereto.cli.config import (
@@ -45,7 +45,7 @@ from sereto.pdf import (
 )
 from sereto.project import Project, new_project
 from sereto.retest import add_retest
-from sereto.sereto_types import TypeProjectId
+from sereto.sereto_types import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TypePassword, TypeProjectId
 from sereto.source_archive import (
     create_source_archive,
     embed_attachment_to_pdf,
@@ -1094,6 +1094,32 @@ def settings_edit(non_interactive: bool, extra_json: str | None) -> None:
     edit_settings(non_interactive=non_interactive, extra_json=extra_json)
 
 
+_PASSWORD_ADAPTER: TypeAdapter[TypePassword] = TypeAdapter(TypePassword)
+
+
+class PasswordParamType(click.ParamType[str, object]):
+    """Click parameter type accepting only passwords that satisfy `TypePassword`.
+
+    Validating on input prevents storing a password which would later be rejected when encrypting the source archive.
+    When used with a prompt, Click asks again on invalid input.
+    """
+
+    name = "password"
+
+    def convert(self, value: object, param: click.Parameter | None, ctx: click.Context | None) -> str:
+        if not isinstance(value, str):
+            self.fail("password must be a string", param, ctx)
+        try:
+            _PASSWORD_ADAPTER.validate_python(value)
+        except ValidationError:
+            self.fail(
+                f"password must be between {PASSWORD_MIN_LENGTH} and {PASSWORD_MAX_LENGTH} characters long",
+                param,
+                ctx,
+            )
+        return value
+
+
 @settings.group(cls=AliasedGroup)
 def password() -> None:
     """Manage password for the encryption of attached archives."""
@@ -1112,11 +1138,11 @@ def settings_password_get() -> None:
 @password.command(name="set")
 @handle_exceptions
 @validate_call
-@click.option("--password", prompt=True, hide_input=True)
+@click.option("--password", type=PasswordParamType(), prompt=True, hide_input=True, confirmation_prompt=True)
 def settings_password_set(password: str) -> None:
     """Set the password for the encryption of attached archives.
 
-    This will store the password in the system's keyring.
+    This will store the password in the system's keyring. The password must be between 8 and 100 characters long.
     \f
 
     Args:
